@@ -55,7 +55,7 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
         Gdx.input.setInputProcessor(gd);
 
 //         fillEntireTilemap(tileMap);
-        initHexTilemap(tileMap, 5);
+        initHexTilemap(tileMap, 1);
         setupStage();
     }
 
@@ -70,7 +70,7 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
         renderManager.draw(tileMap);
         renderManager.drawLauncher(movingTileManager.getLauncherQueue(), movingTileManager.getLauncherPos());
         renderManager.draw(movingTileManager.getActiveList());
-        renderManager.debugTileDistances(tileMap.getTilemapTiles());
+//        renderManager.debugTileDistances(tileMap.getTilemapTiles());
         renderManager.end();
 
         renderManager.renderCenterDot(screenCamera.combined);

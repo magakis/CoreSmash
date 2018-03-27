@@ -224,7 +224,7 @@ public class TileMap {
 
             if (flag && y == 1) {
                 flag = false;
-                y = -1;
+                y = -2;
             }
 
             if (tt == null || exclude.contains(tt))
