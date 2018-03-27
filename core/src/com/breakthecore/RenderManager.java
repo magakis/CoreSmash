@@ -3,12 +3,14 @@ package com.breakthecore;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 
 import com.badlogic.gdx.utils.Queue;
+import com.breakthecore.TileMap.TilemapTile;
 
 import java.util.List;
 
@@ -22,6 +24,7 @@ public class RenderManager {
     private float sideLength;
     private float sideLengthHalf;
 
+    private BitmapFont defaultFont;
     private Texture texture;
     private Color[] colorList;
 
@@ -29,17 +32,24 @@ public class RenderManager {
         m_batch = new SpriteBatch();
         m_shapeRenderer = new ShapeRenderer();
         texture = new Texture("ball.png");
+        defaultFont = new BitmapFont();
         sideLength = sideLen;
-        sideLengthHalf = sideLength /2.f;
+        sideLengthHalf = sideLength / 2.f;
         colorList = new Color[colorCount];
 
-        colorList[0] = new Color(1,0,0,1);
-        colorList[1] = new Color(1,1,0,1);;
-        colorList[2] = new Color(1,1,1,1);;
-        colorList[3] = new Color(0,1,0,1);;
-        colorList[4] = new Color(1,0,1,1);;
-        colorList[5] = new Color(0,1,1,1);;
-        colorList[6] = new Color(0,0,1,1);;
+        colorList[0] = new Color(1, 0, 0, 1);
+        colorList[1] = new Color(1, 1, 0, 1);
+        ;
+        colorList[2] = new Color(1, 1, 1, 1);
+        ;
+        colorList[3] = new Color(0, 1, 0, 1);
+        ;
+        colorList[4] = new Color(1, 0, 1, 1);
+        ;
+        colorList[5] = new Color(0, 1, 1, 1);
+        ;
+        colorList[6] = new Color(0, 0, 1, 1);
+        ;
     }
 
     public void start(Matrix4 combined) {
@@ -62,9 +72,9 @@ public class RenderManager {
 
     public void draw(MovingTile mt) {
         Vector2 atPos = mt.getPositionInWorld();
-        float sideLen = sideLengthHalf*mt.getScale();
+        float sideLen = sideLengthHalf * mt.getScale();
         m_batch.setColor(colorList[mt.getColor()]);
-        m_batch.draw(texture, atPos.x - sideLen, atPos.y - sideLen, sideLen*2, sideLen*2);
+        m_batch.draw(texture, atPos.x - sideLen, atPos.y - sideLen, sideLen * 2, sideLen * 2);
     }
 
     public void draw(List<MovingTile> mt) {
@@ -74,15 +84,28 @@ public class RenderManager {
     }
 
     public void draw(TileMap tm) {
-        Tile[][]map = tm.getTiles();
+        TilemapTile[][] map = tm.getTilemapTiles();
         Vector2 pos;
 
-        for (Tile[] arr : map) {
-            for (Tile tile : arr) {
+        for (TilemapTile[] arr : map) {
+            for (TilemapTile tile : arr) {
                 if (tile != null) {
                     pos = tile.getPositionInWorld();
                     m_batch.setColor(colorList[tile.getColor()]);
-                    m_batch.draw(texture,pos.x-sideLengthHalf, pos.y-sideLengthHalf , sideLength, sideLength);
+                    m_batch.draw(texture, pos.x - sideLengthHalf, pos.y - sideLengthHalf, sideLength, sideLength);
+                }
+            }
+        }
+    }
+
+    public void debugTileDistances(TilemapTile[][] map) {
+        Vector2 pos;
+        for (TilemapTile[] arr : map) {
+            for (TilemapTile tile : arr) {
+                if (tile != null) {
+                    pos = tile.getPositionInWorld();
+                    m_batch.setColor(Color.BLACK);
+                    defaultFont.draw(m_batch, String.valueOf(tile.getDistanceFromCenter()), pos.x, pos.y);
                 }
             }
         }
@@ -98,7 +121,7 @@ public class RenderManager {
             scale = mt.getScale();
             sideLength = sideLengthHalf * scale;
             m_batch.setColor(colorList[mt.getColor()]);
-            m_batch.draw(texture, atPos.x - sideLength, atPos.y - sideLength - i* this.sideLength, sideLength * 2, sideLength * 2);
+            m_batch.draw(texture, atPos.x - sideLength, atPos.y - sideLength - i * this.sideLength, sideLength * 2, sideLength * 2);
         }
     }
 }

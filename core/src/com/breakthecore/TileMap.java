@@ -2,6 +2,7 @@ package com.breakthecore;
 
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,6 +18,8 @@ public class TileMap {
     private float m_sideLengthHalf;
     private float rotationDegrees;
     private float rotationSpeed = 360 / 10.f;
+
+    private boolean isRotating = true;
 
     public TileMap(Vector2 pos, int size, int sideLength) {
         m_size = size;
@@ -44,7 +47,9 @@ public class TileMap {
     }
 
     public void update(float delta) {
-        rotationDegrees += rotationSpeed * delta;
+        if (isRotating) {
+            rotationDegrees += rotationSpeed * delta;
+        }
         float rotRad = (float) Math.toRadians(rotationDegrees);
 
         float cosX = (float) Math.cos(rotRad);
@@ -59,7 +64,7 @@ public class TileMap {
         }
     }
 
-    public Tile[][] getTiles() {
+    public TilemapTile[][] getTilemapTiles() {
         return m_hexTiles;
     }
 
@@ -177,8 +182,63 @@ public class TileMap {
                 break;
         }
         updateTilemapTile(newHex,tile.getCosTheta(), tile.getSinTheta());
+        checkForColorMatches(newHex);
     }
 
+    public void checkForColorMatches(TilemapTile tile) {
+        ArrayList<TilemapTile> match = new ArrayList<TilemapTile>();
+        ArrayList<TilemapTile> exclude = new ArrayList<TilemapTile>();
+
+        int centerTile = m_size/2;
+        match.add(tile);
+        exclude.add(tile);
+
+        addSurroundingColorMatches(tile, match, exclude);
+
+        if (match.size() < 3) return;
+
+        for (TilemapTile t : match) {
+            m_hexTiles[(int) t.m_positionInTilemap.y +centerTile][(int) t.m_positionInTilemap.x+centerTile] = null;
+        }
+    }
+
+    //XXX: HORRIBLE CODE! DON'T READ OR YOUR BRAIN MIGHT CRASH! Blehh..
+    public void addSurroundingColorMatches(TilemapTile tile, List<TilemapTile> match, List<TilemapTile> exclude) {
+        boolean isLeft = tile.m_positionInTilemap.y %2 == 0? true: false;
+        int tx = (int) tile.m_positionInTilemap.x;
+        int ty = (int) tile.m_positionInTilemap.y;
+        int centerTile = m_size/2;
+
+        TilemapTile tt;
+        boolean flag = true;
+        int x;
+
+        for(int y = -2; y < 3; ++y) {
+            if (y == 0) continue;
+            if ((flag) && (y == -1 || y == +1)) {
+                x = isLeft ? -1 : 1;
+            } else {
+                x = 0;
+            }
+            tt = m_hexTiles[ty+y+centerTile][tx+x+centerTile];
+
+            if (flag && y == 1) {
+                flag = false;
+                y = -1;
+            }
+
+            if (tt == null || exclude.contains(tt))
+                continue;
+
+            exclude.add(tt);
+
+            if(tt.getColor() == tile.getColor()) {
+                match.add(tt);
+                addSurroundingColorMatches(tt,match,exclude);
+            }
+        }
+
+    }
     ///
     //  hex and point should be in unit length
     ///
@@ -243,9 +303,15 @@ public class TileMap {
 
     public static class TilemapTile extends Tile {
         private Vector2 m_positionInTilemap;
+        private float m_distanceFromCenter;
 
         public TilemapTile(float tilex , float tiley) {
             m_positionInTilemap = new Vector2(tilex, tiley);
+            m_distanceFromCenter = calcDistnanceFromCenter(tilex , tiley);
+        }
+
+        public float getDistanceFromCenter() {
+            return m_distanceFromCenter;
         }
 
         public TilemapTile(float tilex, float tiley, int colorid) {
@@ -264,6 +330,15 @@ public class TileMap {
 
         public void setPositionInTilemap(float tilex, float tiley) {
             m_positionInTilemap.set(tilex, tiley);
+        }
+
+        //XXX: calcDistanceFromCenter is not accurate at all!...
+        private float calcDistnanceFromCenter(float tileX, float tileY) {
+            float result = 0;
+            float xOffset = ((tileY) % 2 == 0)? 0 : 1f;
+
+            result = (Math.round(Vector2.dst(tileX*2f+xOffset,tileY*0.5f,0,0)));
+            return result;
         }
     } //class TilemapTile
 

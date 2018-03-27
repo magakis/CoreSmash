@@ -49,12 +49,13 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
 //        tileMap = new TileMap(new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() - Gdx.graphics.getHeight() / 4
 //        ), 37, sideLength);
 
-        tileMap = new TileMap(new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() - Gdx.graphics.getHeight() / 4), 25, sideLength);
+        tileMap = new TileMap(new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() - Gdx.graphics.getHeight() / 4), 37, sideLength);
 
         GestureDetector gd = new GestureDetector(this);
         Gdx.input.setInputProcessor(gd);
 
-        initHexTilemap(tileMap, 3);
+//         fillEntireTilemap(tileMap);
+        initHexTilemap(tileMap, 5);
         setupStage();
     }
 
@@ -69,6 +70,7 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
         renderManager.draw(tileMap);
         renderManager.drawLauncher(movingTileManager.getLauncherQueue(), movingTileManager.getLauncherPos());
         renderManager.draw(movingTileManager.getActiveList());
+        renderManager.debugTileDistances(tileMap.getTilemapTiles());
         renderManager.end();
 
         renderManager.renderCenterDot(screenCamera.combined);
@@ -144,7 +146,7 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
     }
 
     private void initHexTilemap(TileMap tm, int radius) {
-        Tile[][] tiles = tm.getTiles();
+        Tile[][] tiles = tm.getTilemapTiles();
         int center_tile = tm.getSize() / 2;
         boolean firstY,firstX = firstY = true;
 
@@ -159,7 +161,6 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
         for (int y = -radius * 3; y < radius * 3; ++y) {
             float xOffset = ((y) % 2 == 0)? 0 : .75f;
             for (int x = -radius; x < radius; ++x) {
-                float yOffset = ((x) % 2 == 0)? 0 :  0.5f;
                 if (Vector2.dst(x*1.5f+xOffset,y*0.5f,0,0) <= radius) {
                     tiles[y + center_tile][x + center_tile] = new TileMap.TilemapTile(
                             x, y,
@@ -191,7 +192,7 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
 
     // fills entire tilemap with tiles
     private void fillEntireTilemap(TileMap tm) {
-        Tile[][] tiles = tm.getTiles();
+        Tile[][] tiles = tm.getTilemapTiles();
         int center_tile = tm.getSize() / 2;
         int oddOrEvenFix = tm.getSize()%2 == 1 ? 1: 0;
         int tmp = (tm.getSize()*3)/2;
