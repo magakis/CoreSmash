@@ -10,7 +10,6 @@ import com.badlogic.gdx.math.Vector2;
 
 import com.badlogic.gdx.utils.Queue;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,9 +32,14 @@ public class RenderManager {
         sideLength = sideLen;
         sideLengthHalf = sideLength /2.f;
         colorList = new Color[colorCount];
-        colorList[0] = Color.BLUE;
-        colorList[1] = Color.RED;
-        colorList[2] = Color.GREEN;
+
+        colorList[0] = new Color(1,0,0,1);
+        colorList[1] = new Color(1,1,0,1);;
+        colorList[2] = new Color(1,1,1,1);;
+        colorList[3] = new Color(0,1,0,1);;
+        colorList[4] = new Color(1,0,1,1);;
+        colorList[5] = new Color(0,1,1,1);;
+        colorList[6] = new Color(0,0,1,1);;
     }
 
     public void start(Matrix4 combined) {
@@ -51,7 +55,7 @@ public class RenderManager {
         m_shapeRenderer.setProjectionMatrix(combined);
         m_shapeRenderer.setColor(Color.GOLD);
         m_shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        m_shapeRenderer.circle(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() - Gdx.graphics.getHeight() / 3, 5);
+        m_shapeRenderer.circle(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() - Gdx.graphics.getHeight() / 4, 5);
         m_shapeRenderer.end();
 
     }

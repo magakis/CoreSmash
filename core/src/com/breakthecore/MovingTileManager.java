@@ -69,14 +69,13 @@ public class MovingTileManager{
     public void eject() {
         if (launchDelayCounter == 0) {
             activeList.add(launcher.removeFirst());
-            launcher.get(0).setPos(launcherPos.x, launcherPos.y);
-            launcher.get(1).setPos(launcherPos.x, launcherPos.y - m_tileSize);
+            launcher.get(0).setPositionInWorld(launcherPos.x, launcherPos.y);
+            launcher.get(1).setPositionInWorld(launcherPos.x, launcherPos.y - m_tileSize);
 
             if (tilePool.size() > 0) {
                 launcher.addLast(tilePool.removeFirst());
-                launcher.last()
-                        .setPos(launcherPos.x, launcherPos.y - 2 * m_tileSize)
-                        .setColor(getRandomColor());
+                launcher.last().setPositionInWorld(launcherPos.x, launcherPos.y - 2 * m_tileSize);
+                launcher.last().setColor(getRandomColor());
             } else {
                 launcher.addLast(new MovingTile(launcherPos.x, launcherPos.y - 2 * m_tileSize, getRandomColor()));
             }

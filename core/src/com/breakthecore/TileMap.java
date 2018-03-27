@@ -2,19 +2,17 @@ package com.breakthecore;
 
 import com.badlogic.gdx.math.Vector2;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 
 /**
  * Created by Michail on 18/3/2018.
  */
 
 public class TileMap {
-    int m_size;
-    int m_sideLength;
-    Vector2 m_position;
-    Tile[][] m_hexTiles;
+    private int m_size;
+    private int m_sideLength;
+    private Vector2 m_position;
+    private TilemapTile[][] m_hexTiles;
 
     private float m_sideLengthHalf;
     private float rotationDegrees;
@@ -26,7 +24,7 @@ public class TileMap {
         m_sideLength = sideLength;
         m_sideLengthHalf = sideLength/2.f;
 
-        m_hexTiles = new Tile[size*3][size];
+        m_hexTiles = new TilemapTile[size*3][size];
 
         rotationDegrees = 0;
 
@@ -41,16 +39,21 @@ public class TileMap {
         return m_size;
     }
 
+    public Vector2 getWorldPosition() {
+        return m_position;
+    }
+
     public void update(float delta) {
         rotationDegrees += rotationSpeed * delta;
         float rotRad = (float) Math.toRadians(rotationDegrees);
+
         float cosX = (float) Math.cos(rotRad);
         float sineX = (float) Math.sin(rotRad);
 
-        for (Tile[] arr : m_hexTiles) {
-            for (Tile hex : arr) {
+        for (TilemapTile[] arr : m_hexTiles) {
+            for (TilemapTile hex : arr) {
                 if (hex != null) {
-                    updateTile(hex, cosX, sineX);
+                    updateTilemapTile(hex, cosX, sineX);
                 }
             }
         }
@@ -60,16 +63,8 @@ public class TileMap {
         return m_hexTiles;
     }
 
-    public Vector2 getPos() {
-        return m_position;
-    }
-
-    public int getTileSideLenght() {
-        return m_sideLength;
-    }
-
     public void handleCollision(List<MovingTile> list) {
-        Tile collidedTile;
+        TilemapTile collidedTile;
         float minDist;
         Vector2 movhexPos;
         Vector2 direction;
@@ -81,8 +76,8 @@ public class TileMap {
 
 
             collisionSearch:
-            for (Tile[] arr : m_hexTiles) {
-                for (Tile tile : arr) {
+            for (TilemapTile[] arr : m_hexTiles) {
+                for (TilemapTile tile : arr) {
                     if (tile != null) {
                         if (movhexPos.dst(tile.getPositionInWorld()) < minDist) {
                             collidedTile = tile;
@@ -100,23 +95,22 @@ public class TileMap {
 
             Tile.HexagonSide test = getClosestSide(collidedTile, direction);
 
-            addTile(new Tile(movhex.getColor()), collidedTile, test);
+            addTile(new TilemapTile(movhex.getColor()), collidedTile, test);
             movhex.dispose();
         }
     }
 
-    public void updateTile(Tile hex, float cos, float sin) {
+    public void updateTilemapTile(TilemapTile hex, float cos, float sin) {
         hex.setRotation(cos, sin);
-        Vector2 hexPos = hex.getPositionInTilemap();
-        int centerTile = m_size / 2;
-        float x = hexPos.x;
-        float y = hexPos.y;
+        Vector2 tilePos = hex.getPositionInTilemap();
+        float x = tilePos.x;
+        float y = tilePos.y;
 
         float X_world, Y_world;
         float tileXDistance = m_sideLength + m_sideLengthHalf;
         float tileYDistance = m_sideLengthHalf;
 
-        float xOffset = (y + centerTile) % 2 == 1 ? m_sideLengthHalf*1.5f : 0;
+        float xOffset = ((y) % 2 == 1) || ((y) % 2 == -1) ? m_sideLengthHalf*1.5f : 0;
 
         X_world = m_position.x +
                 (x * tileXDistance + xOffset) * cos +
@@ -129,7 +123,7 @@ public class TileMap {
         hex.setPositionInWorld(X_world, Y_world);
     }
 
-    public void addTile(Tile newHex, Tile tile, Tile.HexagonSide side) {
+    public void addTile(TilemapTile newHex, TilemapTile tile, Tile.HexagonSide side) {
         int centerTile = m_size / 2;
         int xOffset;
         Vector2 tilePos;
@@ -182,7 +176,7 @@ public class TileMap {
                 }
                 break;
         }
-        updateTile(newHex,tile.getCosTheta(), tile.getSinTheta());
+        updateTilemapTile(newHex,tile.getCosTheta(), tile.getSinTheta());
     }
 
     ///
@@ -246,5 +240,31 @@ public class TileMap {
 
         return closestSide;
     }
+
+    public static class TilemapTile extends Tile {
+        private Vector2 m_positionInTilemap;
+
+        public TilemapTile(float tilex , float tiley) {
+            m_positionInTilemap = new Vector2(tilex, tiley);
+        }
+
+        public TilemapTile(float tilex, float tiley, int colorid) {
+            this(tilex, tiley);
+            setColor(colorid);
+        }
+
+        public TilemapTile(int color) {
+            super(color);
+            m_positionInTilemap = new Vector2();
+        }
+
+        public Vector2 getPositionInTilemap() {
+            return m_positionInTilemap;
+        }
+
+        public void setPositionInTilemap(float tilex, float tiley) {
+            m_positionInTilemap.set(tilex, tiley);
+        }
+    } //class TilemapTile
 
 }
