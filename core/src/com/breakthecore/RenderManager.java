@@ -10,7 +10,6 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 
 import com.badlogic.gdx.utils.Queue;
-import com.breakthecore.TileMap.TilemapTile;
 
 import java.util.List;
 
@@ -83,7 +82,7 @@ public class RenderManager {
         }
     }
 
-    public void draw(TileMap tm) {
+    public void draw(Tilemap tm) {
         TilemapTile[][] map = tm.getTilemapTiles();
         Vector2 pos;
 

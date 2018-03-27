@@ -5,45 +5,15 @@ import com.badlogic.gdx.math.Vector2;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Michail on 18/3/2018.
- */
-
-public class TileMap {
-    private int m_size;
-    private int m_sideLength;
-    private Vector2 m_position;
-    private TilemapTile[][] m_hexTiles;
-
-    private float m_sideLengthHalf;
-    private float rotationDegrees;
-    private float rotationSpeed = 360 / 10.f;
+public class TilemapManager {
+    private Tilemap tm;
 
     private boolean isRotating = true;
+    private float rotationDegrees;
+    private float rotationSpeed = 20;
 
-    public TileMap(Vector2 pos, int size, int sideLength) {
-        m_size = size;
-        m_position = pos;
-        m_sideLength = sideLength;
-        m_sideLengthHalf = sideLength/2.f;
-
-        m_hexTiles = new TilemapTile[size*3][size];
-
-        rotationDegrees = 0;
-
-        float[] vert = Tile.getVertices();
-        for (int i = 0; i < 12; ++i) {
-            vert[i] *= 30;
-        }
-
-    }
-
-    public int getSize() {
-        return m_size;
-    }
-
-    public Vector2 getWorldPosition() {
-        return m_position;
+    public TilemapManager(Tilemap map) {
+        tm = map;
     }
 
     public void update(float delta) {
@@ -55,29 +25,22 @@ public class TileMap {
         float cosX = (float) Math.cos(rotRad);
         float sineX = (float) Math.sin(rotRad);
 
-        for (TilemapTile[] arr : m_hexTiles) {
-            for (TilemapTile hex : arr) {
-                if (hex != null) {
-                    updateTilemapTile(hex, cosX, sineX);
-                }
-            }
-        }
+        tm.setRotation(cosX, sineX);
     }
 
-    public TilemapTile[][] getTilemapTiles() {
-        return m_hexTiles;
-    }
-
-    public void handleCollision(List<MovingTile> list) {
+    public void checkForCollision(List<MovingTile> list) {
         TilemapTile collidedTile;
         float minDist;
+        int sideHalf = tm.getSideLength()/2;
         Vector2 movhexPos;
         Vector2 direction;
+        TilemapTile[][] m_hexTiles = tm.getTilemapTiles();
+
 
         for (MovingTile movhex : list){
             collidedTile = null;
             movhexPos = movhex.getPositionInWorld();
-            minDist = m_sideLengthHalf + m_sideLengthHalf * movhex.getScale();
+            minDist =  sideHalf + sideHalf * movhex.getScale();
 
 
             collisionSearch:
@@ -98,38 +61,15 @@ public class TileMap {
             direction = new Vector2(movhexPos).sub(collidedTile.getPositionInWorld());
             direction.nor();
 
-            Tile.HexagonSide test = getClosestSide(collidedTile, direction);
+            Tile.Side test = getClosestSide(collidedTile, direction);
 
-            addTile(new TilemapTile(movhex.getColor()), collidedTile, test);
+            addTile(m_hexTiles, new TilemapTile(movhex.getColor()), collidedTile, test, tm.getSize()/2);
             movhex.dispose();
         }
     }
 
-    public void updateTilemapTile(TilemapTile hex, float cos, float sin) {
-        hex.setRotation(cos, sin);
-        Vector2 tilePos = hex.getPositionInTilemap();
-        float x = tilePos.x;
-        float y = tilePos.y;
+    public void addTile(TilemapTile[][] m_hexTiles, TilemapTile newHex, TilemapTile tile, Tile.Side side, int centerTile) {
 
-        float X_world, Y_world;
-        float tileXDistance = m_sideLength + m_sideLengthHalf;
-        float tileYDistance = m_sideLengthHalf;
-
-        float xOffset = ((y) % 2 == 1) || ((y) % 2 == -1) ? m_sideLengthHalf*1.5f : 0;
-
-        X_world = m_position.x +
-                (x * tileXDistance + xOffset) * cos +
-                (y * tileYDistance) * sin;
-
-        Y_world = m_position.y +
-                (x * tileXDistance + xOffset) * -sin +
-                (y * tileYDistance) * cos;
-
-        hex.setPositionInWorld(X_world, Y_world);
-    }
-
-    public void addTile(TilemapTile newHex, TilemapTile tile, Tile.HexagonSide side) {
-        int centerTile = m_size / 2;
         int xOffset;
         Vector2 tilePos;
 
@@ -181,33 +121,34 @@ public class TileMap {
                 }
                 break;
         }
-        updateTilemapTile(newHex,tile.getCosTheta(), tile.getSinTheta());
-        checkForColorMatches(newHex);
+        tm.updateTilemapTile(newHex,tile.getCosTheta(), tile.getSinTheta());
+        checkForColorMatches(m_hexTiles, newHex);
     }
 
-    public void checkForColorMatches(TilemapTile tile) {
+    public void checkForColorMatches(TilemapTile[][] m_hexTiles, TilemapTile tile) {
         ArrayList<TilemapTile> match = new ArrayList<TilemapTile>();
         ArrayList<TilemapTile> exclude = new ArrayList<TilemapTile>();
 
-        int centerTile = m_size/2;
+        int centerTile = tm.getSize()/2;
         match.add(tile);
         exclude.add(tile);
 
-        addSurroundingColorMatches(tile, match, exclude);
+        addSurroundingColorMatches(m_hexTiles,tile, match, exclude);
 
         if (match.size() < 3) return;
 
         for (TilemapTile t : match) {
-            m_hexTiles[(int) t.m_positionInTilemap.y +centerTile][(int) t.m_positionInTilemap.x+centerTile] = null;
+            m_hexTiles[(int) t.getPositionInTilemap().y +centerTile][(int) t.getPositionInTilemap().x+centerTile] = null;
         }
     }
 
+    //FIXME: Somehow I matched three on the outside and the middle tile got removed??!?
     //XXX: HORRIBLE CODE! DON'T READ OR YOUR BRAIN MIGHT CRASH! Blehh..
-    public void addSurroundingColorMatches(TilemapTile tile, List<TilemapTile> match, List<TilemapTile> exclude) {
-        boolean isLeft = tile.m_positionInTilemap.y %2 == 0? true: false;
-        int tx = (int) tile.m_positionInTilemap.x;
-        int ty = (int) tile.m_positionInTilemap.y;
-        int centerTile = m_size/2;
+    public void addSurroundingColorMatches(TilemapTile[][] m_hexTiles, TilemapTile tile, List<TilemapTile> match, List<TilemapTile> exclude) {
+        boolean isLeft = tile.getPositionInTilemap().y %2 == 0? true: false;
+        int tx = (int) tile.getPositionInTilemap().x;
+        int ty = (int) tile.getPositionInTilemap().y;
+        int centerTile = tm.getSize()/2;
 
         TilemapTile tt;
         boolean flag = true;
@@ -234,38 +175,16 @@ public class TileMap {
 
             if(tt.getColor() == tile.getColor()) {
                 match.add(tt);
-                addSurroundingColorMatches(tt,match,exclude);
+                addSurroundingColorMatches(m_hexTiles,tt,match,exclude);
             }
         }
-
     }
-    ///
-    //  hex and point should be in unit length
-    ///
-    public Tile.HexagonSide getClosestSide(Tile hex, Vector2 point) {
+
+    public Tile.Side getClosestSide(Tile hex, Vector2 point) {
         float[] vertices = hex.getVerticesOnMiddleEdges();
 
         Vector2 hPos = hex.getPositionInWorld();
-        float sl = m_sideLengthHalf;
-
-//        ShapeRenderer db = DebugRenderer.get().getShapeRenderer();
-//        db.begin(ShapeRenderer.ShapeType.Filled);
-//        db.setColor(Color.RED);
-//        db.circle(hPos.x+point.x*sl, point.y*sl+hPos.y, 2);
-//        db.setColor(Color.BLUE);
-//        db.circle(vertices[0]*sl+hPos.x, vertices[1]*sl+hPos.y, 4);
-//        db.setColor(Color.GREEN);
-//        db.circle(vertices[2]*sl+hPos.x, vertices[3]*sl+hPos.y, 4);
-//        db.setColor(Color.MAGENTA);
-//        db.circle(vertices[4]*sl+hPos.x, vertices[5]*sl+hPos.y, 4);
-//        db.setColor(Color.CYAN);
-//        db.circle(vertices[6]*sl+hPos.x, vertices[7]*sl+hPos.y, 4);
-//        db.setColor(Color.GOLD);
-//        db.circle(vertices[8]*sl+hPos.x, vertices[9]*sl+hPos.y, 4);
-//        db.setColor(Color.WHITE);
-//        db.circle(vertices[10]*sl+hPos.x, vertices[11]*sl+hPos.y, 4);
-//
-//        db.end();
+        float sl = tm.getSideLength();
 
         float topLeft = Vector2.dst(vertices[0], vertices[1], point.x, point.y);
         float top = Vector2.dst(vertices[2], vertices[3], point.x, point.y);
@@ -275,71 +194,29 @@ public class TileMap {
         float bottomLeft = Vector2.dst(vertices[10], vertices[11], point.x, point.y);
 
         float closestSideLength = bottomRight;
-        Tile.HexagonSide closestSide = Tile.HexagonSide.bottomRight;
+        Tile.Side closestSide = Tile.Side.bottomRight;
 
         if (top < closestSideLength) {
             closestSideLength = top;
-            closestSide = Tile.HexagonSide.top;
+            closestSide = Tile.Side.top;
         }
         if (bottomLeft < closestSideLength) {
             closestSideLength = bottomLeft;
-            closestSide = Tile.HexagonSide.bottomLeft;
+            closestSide = Tile.Side.bottomLeft;
         }
         if (topLeft < closestSideLength) {
             closestSideLength = topLeft;
-            closestSide = Tile.HexagonSide.topLeft;
+            closestSide = Tile.Side.topLeft;
         }
         if (bottom < closestSideLength) {
             closestSideLength = bottom;
-            closestSide = Tile.HexagonSide.bottom;
+            closestSide = Tile.Side.bottom;
         }
         if (topRight < closestSideLength) {
             closestSideLength = topRight;
-            closestSide = Tile.HexagonSide.topRight;
+            closestSide = Tile.Side.topRight;
         }
 
         return closestSide;
     }
-
-    public static class TilemapTile extends Tile {
-        private Vector2 m_positionInTilemap;
-        private float m_distanceFromCenter;
-
-        public TilemapTile(float tilex , float tiley) {
-            m_positionInTilemap = new Vector2(tilex, tiley);
-            m_distanceFromCenter = calcDistnanceFromCenter(tilex , tiley);
-        }
-
-        public float getDistanceFromCenter() {
-            return m_distanceFromCenter;
-        }
-
-        public TilemapTile(float tilex, float tiley, int colorid) {
-            this(tilex, tiley);
-            setColor(colorid);
-        }
-
-        public TilemapTile(int color) {
-            super(color);
-            m_positionInTilemap = new Vector2();
-        }
-
-        public Vector2 getPositionInTilemap() {
-            return m_positionInTilemap;
-        }
-
-        public void setPositionInTilemap(float tilex, float tiley) {
-            m_positionInTilemap.set(tilex, tiley);
-        }
-
-        //XXX: calcDistanceFromCenter is not accurate at all!...
-        private float calcDistnanceFromCenter(float tileX, float tileY) {
-            float result = 0;
-            float xOffset = ((tileY) % 2 == 0)? 0 : 1f;
-
-            result = (Math.round(Vector2.dst(tileX*2f+xOffset,tileY*0.5f,0,0)));
-            return result;
-        }
-    } //class TilemapTile
-
 }

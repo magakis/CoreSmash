@@ -12,10 +12,12 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.breakthecore.TilemapManager;
 import com.breakthecore.MovingTileManager;
 import com.breakthecore.RenderManager;
 import com.breakthecore.Tile;
-import com.breakthecore.TileMap;
+import com.breakthecore.Tilemap;
+import com.breakthecore.TilemapTile;
 
 /**
  * Created by Michail on 17/3/2018.
@@ -25,7 +27,8 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
     private Game m_game;
     private ScreenViewport screenViewport;
     private OrthographicCamera screenCamera;
-    private TileMap tileMap;
+    private Tilemap m_tilemap;
+    private TilemapManager m_tilemapManager;
     private RenderManager renderManager;
 
     //===========
@@ -45,37 +48,41 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
         renderManager = new RenderManager(sideLength, colorCount);
         movingTileManager = new MovingTileManager(sideLength, colorCount);
 
-
-//        tileMap = new TileMap(new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() - Gdx.graphics.getHeight() / 4
+//        m_tilemap = new TileMap(new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() - Gdx.graphics.getHeight() / 4
 //        ), 37, sideLength);
 
-        tileMap = new TileMap(new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() - Gdx.graphics.getHeight() / 4), 37, sideLength);
+        m_tilemap = new Tilemap(new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() - Gdx.graphics.getHeight() / 4), 37, sideLength);
+        m_tilemapManager = new TilemapManager(m_tilemap);
 
         GestureDetector gd = new GestureDetector(this);
         Gdx.input.setInputProcessor(gd);
 
-//         fillEntireTilemap(tileMap);
-        initHexTilemap(tileMap, 1);
+//         fillEntireTilemap(m_tilemap);
+        initHexTilemap(m_tilemap, 6);
         setupStage();
     }
 
     @Override
     public void render(float delta) {
-        movingTileManager.update(delta);
-        tileMap.update(delta);
-        tileMap.handleCollision(movingTileManager.getActiveList());
-        updateStage();
+        update(delta);
 
         renderManager.start(screenCamera.combined);
-        renderManager.draw(tileMap);
+        renderManager.draw(m_tilemap);
         renderManager.drawLauncher(movingTileManager.getLauncherQueue(), movingTileManager.getLauncherPos());
         renderManager.draw(movingTileManager.getActiveList());
-//        renderManager.debugTileDistances(tileMap.getTilemapTiles());
+//        renderManager.debugTileDistances(m_tilemap.getTilemapTiles());
         renderManager.end();
 
         renderManager.renderCenterDot(screenCamera.combined);
 
         stage.draw();
+    }
+
+    private void update(float delta) {
+        movingTileManager.update(delta);
+        m_tilemapManager.update(delta);
+        m_tilemapManager.checkForCollision(movingTileManager.getActiveList());
+        updateStage();
     }
 
     private void updateStage() {
@@ -145,13 +152,13 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
         stage.addActor(debugTbl);
     }
 
-    private void initHexTilemap(TileMap tm, int radius) {
+    private void initHexTilemap(Tilemap tm, int radius) {
         Tile[][] tiles = tm.getTilemapTiles();
         int center_tile = tm.getSize() / 2;
         boolean firstY,firstX = firstY = true;
 
         if (radius == 0) {
-            tiles[center_tile][center_tile] = new TileMap.TilemapTile(
+            tiles[center_tile][center_tile] = new TilemapTile(
                     center_tile, center_tile,
                     movingTileManager.getRandomColor());
                     return;
@@ -162,7 +169,7 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
             float xOffset = ((y) % 2 == 0)? 0 : .75f;
             for (int x = -radius; x < radius; ++x) {
                 if (Vector2.dst(x*1.5f+xOffset,y*0.5f,0,0) <= radius) {
-                    tiles[y + center_tile][x + center_tile] = new TileMap.TilemapTile(
+                    tiles[y + center_tile][x + center_tile] = new TilemapTile(
                             x, y,
                             movingTileManager.getRandomColor());
                 }
@@ -179,7 +186,7 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
                             continue;
                         }
                     }
-                    tiles[y + center_tile][x + center_tile] = new TileMap.TilemapTile(
+                    tiles[y + center_tile][x + center_tile] = new TilemapTile(
                             x, y,
                             movingTileManager.getRandomColor());
                 }
@@ -191,14 +198,14 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
     }
 
     // fills entire tilemap with tiles
-    private void fillEntireTilemap(TileMap tm) {
+    private void fillEntireTilemap(Tilemap tm) {
         Tile[][] tiles = tm.getTilemapTiles();
         int center_tile = tm.getSize() / 2;
         int oddOrEvenFix = tm.getSize()%2 == 1 ? 1: 0;
         int tmp = (tm.getSize()*3)/2;
         for (int y = -tmp; y < tmp; ++y) {
             for (int x = -tm.getSize()/2; x < tm.getSize()/2+oddOrEvenFix; ++x) {
-                tiles[y+(center_tile)*3+oddOrEvenFix][x+center_tile] = new TileMap.TilemapTile(
+                tiles[y+(center_tile)*3+oddOrEvenFix][x+center_tile] = new TilemapTile(
                         x, y,
                         movingTileManager.getRandomColor());
             }

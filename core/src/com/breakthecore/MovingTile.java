@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.Vector2;
  */
 
 public class MovingTile extends Tile {
-    private float speed = 600;
+    private float speed = 1300;
     private float scale;
     private boolean flag;
 
@@ -17,7 +17,7 @@ public class MovingTile extends Tile {
 
     public MovingTile(Vector2 pos, int color){
         super(color);
-        scale = 3/4f;
+        scale = 3/5f;
         m_positionInWorld.set(pos);
     }
 

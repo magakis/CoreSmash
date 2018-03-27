@@ -81,5 +81,5 @@ public class Tile {
         m_sinTheta = sinTheta;
     }
 
-    public enum HexagonSide {bottomRight, bottom, bottomLeft, topLeft, top, topRight}
+    public enum Side {bottomRight, bottom, bottomLeft, topLeft, top, topRight}
 }
