@@ -21,9 +21,9 @@ public class BreakTheCoreGame extends Game {
 		WorldSettings.init();
 		m_inputMultiplexer = new InputMultiplexer();
 		Gdx.input.setInputProcessor(m_inputMultiplexer);
-		mainMenuScreen = new MainMenuScreen(this);
-//		gameScreen = new GameScreen(this);
-		setScreen(mainMenuScreen);
+//		mainMenuScreen = new MainMenuScreen(this);
+        gameScreen = new GameScreen(this);
+        setScreen(gameScreen);
 	}
 
 	@Override

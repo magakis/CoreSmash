@@ -4,14 +4,20 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.SplitPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.breakthecore.BreakTheCoreGame;
 import com.breakthecore.TilemapManager;
 import com.breakthecore.MovingTileManager;
@@ -33,9 +39,13 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
     private TilemapManager m_tilemapManager;
     private RenderManager renderManager;
 
+    Skin m_skin;
+
     //===========
     Stage stage;
-    Label fpslbl, coordsLbl;
+    Label timeLbl, coordsLbl;
+    Table mainTable;
+    private float m_time;
     //===========
     private final int colorCount = 7;
     private final int sideLength = 64;
@@ -43,26 +53,22 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
     private MovingTileManager movingTileManager;
 
     public GameScreen(BreakTheCoreGame game) {
-        float width = Gdx.graphics.getWidth();
-        float aspectR = width / Gdx.graphics.getHeight();
         m_game = game;
         m_fitViewport = new FitViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight());
         m_camera = (OrthographicCamera) m_fitViewport.getCamera();
         renderManager = new RenderManager(sideLength, colorCount);
         movingTileManager = new MovingTileManager(sideLength, colorCount);
 
-//        m_tilemap = new TileMap(new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() - Gdx.graphics.getHeight() / 4
-//        ), 37, sideLength);
+        setupUI();
 
         m_tilemap = new Tilemap(new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4), 37, sideLength);
         m_tilemapManager = new TilemapManager(m_tilemap);
 
+        // XXX(3/28/2018): I need a standalone way to handle input here...
         GestureDetector gd = new GestureDetector(this);
         game.addInputHandler(gd);
 
-//         fillEntireTilemap(m_tilemap);
         initHexTilemap(m_tilemap, 6);
-        setupStage();
     }
 
     @Override
@@ -82,14 +88,11 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
     }
 
     private void update(float delta) {
+        m_time += delta;
         movingTileManager.update(delta);
         m_tilemapManager.update(delta);
         m_tilemapManager.checkForCollision(movingTileManager.getActiveList());
         updateStage();
-    }
-
-    private void updateStage() {
-        fpslbl.setText(String.valueOf(Gdx.graphics.getFramesPerSecond()));
     }
 
     @Override
@@ -143,35 +146,23 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
 
     }
 
-    private void setupStage() {
-        stage = new Stage(new ScreenViewport());
-        Table debugTbl = new Table();
-        fpslbl = new Label("null", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
-        coordsLbl = new Label("null", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
-        debugTbl.top().left();
-        debugTbl.setFillParent(true);
-        debugTbl.add(fpslbl).left().row();
-        debugTbl.add(coordsLbl).left().row();
-        stage.addActor(debugTbl);
-    }
-
     private void initHexTilemap(Tilemap tm, int radius) {
         Tile[][] tiles = tm.getTilemapTiles();
         int center_tile = tm.getSize() / 2;
-        boolean firstY,firstX = firstY = true;
+        boolean firstY, firstX = firstY = true;
 
         if (radius == 0) {
             tiles[center_tile][center_tile] = new TilemapTile(
                     center_tile, center_tile,
                     movingTileManager.getRandomColor());
-                    return;
+            return;
         }
 
 
         for (int y = -radius * 3; y < radius * 3; ++y) {
-            float xOffset = ((y) % 2 == 0)? 0 : .75f;
+            float xOffset = ((y) % 2 == 0) ? 0 : .75f;
             for (int x = -radius; x < radius; ++x) {
-                if (Vector2.dst(x*1.5f+xOffset,y*0.5f,0,0) <= radius) {
+                if (Vector2.dst(x * 1.5f + xOffset, y * 0.5f, 0, 0) <= radius) {
                     tiles[y + center_tile][x + center_tile] = new TilemapTile(
                             x, y,
                             movingTileManager.getRandomColor());
@@ -200,19 +191,89 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
 
     }
 
-    // fills entire tilemap with tiles
     private void fillEntireTilemap(Tilemap tm) {
         Tile[][] tiles = tm.getTilemapTiles();
         int center_tile = tm.getSize() / 2;
-        int oddOrEvenFix = tm.getSize()%2 == 1 ? 1: 0;
-        int tmp = (tm.getSize()*3)/2;
+        int oddOrEvenFix = tm.getSize() % 2 == 1 ? 1 : 0;
+        int tmp = (tm.getSize() * 3) / 2;
         for (int y = -tmp; y < tmp; ++y) {
-            for (int x = -tm.getSize()/2; x < tm.getSize()/2+oddOrEvenFix; ++x) {
-                tiles[y+(center_tile)*3+oddOrEvenFix][x+center_tile] = new TilemapTile(
+            for (int x = -tm.getSize() / 2; x < tm.getSize() / 2 + oddOrEvenFix; ++x) {
+                tiles[y + (center_tile) * 3 + oddOrEvenFix][x + center_tile] = new TilemapTile(
                         x, y,
                         movingTileManager.getRandomColor());
             }
         }
+    }
+
+    private void updateStage() {
+        timeLbl.setText(String.format("%d:%02d", (int) m_time / 60, (int) m_time % 60));
+    }
+
+    private void setupUI() {
+        m_skin = createSkin();
+        Label staticTimeLbl, staticScoreLbl;
+
+        stage = new Stage(new FitViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight()));
+        mainTable = new Table();
+        mainTable.setDebug(false);
+
+        timeLbl = new Label("null", m_skin, "ddd");
+        timeLbl.setAlignment(Align.center);
+        timeLbl.setWidth(mainTable.getWidth() / 2);
+        timeLbl.getStyle().font.getData().setScale(4);
+
+        coordsLbl = new Label("null", m_skin, "ddd");
+        coordsLbl.setAlignment(Align.center);
+        coordsLbl.setWidth(mainTable.getWidth() / 2);
+
+        staticTimeLbl = new Label("Time:", m_skin, "small");
+        staticScoreLbl = new Label("Score:", m_skin, "small");
+
+        mainTable.setFillParent(true);
+        mainTable.top().left();
+        mainTable.add(staticTimeLbl, null, staticScoreLbl);
+        mainTable.row();
+        mainTable.add(timeLbl).width(200).height(100).padLeft(-10);
+        mainTable.add().expandX();
+        mainTable.add(coordsLbl).width(200).height(100).padRight(-10).row();
+        stage.addActor(mainTable);
+    }
+    // fills entire tilemap with tiles
+
+    private Skin createSkin() {
+        Skin skin = new Skin();
+        Label.LabelStyle ls;
+        Pixmap pix;
+        Texture tex;
+        BitmapFont bf;
+
+        int pixHeight = 100;
+        pix = new Pixmap(WorldSettings.getWorldWidth() / 5, pixHeight, Pixmap.Format.RGB888);
+        pix.setColor(Color.WHITE);
+        pix.fill();
+        pix.setColor(Color.BLACK);
+        pix.fillRectangle(5, 5, pix.getWidth() - 10, pixHeight - 10);
+        tex = new Texture(pix);
+        skin.add("topBox", tex);
+
+        ls = new Label.LabelStyle();
+        bf = new BitmapFont();
+        bf.getData().setScale(2);
+        bf.setColor(Color.WHITE);
+        ls.font = bf;
+        ls.background = skin.getDrawable("topBox");
+        skin.add("ddd", ls);
+
+        bf = new BitmapFont();
+        bf.getData().setScale(2);
+        ls = new Label.LabelStyle(bf, Color.WHITE);
+        skin.add("small", ls);
+
+        SplitPane.SplitPaneStyle sps = new SplitPane.SplitPaneStyle();
+        sps.handle = skin.getDrawable("topBox");
+        skin.add("default-horizontal", sps);
+
+        return skin;
     }
 
 }
