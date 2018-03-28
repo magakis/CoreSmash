@@ -13,6 +13,8 @@ import com.badlogic.gdx.utils.Queue;
 
 import java.util.List;
 
+import sun.java2d.opengl.WGLSurfaceData;
+
 /**
  * Created by Michail on 24/3/2018.
  */
@@ -62,9 +64,9 @@ public class RenderManager {
 
     public void renderCenterDot(Matrix4 combined) {
         m_shapeRenderer.setProjectionMatrix(combined);
-        m_shapeRenderer.setColor(Color.GOLD);
+        m_shapeRenderer.setColor(Color.BLACK);
         m_shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        m_shapeRenderer.circle(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() - Gdx.graphics.getHeight() / 4, 5);
+        m_shapeRenderer.circle(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4, 15);
         m_shapeRenderer.end();
 
     }

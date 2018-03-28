@@ -1,6 +1,5 @@
 package com.breakthecore.screens;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
@@ -11,22 +10,25 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.breakthecore.BreakTheCoreGame;
 import com.breakthecore.TilemapManager;
 import com.breakthecore.MovingTileManager;
 import com.breakthecore.RenderManager;
 import com.breakthecore.Tile;
 import com.breakthecore.Tilemap;
 import com.breakthecore.TilemapTile;
+import com.breakthecore.WorldSettings;
 
 /**
  * Created by Michail on 17/3/2018.
  */
 
 public class GameScreen extends ScreenAdapter implements GestureDetector.GestureListener {
-    private Game m_game;
-    private ScreenViewport screenViewport;
-    private OrthographicCamera screenCamera;
+    private BreakTheCoreGame m_game;
+    private FitViewport m_fitViewport;
+    private OrthographicCamera m_camera;
     private Tilemap m_tilemap;
     private TilemapManager m_tilemapManager;
     private RenderManager renderManager;
@@ -40,22 +42,23 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
 
     private MovingTileManager movingTileManager;
 
-    public GameScreen(Game game) {
+    public GameScreen(BreakTheCoreGame game) {
+        float width = Gdx.graphics.getWidth();
+        float aspectR = width / Gdx.graphics.getHeight();
         m_game = game;
-        screenViewport = new ScreenViewport();
-        screenCamera = (OrthographicCamera) screenViewport.getCamera();
-        screenCamera.position.set(Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() / 2f, 0);
+        m_fitViewport = new FitViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight());
+        m_camera = (OrthographicCamera) m_fitViewport.getCamera();
         renderManager = new RenderManager(sideLength, colorCount);
         movingTileManager = new MovingTileManager(sideLength, colorCount);
 
 //        m_tilemap = new TileMap(new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() - Gdx.graphics.getHeight() / 4
 //        ), 37, sideLength);
 
-        m_tilemap = new Tilemap(new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() - Gdx.graphics.getHeight() / 4), 37, sideLength);
+        m_tilemap = new Tilemap(new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4), 37, sideLength);
         m_tilemapManager = new TilemapManager(m_tilemap);
 
         GestureDetector gd = new GestureDetector(this);
-        Gdx.input.setInputProcessor(gd);
+        game.addInputHandler(gd);
 
 //         fillEntireTilemap(m_tilemap);
         initHexTilemap(m_tilemap, 6);
@@ -66,14 +69,14 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
     public void render(float delta) {
         update(delta);
 
-        renderManager.start(screenCamera.combined);
+        renderManager.start(m_camera.combined);
         renderManager.draw(m_tilemap);
         renderManager.drawLauncher(movingTileManager.getLauncherQueue(), movingTileManager.getLauncherPos());
         renderManager.draw(movingTileManager.getActiveList());
 //        renderManager.debugTileDistances(m_tilemap.getTilemapTiles());
         renderManager.end();
 
-        renderManager.renderCenterDot(screenCamera.combined);
+        renderManager.renderCenterDot(m_camera.combined);
 
         stage.draw();
     }
@@ -91,7 +94,7 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
 
     @Override
     public void resize(int width, int height) {
-        screenViewport.update(width, height);
+        m_fitViewport.update(width, height, true);
     }
 
     @Override

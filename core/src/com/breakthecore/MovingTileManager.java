@@ -24,7 +24,7 @@ public class MovingTileManager{
 
     public MovingTileManager(int tileSize, int colorCount) {
         launcher = new Queue<MovingTile>(3);
-        launcherPos = new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 4);
+        launcherPos = new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() / 5);
         activeList = new LinkedList<MovingTile>();
         tilePool = new LinkedList<MovingTile>();
         m_tileSize = tileSize;
