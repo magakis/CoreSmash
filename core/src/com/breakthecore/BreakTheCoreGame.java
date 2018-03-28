@@ -22,7 +22,6 @@ public class BreakTheCoreGame extends Game {
 		m_inputMultiplexer = new InputMultiplexer();
 		Gdx.input.setInputProcessor(m_inputMultiplexer);
 		mainMenuScreen = new MainMenuScreen(this);
-//        gameScreen = new GameScreen(this);
 		setScreen(mainMenuScreen);
 	}
 

@@ -1,9 +1,10 @@
 package com.breakthecore;
 
 import com.badlogic.gdx.math.Vector2;
-import com.sun.org.apache.xml.internal.utils.IntVector;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class TilemapManager {
@@ -14,8 +15,22 @@ public class TilemapManager {
     private float rotationDegrees;
     private float rotationSpeed = 20;
 
+    private ArrayList<DistanceSideStruct> m_collisionDisSide;
+    private Comparator<DistanceSideStruct> m_disSideComp;
+
     public TilemapManager(Tilemap map) {
         tm = map;
+        m_collisionDisSide = new ArrayList<DistanceSideStruct>(6);
+        for (int i = 0; i < 6; ++i) {
+            m_collisionDisSide.add(new DistanceSideStruct());
+        }
+
+        m_disSideComp = new Comparator<DistanceSideStruct>() {
+            @Override
+            public int compare(DistanceSideStruct o1, DistanceSideStruct o2) {
+                return o1.distance > o2.distance ? 1 : -1;
+            }
+        };
     }
 
     public void update(float delta) {
@@ -64,14 +79,18 @@ public class TilemapManager {
             direction = new Vector2(movhexPos).sub(collidedTile.getPositionInWorld());
             direction.nor();
 
-            Tile.Side test = getClosestSide(collidedTile, direction);
+            getClosestSides(collidedTile, direction);
 
-            addTile(new TilemapTile(movhex.getColor()), collidedTile, test, tm.getSize() / 2);
+            for (int i = 0; i < 6; ++i) {
+                if (addTile(new TilemapTile(movhex.getColor()), collidedTile, m_collisionDisSide.get(i).side, tm.getSize() / 2)) {
+                    break;
+                }
+            }
             movhex.dispose();
         }
     }
 
-    public void addTile(TilemapTile newTile, TilemapTile solidTile, Tile.Side side, int centerTile) {
+    public boolean addTile(TilemapTile newTile, TilemapTile solidTile, Tile.Side side, int centerTile) {
         boolean placedNewTile = false;
         Vector2 tilePos = solidTile.getPositionInTilemap();
         int xOffset;
@@ -126,7 +145,9 @@ public class TilemapManager {
         if (placedNewTile) {
             tm.updateTilemapTile(newTile);
             checkForColorMatches(newTile);
+            return true;
         }
+        return false;
     }
 
     public void checkForColorMatches(TilemapTile tile) {
@@ -188,44 +209,49 @@ public class TilemapManager {
         }
     }
 
-    public Tile.Side getClosestSide(Tile hex, Vector2 point) {
+    public void getClosestSides(Tile hex, Vector2 point) {
         float[] vertices = hex.getVerticesOnMiddleEdges();
+        DistanceSideStruct curr;
 
         float topLeft = Vector2.dst(vertices[0], vertices[1], point.x, point.y);
+        curr = m_collisionDisSide.get(0);
+        curr.distance = topLeft;
+        curr.side = Tile.Side.topLeft;
+
         float top = Vector2.dst(vertices[2], vertices[3], point.x, point.y);
+        curr = m_collisionDisSide.get(1);
+        curr.distance = top;
+        curr.side = Tile.Side.top;
+
         float topRight = Vector2.dst(vertices[4], point.x, vertices[5], point.y);
+        curr = m_collisionDisSide.get(2);
+        curr.distance = topRight;
+        curr.side = Tile.Side.topRight;
+
         float bottomRight = Vector2.dst(vertices[6], vertices[7], point.x, point.y);
+        curr = m_collisionDisSide.get(3);
+        curr.distance = bottomRight;
+        curr.side = Tile.Side.bottomRight;
+
         float bottom = Vector2.dst(vertices[8], vertices[9], point.x, point.y);
+        curr = m_collisionDisSide.get(4);
+        curr.distance = bottom;
+        curr.side = Tile.Side.bottom;
+
         float bottomLeft = Vector2.dst(vertices[10], vertices[11], point.x, point.y);
+        curr = m_collisionDisSide.get(5);
+        curr.distance = bottomLeft;
+        curr.side = Tile.Side.bottomLeft;
 
-        float closestSideLength = bottomRight;
-        Tile.Side closestSide = Tile.Side.bottomRight;
-
-        if (top < closestSideLength) {
-            closestSideLength = top;
-            closestSide = Tile.Side.top;
-        }
-        if (bottomLeft < closestSideLength) {
-            closestSideLength = bottomLeft;
-            closestSide = Tile.Side.bottomLeft;
-        }
-        if (topLeft < closestSideLength) {
-            closestSideLength = topLeft;
-            closestSide = Tile.Side.topLeft;
-        }
-        if (bottom < closestSideLength) {
-            closestSideLength = bottom;
-            closestSide = Tile.Side.bottom;
-        }
-        if (topRight < closestSideLength) {
-            closestSideLength = topRight;
-            closestSide = Tile.Side.topRight;
-        }
-
-        return closestSide;
+        Collections.sort(m_collisionDisSide, m_disSideComp);
     }
 
     public int getTmpScore() {
         return tmpScore;
+    }
+
+    private class DistanceSideStruct {
+        public float distance;
+        public Tile.Side side;
     }
 }
