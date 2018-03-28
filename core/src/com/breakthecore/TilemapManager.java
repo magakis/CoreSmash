@@ -9,6 +9,7 @@ import java.util.List;
 public class TilemapManager {
     private Tilemap tm;
 
+    private int tmpScore;
     private boolean isRotating = true;
     private float rotationDegrees;
     private float rotationSpeed = 20;
@@ -134,13 +135,19 @@ public class TilemapManager {
 
         addSurroundingColorMatches(tile, match, exclude);
 
-        if (match.size() < 3) return;
+        if (match.size() < 3) {
+            if (match.size() == 1) {
+                --tmpScore;
+            }
+            return;
+        }
 
         for (TilemapTile t : match) {
             if (t.getPositionInTilemap().y == 0 && t.getPositionInTilemap().x == 0)
                 tm.setTile(-9999, -9999, null); //CRASH!!
             tm.setTile((int) t.getPositionInTilemap().x, (int) t.getPositionInTilemap().y, null);
         }
+        tmpScore += match.size();
     }
 
     //FIXME: Somehow I matched three on the outside and the middle tile got removed??!?
@@ -216,5 +223,9 @@ public class TilemapManager {
         }
 
         return closestSide;
+    }
+
+    public int getTmpScore() {
+        return tmpScore;
     }
 }

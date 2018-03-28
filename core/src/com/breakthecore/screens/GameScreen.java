@@ -1,6 +1,5 @@
 package com.breakthecore.screens;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -10,8 +9,6 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Cell;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.SplitPane;
@@ -43,7 +40,7 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
 
     //===========
     Stage stage;
-    Label timeLbl, coordsLbl;
+    Label m_timeLbl, m_scoreLbl;
     Table mainTable;
     private float m_time;
     //===========
@@ -206,7 +203,8 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
     }
 
     private void updateStage() {
-        timeLbl.setText(String.format("%d:%02d", (int) m_time / 60, (int) m_time % 60));
+        m_timeLbl.setText(String.format("%d:%02d", (int) m_time / 60, (int) m_time % 60));
+        m_scoreLbl.setText(String.valueOf(m_tilemapManager.getTmpScore()));
     }
 
     private void setupUI() {
@@ -217,14 +215,14 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
         mainTable = new Table();
         mainTable.setDebug(false);
 
-        timeLbl = new Label("null", m_skin, "ddd");
-        timeLbl.setAlignment(Align.center);
-        timeLbl.setWidth(mainTable.getWidth() / 2);
-        timeLbl.getStyle().font.getData().setScale(4);
+        m_timeLbl = new Label("null", m_skin, "ddd");
+        m_timeLbl.setAlignment(Align.center);
+        m_timeLbl.setWidth(mainTable.getWidth() / 2);
+        m_timeLbl.getStyle().font.getData().setScale(4);
 
-        coordsLbl = new Label("null", m_skin, "ddd");
-        coordsLbl.setAlignment(Align.center);
-        coordsLbl.setWidth(mainTable.getWidth() / 2);
+        m_scoreLbl = new Label("null", m_skin, "ddd");
+        m_scoreLbl.setAlignment(Align.center);
+        m_scoreLbl.setWidth(mainTable.getWidth() / 2);
 
         staticTimeLbl = new Label("Time:", m_skin, "small");
         staticScoreLbl = new Label("Score:", m_skin, "small");
@@ -233,9 +231,9 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
         mainTable.top().left();
         mainTable.add(staticTimeLbl, null, staticScoreLbl);
         mainTable.row();
-        mainTable.add(timeLbl).width(200).height(100).padLeft(-10);
+        mainTable.add(m_timeLbl).width(200).height(100).padLeft(-10);
         mainTable.add().expandX();
-        mainTable.add(coordsLbl).width(200).height(100).padRight(-10).row();
+        mainTable.add(m_scoreLbl).width(200).height(100).padRight(-10).row();
         stage.addActor(mainTable);
     }
     // fills entire tilemap with tiles
