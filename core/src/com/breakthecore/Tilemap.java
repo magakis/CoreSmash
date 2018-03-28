@@ -9,61 +9,53 @@ import com.badlogic.gdx.math.Vector2;
 public class Tilemap {
     private int m_size;
     private int m_sideLength;
-    private Vector2 m_position;
-    private TilemapTile[][] m_hexTiles;
-
     private float m_sideLengthHalf;
-    private float rotationDegrees;
-    private float rotationSpeed = 360 / 10.f;
+    private int m_centerTile;
+    private Vector2 m_position;
+    private TilemapTile[][] m_tileList;
 
-    private boolean isRotating = true;
+    private float m_cosT;
+    private float m_sinT;
 
     public Tilemap(Vector2 pos, int size, int sideLength) {
         m_size = size;
         m_position = pos;
         m_sideLength = sideLength;
         m_sideLengthHalf = sideLength/2.f;
+        m_centerTile = size / 2;
+        m_tileList = new TilemapTile[size * 3][size];
+    }
 
-        m_hexTiles = new TilemapTile[size*3][size];
-
-
-        rotationDegrees = 0;
-
-        float[] vert = Tile.getVertices();
-        for (int i = 0; i < 12; ++i) {
-            vert[i] *= 30;
-        }
-
+    public int getCenterTilePos() {
+        return m_centerTile;
     }
 
     public int getSize() {
         return m_size;
     }
 
-    public Vector2 getWorldPosition() {
-        return m_position;
-    }
-
     public void setRotation(float cosT, float sinT) {
-        for (TilemapTile[] arr : m_hexTiles) {
+        m_cosT = cosT; // updating those values must happen BEFORE updating the tiles
+        m_sinT = sinT;
+        for (TilemapTile[] arr : m_tileList) {
             for (TilemapTile hex : arr) {
                 if (hex != null) {
-                    updateTilemapTile(hex, cosT, sinT);
+                    updateTilemapTile(hex);
                 }
             }
         }
     }
 
     public TilemapTile[][] getTilemapTiles() {
-        return m_hexTiles;
+        return m_tileList;
     }
 
     public int getSideLength() {
         return m_sideLength;
     }
 
-    public void updateTilemapTile(TilemapTile hex, float cos, float sin) {
-        hex.setRotation(cos, sin);
+    public void updateTilemapTile(TilemapTile hex) {
+        hex.setRotation(m_cosT, m_sinT);
         Vector2 tilePos = hex.getPositionInTilemap();
         float x = tilePos.x;
         float y = tilePos.y;
@@ -75,14 +67,21 @@ public class Tilemap {
         float xOffset = ((y) % 2 == 1) || ((y) % 2 == -1) ? m_sideLengthHalf*1.5f : 0;
 
         X_world = m_position.x +
-                (x * tileXDistance + xOffset) * cos +
-                (y * tileYDistance) * sin;
+                (x * tileXDistance + xOffset) * m_cosT +
+                (y * tileYDistance) * m_sinT;
 
         Y_world = m_position.y +
-                (x * tileXDistance + xOffset) * -sin +
-                (y * tileYDistance) * cos;
+                (x * tileXDistance + xOffset) * -m_sinT +
+                (y * tileYDistance) * m_cosT;
 
         hex.setPositionInWorld(X_world, Y_world);
     }
 
+    public void setTile(int x, int y, TilemapTile tile) {
+        m_tileList[m_centerTile + y][m_centerTile + x] = tile;
+    }
+
+    public TilemapTile getTile(int x, int y) {
+        return m_tileList[m_centerTile + y][m_centerTile + x];
+    }
 }
