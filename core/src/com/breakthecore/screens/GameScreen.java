@@ -16,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.breakthecore.BreakTheCoreGame;
+import com.breakthecore.MovingTile;
 import com.breakthecore.TilemapManager;
 import com.breakthecore.MovingTileManager;
 import com.breakthecore.RenderManager;
@@ -65,7 +66,7 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
         GestureDetector gd = new GestureDetector(this);
         game.addInputHandler(gd);
 
-        initHexTilemap(m_tilemap, 5);
+        initHexTilemap(m_tilemap, 2);
     }
 
     @Override
@@ -120,6 +121,14 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
 
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY) {
+//        if (false) {
+//            MovingTile mt = movingTileManager.getFirstActiveTile();
+//            if (mt == null) {
+//                movingTileManager.eject();
+//                mt = movingTileManager.getFirstActiveTile();
+//            }
+//            mt.moveBy(deltaX, -deltaY);
+//        }
         return true;
     }
 

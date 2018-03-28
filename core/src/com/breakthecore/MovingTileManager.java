@@ -36,6 +36,12 @@ public class MovingTileManager{
         launchDelay = tileSize / launcher.first().getSpeed();
     }
 
+    public MovingTile getFirstActiveTile() {
+        if (activeList.size() > 0) {
+            return activeList.getFirst();
+        }
+        return null;
+    }
 
     public LinkedList<MovingTile> getActiveList() {
         return activeList;
@@ -47,14 +53,19 @@ public class MovingTileManager{
 
     public void update(float delta) {
         disposeInactive();
-        for (MovingTile mt : activeList) {
-            mt.update(delta);
-        }
+        updateActiveList(delta);
+
         if (launchDelayCounter > 0) {
             if (launchDelayCounter-delta < 0)
                 launchDelayCounter = 0;
             else
                 launchDelayCounter -= delta;
+        }
+    }
+
+    private void updateActiveList(float delta) {
+        for (MovingTile mt : activeList) {
+            mt.update(delta);
         }
     }
 

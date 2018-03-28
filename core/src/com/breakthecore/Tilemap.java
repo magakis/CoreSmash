@@ -86,6 +86,7 @@ public class Tilemap {
     public void setTile(int x, int y, TilemapTile tile) {
         if (tile != null) {
             tile.setPositionInTilemap(x, y);
+            updateTilemapTile(tile);
         }
         m_tileList[m_centerTileY + y][m_centerTileX + x] = tile;
     }

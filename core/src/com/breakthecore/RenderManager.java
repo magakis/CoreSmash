@@ -93,6 +93,28 @@ public class RenderManager {
         }
     }
 
+    public void dbdraw(Tilemap tm) {
+        TilemapTile[][] map = tm.getTilemapTiles();
+        Vector2 pos;
+        int sideLen = tm.getSideLength() / 2;
+
+        m_shapeRenderer.setColor(Color.WHITE);
+        m_shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        float[] vetices;
+        for (TilemapTile[] arr : map) {
+            for (TilemapTile tile : arr) {
+                if (tile != null) {
+                    pos = tile.m_positionInWorld;
+                    vetices = tile.getVerticesOnMiddleEdges();
+                    for (int i = 0; i < 12; i += 2) {
+                        m_shapeRenderer.circle(vetices[i] * sideLen + pos.x, vetices[i + 1] * sideLen + pos.y, 3);
+                    }
+                }
+            }
+        }
+        m_shapeRenderer.end();
+    }
+
     public void debugTileDistances(TilemapTile[][] map) {
         Vector2 pos;
         for (TilemapTile[] arr : map) {
