@@ -58,14 +58,14 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
 
         setupUI();
 
-        m_tilemap = new Tilemap(new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4), 37, sideLength);
+        m_tilemap = new Tilemap(new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4), 20, sideLength);
         m_tilemapManager = new TilemapManager(m_tilemap);
 
         // XXX(3/28/2018): I need a standalone way to handle input here...
         GestureDetector gd = new GestureDetector(this);
         game.addInputHandler(gd);
 
-        initHexTilemap(m_tilemap, 6);
+        initHexTilemap(m_tilemap, 5);
     }
 
     @Override
@@ -144,48 +144,19 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
     }
 
     private void initHexTilemap(Tilemap tm, int radius) {
-        Tile[][] tiles = tm.getTilemapTiles();
-        int center_tile = tm.getSize() / 2;
-        boolean firstY, firstX = firstY = true;
-
         if (radius == 0) {
-            tiles[center_tile][center_tile] = new TilemapTile(
-                    center_tile, center_tile,
-                    movingTileManager.getRandomColor());
+            tm.setTile(0, 0, new TilemapTile(movingTileManager.getRandomColor()));
             return;
         }
-
 
         for (int y = -radius * 3; y < radius * 3; ++y) {
             float xOffset = ((y) % 2 == 0) ? 0 : .75f;
             for (int x = -radius; x < radius; ++x) {
                 if (Vector2.dst(x * 1.5f + xOffset, y * 0.5f, 0, 0) <= radius) {
-                    tiles[y + center_tile][x + center_tile] = new TilemapTile(
-                            x, y,
-                            movingTileManager.getRandomColor());
+                    tm.setTile(x, y, new TilemapTile(movingTileManager.getRandomColor()));
                 }
             }
         }
-
-        if (false) {
-            for (int y = -radius * 3; y < radius * 3; ++y) {
-                for (int x = -radius; x < radius; ++x) {
-                    if (firstY) continue;
-                    if (firstX) {
-                        if (y % 2 == 0) {
-                            firstX = false;
-                            continue;
-                        }
-                    }
-                    tiles[y + center_tile][x + center_tile] = new TilemapTile(
-                            x, y,
-                            movingTileManager.getRandomColor());
-                }
-                firstY = false;
-                firstX = true;
-            }
-        }
-
     }
 
     private void fillEntireTilemap(Tilemap tm) {

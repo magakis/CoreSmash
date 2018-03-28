@@ -10,7 +10,8 @@ public class Tilemap {
     private int m_size;
     private int m_sideLength;
     private float m_sideLengthHalf;
-    private int m_centerTile;
+    private int m_centerTileX;
+    private int m_centerTileY;
     private Vector2 m_position;
     private TilemapTile[][] m_tileList;
 
@@ -21,13 +22,18 @@ public class Tilemap {
         m_size = size;
         m_position = pos;
         m_sideLength = sideLength;
-        m_sideLengthHalf = sideLength/2.f;
-        m_centerTile = size / 2;
+        m_sideLengthHalf = sideLength / 2.f;
+        m_centerTileX = size / 2;
+        m_centerTileY = (size * 3) / 2;
         m_tileList = new TilemapTile[size * 3][size];
     }
 
-    public int getCenterTilePos() {
-        return m_centerTile;
+    public int getCenterTileXPos() {
+        return m_centerTileX;
+    }
+
+    public int getCenterTileYPos() {
+        return m_centerTileY;
     }
 
     public int getSize() {
@@ -64,7 +70,7 @@ public class Tilemap {
         float tileXDistance = m_sideLength + m_sideLengthHalf;
         float tileYDistance = m_sideLengthHalf;
 
-        float xOffset = ((y) % 2 == 1) || ((y) % 2 == -1) ? m_sideLengthHalf*1.5f : 0;
+        float xOffset = ((y) % 2 == 1) || ((y) % 2 == -1) ? m_sideLengthHalf * 1.5f : 0;
 
         X_world = m_position.x +
                 (x * tileXDistance + xOffset) * m_cosT +
@@ -78,10 +84,20 @@ public class Tilemap {
     }
 
     public void setTile(int x, int y, TilemapTile tile) {
-        m_tileList[m_centerTile + y][m_centerTile + x] = tile;
+        if (tile != null) {
+            tile.setPositionInTilemap(x, y);
+        }
+        m_tileList[m_centerTileY + y][m_centerTileX + x] = tile;
+    }
+
+    public void setTileLiteral(int x, int y, TilemapTile tile) {
+        if (tile != null) {
+            tile.setPositionInTilemap(x - m_centerTileX, y - m_centerTileY);
+        }
+        m_tileList[y][x] = tile;
     }
 
     public TilemapTile getTile(int x, int y) {
-        return m_tileList[m_centerTile + y][m_centerTile + x];
+        return m_tileList[m_centerTileY + y][m_centerTileX + x];
     }
 }

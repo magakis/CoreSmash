@@ -40,17 +40,11 @@ public class RenderManager {
 
         colorList[0] = new Color(1, 0, 0, 1);
         colorList[1] = new Color(1, 1, 0, 1);
-        ;
         colorList[2] = new Color(1, 1, 1, 1);
-        ;
         colorList[3] = new Color(0, 1, 0, 1);
-        ;
         colorList[4] = new Color(1, 0, 1, 1);
-        ;
         colorList[5] = new Color(0, 1, 1, 1);
-        ;
         colorList[6] = new Color(0, 0, 1, 1);
-        ;
     }
 
     public void start(Matrix4 combined) {
