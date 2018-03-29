@@ -2,12 +2,11 @@ package com.breakthecore;
 
 import com.badlogic.gdx.math.Vector2;
 
-
 /**
  * Created by Michail on 18/3/2018.
  */
 
-public class Tile {
+public class Tile extends Observable {
     private static final float[] s_vertices = generateVertices(30);
     private static final float[] s_verticesOnMiddleEdges = generateVertices(0);
 

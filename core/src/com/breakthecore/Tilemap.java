@@ -18,6 +18,8 @@ public class Tilemap {
     private float m_cosT;
     private float m_sinT;
 
+    private int m_tileCount;
+
     public Tilemap(Vector2 pos, int size, int sideLength) {
         m_size = size;
         m_position = pos;
@@ -84,21 +86,40 @@ public class Tilemap {
     }
 
     public void setTile(int x, int y, TilemapTile tile) {
-        if (tile != null) {
-            tile.setPositionInTilemap(x, y);
-            updateTilemapTile(tile);
+        if (tile == null) return;
+
+        if (getTile(x, y) == null) {
+            ++m_tileCount;
         }
+
+        tile.setPositionInTilemap(x, y);
+        updateTilemapTile(tile);
+
         m_tileList[m_centerTileY + y][m_centerTileX + x] = tile;
     }
 
+    public void desrtoyTile(int tileX, int tileY) {
+        TilemapTile t = getTile(tileX, tileY);
+        if (t == null) return;
+        t.notifyObservers(NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED, null);
+        t.emptyObserverList();
+        emptyTileAt(tileX, tileY);
+        --m_tileCount;
+    }
+
+    public int getTileCount() {
+        return m_tileCount;
+    }
+
     public void setTileLiteral(int x, int y, TilemapTile tile) {
-        if (tile != null) {
-            tile.setPositionInTilemap(x - m_centerTileX, y - m_centerTileY);
-        }
-        m_tileList[y][x] = tile;
+        setTile(x - m_centerTileX, y - m_centerTileY, tile);
     }
 
     public TilemapTile getTile(int x, int y) {
         return m_tileList[m_centerTileY + y][m_centerTileX + x];
+    }
+
+    private void emptyTileAt(int x, int y) {
+        m_tileList[y + m_centerTileY][x + m_centerTileX] = null;
     }
 }

@@ -4,7 +4,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public class TilemapTile extends Tile {
     private Vector2 m_positionInTilemap;
-    private float m_distanceFromCenter;
+    private int m_distanceFromCenter;
 
     public TilemapTile(float tilex , float tiley) {
         m_positionInTilemap = new Vector2(tilex, tiley);
@@ -21,7 +21,7 @@ public class TilemapTile extends Tile {
         m_positionInTilemap = new Vector2();
     }
 
-    public float getDistanceFromCenter() {
+    public int getDistanceFromCenter() {
         return m_distanceFromCenter;
     }
 
@@ -31,14 +31,15 @@ public class TilemapTile extends Tile {
 
     public void setPositionInTilemap(float tilex, float tiley) {
         m_positionInTilemap.set(tilex, tiley);
+        m_distanceFromCenter = calcDistnanceFromCenter(tilex, tiley);
     }
 
     //XXX: calcDistanceFromCenter is not accurate at all!...
-    private float calcDistnanceFromCenter(float tileX, float tileY) {
-        float result = 0;
+    private int calcDistnanceFromCenter(float tileX, float tileY) {
+        int result = 0;
         float xOffset = ((tileY) % 2 == 0)? 0 : 1f;
 
-        result = (Math.round(Vector2.dst(tileX*2f+xOffset,tileY*0.5f,0,0)));
+        result = (int) (Math.round(Vector2.dst(tileX * 2f + xOffset, tileY * 0.5f, 0, 0)));
         return result;
     }
 }

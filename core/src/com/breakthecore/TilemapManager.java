@@ -1,31 +1,36 @@
 package com.breakthecore;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
-public class TilemapManager {
+public class TilemapManager extends Observable implements Observer {
     private Tilemap tm;
     private CollisionManager m_collisionManager;
-
-    private int tmpScore;
+    ArrayList<TilemapTile> match = new ArrayList<TilemapTile>();
+    ArrayList<TilemapTile> exclude = new ArrayList<TilemapTile>();
     private boolean isRotating = true;
     private float rotationDegrees = 0;
-    private float rotationSpeed = 20;
+    private Pathfinder m_pathfinder;
+    private float initTileCount;
+    private float minRotSpeed = 30;
 
     private Vector2 direction;
+    private float maxRotAddedSpeed = 60;
+    private float rotationSpeed;
 
     public TilemapManager(Tilemap map) {
         tm = map;
         m_collisionManager = new CollisionManager();
+        m_pathfinder = new Pathfinder();
+        direction = new Vector2();
     }
 
     public void update(float delta) {
         if (isRotating) {
+            rotationSpeed = MathUtils.clamp(minRotSpeed + maxRotAddedSpeed - maxRotAddedSpeed * (tm.getTileCount() / initTileCount), minRotSpeed, maxRotAddedSpeed);
             rotationDegrees += rotationSpeed * delta;
         }
         float rotRad = (float) Math.toRadians(rotationDegrees);
@@ -36,10 +41,14 @@ public class TilemapManager {
         tm.setRotation(cosX, sineX);
     }
 
+    public float getRotationSpeed() {
+        return rotationSpeed;
+    }
+
     public Vector2 getDBDirection() {
         return direction;
     }
-    // TODO: 3/28/2018 Handle cases where a tile actually exist on that side
+
     public void checkForCollision(List<MovingTile> list) {
         TilemapTile solidTile;
 
@@ -47,7 +56,7 @@ public class TilemapManager {
             solidTile = m_collisionManager.findCollision(tm, mt);
             if (solidTile == null) continue;
 
-            direction = new Vector2(mt.m_positionInWorld).sub(solidTile.getPositionInWorld());
+            direction.set(mt.m_positionInWorld).sub(solidTile.getPositionInWorld());
             direction.nor();
 
             addTile(mt.getColor(), solidTile, m_collisionManager.getClosestSides(solidTile, direction));
@@ -74,7 +83,7 @@ public class TilemapManager {
         switch (side) {
             case top:
                 if (tm.getTile((int) tilePos.x, (int) tilePos.y + 2) == null) {
-                    newTile = new TilemapTile(color);
+                    newTile = createTilemapTile(color);
                     tm.setTile((int) tilePos.x, (int) tilePos.y + 2, newTile);
                     placedNewTile = true;
                 }
@@ -82,7 +91,7 @@ public class TilemapManager {
             case topLeft:
                 xOffset = (tilePos.y % 2) == 0 ? -1 : 0;
                 if (tm.getTile((int) tilePos.x + xOffset, (int) tilePos.y + 1) == null) {
-                    newTile = new TilemapTile(color);
+                    newTile = createTilemapTile(color);
                     tm.setTile((int) tilePos.x + xOffset, (int) tilePos.y + 1, newTile);
                     placedNewTile = true;
                 }
@@ -90,14 +99,14 @@ public class TilemapManager {
             case topRight:
                 xOffset = (tilePos.y % 2) == 0 ? 0 : 1;
                 if (tm.getTile((int) tilePos.x + xOffset, (int) tilePos.y + 1) == null) {
-                    newTile = new TilemapTile(color);
+                    newTile = createTilemapTile(color);
                     tm.setTile((int) tilePos.x + xOffset, (int) tilePos.y + 1, newTile);
                     placedNewTile = true;
                 }
                 break;
             case bottom:
                 if (tm.getTile((int) tilePos.x, (int) tilePos.y - 2) == null) {
-                    newTile = new TilemapTile(color);
+                    newTile = createTilemapTile(color);
                     tm.setTile((int) tilePos.x, (int) tilePos.y - 2, newTile);
                     placedNewTile = true;
                 }
@@ -105,7 +114,7 @@ public class TilemapManager {
             case bottomLeft:
                 xOffset = (tilePos.y % 2) == 0 ? -1 : 0;
                 if (tm.getTile((int) tilePos.x + xOffset, (int) tilePos.y - 1) == null) {
-                    newTile = new TilemapTile(color);
+                    newTile = createTilemapTile(color);
                     tm.setTile((int) tilePos.x + xOffset, (int) tilePos.y - 1, newTile);
                     placedNewTile = true;
                 }
@@ -113,7 +122,7 @@ public class TilemapManager {
             case bottomRight:
                 xOffset = (tilePos.y % 2) == 0 ? 0 : 1;
                 if (tm.getTile((int) tilePos.x + xOffset, (int) tilePos.y - 1) == null) {
-                    newTile = new TilemapTile(color);
+                    newTile = createTilemapTile(color);
                     tm.setTile((int) tilePos.x + xOffset, (int) tilePos.y - 1, newTile);
                     placedNewTile = true;
                 }
@@ -126,33 +135,48 @@ public class TilemapManager {
         return false;
     }
 
+    public TilemapTile createTilemapTile(int color) {
+        TilemapTile res = new TilemapTile(color);
+        res.addObserver(this);
+        notifyObservers(NotificationType.NOTIFICATION_TYPE_NEW_TILE_CREATED, null);
+        return res;
+    }
+
     public void checkForColorMatches(TilemapTile tile) {
-        ArrayList<TilemapTile> match = new ArrayList<TilemapTile>();
-        ArrayList<TilemapTile> exclude = new ArrayList<TilemapTile>();
+        boolean centerTileBroke = false;
+        match.clear();
+        exclude.clear();
 
         addSurroundingColorMatches(tile, match, exclude);
 
         if (match.size() < 3) {
-            if (match.size() == 1) {
-                --tmpScore;
-            }
             return;
         }
 
         for (TilemapTile t : match) {
-            if (t.getPositionInTilemap().y == 0 && t.getPositionInTilemap().x == 0)
-                tm.setTile(-9999, -9999, null); //CRASH!!
-            tm.setTile((int) t.getPositionInTilemap().x, (int) t.getPositionInTilemap().y, null);
+            if (t.getDistanceFromCenter() == 0) {
+                centerTileBroke = true;
+            }
+            tm.desrtoyTile((int) t.getPositionInTilemap().x, (int) t.getPositionInTilemap().y);
         }
-        tmpScore += match.size();
+
+        if (centerTileBroke) {
+            notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
+        }
+
+        ArrayList<TilemapTile> deadTiles = m_pathfinder.getDeadTiles(tm);
+        for (TilemapTile t : deadTiles) {
+            tm.desrtoyTile((int) t.getPositionInTilemap().x, (int) t.getPositionInTilemap().y);
+        }
     }
 
     //FIXME: Somehow I matched three on the outside and the middle tile got removed??!?
     //XXX: HORRIBLE CODE! DON'T READ OR YOUR BRAIN MIGHT CRASH! Blehh..
     public void addSurroundingColorMatches(TilemapTile tile, List<TilemapTile> match, List<TilemapTile> exclude) {
-        boolean isLeft = tile.getPositionInTilemap().y % 2 == 0 ? true : false;
-        int tx = (int) tile.getPositionInTilemap().x;
-        int ty = (int) tile.getPositionInTilemap().y;
+        Vector2 tpos = tile.getPositionInTilemap();
+        boolean isLeft = tpos.y % 2 == 0 ? true : false;
+        int tx = (int) tpos.x;
+        int ty = (int) tpos.y;
 
         TilemapTile tt;
         boolean flag = true;
@@ -185,8 +209,45 @@ public class TilemapManager {
         }
     }
 
-    public int getTmpScore() {
-        return tmpScore;
+
+    public void initHexTilemap(Tilemap tm, int radius) {
+        TilemapTile dummy;
+        if (radius == 0) {
+            dummy = new TilemapTile(WorldSettings.getRandomInt(7));
+            dummy.addObserver(this);
+            tm.setTile(0, 0, dummy);
+            return;
+        }
+
+        for (int y = -radius * 3; y < radius * 3; ++y) {
+            float xOffset = ((y) % 2 == 0) ? 0 : .75f;
+            for (int x = -radius; x < radius; ++x) {
+                if (Vector2.dst(x * 1.5f + xOffset, y * 0.5f, 0, 0) <= radius) {
+                    dummy = new TilemapTile(WorldSettings.getRandomInt(7));
+                    dummy.addObserver(this);
+                    tm.setTile(x, y, dummy);
+                }
+            }
+        }
+        initTileCount = tm.getTileCount();
     }
 
+    private void fillEntireTilemap(Tilemap tm) {
+        Tile[][] tiles = tm.getTilemapTiles();
+        int center_tile = tm.getSize() / 2;
+        int oddOrEvenFix = tm.getSize() % 2 == 1 ? 1 : 0;
+        int tmp = (tm.getSize() * 3) / 2;
+        for (int y = -tmp; y < tmp; ++y) {
+            for (int x = -tm.getSize() / 2; x < tm.getSize() / 2 + oddOrEvenFix; ++x) {
+                tiles[y + (center_tile) * 3 + oddOrEvenFix][x + center_tile] = new TilemapTile(
+                        x, y,
+                        WorldSettings.getRandomInt(7));
+            }
+        }
+    }
+
+    @Override
+    public void onNotify(NotificationType type, Object ob) {
+        notifyObservers(type, ob);
+    }
 }

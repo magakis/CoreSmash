@@ -1,10 +1,8 @@
 package com.breakthecore;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Queue;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
@@ -15,20 +13,23 @@ import java.util.ListIterator;
 public class MovingTileManager{
     private Queue<MovingTile> launcher;
     private LinkedList<MovingTile> activeList;
-    private LinkedList<MovingTile> tilePool;
+    private LinkedList<MovingTile> movtPool;
     private int m_colorCount;
     private Vector2 launcherPos;
     private int m_tileSize;
     private float launchDelay;
     private float launchDelayCounter;
 
+    private boolean isActive;
+
     public MovingTileManager(int tileSize, int colorCount) {
         launcher = new Queue<MovingTile>(3);
         launcherPos = new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() / 5);
         activeList = new LinkedList<MovingTile>();
-        tilePool = new LinkedList<MovingTile>();
+        movtPool = new LinkedList<MovingTile>();
         m_tileSize = tileSize;
         m_colorCount = colorCount;
+        isActive = true;
 
         for (int i = 0; i < 3; ++i) {
             launcher.addLast(new MovingTile(launcherPos.x,launcherPos.y-i*tileSize,getRandomColor()));
@@ -53,13 +54,15 @@ public class MovingTileManager{
 
     public void update(float delta) {
         disposeInactive();
-        updateActiveList(delta);
+        if (isActive) {
+            updateActiveList(delta);
 
-        if (launchDelayCounter > 0) {
-            if (launchDelayCounter-delta < 0)
-                launchDelayCounter = 0;
-            else
-                launchDelayCounter -= delta;
+            if (launchDelayCounter > 0) {
+                if (launchDelayCounter - delta < 0)
+                    launchDelayCounter = 0;
+                else
+                    launchDelayCounter -= delta;
+            }
         }
     }
 
@@ -70,7 +73,7 @@ public class MovingTileManager{
     }
 
     public int getRandomColor() {
-        return(int)(Math.random()*100)%m_colorCount;
+        return (WorldSettings.getRandomInt(m_colorCount));
     }
 
     public Queue<MovingTile> getLauncherQueue() {
@@ -83,8 +86,8 @@ public class MovingTileManager{
             launcher.get(0).setPositionInWorld(launcherPos.x, launcherPos.y);
             launcher.get(1).setPositionInWorld(launcherPos.x, launcherPos.y - m_tileSize);
 
-            if (tilePool.size() > 0) {
-                launcher.addLast(tilePool.removeFirst());
+            if (movtPool.size() > 0) {
+                launcher.addLast(movtPool.removeFirst());
                 launcher.last().setPositionInWorld(launcherPos.x, launcherPos.y - 2 * m_tileSize);
                 launcher.last().setColor(getRandomColor());
             } else {
@@ -94,6 +97,7 @@ public class MovingTileManager{
         }
     }
 
+
     private void disposeInactive() {
         ListIterator<MovingTile> iter = activeList.listIterator();
         MovingTile tile;
@@ -101,16 +105,12 @@ public class MovingTileManager{
             tile = iter.next();
             if (tile.getFlag()){
                 tile.setFlag(false);
-                tilePool.add(tile);
+                // NOTE: It's questionable whether I want to remove the observes since MovingTiles
+                // practically never get disposed. They are pooled.
+//                tile.emptyObserverList();
+                movtPool.add(tile);
                 iter.remove();
             }
         }
     }
 }
-
-/*
-        moveTile = new MovingTile(
-                new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 4),
-                texture);
-
-*/

@@ -93,7 +93,7 @@ public class RenderManager {
         }
     }
 
-    public void dbdraw(Tilemap tm) {
+    public void DBdraw(Tilemap tm) {
         TilemapTile[][] map = tm.getTilemapTiles();
         Vector2 pos;
         int sideLen = tm.getSideLength() / 2;
@@ -115,7 +115,7 @@ public class RenderManager {
         m_shapeRenderer.end();
     }
 
-    public void debugTileDistances(TilemapTile[][] map) {
+    public void DBTileDistances(TilemapTile[][] map) {
         Vector2 pos;
         for (TilemapTile[] arr : map) {
             for (TilemapTile tile : arr) {

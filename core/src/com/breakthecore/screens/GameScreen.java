@@ -12,11 +12,13 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.SplitPane;
+import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.breakthecore.BreakTheCoreGame;
-import com.breakthecore.MovingTile;
+import com.breakthecore.NotificationType;
+import com.breakthecore.Observer;
 import com.breakthecore.TilemapManager;
 import com.breakthecore.MovingTileManager;
 import com.breakthecore.RenderManager;
@@ -29,20 +31,26 @@ import com.breakthecore.WorldSettings;
  * Created by Michail on 17/3/2018.
  */
 
-public class GameScreen extends ScreenAdapter implements GestureDetector.GestureListener {
+public class GameScreen extends ScreenAdapter implements GestureDetector.GestureListener, Observer {
     private BreakTheCoreGame m_game;
     private FitViewport m_fitViewport;
     private OrthographicCamera m_camera;
     private Tilemap m_tilemap;
     private TilemapManager m_tilemapManager;
     private RenderManager renderManager;
-
-    Skin m_skin;
-
+    GestureDetector gd;
+    boolean isGameActive;
+    boolean roundWon;
     //===========
+    Skin m_skin;
+    Label staticTimeLbl, staticScoreLbl;
     Stage stage;
-    Label m_timeLbl, m_scoreLbl;
-    Table mainTable;
+    Label m_timeLbl, m_scoreLbl, m_resultLabel;
+    Label dblb1, dblb2, dblb3, dblb4, dblb5;
+    Stack m_stack;
+    Table mainTable, debugTable, resultTable;
+    private int m_score;
+
     private float m_time;
     //===========
     private final int colorCount = 7;
@@ -61,36 +69,42 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
 
         m_tilemap = new Tilemap(new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4), 20, sideLength);
         m_tilemapManager = new TilemapManager(m_tilemap);
+        m_tilemapManager.initHexTilemap(m_tilemap, 5);
 
         // XXX(3/28/2018): I need a standalone way to handle input here...
-        GestureDetector gd = new GestureDetector(this);
+        gd = new GestureDetector(this);
         game.addInputHandler(gd);
 
-        initHexTilemap(m_tilemap, 2);
+        isGameActive = true;
+
+        m_tilemapManager.addObserver(this);
     }
 
     @Override
     public void render(float delta) {
         update(delta);
 
-        renderManager.start(m_camera.combined);
-        renderManager.draw(m_tilemap);
-        renderManager.drawLauncher(movingTileManager.getLauncherQueue(), movingTileManager.getLauncherPos());
-        renderManager.draw(movingTileManager.getActiveList());
-//        renderManager.debugTileDistances(m_tilemap.getTilemapTiles());
-        renderManager.end();
+        if (isGameActive) {
+            renderManager.start(m_camera.combined);
+            renderManager.draw(m_tilemap);
+            renderManager.drawLauncher(movingTileManager.getLauncherQueue(), movingTileManager.getLauncherPos());
+            renderManager.draw(movingTileManager.getActiveList());
+//        renderManager.DBTileDistances(m_tilemap.getTilemapTiles());
+            renderManager.end();
 
-        renderManager.renderCenterDot(m_camera.combined);
-
+            renderManager.renderCenterDot(m_camera.combined);
+        }
         stage.draw();
     }
 
     private void update(float delta) {
-        m_time += delta;
-        movingTileManager.update(delta);
-        m_tilemapManager.update(delta);
-        m_tilemapManager.checkForCollision(movingTileManager.getActiveList());
-        updateStage();
+        if (isGameActive) {
+            m_time += delta;
+            movingTileManager.update(delta);
+            m_tilemapManager.update(delta);
+            m_tilemapManager.checkForCollision(movingTileManager.getActiveList());
+            updateStage();
+        }
     }
 
     @Override
@@ -121,14 +135,12 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
 
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY) {
-//        if (false) {
-//            MovingTile mt = movingTileManager.getFirstActiveTile();
-//            if (mt == null) {
-//                movingTileManager.eject();
-//                mt = movingTileManager.getFirstActiveTile();
-//            }
-//            mt.moveBy(deltaX, -deltaY);
+//        MovingTile mt = movingTileManager.getFirstActiveTile();
+//        if (mt == null) {
+//            movingTileManager.eject();
+//            mt = movingTileManager.getFirstActiveTile();
 //        }
+//        mt.moveBy(deltaX, -deltaY);
         return true;
     }
 
@@ -152,53 +164,30 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
 
     }
 
-    private void initHexTilemap(Tilemap tm, int radius) {
-        if (radius == 0) {
-            tm.setTile(0, 0, new TilemapTile(movingTileManager.getRandomColor()));
-            return;
-        }
-
-        for (int y = -radius * 3; y < radius * 3; ++y) {
-            float xOffset = ((y) % 2 == 0) ? 0 : .75f;
-            for (int x = -radius; x < radius; ++x) {
-                if (Vector2.dst(x * 1.5f + xOffset, y * 0.5f, 0, 0) <= radius) {
-                    tm.setTile(x, y, new TilemapTile(movingTileManager.getRandomColor()));
-                }
-            }
-        }
-    }
-
-    private void fillEntireTilemap(Tilemap tm) {
-        Tile[][] tiles = tm.getTilemapTiles();
-        int center_tile = tm.getSize() / 2;
-        int oddOrEvenFix = tm.getSize() % 2 == 1 ? 1 : 0;
-        int tmp = (tm.getSize() * 3) / 2;
-        for (int y = -tmp; y < tmp; ++y) {
-            for (int x = -tm.getSize() / 2; x < tm.getSize() / 2 + oddOrEvenFix; ++x) {
-                tiles[y + (center_tile) * 3 + oddOrEvenFix][x + center_tile] = new TilemapTile(
-                        x, y,
-                        movingTileManager.getRandomColor());
-            }
-        }
-    }
-
     private void updateStage() {
         m_timeLbl.setText(String.format("%d:%02d", (int) m_time / 60, (int) m_time % 60));
-        m_scoreLbl.setText(String.valueOf(m_tilemapManager.getTmpScore()));
+        m_scoreLbl.setText(String.valueOf(m_score));
+
+        dblb1.setText("ballCount: " + m_tilemap.getTileCount());
+        dblb2.setText(String.format("rotSpeed: %.3f", m_tilemapManager.getRotationSpeed()));
+
+        dblb3.setText("");
+        dblb4.setText("");
+        dblb5.setText("");
     }
 
     private void setupUI() {
         m_skin = createSkin();
-        Label staticTimeLbl, staticScoreLbl;
+
 
         stage = new Stage(new FitViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight()));
+        m_stack = new Stack();
+        m_stack.setFillParent(true);
         mainTable = new Table();
-        mainTable.setDebug(false);
 
         m_timeLbl = new Label("null", m_skin, "ddd");
         m_timeLbl.setAlignment(Align.center);
         m_timeLbl.setWidth(mainTable.getWidth() / 2);
-        m_timeLbl.getStyle().font.getData().setScale(4);
 
         m_scoreLbl = new Label("null", m_skin, "ddd");
         m_scoreLbl.setAlignment(Align.center);
@@ -214,7 +203,11 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
         mainTable.add(m_timeLbl).width(200).height(100).padLeft(-10);
         mainTable.add().expandX();
         mainTable.add(m_scoreLbl).width(200).height(100).padRight(-10).row();
-        stage.addActor(mainTable);
+
+        debugTable = createDebugTable();
+        m_stack.add(mainTable);
+        m_stack.add(debugTable);
+        stage.addActor(m_stack);
     }
     // fills entire tilemap with tiles
 
@@ -236,7 +229,7 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
 
         ls = new Label.LabelStyle();
         bf = new BitmapFont();
-        bf.getData().setScale(2);
+        bf.getData().setScale(4);
         bf.setColor(Color.WHITE);
         ls.font = bf;
         ls.background = skin.getDrawable("topBox");
@@ -254,6 +247,84 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
         return skin;
     }
 
+    public Table createDebugTable() {
+        Table dbtb = new Table();
+        dblb1 = new Label("db1:", m_skin, "small");
+        dblb1.setAlignment(Align.left);
+        dblb2 = new Label("db1:", m_skin, "small");
+        dblb2.setAlignment(Align.left);
+        dblb3 = new Label("db1:", m_skin, "small");
+        dblb3.setAlignment(Align.left);
+        dblb4 = new Label("db1:", m_skin, "small");
+        dblb4.setAlignment(Align.left);
+        dblb5 = new Label("db1:", m_skin, "small");
+        dblb5.setAlignment(Align.left);
+
+        dbtb.bottom().left();
+        dbtb.add(dblb1).fillX().row();
+        dbtb.add(dblb2).fillX().row();
+        dbtb.add(dblb3).fillX().row();
+        dbtb.add(dblb4).fillX().row();
+        dbtb.add(dblb5).fillX();
+
+        return dbtb;
+    }
+
+    public Table createResultTable() {
+        Table res = new Table();
+        res.setFillParent(true);
+        res.setDebug(false);
+        String resultText = roundWon ? "Congratulations!" : "You lost";
+
+        Label.LabelStyle small = m_skin.get("small", Label.LabelStyle.class);
+        Label.LabelStyle big = m_skin.get("ddd", Label.LabelStyle.class);
+        big.font.getData().setScale(10);
+        small.font.getData().setScale(7);
+        big.background = null;
+        small.background = null;
+
+        m_resultLabel = new Label(resultText, big);
+        staticScoreLbl.setStyle(big);
+        staticTimeLbl.setStyle(big);
+        m_timeLbl.setStyle(small);
+        m_scoreLbl.setStyle(small);
+
+        res.center();
+        res.add(m_resultLabel).colspan(2).row();
+        res.add(staticTimeLbl).padRight(100);
+        res.add(staticScoreLbl).row();
+        res.add(m_timeLbl);
+        res.add(m_scoreLbl);
+
+        return res;
+    }
+
+    public void handleGameEnd() {
+        resultTable = createResultTable();
+        stage.clear();
+        stage.addActor(resultTable);
+        m_game.removeInputHandler(gd);
+
+//        SharedPrefernces
+    }
+
+    @Override
+    public void onNotify(NotificationType type, Object ob) {
+        switch (type) {
+            case NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED:
+                isGameActive = false;
+                roundWon = true;
+                handleGameEnd();
+                break;
+
+            case NOTIFICATION_TYPE_TILE_DESTROYED:
+                if (isGameActive) {
+                    m_score++;
+                }
+                break;
+
+        }
+    }
 }
 
 

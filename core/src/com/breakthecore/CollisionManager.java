@@ -27,7 +27,6 @@ public class CollisionManager {
         m_closestSidesOutput = new Tile.Side[6];
     }
 
-    // TODO: 3/28/2018 Handle cases where a tile actually exist on that side
     public TilemapTile findCollision(Tilemap tm, MovingTile moveTile) {
         float minDist;
         int sideHalf = tm.getSideLength() / 2;
@@ -35,7 +34,9 @@ public class CollisionManager {
         TilemapTile[][] m_hexTiles = tm.getTilemapTiles();
 
         movhexPos = moveTile.getPositionInWorld();
-        minDist = sideHalf + sideHalf * moveTile.getScale();
+
+        //HACK: Arbitary value to decrease range and match better the texture
+        minDist = sideHalf + sideHalf * moveTile.getScale() * 0.8f;
 
         for (TilemapTile[] arr : m_hexTiles) {
             for (TilemapTile tile : arr) {
