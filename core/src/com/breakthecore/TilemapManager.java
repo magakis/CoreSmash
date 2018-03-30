@@ -39,6 +39,7 @@ public class TilemapManager extends Observable implements Observer {
         float sineX = (float) Math.sin(rotRad);
 
         tm.setRotation(cosX, sineX);
+//        onNotify(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
     }
 
     public float getRotationSpeed() {

@@ -1,6 +1,8 @@
 package com.breakthecore.screens;
 
-import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -8,12 +10,16 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.SplitPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.breakthecore.BreakTheCoreGame;
@@ -22,30 +28,30 @@ import com.breakthecore.Observer;
 import com.breakthecore.TilemapManager;
 import com.breakthecore.MovingTileManager;
 import com.breakthecore.RenderManager;
-import com.breakthecore.Tile;
 import com.breakthecore.Tilemap;
-import com.breakthecore.TilemapTile;
 import com.breakthecore.WorldSettings;
 
 /**
  * Created by Michail on 17/3/2018.
  */
 
-public class GameScreen extends ScreenAdapter implements GestureDetector.GestureListener, Observer {
+public class GameScreen extends ScreenBase implements Observer {
     private BreakTheCoreGame m_game;
     private FitViewport m_fitViewport;
     private OrthographicCamera m_camera;
     private Tilemap m_tilemap;
     private TilemapManager m_tilemapManager;
+    InputMultiplexer m_inputMultiplexer;
     private RenderManager renderManager;
     GestureDetector gd;
+    Label m_timeLbl, m_scoreLbl;
     boolean isGameActive;
     boolean roundWon;
     //===========
     Skin m_skin;
     Label staticTimeLbl, staticScoreLbl;
     Stage stage;
-    Label m_timeLbl, m_scoreLbl, m_resultLabel;
+    private MovingTileManager movingTileManager;
     Label dblb1, dblb2, dblb3, dblb4, dblb5;
     Stack m_stack;
     Table mainTable, debugTable, resultTable;
@@ -53,10 +59,9 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
 
     private float m_time;
     //===========
-    private final int colorCount = 7;
-    private final int sideLength = 64;
+    private int colorCount = 7;
+    private int sideLength = 64;
 
-    private MovingTileManager movingTileManager;
 
     public GameScreen(BreakTheCoreGame game) {
         m_game = game;
@@ -69,15 +74,21 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
 
         m_tilemap = new Tilemap(new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4), 20, sideLength);
         m_tilemapManager = new TilemapManager(m_tilemap);
-        m_tilemapManager.initHexTilemap(m_tilemap, 5);
 
-        // XXX(3/28/2018): I need a standalone way to handle input here...
-        gd = new GestureDetector(this);
-        game.addInputHandler(gd);
-
+        gd = new GestureDetector(new GameInputListener());
+        m_inputMultiplexer = new InputMultiplexer(stage, gd);
         isGameActive = true;
 
         m_tilemapManager.addObserver(this);
+    }
+
+    public void initializeGameScreen(GameSettings settings) {
+        m_score = 0;
+        m_time = 0;
+        isGameActive = true;
+        stage.clear();
+        stage.addActor(m_stack);
+        m_tilemapManager.initHexTilemap(m_tilemap, settings.initRadius);
     }
 
     @Override
@@ -89,7 +100,6 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
             renderManager.draw(m_tilemap);
             renderManager.drawLauncher(movingTileManager.getLauncherQueue(), movingTileManager.getLauncherPos());
             renderManager.draw(movingTileManager.getActiveList());
-//        renderManager.DBTileDistances(m_tilemap.getTilemapTiles());
             renderManager.end();
 
             renderManager.renderCenterDot(m_camera.combined);
@@ -112,58 +122,6 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
         m_fitViewport.update(width, height, true);
     }
 
-    @Override
-    public boolean touchDown(float x, float y, int pointer, int button) {
-        return false;
-    }
-
-    @Override
-    public boolean tap(float x, float y, int count, int button) {
-        movingTileManager.eject();
-        return true;
-    }
-
-    @Override
-    public boolean longPress(float x, float y) {
-        return false;
-    }
-
-    @Override
-    public boolean fling(float velocityX, float velocityY, int button) {
-        return false;
-    }
-
-    @Override
-    public boolean pan(float x, float y, float deltaX, float deltaY) {
-//        MovingTile mt = movingTileManager.getFirstActiveTile();
-//        if (mt == null) {
-//            movingTileManager.eject();
-//            mt = movingTileManager.getFirstActiveTile();
-//        }
-//        mt.moveBy(deltaX, -deltaY);
-        return true;
-    }
-
-    @Override
-    public boolean panStop(float x, float y, int pointer, int button) {
-        return false;
-    }
-
-    @Override
-    public boolean zoom(float initialDistance, float distance) {
-        return false;
-    }
-
-    @Override
-    public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
-        return false;
-    }
-
-    @Override
-    public void pinchStop() {
-
-    }
-
     private void updateStage() {
         m_timeLbl.setText(String.format("%d:%02d", (int) m_time / 60, (int) m_time % 60));
         m_scoreLbl.setText(String.valueOf(m_score));
@@ -177,87 +135,62 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
     }
 
     private void setupUI() {
-        m_skin = createSkin();
-
+        m_skin = m_game.getSkin();
 
         stage = new Stage(new FitViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight()));
         m_stack = new Stack();
         m_stack.setFillParent(true);
         mainTable = new Table();
 
-        m_timeLbl = new Label("null", m_skin, "ddd");
+        m_timeLbl = new Label("null", m_skin, "comic1_48");
         m_timeLbl.setAlignment(Align.center);
         m_timeLbl.setWidth(mainTable.getWidth() / 2);
 
-        m_scoreLbl = new Label("null", m_skin, "ddd");
+        m_scoreLbl = new Label("null", m_skin, "comic1_48");
         m_scoreLbl.setAlignment(Align.center);
         m_scoreLbl.setWidth(mainTable.getWidth() / 2);
 
-        staticTimeLbl = new Label("Time:", m_skin, "small");
-        staticScoreLbl = new Label("Score:", m_skin, "small");
+        staticTimeLbl = new Label("Time:", m_skin, "comic1_48b");
+        staticScoreLbl = new Label("Score:", m_skin, "comic1_48b");
+
+        Stack grpTime = new Stack();
+        Stack grpScore = new Stack();
+
+        Image img = new Image(m_skin.getDrawable("box_white_5"));
+        grpTime.addActor(img);
+        grpTime.addActor(m_timeLbl);
+
+        img = new Image(m_skin.getDrawable("box_white_5"));
+        grpScore.addActor(img);
+        grpScore.addActor(m_scoreLbl);
 
         mainTable.setFillParent(true);
         mainTable.top().left();
         mainTable.add(staticTimeLbl, null, staticScoreLbl);
         mainTable.row();
-        mainTable.add(m_timeLbl).width(200).height(100).padLeft(-10);
+        mainTable.add(grpTime).width(200).height(100).padLeft(-10);
         mainTable.add().expandX();
-        mainTable.add(m_scoreLbl).width(200).height(100).padRight(-10).row();
+        mainTable.add(grpScore).width(200).height(100).padRight(-10).row();
 
         debugTable = createDebugTable();
+
         m_stack.add(mainTable);
         m_stack.add(debugTable);
         stage.addActor(m_stack);
     }
     // fills entire tilemap with tiles
 
-    private Skin createSkin() {
-        Skin skin = new Skin();
-        Label.LabelStyle ls;
-        Pixmap pix;
-        Texture tex;
-        BitmapFont bf;
-
-        int pixHeight = 100;
-        pix = new Pixmap(WorldSettings.getWorldWidth() / 5, pixHeight, Pixmap.Format.RGB888);
-        pix.setColor(Color.WHITE);
-        pix.fill();
-        pix.setColor(Color.BLACK);
-        pix.fillRectangle(5, 5, pix.getWidth() - 10, pixHeight - 10);
-        tex = new Texture(pix);
-        skin.add("topBox", tex);
-
-        ls = new Label.LabelStyle();
-        bf = new BitmapFont();
-        bf.getData().setScale(4);
-        bf.setColor(Color.WHITE);
-        ls.font = bf;
-        ls.background = skin.getDrawable("topBox");
-        skin.add("ddd", ls);
-
-        bf = new BitmapFont();
-        bf.getData().setScale(2);
-        ls = new Label.LabelStyle(bf, Color.WHITE);
-        skin.add("small", ls);
-
-        SplitPane.SplitPaneStyle sps = new SplitPane.SplitPaneStyle();
-        sps.handle = skin.getDrawable("topBox");
-        skin.add("default-horizontal", sps);
-
-        return skin;
-    }
-
     public Table createDebugTable() {
         Table dbtb = new Table();
-        dblb1 = new Label("db1:", m_skin, "small");
+        dblb1 = new Label("db1:", m_skin, "comic1_24b");
         dblb1.setAlignment(Align.left);
-        dblb2 = new Label("db1:", m_skin, "small");
+        dblb2 = new Label("db1:", m_skin, "comic1_24b");
         dblb2.setAlignment(Align.left);
-        dblb3 = new Label("db1:", m_skin, "small");
+        dblb3 = new Label("db1:", m_skin, "comic1_24b");
         dblb3.setAlignment(Align.left);
-        dblb4 = new Label("db1:", m_skin, "small");
+        dblb4 = new Label("db1:", m_skin, "comic1_24b");
         dblb4.setAlignment(Align.left);
-        dblb5 = new Label("db1:", m_skin, "small");
+        dblb5 = new Label("db1:", m_skin, "comic1_24b");
         dblb5.setAlignment(Align.left);
 
         dbtb.bottom().left();
@@ -273,28 +206,36 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
     public Table createResultTable() {
         Table res = new Table();
         res.setFillParent(true);
-        res.setDebug(false);
         String resultText = roundWon ? "Congratulations!" : "You lost";
 
-        Label.LabelStyle small = m_skin.get("small", Label.LabelStyle.class);
-        Label.LabelStyle big = m_skin.get("ddd", Label.LabelStyle.class);
-        big.font.getData().setScale(10);
-        small.font.getData().setScale(7);
-        big.background = null;
-        small.background = null;
+        Label m_resultLabel = new Label(resultText, m_skin, "comic1_96b");
+        Label staticTime = new Label("Time:", m_skin, "comic1_48b");
+        Label staticScore = new Label("Score:", m_skin, "comic1_48b");
+        Label time = new Label(m_timeLbl.getText(), m_skin, "comic1_48");
+        Label score = new Label(m_scoreLbl.getText(), m_skin, "comic1_48");
 
-        m_resultLabel = new Label(resultText, big);
-        staticScoreLbl.setStyle(big);
-        staticTimeLbl.setStyle(big);
-        m_timeLbl.setStyle(small);
-        m_scoreLbl.setStyle(small);
+        TextButton tb = new TextButton("Menu", m_skin);
+        tb.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                m_game.setMainMenuScreen();
+            }
+        });
+
+        tb.getLabelCell().width(200).height(150);
+
+        HorizontalGroup hg = new HorizontalGroup();
+        hg.align(Align.center);
+        hg.addActor(tb);
+
 
         res.center();
-        res.add(m_resultLabel).colspan(2).row();
-        res.add(staticTimeLbl).padRight(100);
-        res.add(staticScoreLbl).row();
-        res.add(m_timeLbl);
-        res.add(m_scoreLbl);
+        res.add(m_resultLabel).colspan(2).padBottom(50).row();
+        res.add(staticTime);
+        res.add(staticScore).row();
+        res.add(time);
+        res.add(score).row();
+        res.add(hg).colspan(2).padTop(50);
 
         return res;
     }
@@ -303,8 +244,6 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
         resultTable = createResultTable();
         stage.clear();
         stage.addActor(resultTable);
-        m_game.removeInputHandler(gd);
-
 //        SharedPrefernces
     }
 
@@ -324,6 +263,70 @@ public class GameScreen extends ScreenAdapter implements GestureDetector.Gesture
                 break;
 
         }
+    }
+
+    @Override
+    public InputProcessor getScreenInputProcessor() {
+        return m_inputMultiplexer;
+    }
+
+    public static class GameSettings {
+        int initRadius;
+    }
+
+    private class GameInputListener implements GestureDetector.GestureListener {
+        @Override
+        public boolean touchDown(float x, float y, int pointer, int button) {
+            return false;
+        }
+
+        @Override
+        public boolean tap(float x, float y, int count, int button) {
+            movingTileManager.eject();
+            return true;
+        }
+
+        @Override
+        public boolean longPress(float x, float y) {
+            return false;
+        }
+
+        @Override
+        public boolean fling(float velocityX, float velocityY, int button) {
+            return false;
+        }
+
+        @Override
+        public boolean pan(float x, float y, float deltaX, float deltaY) {
+//        MovingTile mt = movingTileManager.getFirstActiveTile();
+//        if (mt == null) {
+//            movingTileManager.eject();
+//            mt = movingTileManager.getFirstActiveTile();
+//        }
+//        mt.moveBy(deltaX, -deltaY);
+            return true;
+        }
+
+        @Override
+        public boolean panStop(float x, float y, int pointer, int button) {
+            return false;
+        }
+
+        @Override
+        public boolean zoom(float initialDistance, float distance) {
+            return false;
+        }
+
+        @Override
+        public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
+            return false;
+        }
+
+        @Override
+        public void pinchStop() {
+
+        }
+
     }
 }
 

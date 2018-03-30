@@ -1,6 +1,7 @@
 package com.breakthecore.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -25,17 +26,19 @@ import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.breakthecore.BreakTheCoreGame;
+import com.breakthecore.WorldSettings;
 
 /**
  * Created by Michail on 16/3/2018.
  */
 
-public class MainMenuScreen extends ScreenAdapter {
-    Pixmap hmm = null;
+public class MainMenuScreen extends ScreenBase {
+    private GameScreen.GameSettings m_gameSettings; // XXX(3/30/2018): SHOULD BE REMOVED FROM HERE
+    private GameScreen m_gameScreen;
     private Stage m_stage;
-    Texture hmmT = null;
     private BreakTheCoreGame m_game;
     private Table debugTable, menuTable, optionsTable;
     private Skin m_skin;
@@ -43,10 +46,10 @@ public class MainMenuScreen extends ScreenAdapter {
 
     public MainMenuScreen(BreakTheCoreGame game) {
         m_game = game;
-        m_stage = new Stage(new ScreenViewport());
+        m_stage = new Stage(new FillViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight()));
         setupMainMenuStage(m_stage);
-        game.addInputHandler(m_stage);
-
+        m_gameScreen = new GameScreen(m_game);
+        m_gameSettings = new GameScreen.GameSettings();
     }
 
     @Override
@@ -63,19 +66,18 @@ public class MainMenuScreen extends ScreenAdapter {
     private void setupMainMenuStage(Stage stage) {
         stage.clear(); // start with empty stage
 
-        m_skin = createSkin();
+        m_skin = m_game.getSkin();
 
-        dblbl = new Label("null", m_skin, "default", Color.GOLD);
+        dblbl = new Label("null", m_skin, "comic1_24b", Color.GOLD);
         setupTables();
 
 
         Stack rootStack = new Stack();
         rootStack.setFillParent(true);
         rootStack.add(menuTable);
-        rootStack.add(debugTable);
+//        rootStack.add(debugTable);
 
         stage.addActor(rootStack);
-
     }
 
     private void setupTables() {
@@ -85,15 +87,16 @@ public class MainMenuScreen extends ScreenAdapter {
 
     private void setupMenuTable() {
         menuTable = new Table();
-        menuTable.setDebug(false);
 
         Container playBtn = newMenuButton("Play", "playBtn", new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 dblbl.setText("Clicked Play");
                 if (true) {
-                    m_game.removeInputHandler(m_stage);
-                    m_game.setScreen(new GameScreen(m_game));
+                    ++m_gameSettings.initRadius;
+                    m_gameScreen.initializeGameScreen(m_gameSettings);
+                    m_game.setScreen(m_gameScreen);
+                    m_game.setInputProcessor(m_gameScreen.getScreenInputProcessor());
                 }
             }
         });
@@ -106,12 +109,15 @@ public class MainMenuScreen extends ScreenAdapter {
         });
 
 
+        menuTable.defaults()
+                .width(WorldSettings.getWorldWidth() * 3 / 5)
+                .height(WorldSettings.getWorldHeight() * 2 / 16)
+                .fill();
+
         menuTable.bottom();
         menuTable.padBottom(Value.percentHeight(3 / 16f, menuTable));
-        playBtn.padBottom(Value.percentHeight(1 / 32f, menuTable));
-        menuTable.add(playBtn).row();
+        menuTable.add(playBtn).padBottom(Value.percentHeight(1 / 32f, menuTable)).row();
         menuTable.add(scoresBtn);
-
     }
 
     private void setupDebugTable() {
@@ -122,46 +128,20 @@ public class MainMenuScreen extends ScreenAdapter {
 
     }
 
-    private Skin createSkin() {
-        Skin skin = new Skin();
 
-        skin.add("default", new BitmapFont());
-
-        int width = (int) (Gdx.graphics.getWidth() * .60f);
-        int height = (int) (Gdx.graphics.getHeight() * 1 / 8f);
-        Pixmap buttonSkin = new Pixmap(width, height, Pixmap.Format.RGB888);
-        buttonSkin.setColor(Color.WHITE);
-        buttonSkin.fill();
-        buttonSkin.setColor(Color.BLACK);
-        buttonSkin.fillRectangle(10, 10, width - 20, height - 20);
-        Texture text = new Texture(buttonSkin);
-
-        Pixmap pix = new Pixmap(1, 1, Pixmap.Format.RGB888);
-        pix.setColor(Color.WHITE);
-        pix.fill();
-        skin.add("white", new Texture(pix));
-        skin.add("text", text);
-
-        TextButton.TextButtonStyle btnStyle = new TextButton.TextButtonStyle();
-        btnStyle.up = skin.newDrawable("text", Color.WHITE);
-        btnStyle.down = skin.newDrawable("text", Color.GRAY);
-        btnStyle.checked = btnStyle.up;
-        btnStyle.font = skin.getFont("default");
-        skin.add("default", btnStyle);
-
-        return skin;
+    public InputProcessor getScreenInputProcessor() {
+        return m_stage;
     }
 
     public Container newMenuButton(String text, String name, EventListener el) {
-        TextButton bt = new TextButton(text, m_skin);
+        TextButton bt = new TextButton(text, m_skin.get("menuButton", TextButton.TextButtonStyle.class));
         bt.setName(name);
-        bt.getLabel().setFontScale(6);
-        bt.getLabel().setColor(Color.WHITE);
         bt.addListener(el);
 
         Container result = new Container(bt);
         result.setTransform(true);
         result.setOrigin(bt.getWidth() / 2, bt.getHeight() / 2);
+        result.fill();
 //        result.setRotation(-1.25f);
 //        result.addAction(Actions.forever(Actions.sequence(Actions.rotateBy(2.5f, 1.5f, Interpolation.smoother), Actions.rotateBy(-2.5f, 1.5f, Interpolation.smoother))));
         result.addAction(Actions.forever(Actions.sequence(Actions.scaleBy(.015f, .015f, 0.75f), Actions.scaleBy(-.015f, -.015f, 0.75f))));
