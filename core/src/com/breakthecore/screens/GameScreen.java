@@ -193,10 +193,9 @@ public class GameScreen extends ScreenBase implements Observer {
         debugTable = createDebugTable();
 
         m_stack.add(mainTable);
-        m_stack.add(debugTable);
+//        m_stack.add(debugTable);
         stage.addActor(m_stack);
     }
-    // fills entire tilemap with tiles
 
     public Table createDebugTable() {
         Table dbtb = new Table();
@@ -399,7 +398,7 @@ public class GameScreen extends ScreenBase implements Observer {
                 scrPos = m_camera.unproject(scrPos);
                 currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
                 currAngle = currPoint.angle();
-                m_tilemap.rotate((initAngle - currAngle) * 2);
+                m_tilemap.rotate((initAngle - currAngle) * 2.5f);
                 initAngle = currAngle;
             } else {
                 isPanning = true;
