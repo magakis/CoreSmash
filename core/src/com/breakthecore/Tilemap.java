@@ -2,6 +2,8 @@ package com.breakthecore;
 
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.ListIterator;
+
 /**
  * Created by Michail on 18/3/2018.
  */
@@ -43,6 +45,18 @@ public class Tilemap {
 
     public int getSize() {
         return m_size;
+    }
+
+    public void clear() {
+        for (int y = 0; y < m_size * 3; ++y) {
+            for (int x = 0; x < m_size; ++x) {
+                m_tileList[y][x] = null;
+            }
+        }
+        m_tileCount = 0;
+        m_rotDegrees = 0;
+        m_cosT = 1;
+        m_sinT = 0;
     }
 
     public void rotate(float deg) {

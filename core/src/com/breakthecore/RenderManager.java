@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Vector2;
 
 import com.badlogic.gdx.utils.Queue;
 
+import java.util.Collection;
 import java.util.List;
 
 
@@ -74,6 +75,15 @@ public class RenderManager {
     public void draw(List<MovingTile> mt) {
         for (MovingTile tile : mt) {
             draw(tile);
+        }
+    }
+
+    public void drawOnLeftSide(Queue<MovingTile> list) {
+        int i = 0;
+        for (MovingTile mt : list) {
+            m_batch.setColor(colorList[mt.getColor()]);
+            m_batch.draw(texture, 20, WorldSettings.getWorldHeight() / 2 - 120 * i, 100, 100);
+            ++i;
         }
     }
 

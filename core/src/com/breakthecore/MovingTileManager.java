@@ -10,7 +10,7 @@ import java.util.ListIterator;
  * Created by Michail on 24/3/2018.
  */
 
-public class MovingTileManager{
+public class MovingTileManager {
     private Queue<MovingTile> launcher;
     private LinkedList<MovingTile> activeList;
     private LinkedList<MovingTile> movtPool;
@@ -115,6 +115,19 @@ public class MovingTileManager{
         }
     }
 
+    public void reset() {
+        ListIterator<MovingTile> iter = activeList.listIterator();
+        MovingTile tile;
+        while (iter.hasNext()) {
+            tile = iter.next();
+            if (tile.getFlag()) {
+                tile.setFlag(false);
+            }
+            movtPool.add(tile);
+            iter.remove();
+        }
+    }
+
     public void setDefaultSpeed(int defaultSpeed) {
         m_defaultSpeed = defaultSpeed;
         for (MovingTile mt : launcher) {
@@ -127,7 +140,7 @@ public class MovingTileManager{
         MovingTile tile;
         while (iter.hasNext()) {
             tile = iter.next();
-            if (tile.getFlag()){
+            if (tile.getFlag()) {
                 tile.setFlag(false);
                 // NOTE: It's questionable whether I want to remove the observes since MovingTiles
                 // practically never get disposed. They are pooled.

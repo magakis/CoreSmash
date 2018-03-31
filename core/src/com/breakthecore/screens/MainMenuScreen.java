@@ -93,13 +93,6 @@ public class MainMenuScreen extends ScreenBase {
             }
         });
 
-//        Container scoresBtn = newMenuButton("Scores", "scoresBtn", new ChangeListener() {
-//            @Override
-//            public void changed(ChangeEvent event, Actor actor) {
-//                dblbl.setText("Clicked Scores Button");
-//            }
-//        });
-
         menuTable.defaults()
                 .width(WorldSettings.getWorldWidth() * 3 / 5)
                 .height(WorldSettings.getWorldHeight() * 2 / 16)

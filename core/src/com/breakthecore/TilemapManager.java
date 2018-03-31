@@ -217,8 +217,9 @@ public class TilemapManager extends Observable implements Observer {
         }
     }
 
-
     public void initHexTilemap(Tilemap tm, int radius) {
+        tm.clear();
+
         TilemapTile dummy;
         if (radius == 0) {
             dummy = new TilemapTile(WorldSettings.getRandomInt(7));

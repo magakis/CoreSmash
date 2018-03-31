@@ -1,9 +1,10 @@
 package com.breakthecore.screens;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
@@ -39,12 +40,12 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private Tilemap m_tilemap;
     private TilemapManager m_tilemapManager;
-    private InputMultiplexer m_gameInputMultiplexer;
+    private InputMultiplexer m_inputMultiplexer;
     private RenderManager renderManager;
 
     private InputProcessor m_classicGestureDetector, m_spinTheCoreGestureDetector, m_backButtonHandler;
 
-    private Label m_timeLbl, m_scoreLbl;
+    private Label m_timeLbl, m_scoreLbl, m_highscoreLbl;
     private boolean isGameActive;
     private boolean roundWon;
     private GameMode m_gameMode;
@@ -76,26 +77,24 @@ public class GameScreen extends ScreenBase implements Observer {
         m_tilemap = new Tilemap(new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4), 20, sideLength);
         m_tilemapManager = new TilemapManager(m_tilemap);
 
-        m_gameInputMultiplexer = new InputMultiplexer();
-        m_classicGestureDetector = new GestureDetector(new ClassicModeInputListener());
-        m_spinTheCoreGestureDetector = new GestureDetector(new SpinTheCoreModeInputListener(m_tilemap.getPositionInWorld()));
-        m_backButtonHandler = new BackButtonInputHandler();
+        m_inputMultiplexer = new InputMultiplexer();
+        m_classicGestureDetector = new CustomGestureDetector(new ClassicModeInputListener());
+        m_spinTheCoreGestureDetector = new CustomGestureDetector(new SpinTheCoreModeInputListener(m_tilemap.getPositionInWorld()));
 
         isGameActive = true;
         m_tilemapManager.addObserver(this);
     }
 
     private void setInputHanlderFor(GameMode mode) {
-        m_gameInputMultiplexer.clear();
-        m_gameInputMultiplexer.addProcessor(m_backButtonHandler);
-        m_gameInputMultiplexer.addProcessor(m_stage);
+        m_inputMultiplexer.clear();
+        m_inputMultiplexer.addProcessor(m_stage);
         switch (mode) {
             case CLASSIC:
-                m_gameInputMultiplexer.addProcessor(m_classicGestureDetector);
+                m_inputMultiplexer.addProcessor(m_classicGestureDetector);
                 break;
 
             case SPIN_THE_CORE:
-                m_gameInputMultiplexer.addProcessor(m_spinTheCoreGestureDetector);
+                m_inputMultiplexer.addProcessor(m_spinTheCoreGestureDetector);
                 break;
         }
     }
@@ -108,11 +107,13 @@ public class GameScreen extends ScreenBase implements Observer {
         m_stage.addActor(m_stack);
         m_tilemapManager.initHexTilemap(m_tilemap, settings.initRadius);
         m_gameMode = settings.gameMode;
+        m_movingTileManager.reset();
 
         switch (m_gameMode) {
             case CLASSIC:
                 m_tilemapManager.setMinMaxRotationSpeed(settings.minRotationSpeed, settings.maxRotationSpeed);
                 m_movingTileManager.setDefaultSpeed(15);
+                m_highscoreLbl.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("classic_highscore")));
                 break;
 
             case SPIN_THE_CORE:
@@ -120,6 +121,7 @@ public class GameScreen extends ScreenBase implements Observer {
                 m_movingTileManager.setLaunchDelay(settings.launcherCooldown);
                 m_movingTileManager.setAutoEject(true);
                 m_movingTileManager.setDefaultSpeed(settings.movingTileSpeed);
+                m_highscoreLbl.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("spinthecore_highscore", 0)));
                 break;
         }
 
@@ -134,6 +136,7 @@ public class GameScreen extends ScreenBase implements Observer {
             renderManager.start(m_camera.combined);
             renderManager.draw(m_tilemap);
             renderManager.drawLauncher(m_movingTileManager.getLauncherQueue(), m_movingTileManager.getLauncherPos());
+            renderManager.drawOnLeftSide(m_movingTileManager.getLauncherQueue());
             renderManager.draw(m_movingTileManager.getActiveList());
             renderManager.end();
 
@@ -191,6 +194,13 @@ public class GameScreen extends ScreenBase implements Observer {
         grpScore.addActor(img);
         grpScore.addActor(m_scoreLbl);
 
+        m_highscoreLbl = new Label("", m_skin, "comic1_24b");
+
+        HorizontalGroup hscr = new HorizontalGroup();
+        hscr.addActor(new Label("Highscore:", m_skin, "comic1_24b"));
+        hscr.addActor(m_highscoreLbl);
+        hscr.space(15);
+
         mainTable.setFillParent(true);
         mainTable.top().left();
         mainTable.add(staticTimeLbl, null, staticScoreLbl);
@@ -198,6 +208,9 @@ public class GameScreen extends ScreenBase implements Observer {
         mainTable.add(grpTime).width(200).height(100).padLeft(-10);
         mainTable.add().expandX();
         mainTable.add(grpScore).width(200).height(100).padRight(-10).row();
+        mainTable.add().colspan(2);
+        mainTable.add(hscr).align(Align.left);
+
 
         debugTable = createDebugTable();
 
@@ -238,7 +251,7 @@ public class GameScreen extends ScreenBase implements Observer {
         Label staticTime = new Label("Time:", m_skin, "comic1_48b");
         Label staticScore = new Label("Score:", m_skin, "comic1_48b");
         Label time = new Label(m_timeLbl.getText(), m_skin, "comic1_48");
-        Label score = new Label(m_scoreLbl.getText(), m_skin, "comic1_48");
+        Label score = new Label(String.valueOf(m_score), m_skin, "comic1_48");
 
         TextButton tb = new TextButton("Menu", m_skin);
         tb.addListener(new ChangeListener() {
@@ -270,6 +283,22 @@ public class GameScreen extends ScreenBase implements Observer {
         resultTable = createResultTable();
         m_stage.clear();
         m_stage.addActor(resultTable);
+
+        Preferences prefs = Gdx.app.getPreferences("highscores");
+        switch (m_gameMode) {
+            case CLASSIC:
+                if (prefs.getInteger("classic_highscore", 0) < m_score) {
+                    prefs.putInteger("classic_highscore", m_score);
+                    prefs.flush();
+                }
+                break;
+            case SPIN_THE_CORE:
+                if (prefs.getInteger("spinthecore_highscore", 0) < m_score) {
+                    prefs.putInteger("spinthecore_highscore", m_score);
+                    prefs.flush();
+                }
+                break;
+        }
     }
 
     @Override
@@ -292,7 +321,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
     @Override
     public InputProcessor getScreenInputProcessor() {
-        return m_gameInputMultiplexer;
+        return m_inputMultiplexer;
     }
 
     public enum GameMode {
@@ -442,7 +471,11 @@ public class GameScreen extends ScreenBase implements Observer {
 
     }
 
-    private class BackButtonInputHandler extends InputAdapter {
+    private class CustomGestureDetector extends GestureDetector {
+        public CustomGestureDetector(GestureListener listener) {
+            super(listener);
+        }
+
         @Override
         public boolean keyDown(int keycode) {
             if (keycode == Input.Keys.BACK) {
