@@ -13,7 +13,6 @@ import com.badlogic.gdx.utils.Queue;
 
 import java.util.List;
 
-import sun.java2d.opengl.WGLSurfaceData;
 
 /**
  * Created by Michail on 24/3/2018.

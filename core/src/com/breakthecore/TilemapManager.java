@@ -16,9 +16,10 @@ public class TilemapManager extends Observable implements Observer {
     private Pathfinder m_pathfinder;
     private float initTileCount;
     private float minRotSpeed = 30;
+    private float maxRotSpeed = 90;
 
     private Vector2 direction;
-    private float maxRotAddedSpeed = 60;
+    private float maxRotAddedSpeed;
     private float rotationSpeed;
 
     public TilemapManager(Tilemap map) {
@@ -26,11 +27,12 @@ public class TilemapManager extends Observable implements Observer {
         m_collisionManager = new CollisionManager();
         m_pathfinder = new Pathfinder();
         direction = new Vector2();
+        maxRotAddedSpeed = maxRotSpeed - minRotSpeed;
     }
 
     public void update(float delta) {
         if (isRotating) {
-            rotationSpeed = MathUtils.clamp(minRotSpeed + maxRotAddedSpeed - maxRotAddedSpeed * (tm.getTileCount() / initTileCount), minRotSpeed, maxRotAddedSpeed);
+            rotationSpeed = MathUtils.clamp(maxRotSpeed - maxRotAddedSpeed * (tm.getTileCount() / initTileCount), minRotSpeed, maxRotSpeed);
             rotationDegrees += rotationSpeed * delta;
         }
         float rotRad = (float) Math.toRadians(rotationDegrees);
@@ -40,6 +42,12 @@ public class TilemapManager extends Observable implements Observer {
 
         tm.setRotation(cosX, sineX);
 //        onNotify(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
+    }
+
+    public void setMinMaxRotationSpeed(float min, float max) {
+        minRotSpeed = min;
+        maxRotSpeed = max;
+        maxRotAddedSpeed = maxRotSpeed - minRotSpeed;
     }
 
     public float getRotationSpeed() {

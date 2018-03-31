@@ -88,6 +88,7 @@ public class GameScreen extends ScreenBase implements Observer {
         isGameActive = true;
         stage.clear();
         stage.addActor(m_stack);
+        m_tilemapManager.setMinMaxRotationSpeed(settings.minRotationSpeed, settings.maxRotationSpeed);
         m_tilemapManager.initHexTilemap(m_tilemap, settings.initRadius);
     }
 
@@ -272,6 +273,8 @@ public class GameScreen extends ScreenBase implements Observer {
 
     public static class GameSettings {
         int initRadius;
+        float minRotationSpeed;
+        float maxRotationSpeed;
     }
 
     private class GameInputListener implements GestureDetector.GestureListener {

@@ -36,11 +36,10 @@ import com.breakthecore.WorldSettings;
  */
 
 public class MainMenuScreen extends ScreenBase {
-    private GameScreen.GameSettings m_gameSettings; // XXX(3/30/2018): SHOULD BE REMOVED FROM HERE
-    private GameScreen m_gameScreen;
-    private Stage m_stage;
     private BreakTheCoreGame m_game;
-    private Table debugTable, menuTable, optionsTable;
+    private GameSettingsScreen m_gameSettingsScreen;
+    private Stage m_stage;
+    private Table menuTable;
     private Skin m_skin;
     private Label dblbl;
 
@@ -48,8 +47,7 @@ public class MainMenuScreen extends ScreenBase {
         m_game = game;
         m_stage = new Stage(new FillViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight()));
         setupMainMenuStage(m_stage);
-        m_gameScreen = new GameScreen(m_game);
-        m_gameSettings = new GameScreen.GameSettings();
+        m_gameSettingsScreen = new GameSettingsScreen(game);
     }
 
     @Override
@@ -69,45 +67,32 @@ public class MainMenuScreen extends ScreenBase {
         m_skin = m_game.getSkin();
 
         dblbl = new Label("null", m_skin, "comic1_24b", Color.GOLD);
-        setupTables();
 
+        setupMenuTable();
 
         Stack rootStack = new Stack();
         rootStack.setFillParent(true);
         rootStack.add(menuTable);
-//        rootStack.add(debugTable);
 
         stage.addActor(rootStack);
-    }
-
-    private void setupTables() {
-        setupMenuTable();
-        setupDebugTable();
     }
 
     private void setupMenuTable() {
         menuTable = new Table();
 
-        Container playBtn = newMenuButton("Play", "playBtn", new ChangeListener() {
+        final Container playBtn = newMenuButton("Play", "playBtn", new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                dblbl.setText("Clicked Play");
-                if (true) {
-                    ++m_gameSettings.initRadius;
-                    m_gameScreen.initializeGameScreen(m_gameSettings);
-                    m_game.setScreen(m_gameScreen);
-                    m_game.setInputProcessor(m_gameScreen.getScreenInputProcessor());
-                }
+                m_game.setScreen(m_gameSettingsScreen);
             }
         });
 
-        Container scoresBtn = newMenuButton("Scores", "scoresBtn", new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                dblbl.setText("Clicked Scores Button");
-            }
-        });
-
+//        Container scoresBtn = newMenuButton("Scores", "scoresBtn", new ChangeListener() {
+//            @Override
+//            public void changed(ChangeEvent event, Actor actor) {
+//                dblbl.setText("Clicked Scores Button");
+//            }
+//        });
 
         menuTable.defaults()
                 .width(WorldSettings.getWorldWidth() * 3 / 5)
@@ -117,17 +102,8 @@ public class MainMenuScreen extends ScreenBase {
         menuTable.bottom();
         menuTable.padBottom(Value.percentHeight(3 / 16f, menuTable));
         menuTable.add(playBtn).padBottom(Value.percentHeight(1 / 32f, menuTable)).row();
-        menuTable.add(scoresBtn);
+//        menuTable.add(scoresBtn);
     }
-
-    private void setupDebugTable() {
-        debugTable = new Table();
-        debugTable.setDebug(false);
-        debugTable.top().left();
-        debugTable.add(dblbl).row();
-
-    }
-
 
     public InputProcessor getScreenInputProcessor() {
         return m_stage;
