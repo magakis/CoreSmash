@@ -98,8 +98,11 @@ public class GameScreen extends ScreenBase implements Observer {
                 m_tilemapManager.setMinMaxRotationSpeed(settings.minRotationSpeed, settings.maxRotationSpeed);
                 gd = new GestureDetector(new ClassicModeInputListener());
                 m_movingTileManager.setDefaultSpeed(15);
+                m_inputMultiplexer.clear();
+                m_inputMultiplexer.addProcessor(stage);
                 m_inputMultiplexer.addProcessor(gd);
                 break;
+
             case SPIN_THE_CORE:
                 m_tilemapManager.setAutoRotation(false);
                 m_movingTileManager.setLaunchDelay(settings.launcherCooldown);
@@ -107,6 +110,8 @@ public class GameScreen extends ScreenBase implements Observer {
                 m_movingTileManager.setDefaultSpeed(settings.movingTileSpeed);
 
                 gd = new GestureDetector(new SpinTheCoreModeInputListener(m_tilemap.getPositionInWorld()));
+                m_inputMultiplexer.clear();
+                m_inputMultiplexer.addProcessor(stage);
                 m_inputMultiplexer.addProcessor(gd);
                 break;
         }

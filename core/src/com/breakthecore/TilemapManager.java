@@ -15,8 +15,8 @@ public class TilemapManager extends Observable implements Observer {
     private float rotationDegrees = 0;
     private Pathfinder m_pathfinder;
     private float initTileCount;
-    private float minRotSpeed = 30;
-    private float maxRotSpeed = 90;
+    private float minRotSpeed = 0;
+    private float maxRotSpeed = 0;
 
     private Vector2 direction;
     private float maxRotAddedSpeed;

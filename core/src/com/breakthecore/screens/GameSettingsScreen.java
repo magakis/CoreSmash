@@ -22,8 +22,11 @@ public class GameSettingsScreen extends ScreenBase {
     private GameScreen.GameSettings m_gameSettings;
     private GameScreen m_gameScreen;
 
-    private Slider m_slider1, m_slider2, m_slider3;
-    private Label m_label1, m_label2, m_label3;
+    private Slider m_cRadiusSlider, m_cMinRotSlider, m_cMaxRotSlider;
+    private Label m_cRadiusLabel, m_cMinRotLabel, m_cMaxRotLabel;
+
+    private Slider m_stcRadiusSlider, m_stcBallSpeedSlider, m_stcLauncherCDSlider;
+    private Label m_stcRadiusLabel, m_stcBallSpeedLabel, m_stcLauncherCDLabel;
 
     public GameSettingsScreen(BreakTheCoreGame game) {
         m_game = game;
@@ -56,6 +59,7 @@ public class GameSettingsScreen extends ScreenBase {
 
     private Table createClassicTable() {
         Table mt = new Table();
+
         mt.setFillParent(true);
         mt.setDebug(false);
 
@@ -64,71 +68,71 @@ public class GameSettingsScreen extends ScreenBase {
         mt.add(dummy).pad(100).padBottom(400).colspan(2).row();
 
 
-        m_slider1 = new Slider(1, 8, 1, false, m_skin);
-        m_slider1.setValue(4);
-        m_label1 = new Label(String.valueOf((int) m_slider1.getValue()), m_skin, "comic1_48");
-        m_slider1.addListener(new ChangeListener() {
+        m_cRadiusSlider = new Slider(1, 8, 1, false, m_skin);
+        m_cRadiusSlider.setValue(4);
+        m_cRadiusLabel = new Label(String.valueOf((int) m_cRadiusSlider.getValue()), m_skin, "comic1_48");
+        m_cRadiusSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                m_label1.setText(String.valueOf((int) m_slider1.getValue()));
+                m_cRadiusLabel.setText(String.valueOf((int) m_cRadiusSlider.getValue()));
             }
         });
         dummy = new Label("Circle Radius:", m_skin, "comic1_48b");
         mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
-        mt.add(m_label1).width(m_label1.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
-        mt.add(m_slider1).colspan(2).fill().expandX().padBottom(100).row();
+        mt.add(m_cRadiusLabel).width(m_cRadiusLabel.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
+        mt.add(m_cRadiusSlider).colspan(2).fill().expandX().padBottom(100).row();
 
-        m_slider2 = new Slider(10, 120, 1, false, m_skin);
-        m_slider2.setValue(20);
-        m_label2 = new Label(String.valueOf((int) m_slider2.getValue()), m_skin, "comic1_48");
-        m_slider2.addListener(new ChangeListener() {
+        m_cMinRotSlider = new Slider(10, 120, 1, false, m_skin);
+        m_cMinRotSlider.setValue(20);
+        m_cMinRotLabel = new Label(String.valueOf((int) m_cMinRotSlider.getValue()), m_skin, "comic1_48");
+        m_cMinRotSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                int slider2 = (int) m_slider2.getValue();
-                int slider3 = (int) m_slider3.getValue();
+                int slider2 = (int) m_cMinRotSlider.getValue();
+                int slider3 = (int) m_cMaxRotSlider.getValue();
 
                 if (slider2 > slider3) {
-                    m_slider3.setValue(slider2);
+                    m_cMaxRotSlider.setValue(slider2);
                 }
 
-                m_label2.setText(String.valueOf(slider2));
+                m_cMinRotLabel.setText(String.valueOf(slider2));
             }
         });
         dummy = new Label("Min Rotation Speed:", m_skin, "comic1_48b");
         mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
-        mt.add(m_label2).width(m_label2.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
-        mt.add(m_slider2).colspan(2).fill().expandX().padBottom(100).row();
+        mt.add(m_cMinRotLabel).width(m_cMinRotLabel.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
+        mt.add(m_cMinRotSlider).colspan(2).fill().expandX().padBottom(100).row();
 
 
-        m_slider3 = new Slider(10, 120, 1, false, m_skin);
-        m_slider3.setValue(70);
-        m_label3 = new Label(String.valueOf((int) m_slider3.getValue()), m_skin, "comic1_48");
-        m_slider3.addListener(new ChangeListener() {
+        m_cMaxRotSlider = new Slider(10, 120, 1, false, m_skin);
+        m_cMaxRotSlider.setValue(70);
+        m_cMaxRotLabel = new Label(String.valueOf((int) m_cMaxRotSlider.getValue()), m_skin, "comic1_48");
+        m_cMaxRotSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                int slider2 = (int) m_slider2.getValue();
-                int slider3 = (int) m_slider3.getValue();
+                int slider2 = (int) m_cMinRotSlider.getValue();
+                int slider3 = (int) m_cMaxRotSlider.getValue();
 
                 if (slider2 > slider3) {
-                    m_slider2.setValue(slider3);
+                    m_cMinRotSlider.setValue(slider3);
                 }
 
-                m_label3.setText(String.valueOf((int) m_slider3.getValue()));
+                m_cMaxRotLabel.setText(String.valueOf((int) m_cMaxRotSlider.getValue()));
             }
         });
         dummy = new Label("Max Rotation Speed:", m_skin, "comic1_48b");
         mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
-        mt.add(m_label3).width(m_label3.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
-        mt.add(m_slider3).colspan(2).fill().expandX().padBottom(100).height(100).fill().row();
+        mt.add(m_cMaxRotLabel).width(m_cMaxRotLabel.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
+        mt.add(m_cMaxRotSlider).colspan(2).fill().expandX().padBottom(100).height(100).fill().row();
 
 
         TextButton playBtn = new TextButton("Play", m_skin);
         playBtn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                m_gameSettings.initRadius = (int) m_slider1.getValue();
-                m_gameSettings.minRotationSpeed = (int) m_slider2.getValue();
-                m_gameSettings.maxRotationSpeed = (int) m_slider3.getValue();
+                m_gameSettings.initRadius = (int) m_cRadiusSlider.getValue();
+                m_gameSettings.minRotationSpeed = (int) m_cMinRotSlider.getValue();
+                m_gameSettings.maxRotationSpeed = (int) m_cMaxRotSlider.getValue();
 
                 m_gameScreen.initializeGameScreen(m_gameSettings);
                 m_game.setScreen(m_gameScreen);
@@ -141,6 +145,7 @@ public class GameSettingsScreen extends ScreenBase {
 
     private Table createSpinTheCoreTable() {
         Table mt = new Table();
+
         mt.setFillParent(true);
         mt.setDebug(false);
 
@@ -150,58 +155,58 @@ public class GameSettingsScreen extends ScreenBase {
         mt.add(dummy).pad(100).padBottom(400).colspan(2).row();
 
 
-        m_slider1 = new Slider(1, 8, 1, false, m_skin);
-        m_slider1.setValue(4);
-        m_label1 = new Label(String.valueOf((int) m_slider1.getValue()), m_skin, "comic1_48");
-        m_slider1.addListener(new ChangeListener() {
+        m_stcRadiusSlider = new Slider(1, 8, 1, false, m_skin);
+        m_stcRadiusSlider.setValue(4);
+        m_stcRadiusLabel = new Label(String.valueOf((int) m_stcRadiusSlider.getValue()), m_skin, "comic1_48");
+        m_stcRadiusSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                m_label1.setText(String.valueOf((int) m_slider1.getValue()));
+                m_stcRadiusLabel.setText(String.valueOf((int) m_stcRadiusSlider.getValue()));
             }
         });
         dummy = new Label("Circle Radius:", m_skin, "comic1_48b");
         mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
-        mt.add(m_label1).width(m_label1.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
-        mt.add(m_slider1).colspan(2).fill().expandX().padBottom(100).row();
+        mt.add(m_stcRadiusLabel).width(m_stcRadiusLabel.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
+        mt.add(m_stcRadiusSlider).colspan(2).fill().expandX().padBottom(100).row();
 
 
-        m_slider2 = new Slider(3, 16, 1, false, m_skin);
-        m_slider2.setValue(6);
-        m_label2 = new Label(String.valueOf((int) m_slider2.getValue()), m_skin, "comic1_48");
-        m_slider2.addListener(new ChangeListener() {
+        m_stcBallSpeedSlider = new Slider(3, 16, 1, false, m_skin);
+        m_stcBallSpeedSlider.setValue(6);
+        m_stcBallSpeedLabel = new Label(String.valueOf((int) m_stcBallSpeedSlider.getValue()), m_skin, "comic1_48");
+        m_stcBallSpeedSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                m_label2.setText(String.valueOf((int) m_slider2.getValue()));
+                m_stcBallSpeedLabel.setText(String.valueOf((int) m_stcBallSpeedSlider.getValue()));
             }
         });
         dummy = new Label("Ball Speed:", m_skin, "comic1_48b");
         mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
-        mt.add(m_label2).width(m_label2.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
-        mt.add(m_slider2).colspan(2).fill().expandX().padBottom(100).row();
+        mt.add(m_stcBallSpeedLabel).width(m_stcBallSpeedLabel.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
+        mt.add(m_stcBallSpeedSlider).colspan(2).fill().expandX().padBottom(100).row();
 
 
-        m_slider3 = new Slider(.4f, 3, .2f, false, m_skin);
-        m_slider3.setValue(1.6f);
-        m_label3 = new Label(String.format("%.2f sec", m_slider3.getValue()), m_skin, "comic1_48");
-        m_slider3.addListener(new ChangeListener() {
+        m_stcLauncherCDSlider = new Slider(.4f, 3, .2f, false, m_skin);
+        m_stcLauncherCDSlider.setValue(1.6f);
+        m_stcLauncherCDLabel = new Label(String.format("%.2f sec", m_stcLauncherCDSlider.getValue()), m_skin, "comic1_48");
+        m_stcLauncherCDSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                m_label3.setText(String.format("%.2f sec", m_slider3.getValue()));
+                m_stcLauncherCDLabel.setText(String.format("%.2f sec", m_stcLauncherCDSlider.getValue()));
             }
         });
         dummy = new Label("Launcher Cooldown:", m_skin, "comic1_48b");
         mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
-        mt.add(m_label3).width(m_label3.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
-        mt.add(m_slider3).colspan(2).fill().expandX().padBottom(100).height(100).fill().row();
+        mt.add(m_stcLauncherCDLabel).width(m_stcLauncherCDLabel.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
+        mt.add(m_stcLauncherCDSlider).colspan(2).fill().expandX().padBottom(100).height(100).fill().row();
 
 
         TextButton playBtn = new TextButton("Play", m_skin);
         playBtn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                m_gameSettings.initRadius = (int) m_slider1.getValue();
-                m_gameSettings.movingTileSpeed = (int) m_slider2.getValue();
-                m_gameSettings.launcherCooldown = m_slider3.getValue();
+                m_gameSettings.initRadius = (int) m_stcRadiusSlider.getValue();
+                m_gameSettings.movingTileSpeed = (int) m_stcBallSpeedSlider.getValue();
+                m_gameSettings.launcherCooldown = m_stcLauncherCDSlider.getValue();
 
                 m_gameScreen.initializeGameScreen(m_gameSettings);
                 m_game.setScreen(m_gameScreen);
