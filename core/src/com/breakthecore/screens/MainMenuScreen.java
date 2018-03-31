@@ -1,6 +1,9 @@
 package com.breakthecore.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
@@ -38,6 +41,7 @@ import com.breakthecore.WorldSettings;
 public class MainMenuScreen extends ScreenBase {
     private BreakTheCoreGame m_game;
     private GameSettingsScreen m_gameSettingsScreen;
+    private InputMultiplexer m_inputMultiplexer;
     private Stage m_stage;
     private Table menuTable;
     private Skin m_skin;
@@ -45,7 +49,8 @@ public class MainMenuScreen extends ScreenBase {
 
     public MainMenuScreen(BreakTheCoreGame game) {
         m_game = game;
-        m_stage = new Stage(new FillViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight()));
+        m_stage = new Stage(game.getWorldViewport());
+        m_inputMultiplexer = new InputMultiplexer(new BackButtonInputHandler(), m_stage);
         setupMainMenuStage(m_stage);
         m_gameSettingsScreen = new GameSettingsScreen(game);
     }
@@ -62,7 +67,7 @@ public class MainMenuScreen extends ScreenBase {
     }
 
     private void setupMainMenuStage(Stage stage) {
-        stage.clear(); // start with empty stage
+        stage.clear(); // start with empty m_stage
 
         m_skin = m_game.getSkin();
 
@@ -107,7 +112,7 @@ public class MainMenuScreen extends ScreenBase {
     }
 
     public InputProcessor getScreenInputProcessor() {
-        return m_stage;
+        return m_inputMultiplexer;
     }
 
     public Container newMenuButton(String text, String name, EventListener el) {
@@ -119,9 +124,20 @@ public class MainMenuScreen extends ScreenBase {
         result.setTransform(true);
         result.setOrigin(bt.getWidth() / 2, bt.getHeight() / 2);
         result.fill();
-//        result.setRotation(-1.25f);
-//        result.addAction(Actions.forever(Actions.sequence(Actions.rotateBy(2.5f, 1.5f, Interpolation.smoother), Actions.rotateBy(-2.5f, 1.5f, Interpolation.smoother))));
-        result.addAction(Actions.forever(Actions.sequence(Actions.scaleBy(.015f, .015f, 0.75f), Actions.scaleBy(-.015f, -.015f, 0.75f))));
+        result.setRotation(-.25f);
+        result.addAction(Actions.forever(Actions.sequence(Actions.rotateBy(.5f, 1.5f, Interpolation.smoother), Actions.rotateBy(-.5f, 1.5f, Interpolation.smoother))));
+        result.addAction(Actions.forever(Actions.sequence(Actions.scaleBy(.02f, .02f, 0.75f), Actions.scaleBy(-.02f, -.02f, 0.75f))));
         return result;
+    }
+
+    private class BackButtonInputHandler extends InputAdapter {
+        @Override
+        public boolean keyDown(int keycode) {
+            if (keycode == Input.Keys.BACK) {
+                Gdx.app.exit();
+                return false;
+            }
+            return false;
+        }
     }
 }

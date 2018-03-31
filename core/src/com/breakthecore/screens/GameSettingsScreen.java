@@ -1,5 +1,8 @@
 package com.breakthecore.screens;
 
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -15,6 +18,7 @@ import com.breakthecore.BreakTheCoreGame;
 public class GameSettingsScreen extends ScreenBase {
     private BreakTheCoreGame m_game;
     private Stage m_stage;
+    private InputMultiplexer m_inputMultiplexer;
     private Skin m_skin;
     private Table m_pickGameModeTable;
     private Table m_classicTable;
@@ -38,12 +42,14 @@ public class GameSettingsScreen extends ScreenBase {
         m_gameSettings = new GameScreen.GameSettings();
         m_gameScreen = new GameScreen(m_game);
 
+        m_inputMultiplexer = new InputMultiplexer(new BackButtonInputHandler(), m_stage);
+
         m_stage.addActor(m_pickGameModeTable);
     }
 
     @Override
     public InputProcessor getScreenInputProcessor() {
-        return m_stage;
+        return m_inputMultiplexer;
     }
 
     public void tmpReset() {
@@ -123,7 +129,7 @@ public class GameSettingsScreen extends ScreenBase {
         dummy = new Label("Max Rotation Speed:", m_skin, "comic1_48b");
         mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
         mt.add(m_cMaxRotLabel).width(m_cMaxRotLabel.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
-        mt.add(m_cMaxRotSlider).colspan(2).fill().expandX().padBottom(100).height(100).fill().row();
+        mt.add(m_cMaxRotSlider).colspan(2).fill().expandX().padBottom(100).fill().row();
 
 
         TextButton playBtn = new TextButton("Play", m_skin);
@@ -138,7 +144,7 @@ public class GameSettingsScreen extends ScreenBase {
                 m_game.setScreen(m_gameScreen);
             }
         });
-        mt.add(playBtn).colspan(2).width(200).height(150).align(Align.right);
+        mt.add(playBtn).colspan(2).width(250).height(200).align(Align.right);
 
         return mt;
     }
@@ -170,8 +176,8 @@ public class GameSettingsScreen extends ScreenBase {
         mt.add(m_stcRadiusSlider).colspan(2).fill().expandX().padBottom(100).row();
 
 
-        m_stcBallSpeedSlider = new Slider(3, 16, 1, false, m_skin);
-        m_stcBallSpeedSlider.setValue(6);
+        m_stcBallSpeedSlider = new Slider(2, 15, 1, false, m_skin);
+        m_stcBallSpeedSlider.setValue(4);
         m_stcBallSpeedLabel = new Label(String.valueOf((int) m_stcBallSpeedSlider.getValue()), m_skin, "comic1_48");
         m_stcBallSpeedSlider.addListener(new ChangeListener() {
             @Override
@@ -197,7 +203,7 @@ public class GameSettingsScreen extends ScreenBase {
         dummy = new Label("Launcher Cooldown:", m_skin, "comic1_48b");
         mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
         mt.add(m_stcLauncherCDLabel).width(m_stcLauncherCDLabel.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
-        mt.add(m_stcLauncherCDSlider).colspan(2).fill().expandX().padBottom(100).height(100).fill().row();
+        mt.add(m_stcLauncherCDSlider).colspan(2).fill().expandX().padBottom(100).fill().row();
 
 
         TextButton playBtn = new TextButton("Play", m_skin);
@@ -212,19 +218,23 @@ public class GameSettingsScreen extends ScreenBase {
                 m_game.setScreen(m_gameScreen);
             }
         });
-        mt.add(playBtn).colspan(2).width(200).height(150).align(Align.right);
+        mt.add(playBtn).colspan(2).width(250).height(200).align(Align.right);
 
         return mt;
     }
 
     private Table createPickGameModeTable() {
         Table tbl = new Table();
+        Label dummy;
         tbl.setFillParent(true);
         tbl.pad(100);
 
+        dummy = new Label("Game Mode", m_skin, "comic1_96b");
+        tbl.add(dummy).padBottom(100).row();
+
         String txt = "The core is spinning and your goal is to shoot balls of the right color in order to match-3" +
                 " and beat it.";
-        Label dummy = new Label(":Classic Mode:", m_skin, "comic1_48b");
+        dummy = new Label(":Classic Mode:", m_skin, "comic1_48b");
         TextButton tb = new TextButton(txt, m_skin, "modeButton");
         tb.getLabel().setWrap(true);
         tb.getLabelCell().pad(10);
@@ -278,5 +288,16 @@ public class GameSettingsScreen extends ScreenBase {
         tbl.add(tb).expandX().height(250).fill().padBottom(200).row();
 
         return tbl;
+    }
+
+    private class BackButtonInputHandler extends InputAdapter {
+        @Override
+        public boolean keyDown(int keycode) {
+            if (keycode == Input.Keys.BACK) {
+                m_game.setMainMenuScreen();
+                return false;
+            }
+            return false;
+        }
     }
 }

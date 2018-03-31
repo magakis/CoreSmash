@@ -34,6 +34,7 @@ public class BreakTheCoreGame extends Game {
 
 	@Override
 	public void create () {
+		Gdx.input.setCatchBackKey(true);
 		WorldSettings.init();
 		m_viewport = new FitViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight());
 		m_skin = createSkin();

@@ -1,5 +1,7 @@
 package com.breakthecore.screens;
 
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -34,29 +36,27 @@ import com.breakthecore.WorldSettings;
 public class GameScreen extends ScreenBase implements Observer {
     private BreakTheCoreGame m_game;
     private OrthographicCamera m_camera;
-    ClassicModeInputListener m_classicModeInputListener;
 
     private Tilemap m_tilemap;
     private TilemapManager m_tilemapManager;
-    InputMultiplexer m_inputMultiplexer;
+    private InputMultiplexer m_gameInputMultiplexer;
     private RenderManager renderManager;
 
-    GestureDetector gd;
-    private FitViewport m_viewport;
+    private InputProcessor m_classicGestureDetector, m_spinTheCoreGestureDetector, m_backButtonHandler;
 
-    Label m_timeLbl, m_scoreLbl;
-    boolean isGameActive;
-    boolean roundWon;
+    private Label m_timeLbl, m_scoreLbl;
+    private boolean isGameActive;
+    private boolean roundWon;
     private GameMode m_gameMode;
 
     //===========
-    Skin m_skin;
-    Label staticTimeLbl, staticScoreLbl;
-    Stage stage;
+    private Skin m_skin;
+    private Label staticTimeLbl, staticScoreLbl;
+    private Stage m_stage;
     private MovingTileManager m_movingTileManager;
-    Label dblb1, dblb2, dblb3, dblb4, dblb5;
-    Stack m_stack;
-    Table mainTable, debugTable, resultTable;
+    private Label dblb1, dblb2, dblb3, dblb4, dblb5;
+    private Stack m_stack;
+    private Table mainTable, debugTable, resultTable;
     private int m_score;
 
     private float m_time;
@@ -67,8 +67,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
     public GameScreen(BreakTheCoreGame game) {
         m_game = game;
-        m_viewport = (FitViewport) m_game.getWorldViewport();
-        m_camera = (OrthographicCamera) m_viewport.getCamera();
+        m_camera = (OrthographicCamera) m_game.getWorldViewport().getCamera();
         renderManager = new RenderManager(sideLength, colorCount);
         m_movingTileManager = new MovingTileManager(sideLength, colorCount);
 
@@ -77,30 +76,43 @@ public class GameScreen extends ScreenBase implements Observer {
         m_tilemap = new Tilemap(new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4), 20, sideLength);
         m_tilemapManager = new TilemapManager(m_tilemap);
 
-        m_classicModeInputListener = new ClassicModeInputListener();
-        m_inputMultiplexer = new InputMultiplexer(stage);
-        isGameActive = true;
+        m_gameInputMultiplexer = new InputMultiplexer();
+        m_classicGestureDetector = new GestureDetector(new ClassicModeInputListener());
+        m_spinTheCoreGestureDetector = new GestureDetector(new SpinTheCoreModeInputListener(m_tilemap.getPositionInWorld()));
+        m_backButtonHandler = new BackButtonInputHandler();
 
+        isGameActive = true;
         m_tilemapManager.addObserver(this);
+    }
+
+    private void setInputHanlderFor(GameMode mode) {
+        m_gameInputMultiplexer.clear();
+        m_gameInputMultiplexer.addProcessor(m_backButtonHandler);
+        m_gameInputMultiplexer.addProcessor(m_stage);
+        switch (mode) {
+            case CLASSIC:
+                m_gameInputMultiplexer.addProcessor(m_classicGestureDetector);
+                break;
+
+            case SPIN_THE_CORE:
+                m_gameInputMultiplexer.addProcessor(m_spinTheCoreGestureDetector);
+                break;
+        }
     }
 
     public void initializeGameScreen(GameSettings settings) {
         m_score = 0;
         m_time = 0;
         isGameActive = true;
-        stage.clear();
-        stage.addActor(m_stack);
+        m_stage.clear();
+        m_stage.addActor(m_stack);
         m_tilemapManager.initHexTilemap(m_tilemap, settings.initRadius);
         m_gameMode = settings.gameMode;
 
         switch (m_gameMode) {
             case CLASSIC:
                 m_tilemapManager.setMinMaxRotationSpeed(settings.minRotationSpeed, settings.maxRotationSpeed);
-                gd = new GestureDetector(new ClassicModeInputListener());
                 m_movingTileManager.setDefaultSpeed(15);
-                m_inputMultiplexer.clear();
-                m_inputMultiplexer.addProcessor(stage);
-                m_inputMultiplexer.addProcessor(gd);
                 break;
 
             case SPIN_THE_CORE:
@@ -108,13 +120,10 @@ public class GameScreen extends ScreenBase implements Observer {
                 m_movingTileManager.setLaunchDelay(settings.launcherCooldown);
                 m_movingTileManager.setAutoEject(true);
                 m_movingTileManager.setDefaultSpeed(settings.movingTileSpeed);
-
-                gd = new GestureDetector(new SpinTheCoreModeInputListener(m_tilemap.getPositionInWorld()));
-                m_inputMultiplexer.clear();
-                m_inputMultiplexer.addProcessor(stage);
-                m_inputMultiplexer.addProcessor(gd);
                 break;
         }
+
+        setInputHanlderFor(settings.gameMode);
     }
 
     @Override
@@ -130,7 +139,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
             renderManager.renderCenterDot(m_camera.combined);
         }
-        stage.draw();
+        m_stage.draw();
     }
 
     private void update(float delta) {
@@ -155,7 +164,7 @@ public class GameScreen extends ScreenBase implements Observer {
     private void setupUI() {
         m_skin = m_game.getSkin();
 
-        stage = new Stage(new FitViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight()));
+        m_stage = new Stage(new FitViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight()));
         m_stack = new Stack();
         m_stack.setFillParent(true);
         mainTable = new Table();
@@ -194,7 +203,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
         m_stack.add(mainTable);
 //        m_stack.add(debugTable);
-        stage.addActor(m_stack);
+        m_stage.addActor(m_stack);
     }
 
     public Table createDebugTable() {
@@ -259,8 +268,8 @@ public class GameScreen extends ScreenBase implements Observer {
 
     public void handleGameEnd() {
         resultTable = createResultTable();
-        stage.clear();
-        stage.addActor(resultTable);
+        m_stage.clear();
+        m_stage.addActor(resultTable);
     }
 
     @Override
@@ -283,7 +292,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
     @Override
     public InputProcessor getScreenInputProcessor() {
-        return m_inputMultiplexer;
+        return m_gameInputMultiplexer;
     }
 
     public enum GameMode {
@@ -431,6 +440,17 @@ public class GameScreen extends ScreenBase implements Observer {
 
         }
 
+    }
+
+    private class BackButtonInputHandler extends InputAdapter {
+        @Override
+        public boolean keyDown(int keycode) {
+            if (keycode == Input.Keys.BACK) {
+                m_game.setMainMenuScreen();
+                return false;
+            }
+            return false;
+        }
     }
 }
 
