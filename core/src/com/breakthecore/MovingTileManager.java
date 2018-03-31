@@ -20,7 +20,10 @@ public class MovingTileManager{
     private float launchDelay;
     private float launchDelayCounter;
 
+    private int m_defaultSpeed;
+
     private boolean isActive;
+    private boolean m_autoEject;
 
     public MovingTileManager(int tileSize, int colorCount) {
         launcher = new Queue<MovingTile>(3);
@@ -30,10 +33,12 @@ public class MovingTileManager{
         m_tileSize = tileSize;
         m_colorCount = colorCount;
         isActive = true;
+        m_defaultSpeed = 15;
 
         for (int i = 0; i < 3; ++i) {
-            launcher.addLast(new MovingTile(launcherPos.x,launcherPos.y-i*tileSize,getRandomColor()));
+            launcher.addLast(new MovingTile(launcherPos.x, launcherPos.y - i * tileSize, getRandomColor(), m_defaultSpeed));
         }
+
         launchDelay = tileSize / launcher.first().getSpeed();
     }
 
@@ -63,7 +68,19 @@ public class MovingTileManager{
                 else
                     launchDelayCounter -= delta;
             }
+
+            if (m_autoEject && launchDelayCounter == 0) {
+                eject();
+            }
         }
+    }
+
+    public void setAutoEject(boolean autoEject) {
+        m_autoEject = autoEject;
+    }
+
+    public void setLaunchDelay(float delay) {
+        launchDelay = delay;
     }
 
     private void updateActiveList(float delta) {
@@ -90,13 +107,20 @@ public class MovingTileManager{
                 launcher.addLast(movtPool.removeFirst());
                 launcher.last().setPositionInWorld(launcherPos.x, launcherPos.y - 2 * m_tileSize);
                 launcher.last().setColor(getRandomColor());
+                launcher.last().setSpeed(m_defaultSpeed);
             } else {
-                launcher.addLast(new MovingTile(launcherPos.x, launcherPos.y - 2 * m_tileSize, getRandomColor()));
+                launcher.addLast(new MovingTile(launcherPos.x, launcherPos.y - 2 * m_tileSize, getRandomColor(), m_defaultSpeed));
             }
             launchDelayCounter = launchDelay;
         }
     }
 
+    public void setDefaultSpeed(int defaultSpeed) {
+        m_defaultSpeed = defaultSpeed;
+        for (MovingTile mt : launcher) {
+            mt.setSpeed(defaultSpeed);
+        }
+    }
 
     private void disposeInactive() {
         ListIterator<MovingTile> iter = activeList.listIterator();

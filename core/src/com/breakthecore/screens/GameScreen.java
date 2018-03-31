@@ -1,15 +1,11 @@
 package com.breakthecore.screens;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
@@ -37,21 +33,27 @@ import com.breakthecore.WorldSettings;
 
 public class GameScreen extends ScreenBase implements Observer {
     private BreakTheCoreGame m_game;
-    private FitViewport m_fitViewport;
     private OrthographicCamera m_camera;
+    ClassicModeInputListener m_classicModeInputListener;
+
     private Tilemap m_tilemap;
     private TilemapManager m_tilemapManager;
     InputMultiplexer m_inputMultiplexer;
     private RenderManager renderManager;
+
     GestureDetector gd;
+    private FitViewport m_viewport;
+
     Label m_timeLbl, m_scoreLbl;
     boolean isGameActive;
     boolean roundWon;
+    private GameMode m_gameMode;
+
     //===========
     Skin m_skin;
     Label staticTimeLbl, staticScoreLbl;
     Stage stage;
-    private MovingTileManager movingTileManager;
+    private MovingTileManager m_movingTileManager;
     Label dblb1, dblb2, dblb3, dblb4, dblb5;
     Stack m_stack;
     Table mainTable, debugTable, resultTable;
@@ -65,18 +67,18 @@ public class GameScreen extends ScreenBase implements Observer {
 
     public GameScreen(BreakTheCoreGame game) {
         m_game = game;
-        m_fitViewport = new FitViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight());
-        m_camera = (OrthographicCamera) m_fitViewport.getCamera();
+        m_viewport = (FitViewport) m_game.getWorldViewport();
+        m_camera = (OrthographicCamera) m_viewport.getCamera();
         renderManager = new RenderManager(sideLength, colorCount);
-        movingTileManager = new MovingTileManager(sideLength, colorCount);
+        m_movingTileManager = new MovingTileManager(sideLength, colorCount);
 
         setupUI();
 
         m_tilemap = new Tilemap(new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4), 20, sideLength);
         m_tilemapManager = new TilemapManager(m_tilemap);
 
-        gd = new GestureDetector(new GameInputListener());
-        m_inputMultiplexer = new InputMultiplexer(stage, gd);
+        m_classicModeInputListener = new ClassicModeInputListener();
+        m_inputMultiplexer = new InputMultiplexer(stage);
         isGameActive = true;
 
         m_tilemapManager.addObserver(this);
@@ -88,8 +90,26 @@ public class GameScreen extends ScreenBase implements Observer {
         isGameActive = true;
         stage.clear();
         stage.addActor(m_stack);
-        m_tilemapManager.setMinMaxRotationSpeed(settings.minRotationSpeed, settings.maxRotationSpeed);
         m_tilemapManager.initHexTilemap(m_tilemap, settings.initRadius);
+        m_gameMode = settings.gameMode;
+
+        switch (m_gameMode) {
+            case CLASSIC:
+                m_tilemapManager.setMinMaxRotationSpeed(settings.minRotationSpeed, settings.maxRotationSpeed);
+                gd = new GestureDetector(new ClassicModeInputListener());
+                m_movingTileManager.setDefaultSpeed(15);
+                m_inputMultiplexer.addProcessor(gd);
+                break;
+            case SPIN_THE_CORE:
+                m_tilemapManager.setAutoRotation(false);
+                m_movingTileManager.setLaunchDelay(settings.launcherCooldown);
+                m_movingTileManager.setAutoEject(true);
+                m_movingTileManager.setDefaultSpeed(settings.movingTileSpeed);
+
+                gd = new GestureDetector(new SpinTheCoreModeInputListener(m_tilemap.getPositionInWorld()));
+                m_inputMultiplexer.addProcessor(gd);
+                break;
+        }
     }
 
     @Override
@@ -99,8 +119,8 @@ public class GameScreen extends ScreenBase implements Observer {
         if (isGameActive) {
             renderManager.start(m_camera.combined);
             renderManager.draw(m_tilemap);
-            renderManager.drawLauncher(movingTileManager.getLauncherQueue(), movingTileManager.getLauncherPos());
-            renderManager.draw(movingTileManager.getActiveList());
+            renderManager.drawLauncher(m_movingTileManager.getLauncherQueue(), m_movingTileManager.getLauncherPos());
+            renderManager.draw(m_movingTileManager.getActiveList());
             renderManager.end();
 
             renderManager.renderCenterDot(m_camera.combined);
@@ -111,16 +131,11 @@ public class GameScreen extends ScreenBase implements Observer {
     private void update(float delta) {
         if (isGameActive) {
             m_time += delta;
-            movingTileManager.update(delta);
+            m_movingTileManager.update(delta);
             m_tilemapManager.update(delta);
-            m_tilemapManager.checkForCollision(movingTileManager.getActiveList());
+            m_tilemapManager.checkForCollision(m_movingTileManager.getActiveList());
             updateStage();
         }
-    }
-
-    @Override
-    public void resize(int width, int height) {
-        m_fitViewport.update(width, height, true);
     }
 
     private void updateStage() {
@@ -130,9 +145,6 @@ public class GameScreen extends ScreenBase implements Observer {
         dblb1.setText("ballCount: " + m_tilemap.getTileCount());
         dblb2.setText(String.format("rotSpeed: %.3f", m_tilemapManager.getRotationSpeed()));
 
-        dblb3.setText("");
-        dblb4.setText("");
-        dblb5.setText("");
     }
 
     private void setupUI() {
@@ -273,10 +285,21 @@ public class GameScreen extends ScreenBase implements Observer {
     public enum GameMode {
         CLASSIC,
         SPIN_THE_CORE,
-        SHOOT_EM_UP
+        SHOOT_EM_UP;
+
     }
 
-    private class GameInputListener implements GestureDetector.GestureListener {
+    public static class GameSettings {
+        public GameMode gameMode;
+        public int initRadius;
+        public float minRotationSpeed;
+        public float maxRotationSpeed;
+        public int movingTileSpeed;
+        public float launcherCooldown;
+
+    }
+
+    private class ClassicModeInputListener implements GestureDetector.GestureListener {
         @Override
         public boolean touchDown(float x, float y, int pointer, int button) {
             return false;
@@ -284,7 +307,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
         @Override
         public boolean tap(float x, float y, int count, int button) {
-            movingTileManager.eject();
+            m_movingTileManager.eject();
             return true;
         }
 
@@ -328,14 +351,82 @@ public class GameScreen extends ScreenBase implements Observer {
         public void pinchStop() {
 
         }
-
     }
 
-    public static class GameSettings {
-        public GameMode gameMode;
-        public int initRadius;
-        public float minRotationSpeed;
-        public float maxRotationSpeed;
+    private class SpinTheCoreModeInputListener implements GestureDetector.GestureListener {
+        private boolean isPanning;
+        private Vector2 tmPos;
+        private Vector3 scrPos;
+        private float initAngle;
+        private Vector2 currPoint;
+
+        public SpinTheCoreModeInputListener(Vector2 tilemapPos) {
+            tmPos = tilemapPos;
+            scrPos = new Vector3();
+            currPoint = new Vector2();
+        }
+
+        @Override
+        public boolean touchDown(float x, float y, int pointer, int button) {
+            return false;
+        }
+
+        @Override
+        public boolean tap(float x, float y, int count, int button) {
+            return false;
+        }
+
+        @Override
+        public boolean longPress(float x, float y) {
+            return false;
+        }
+
+        @Override
+        public boolean fling(float velocityX, float velocityY, int button) {
+            return false;
+        }
+
+        @Override
+        public boolean pan(float x, float y, float deltaX, float deltaY) {
+            if (isPanning) {
+                float currAngle;
+                scrPos.set(x, y, 0);
+                scrPos = m_camera.unproject(scrPos);
+                currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
+                currAngle = currPoint.angle();
+                m_tilemap.rotate(initAngle - currAngle);
+                initAngle = currAngle;
+            } else {
+                isPanning = true;
+                scrPos.set(x, y, 0);
+                scrPos = m_camera.unproject(scrPos);
+                currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
+                initAngle = currPoint.angle();
+            }
+            return true;
+        }
+
+        @Override
+        public boolean panStop(float x, float y, int pointer, int button) {
+            isPanning = false;
+            return false;
+        }
+
+        @Override
+        public boolean zoom(float initialDistance, float distance) {
+            return false;
+        }
+
+        @Override
+        public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
+            return false;
+        }
+
+        @Override
+        public void pinchStop() {
+
+        }
+
     }
 }
 

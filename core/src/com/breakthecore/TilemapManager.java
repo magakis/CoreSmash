@@ -9,8 +9,8 @@ import java.util.List;
 public class TilemapManager extends Observable implements Observer {
     private Tilemap tm;
     private CollisionManager m_collisionManager;
-    ArrayList<TilemapTile> match = new ArrayList<TilemapTile>();
-    ArrayList<TilemapTile> exclude = new ArrayList<TilemapTile>();
+    private ArrayList<TilemapTile> match = new ArrayList<TilemapTile>();
+    private ArrayList<TilemapTile> exclude = new ArrayList<TilemapTile>();
     private boolean isRotating = true;
     private float rotationDegrees = 0;
     private Pathfinder m_pathfinder;
@@ -34,13 +34,8 @@ public class TilemapManager extends Observable implements Observer {
         if (isRotating) {
             rotationSpeed = MathUtils.clamp(maxRotSpeed - maxRotAddedSpeed * (tm.getTileCount() / initTileCount), minRotSpeed, maxRotSpeed);
             rotationDegrees += rotationSpeed * delta;
+            tm.setRotation(rotationDegrees);
         }
-        float rotRad = (float) Math.toRadians(rotationDegrees);
-
-        float cosX = (float) Math.cos(rotRad);
-        float sineX = (float) Math.sin(rotRad);
-
-        tm.setRotation(cosX, sineX);
 //        onNotify(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
     }
 
@@ -73,6 +68,10 @@ public class TilemapManager extends Observable implements Observer {
             mt.dispose();
         }
 
+    }
+
+    public void setAutoRotation(boolean autoRotation) {
+        isRotating = autoRotation;
     }
 
     public boolean addTile(int color, TilemapTile solidTile, Tile.Side[] sides) {

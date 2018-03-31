@@ -7,22 +7,27 @@ import com.badlogic.gdx.math.Vector2;
  */
 
 public class MovingTile extends Tile {
-    private float speed = 1300;
+    private float m_speed;
     private float scale;
     private boolean flag;
 
-    public MovingTile(float x, float y, int color) {
-        this(new Vector2(x, y), color);
+    public MovingTile(float x, float y, int color, int speed) {
+        this(new Vector2(x, y), color, speed);
     }
 
-    public MovingTile(Vector2 pos, int color){
+    public MovingTile(Vector2 pos, int color, int speed) {
         super(color);
         scale = 3/5f;
+        m_speed = speed * 100;
         m_positionInWorld.set(pos);
     }
 
     public float getSpeed() {
-        return speed;
+        return m_speed;
+    }
+
+    public void setSpeed(float speed) {
+        m_speed = speed * 100;
     }
 
     public float getScale() {
@@ -46,7 +51,7 @@ public class MovingTile extends Tile {
     }
 
     public void update(float delta) {
-            moveBy(0, speed * delta);
+        moveBy(0, m_speed * delta);
     }
 
 }

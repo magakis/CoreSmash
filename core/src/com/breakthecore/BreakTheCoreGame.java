@@ -30,17 +30,18 @@ public class BreakTheCoreGame extends Game {
 	private float dtForFrame;
 	private Skin m_skin;
 	private InputMultiplexer m_inputMultiplexer;
+	private boolean isMainMenuActive;
 
 	@Override
 	public void create () {
 		WorldSettings.init();
+		m_viewport = new FitViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight());
 		m_skin = createSkin();
 		m_inputMultiplexer = new InputMultiplexer();
 		Gdx.input.setInputProcessor(m_inputMultiplexer);
 
-		m_viewport = new FitViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight());
-
 		mainMenuScreen = new MainMenuScreen(this);
+
 		setMainMenuScreen();
 	}
 
@@ -65,8 +66,13 @@ public class BreakTheCoreGame extends Game {
 	// WARNING: All the screen should store a BreakTheCoreGame reference and not a plain Game
 	// reference in order for the right function to get called
 	public void setScreen(ScreenBase screen) {
+		isMainMenuActive = false;
 		setInputProcessor(screen.getScreenInputProcessor());
 		super.setScreen(screen);
+	}
+
+	public boolean isMainMenuActive() {
+		return isMainMenuActive;
 	}
 
 	public Viewport getWorldViewport() {
@@ -76,6 +82,7 @@ public class BreakTheCoreGame extends Game {
 	public void setMainMenuScreen() {
 		setInputProcessor(mainMenuScreen.getScreenInputProcessor());
 		setScreen(mainMenuScreen);
+		isMainMenuActive = true;
 	}
 
 	@Override

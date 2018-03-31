@@ -15,6 +15,7 @@ public class Tilemap {
     private Vector2 m_position;
     private TilemapTile[][] m_tileList;
 
+    private float m_rotDegrees;
     private float m_cosT;
     private float m_sinT;
 
@@ -28,6 +29,8 @@ public class Tilemap {
         m_centerTileX = size / 2;
         m_centerTileY = (size * 3) / 2;
         m_tileList = new TilemapTile[size * 3][size];
+        m_cosT = 1;
+        m_sinT = 0;
     }
 
     public int getCenterTileXPos() {
@@ -42,9 +45,17 @@ public class Tilemap {
         return m_size;
     }
 
-    public void setRotation(float cosT, float sinT) {
-        m_cosT = cosT; // updating those values must happen BEFORE updating the tiles
-        m_sinT = sinT;
+    public void rotate(float deg) {
+        m_rotDegrees += deg;
+        setRotation(m_rotDegrees);
+    }
+
+    public void setRotation(float deg) {
+        m_rotDegrees = deg;
+        float rotRad = (float) Math.toRadians(deg);
+        m_cosT = (float) Math.cos(rotRad);
+        m_sinT = (float) Math.sin(rotRad);
+
         for (TilemapTile[] arr : m_tileList) {
             for (TilemapTile hex : arr) {
                 if (hex != null) {
@@ -121,5 +132,9 @@ public class Tilemap {
 
     private void emptyTileAt(int x, int y) {
         m_tileList[y + m_centerTileY][x + m_centerTileX] = null;
+    }
+
+    public Vector2 getPositionInWorld() {
+        return new Vector2(m_position);
     }
 }
