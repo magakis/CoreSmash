@@ -158,6 +158,9 @@ public class TilemapManager extends Observable implements Observer {
         addSurroundingColorMatches(tile, match, exclude);
 
         if (match.size() < 3) {
+            if (match.size() == 1) {
+                notifyObservers(NotificationType.NOTIFICATION_TYPE_NO_COLOR_MATCH, null);
+            }
             return;
         }
 

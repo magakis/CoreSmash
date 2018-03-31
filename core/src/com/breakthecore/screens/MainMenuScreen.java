@@ -29,6 +29,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.breakthecore.BreakTheCoreGame;
@@ -98,10 +99,12 @@ public class MainMenuScreen extends ScreenBase {
                 .height(WorldSettings.getWorldHeight() * 2 / 16)
                 .fill();
 
+        Label versInfo = new Label("v.1.0.0 - Michail Angelos Gakis", m_skin, "comic_24b", Color.DARK_GRAY);
+        versInfo.setAlignment(Align.bottom);
         menuTable.bottom();
-        menuTable.padBottom(Value.percentHeight(3 / 16f, menuTable));
-        menuTable.add(playBtn).padBottom(Value.percentHeight(1 / 32f, menuTable)).row();
-//        menuTable.add(scoresBtn);
+        menuTable.add(playBtn).padBottom(Value.percentHeight(1 / 32f, menuTable)).padBottom(Value.percentHeight(3 / 16f, menuTable)).row();
+        menuTable.add(versInfo).align(Align.center).height(versInfo.getPrefHeight());
+        //        menuTable.add(scoresBtn);
     }
 
     public InputProcessor getScreenInputProcessor() {

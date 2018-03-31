@@ -6,6 +6,8 @@ import com.badlogic.gdx.utils.Queue;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
+import sun.java2d.opengl.WGLSurfaceData;
+
 /**
  * Created by Michail on 24/3/2018.
  */
@@ -125,6 +127,13 @@ public class MovingTileManager {
             }
             movtPool.add(tile);
             iter.remove();
+        }
+        isActive = true;
+        m_defaultSpeed = 15;
+        launchDelay = m_tileSize / launcher.first().getSpeed();
+        for (MovingTile mt : launcher) {
+            mt.setSpeed(m_defaultSpeed);
+            mt.setColor(WorldSettings.getRandomInt(7));
         }
     }
 

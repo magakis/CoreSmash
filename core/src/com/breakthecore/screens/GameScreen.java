@@ -45,22 +45,22 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private InputProcessor m_classicGestureDetector, m_spinTheCoreGestureDetector, m_backButtonHandler;
 
-    private Label m_timeLbl, m_scoreLbl, m_highscoreLbl;
+    private Label m_timeLbl, m_scoreLbl, m_highscoreLbl, m_livesLbl;
     private boolean isGameActive;
     private boolean roundWon;
+    private int m_score;
+    private float m_time;
+    private int m_lives;
+
     private GameMode m_gameMode;
 
     //===========
     private Skin m_skin;
-    private Label staticTimeLbl, staticScoreLbl;
     private Stage m_stage;
     private MovingTileManager m_movingTileManager;
     private Label dblb1, dblb2, dblb3, dblb4, dblb5;
     private Stack m_stack;
     private Table mainTable, debugTable, resultTable;
-    private int m_score;
-
-    private float m_time;
     //===========
     private int colorCount = 7;
     private int sideLength = 64;
@@ -102,6 +102,7 @@ public class GameScreen extends ScreenBase implements Observer {
     public void initializeGameScreen(GameSettings settings) {
         m_score = 0;
         m_time = 0;
+        m_lives = 3;
         isGameActive = true;
         m_stage.clear();
         m_stage.addActor(m_stack);
@@ -109,11 +110,15 @@ public class GameScreen extends ScreenBase implements Observer {
         m_gameMode = settings.gameMode;
         m_movingTileManager.reset();
 
+        m_livesLbl.setText(String.valueOf(m_lives));
+
         switch (m_gameMode) {
             case CLASSIC:
                 m_tilemapManager.setMinMaxRotationSpeed(settings.minRotationSpeed, settings.maxRotationSpeed);
                 m_movingTileManager.setDefaultSpeed(15);
                 m_highscoreLbl.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("classic_highscore")));
+                m_tilemapManager.setAutoRotation(true);
+                m_movingTileManager.setAutoEject(false);
                 break;
 
             case SPIN_THE_CORE:
@@ -136,7 +141,7 @@ public class GameScreen extends ScreenBase implements Observer {
             renderManager.start(m_camera.combined);
             renderManager.draw(m_tilemap);
             renderManager.drawLauncher(m_movingTileManager.getLauncherQueue(), m_movingTileManager.getLauncherPos());
-            renderManager.drawOnLeftSide(m_movingTileManager.getLauncherQueue());
+//            renderManager.drawOnLeftSide(m_movingTileManager.getLauncherQueue());
             renderManager.draw(m_movingTileManager.getActiveList());
             renderManager.end();
 
@@ -165,23 +170,29 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     private void setupUI() {
+        Label staticTimeLbl, staticScoreLbl, staticLivesLbl;
+
         m_skin = m_game.getSkin();
+
+        HorizontalGroup hgrp;
 
         m_stage = new Stage(new FitViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight()));
         m_stack = new Stack();
         m_stack.setFillParent(true);
         mainTable = new Table();
 
-        m_timeLbl = new Label("null", m_skin, "comic_48");
+        m_timeLbl = new Label("0", m_skin, "comic_48");
         m_timeLbl.setAlignment(Align.center);
-        m_timeLbl.setWidth(mainTable.getWidth() / 2);
 
-        m_scoreLbl = new Label("null", m_skin, "comic_48");
+        m_scoreLbl = new Label("0", m_skin, "comic_48");
         m_scoreLbl.setAlignment(Align.center);
-        m_scoreLbl.setWidth(mainTable.getWidth() / 2);
+
+        m_livesLbl = new Label("null", m_skin, "comic_48");
+        m_livesLbl.setAlignment(Align.center);
 
         staticTimeLbl = new Label("Time:", m_skin, "comic_48b");
         staticScoreLbl = new Label("Score:", m_skin, "comic_48b");
+        staticLivesLbl = new Label("Lives: ", m_skin, "comic_48b");
 
         Stack grpTime = new Stack();
         Stack grpScore = new Stack();
@@ -195,21 +206,25 @@ public class GameScreen extends ScreenBase implements Observer {
         grpScore.addActor(m_scoreLbl);
 
 
-        HorizontalGroup hscr = new HorizontalGroup();
-        m_highscoreLbl = new Label("", m_skin, "comic_32");
-        hscr.addActor(new Label("Highscore:", m_skin, "comic_32"));
-        hscr.addActor(m_highscoreLbl);
-        hscr.space(10);
+        hgrp = new HorizontalGroup();
+        hgrp.addActor(staticLivesLbl);
+        hgrp.addActor(m_livesLbl);
 
         mainTable.setFillParent(true);
         mainTable.top().left();
-        mainTable.add(staticTimeLbl, null, staticScoreLbl);
+        mainTable.add(staticTimeLbl, hgrp, staticScoreLbl);
         mainTable.row();
         mainTable.add(grpTime).width(200).height(100).padLeft(-10);
         mainTable.add().expandX();
         mainTable.add(grpScore).width(200).height(100).padRight(-10).row();
         mainTable.add().colspan(2);
-        mainTable.add(hscr).align(Align.left);
+
+        hgrp = new HorizontalGroup();
+        m_highscoreLbl = new Label("", m_skin, "comic_32b");
+        hgrp.addActor(new Label("Highscore:", m_skin, "comic_32b"));
+        hgrp.addActor(m_highscoreLbl);
+        hgrp.space(10);
+        mainTable.add(hgrp).align(Align.left);
 
 
         debugTable = createDebugTable();
@@ -284,21 +299,28 @@ public class GameScreen extends ScreenBase implements Observer {
         m_stage.clear();
         m_stage.addActor(resultTable);
 
-        Preferences prefs = Gdx.app.getPreferences("highscores");
-        switch (m_gameMode) {
-            case CLASSIC:
-                if (prefs.getInteger("classic_highscore", 0) < m_score) {
-                    prefs.putInteger("classic_highscore", m_score);
-                    prefs.flush();
-                }
-                break;
-            case SPIN_THE_CORE:
-                if (prefs.getInteger("spinthecore_highscore", 0) < m_score) {
-                    prefs.putInteger("spinthecore_highscore", m_score);
-                    prefs.flush();
-                }
-                break;
+        if (roundWon) {
+            Preferences prefs = Gdx.app.getPreferences("highscores");
+            switch (m_gameMode) {
+                case CLASSIC:
+                    if (prefs.getInteger("classic_highscore", 0) < m_score) {
+                        prefs.putInteger("classic_highscore", m_score);
+                        prefs.flush();
+                    }
+                    break;
+                case SPIN_THE_CORE:
+                    if (prefs.getInteger("spinthecore_highscore", 0) < m_score) {
+                        prefs.putInteger("spinthecore_highscore", m_score);
+                        prefs.flush();
+                    }
+                    break;
+            }
         }
+    }
+
+    @Override
+    public InputProcessor getScreenInputProcessor() {
+        return m_inputMultiplexer;
     }
 
     @Override
@@ -315,14 +337,18 @@ public class GameScreen extends ScreenBase implements Observer {
                     m_score++;
                 }
                 break;
-
+            case NOTIFICATION_TYPE_NO_COLOR_MATCH:
+                if (m_lives == 1) {
+                    roundWon = false;
+                    isGameActive = false;
+                    handleGameEnd();
+                } else {
+                    --m_lives;
+                    m_livesLbl.setText(String.valueOf(m_lives));
+                }
         }
     }
 
-    @Override
-    public InputProcessor getScreenInputProcessor() {
-        return m_inputMultiplexer;
-    }
 
     public enum GameMode {
         CLASSIC,

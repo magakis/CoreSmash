@@ -134,6 +134,7 @@ public class BreakTheCoreGame extends Game {
 		registerFont(skin, "comic_48", "comic_48.fnt");
 
 		registerFont(skin, "comic_24b", "comic_24b.fnt");
+		registerFont(skin, "comic_32b", "comic_32b.fnt");
 		registerFont(skin, "comic_48b", "comic_48b.fnt");
 		registerFont(skin, "comic_96b", "comic_96b.fnt");
 
@@ -164,10 +165,10 @@ public class BreakTheCoreGame extends Game {
 		//SliderStyles
 		Slider.SliderStyle ss = new Slider.SliderStyle();
 		ss.background = skin.getDrawable("box_white_5");
-		ss.background.setMinHeight(40);
+		ss.background.setMinHeight(60);
 		ss.knob = skin.getDrawable("myBall");
-		ss.knob.setMinHeight(50);
-		ss.knob.setMinWidth(50);
+		ss.knob.setMinHeight(80);
+		ss.knob.setMinWidth(80);
 		skin.add("default-horizontal", ss);
 
 		return skin;
