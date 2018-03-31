@@ -3,6 +3,7 @@ package com.breakthecore.screens;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
@@ -25,16 +26,15 @@ public class GameSettingsScreen extends ScreenBase {
     private Label m_label1, m_label2, m_label3;
 
     public GameSettingsScreen(BreakTheCoreGame game) {
-
         m_game = game;
-        m_stage = new Stage(game.getWorldViewport());
         m_skin = game.getSkin();
+        m_stage = new Stage(game.getWorldViewport());
         m_classicMainTable = createMainTable();
         m_pickGameModeTable = createPickGameModeTable();
         m_gameSettings = new GameScreen.GameSettings();
         m_gameScreen = new GameScreen(m_game);
 
-        m_stage.addActor(m_classicMainTable);
+        m_stage.addActor(m_pickGameModeTable);
     }
 
     @Override
@@ -134,8 +134,49 @@ public class GameSettingsScreen extends ScreenBase {
     }
 
     private Table createPickGameModeTable() {
-        Table tb = new Table();
+        Table tbl = new Table();
+        tbl.setFillParent(true);
+        tbl.pad(100);
 
-        return tb;
+        String txt = "The core is spinning and your goal is to shoot balls of the right color in order to match-3" +
+                " and beat it.";
+        Label dummy = new Label(":Classic Mode:", m_skin, "comic1_48b");
+        TextButton tb = new TextButton(txt, m_skin, "modeButton");
+        tb.getLabel().setWrap(true);
+        tb.getLabelCell().pad(10);
+        tb.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                m_stage.clear();
+                m_stage.addActor(m_classicMainTable);
+                m_gameSettings.gameMode = GameScreen.GameMode.CLASSIC;
+            }
+        });
+
+        tbl.add(dummy).row();
+        tbl.add(tb).expandX().height(250).fill().padBottom(200).row();
+
+
+        txt = "You spin the core while balls get launched at you. Your goal is to match-3 the right colors " +
+                "in order to beat it.";
+        dummy = new Label(":Spin The Core Mode:", m_skin, "comic1_48b");
+        tb = new TextButton(txt, m_skin, "modeButton");
+        tb.getLabel().setWrap(true);
+        tb.getLabelCell().pad(10);
+
+        tbl.add(dummy).row();
+        tbl.add(tb).expandX().height(250).fill().padBottom(200).row();
+
+
+        txt = "Shoot the core as fast as you can while you keep matching balls of the same color.";
+        dummy = new Label(":Shoot'Em Up Mode:", m_skin, "comic1_48b");
+        tb = new TextButton(txt, m_skin, "modeButton");
+        tb.getLabel().setWrap(true);
+        tb.getLabelCell().pad(10);
+
+        tbl.add(dummy).row();
+        tbl.add(tb).expandX().height(250).fill().padBottom(200).row();
+
+        return tbl;
     }
 }

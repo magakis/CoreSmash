@@ -245,7 +245,6 @@ public class GameScreen extends ScreenBase implements Observer {
         resultTable = createResultTable();
         stage.clear();
         stage.addActor(resultTable);
-//        SharedPrefernces
     }
 
     @Override
@@ -271,10 +270,10 @@ public class GameScreen extends ScreenBase implements Observer {
         return m_inputMultiplexer;
     }
 
-    public static class GameSettings {
-        int initRadius;
-        float minRotationSpeed;
-        float maxRotationSpeed;
+    public enum GameMode {
+        CLASSIC,
+        SPIN_THE_CORE,
+        SHOOT_EM_UP
     }
 
     private class GameInputListener implements GestureDetector.GestureListener {
@@ -330,6 +329,13 @@ public class GameScreen extends ScreenBase implements Observer {
 
         }
 
+    }
+
+    public static class GameSettings {
+        public GameMode gameMode;
+        public int initRadius;
+        public float minRotationSpeed;
+        public float maxRotationSpeed;
     }
 }
 

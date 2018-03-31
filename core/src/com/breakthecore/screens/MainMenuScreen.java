@@ -80,7 +80,7 @@ public class MainMenuScreen extends ScreenBase {
     private void setupMenuTable() {
         menuTable = new Table();
 
-        final Container playBtn = newMenuButton("Play", "playBtn", new ChangeListener() {
+        Container playBtn = newMenuButton("Play", "playBtn", new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 m_game.setScreen(m_gameSettingsScreen);

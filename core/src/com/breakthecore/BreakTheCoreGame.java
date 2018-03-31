@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
@@ -136,6 +137,13 @@ public class BreakTheCoreGame extends Game {
 		stb.checked = stb.up;
 		stb.font = skin.getFont("comic1_96b");
 		skin.add("menuButton", stb);
+
+		stb = new TextButton.TextButtonStyle();
+		stb.up = skin.newDrawable("box_white_10", Color.WHITE);
+		stb.down = skin.newDrawable("box_white_10", Color.GRAY);
+		stb.checked = stb.up;
+		stb.font = skin.getFont("comic1_48");
+		skin.add("modeButton", stb);
 
 		stb = new TextButton.TextButtonStyle();
 		stb.up = skin.newDrawable("box_white_5", Color.WHITE);
