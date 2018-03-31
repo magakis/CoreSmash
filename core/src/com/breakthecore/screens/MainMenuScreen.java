@@ -71,7 +71,7 @@ public class MainMenuScreen extends ScreenBase {
 
         m_skin = m_game.getSkin();
 
-        dblbl = new Label("null", m_skin, "comic1_24b", Color.GOLD);
+        dblbl = new Label("null", m_skin, "comic_24b", Color.GOLD);
 
         setupMenuTable();
 

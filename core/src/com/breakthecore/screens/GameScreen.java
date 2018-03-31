@@ -172,16 +172,16 @@ public class GameScreen extends ScreenBase implements Observer {
         m_stack.setFillParent(true);
         mainTable = new Table();
 
-        m_timeLbl = new Label("null", m_skin, "comic1_48");
+        m_timeLbl = new Label("null", m_skin, "comic_48");
         m_timeLbl.setAlignment(Align.center);
         m_timeLbl.setWidth(mainTable.getWidth() / 2);
 
-        m_scoreLbl = new Label("null", m_skin, "comic1_48");
+        m_scoreLbl = new Label("null", m_skin, "comic_48");
         m_scoreLbl.setAlignment(Align.center);
         m_scoreLbl.setWidth(mainTable.getWidth() / 2);
 
-        staticTimeLbl = new Label("Time:", m_skin, "comic1_48b");
-        staticScoreLbl = new Label("Score:", m_skin, "comic1_48b");
+        staticTimeLbl = new Label("Time:", m_skin, "comic_48b");
+        staticScoreLbl = new Label("Score:", m_skin, "comic_48b");
 
         Stack grpTime = new Stack();
         Stack grpScore = new Stack();
@@ -194,12 +194,12 @@ public class GameScreen extends ScreenBase implements Observer {
         grpScore.addActor(img);
         grpScore.addActor(m_scoreLbl);
 
-        m_highscoreLbl = new Label("", m_skin, "comic1_24b");
 
         HorizontalGroup hscr = new HorizontalGroup();
-        hscr.addActor(new Label("Highscore:", m_skin, "comic1_24b"));
+        m_highscoreLbl = new Label("", m_skin, "comic_32");
+        hscr.addActor(new Label("Highscore:", m_skin, "comic_32"));
         hscr.addActor(m_highscoreLbl);
-        hscr.space(15);
+        hscr.space(10);
 
         mainTable.setFillParent(true);
         mainTable.top().left();
@@ -221,15 +221,15 @@ public class GameScreen extends ScreenBase implements Observer {
 
     public Table createDebugTable() {
         Table dbtb = new Table();
-        dblb1 = new Label("db1:", m_skin, "comic1_24b");
+        dblb1 = new Label("db1:", m_skin, "comic_24b");
         dblb1.setAlignment(Align.left);
-        dblb2 = new Label("db1:", m_skin, "comic1_24b");
+        dblb2 = new Label("db1:", m_skin, "comic_24b");
         dblb2.setAlignment(Align.left);
-        dblb3 = new Label("db1:", m_skin, "comic1_24b");
+        dblb3 = new Label("db1:", m_skin, "comic_24b");
         dblb3.setAlignment(Align.left);
-        dblb4 = new Label("db1:", m_skin, "comic1_24b");
+        dblb4 = new Label("db1:", m_skin, "comic_24b");
         dblb4.setAlignment(Align.left);
-        dblb5 = new Label("db1:", m_skin, "comic1_24b");
+        dblb5 = new Label("db1:", m_skin, "comic_24b");
         dblb5.setAlignment(Align.left);
 
         dbtb.bottom().left();
@@ -247,11 +247,11 @@ public class GameScreen extends ScreenBase implements Observer {
         res.setFillParent(true);
         String resultText = roundWon ? "Congratulations!" : "You lost";
 
-        Label m_resultLabel = new Label(resultText, m_skin, "comic1_96b");
-        Label staticTime = new Label("Time:", m_skin, "comic1_48b");
-        Label staticScore = new Label("Score:", m_skin, "comic1_48b");
-        Label time = new Label(m_timeLbl.getText(), m_skin, "comic1_48");
-        Label score = new Label(String.valueOf(m_score), m_skin, "comic1_48");
+        Label m_resultLabel = new Label(resultText, m_skin, "comic_96b");
+        Label staticTime = new Label("Time:", m_skin, "comic_48b");
+        Label staticScore = new Label("Score:", m_skin, "comic_48b");
+        Label time = new Label(m_timeLbl.getText(), m_skin, "comic_48");
+        Label score = new Label(String.valueOf(m_score), m_skin, "comic_48");
 
         TextButton tb = new TextButton("Menu", m_skin);
         tb.addListener(new ChangeListener() {

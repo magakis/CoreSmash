@@ -69,28 +69,28 @@ public class GameSettingsScreen extends ScreenBase {
         mt.setFillParent(true);
         mt.setDebug(false);
 
-        Label dummy = new Label(": Game Setup :", m_skin, "comic1_96b");
+        Label dummy = new Label(": Game Setup :", m_skin, "comic_96b");
         mt.top().pad(100);
         mt.add(dummy).pad(100).padBottom(400).colspan(2).row();
 
 
         m_cRadiusSlider = new Slider(1, 8, 1, false, m_skin);
         m_cRadiusSlider.setValue(4);
-        m_cRadiusLabel = new Label(String.valueOf((int) m_cRadiusSlider.getValue()), m_skin, "comic1_48");
+        m_cRadiusLabel = new Label(String.valueOf((int) m_cRadiusSlider.getValue()), m_skin, "comic_48");
         m_cRadiusSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 m_cRadiusLabel.setText(String.valueOf((int) m_cRadiusSlider.getValue()));
             }
         });
-        dummy = new Label("Circle Radius:", m_skin, "comic1_48b");
+        dummy = new Label("Circle Radius:", m_skin, "comic_48b");
         mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
         mt.add(m_cRadiusLabel).width(m_cRadiusLabel.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
         mt.add(m_cRadiusSlider).colspan(2).fill().expandX().padBottom(100).row();
 
         m_cMinRotSlider = new Slider(10, 120, 1, false, m_skin);
         m_cMinRotSlider.setValue(20);
-        m_cMinRotLabel = new Label(String.valueOf((int) m_cMinRotSlider.getValue()), m_skin, "comic1_48");
+        m_cMinRotLabel = new Label(String.valueOf((int) m_cMinRotSlider.getValue()), m_skin, "comic_48");
         m_cMinRotSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -104,7 +104,7 @@ public class GameSettingsScreen extends ScreenBase {
                 m_cMinRotLabel.setText(String.valueOf(slider2));
             }
         });
-        dummy = new Label("Min Rotation Speed:", m_skin, "comic1_48b");
+        dummy = new Label("Min Rotation Speed:", m_skin, "comic_48b");
         mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
         mt.add(m_cMinRotLabel).width(m_cMinRotLabel.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
         mt.add(m_cMinRotSlider).colspan(2).fill().expandX().padBottom(100).row();
@@ -112,7 +112,7 @@ public class GameSettingsScreen extends ScreenBase {
 
         m_cMaxRotSlider = new Slider(10, 120, 1, false, m_skin);
         m_cMaxRotSlider.setValue(70);
-        m_cMaxRotLabel = new Label(String.valueOf((int) m_cMaxRotSlider.getValue()), m_skin, "comic1_48");
+        m_cMaxRotLabel = new Label(String.valueOf((int) m_cMaxRotSlider.getValue()), m_skin, "comic_48");
         m_cMaxRotSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -126,7 +126,7 @@ public class GameSettingsScreen extends ScreenBase {
                 m_cMaxRotLabel.setText(String.valueOf((int) m_cMaxRotSlider.getValue()));
             }
         });
-        dummy = new Label("Max Rotation Speed:", m_skin, "comic1_48b");
+        dummy = new Label("Max Rotation Speed:", m_skin, "comic_48b");
         mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
         mt.add(m_cMaxRotLabel).width(m_cMaxRotLabel.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
         mt.add(m_cMaxRotSlider).colspan(2).fill().expandX().padBottom(100).fill().row();
@@ -155,7 +155,7 @@ public class GameSettingsScreen extends ScreenBase {
         mt.setFillParent(true);
         mt.setDebug(false);
 
-        Label dummy = new Label(": Game Setup :", m_skin, "comic1_96b");
+        Label dummy = new Label(": Game Setup :", m_skin, "comic_96b");
 
         mt.top().pad(100);
         mt.add(dummy).pad(100).padBottom(400).colspan(2).row();
@@ -163,14 +163,14 @@ public class GameSettingsScreen extends ScreenBase {
 
         m_stcRadiusSlider = new Slider(1, 8, 1, false, m_skin);
         m_stcRadiusSlider.setValue(4);
-        m_stcRadiusLabel = new Label(String.valueOf((int) m_stcRadiusSlider.getValue()), m_skin, "comic1_48");
+        m_stcRadiusLabel = new Label(String.valueOf((int) m_stcRadiusSlider.getValue()), m_skin, "comic_48");
         m_stcRadiusSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 m_stcRadiusLabel.setText(String.valueOf((int) m_stcRadiusSlider.getValue()));
             }
         });
-        dummy = new Label("Circle Radius:", m_skin, "comic1_48b");
+        dummy = new Label("Circle Radius:", m_skin, "comic_48b");
         mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
         mt.add(m_stcRadiusLabel).width(m_stcRadiusLabel.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
         mt.add(m_stcRadiusSlider).colspan(2).fill().expandX().padBottom(100).row();
@@ -178,14 +178,14 @@ public class GameSettingsScreen extends ScreenBase {
 
         m_stcBallSpeedSlider = new Slider(2, 15, 1, false, m_skin);
         m_stcBallSpeedSlider.setValue(4);
-        m_stcBallSpeedLabel = new Label(String.valueOf((int) m_stcBallSpeedSlider.getValue()), m_skin, "comic1_48");
+        m_stcBallSpeedLabel = new Label(String.valueOf((int) m_stcBallSpeedSlider.getValue()), m_skin, "comic_48");
         m_stcBallSpeedSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 m_stcBallSpeedLabel.setText(String.valueOf((int) m_stcBallSpeedSlider.getValue()));
             }
         });
-        dummy = new Label("Ball Speed:", m_skin, "comic1_48b");
+        dummy = new Label("Ball Speed:", m_skin, "comic_48b");
         mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
         mt.add(m_stcBallSpeedLabel).width(m_stcBallSpeedLabel.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
         mt.add(m_stcBallSpeedSlider).colspan(2).fill().expandX().padBottom(100).row();
@@ -193,14 +193,14 @@ public class GameSettingsScreen extends ScreenBase {
 
         m_stcLauncherCDSlider = new Slider(.4f, 3, .2f, false, m_skin);
         m_stcLauncherCDSlider.setValue(1.6f);
-        m_stcLauncherCDLabel = new Label(String.format("%.2f sec", m_stcLauncherCDSlider.getValue()), m_skin, "comic1_48");
+        m_stcLauncherCDLabel = new Label(String.format("%.2f sec", m_stcLauncherCDSlider.getValue()), m_skin, "comic_48");
         m_stcLauncherCDSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 m_stcLauncherCDLabel.setText(String.format("%.2f sec", m_stcLauncherCDSlider.getValue()));
             }
         });
-        dummy = new Label("Launcher Cooldown:", m_skin, "comic1_48b");
+        dummy = new Label("Launcher Cooldown:", m_skin, "comic_48b");
         mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
         mt.add(m_stcLauncherCDLabel).width(m_stcLauncherCDLabel.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
         mt.add(m_stcLauncherCDSlider).colspan(2).fill().expandX().padBottom(100).fill().row();
@@ -229,12 +229,12 @@ public class GameSettingsScreen extends ScreenBase {
         tbl.setFillParent(true);
         tbl.pad(100);
 
-        dummy = new Label("Game Mode", m_skin, "comic1_96b");
+        dummy = new Label("Game Mode", m_skin, "comic_96b");
         tbl.add(dummy).padBottom(100).row();
 
         String txt = "The core is spinning and your goal is to shoot balls of the right color in order to match-3" +
                 " and beat it.";
-        dummy = new Label(":Classic Mode:", m_skin, "comic1_48b");
+        dummy = new Label(":Classic Mode:", m_skin, "comic_48b");
         TextButton tb = new TextButton(txt, m_skin, "modeButton");
         tb.getLabel().setWrap(true);
         tb.getLabelCell().pad(10);
@@ -253,7 +253,7 @@ public class GameSettingsScreen extends ScreenBase {
 
         txt = "You spin the core while balls get launched at you. Your goal is to match-3 the right colors " +
                 "in order to beat it.";
-        dummy = new Label(":Spin The Core Mode:", m_skin, "comic1_48b");
+        dummy = new Label(":Spin The Core Mode:", m_skin, "comic_48b");
         tb = new TextButton(txt, m_skin, "modeButton");
         tb.getLabel().setWrap(true);
         tb.getLabelCell().pad(10);
@@ -271,7 +271,7 @@ public class GameSettingsScreen extends ScreenBase {
 
 
         txt = "Shoot the core as fast as you can while you keep matching balls of the same color.";
-        dummy = new Label(":Shoot'Em Up Mode:", m_skin, "comic1_48b");
+        dummy = new Label(":Shoot'Em Up Mode:", m_skin, "comic_48b");
         tb = new TextButton(txt, m_skin, "modeButton");
         tb.getLabel().setWrap(true);
         tb.getLabelCell().pad(10);

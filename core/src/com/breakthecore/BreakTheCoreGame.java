@@ -130,11 +130,12 @@ public class BreakTheCoreGame extends Game {
 
 		skin.add("myBall", tex);
 
-		registerFont(skin, "comic1_48", "comic1_48.fnt");
+		registerFont(skin, "comic_32", "comic_32.fnt");
+		registerFont(skin, "comic_48", "comic_48.fnt");
 
-		registerFont(skin, "comic1_24b", "comic1_24b.fnt");
-		registerFont(skin, "comic1_48b", "comic1_48b.fnt");
-		registerFont(skin, "comic1_96b", "comic1_96b.fnt");
+		registerFont(skin, "comic_24b", "comic_24b.fnt");
+		registerFont(skin, "comic_48b", "comic_48b.fnt");
+		registerFont(skin, "comic_96b", "comic_96b.fnt");
 
 		skin.add("ball", new Texture("ball.png"));
 
@@ -143,21 +144,21 @@ public class BreakTheCoreGame extends Game {
 		stb.up = skin.newDrawable("box_white_10", Color.WHITE);
 		stb.down = skin.newDrawable("box_white_10", Color.GRAY);
 		stb.checked = stb.up;
-		stb.font = skin.getFont("comic1_96b");
+		stb.font = skin.getFont("comic_96b");
 		skin.add("menuButton", stb);
 
 		stb = new TextButton.TextButtonStyle();
 		stb.up = skin.newDrawable("box_white_10", Color.WHITE);
 		stb.down = skin.newDrawable("box_white_10", Color.GRAY);
 		stb.checked = stb.up;
-		stb.font = skin.getFont("comic1_48");
+		stb.font = skin.getFont("comic_48");
 		skin.add("modeButton", stb);
 
 		stb = new TextButton.TextButtonStyle();
 		stb.up = skin.newDrawable("box_white_5", Color.WHITE);
 		stb.down = skin.newDrawable("box_white_5", Color.GRAY);
 		stb.checked = stb.up;
-		stb.font = skin.getFont("comic1_48b");
+		stb.font = skin.getFont("comic_48b");
 		skin.add("default", stb);
 
 		//SliderStyles
