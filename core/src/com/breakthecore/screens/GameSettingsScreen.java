@@ -43,6 +43,11 @@ public class GameSettingsScreen extends ScreenBase {
         return m_stage;
     }
 
+    public void tmpReset() {
+        m_stage.clear();
+        m_stage.addActor(m_pickGameModeTable);
+    }
+
     @Override
     public void render(float delta) {
         m_stage.act();
@@ -55,8 +60,12 @@ public class GameSettingsScreen extends ScreenBase {
         mt.setDebug(false);
 
         Label dummy = new Label(": Game Setup :", m_skin, "comic1_96b");
+        mt.top().pad(100);
+        mt.add(dummy).pad(100).padBottom(400).colspan(2).row();
+
 
         m_slider1 = new Slider(1, 8, 1, false, m_skin);
+        m_slider1.setValue(4);
         m_label1 = new Label(String.valueOf((int) m_slider1.getValue()), m_skin, "comic1_48");
         m_slider1.addListener(new ChangeListener() {
             @Override
@@ -64,16 +73,13 @@ public class GameSettingsScreen extends ScreenBase {
                 m_label1.setText(String.valueOf((int) m_slider1.getValue()));
             }
         });
-
-        mt.top().pad(100);
-        mt.add(dummy).pad(100).padBottom(400).colspan(2).row();
-
         dummy = new Label("Circle Radius:", m_skin, "comic1_48b");
         mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
         mt.add(m_label1).width(m_label1.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
         mt.add(m_slider1).colspan(2).fill().expandX().padBottom(100).row();
 
-        m_slider2 = new Slider(20, 150, 1, false, m_skin);
+        m_slider2 = new Slider(10, 120, 1, false, m_skin);
+        m_slider2.setValue(20);
         m_label2 = new Label(String.valueOf((int) m_slider2.getValue()), m_skin, "comic1_48");
         m_slider2.addListener(new ChangeListener() {
             @Override
@@ -88,14 +94,14 @@ public class GameSettingsScreen extends ScreenBase {
                 m_label2.setText(String.valueOf(slider2));
             }
         });
-
         dummy = new Label("Min Rotation Speed:", m_skin, "comic1_48b");
         mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
         mt.add(m_label2).width(m_label2.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
         mt.add(m_slider2).colspan(2).fill().expandX().padBottom(100).row();
 
 
-        m_slider3 = new Slider(20, 150, 1, false, m_skin);
+        m_slider3 = new Slider(10, 120, 1, false, m_skin);
+        m_slider3.setValue(70);
         m_label3 = new Label(String.valueOf((int) m_slider3.getValue()), m_skin, "comic1_48");
         m_slider3.addListener(new ChangeListener() {
             @Override
@@ -110,7 +116,6 @@ public class GameSettingsScreen extends ScreenBase {
                 m_label3.setText(String.valueOf((int) m_slider3.getValue()));
             }
         });
-
         dummy = new Label("Max Rotation Speed:", m_skin, "comic1_48b");
         mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
         mt.add(m_label3).width(m_label3.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
@@ -146,6 +151,7 @@ public class GameSettingsScreen extends ScreenBase {
 
 
         m_slider1 = new Slider(1, 8, 1, false, m_skin);
+        m_slider1.setValue(4);
         m_label1 = new Label(String.valueOf((int) m_slider1.getValue()), m_skin, "comic1_48");
         m_slider1.addListener(new ChangeListener() {
             @Override
@@ -160,6 +166,7 @@ public class GameSettingsScreen extends ScreenBase {
 
 
         m_slider2 = new Slider(3, 16, 1, false, m_skin);
+        m_slider2.setValue(6);
         m_label2 = new Label(String.valueOf((int) m_slider2.getValue()), m_skin, "comic1_48");
         m_slider2.addListener(new ChangeListener() {
             @Override
@@ -174,6 +181,7 @@ public class GameSettingsScreen extends ScreenBase {
 
 
         m_slider3 = new Slider(.4f, 3, .2f, false, m_skin);
+        m_slider3.setValue(1.6f);
         m_label3 = new Label(String.format("%.2f sec", m_slider3.getValue()), m_skin, "comic1_48");
         m_slider3.addListener(new ChangeListener() {
             @Override

@@ -83,6 +83,7 @@ public class MainMenuScreen extends ScreenBase {
         Container playBtn = newMenuButton("Play", "playBtn", new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
+                m_gameSettingsScreen.tmpReset();
                 m_game.setScreen(m_gameSettingsScreen);
             }
         });

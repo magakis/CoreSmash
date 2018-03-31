@@ -394,7 +394,7 @@ public class GameScreen extends ScreenBase implements Observer {
                 scrPos = m_camera.unproject(scrPos);
                 currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
                 currAngle = currPoint.angle();
-                m_tilemap.rotate(initAngle - currAngle);
+                m_tilemap.rotate((initAngle - currAngle) * 2);
                 initAngle = currAngle;
             } else {
                 isPanning = true;
