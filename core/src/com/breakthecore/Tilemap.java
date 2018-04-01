@@ -47,6 +47,10 @@ public class Tilemap {
         return m_size;
     }
 
+    public float getRotDegrees() {
+        return m_rotDegrees;
+    }
+
     public void clear() {
         for (int y = 0; y < m_size * 3; ++y) {
             for (int x = 0; x < m_size; ++x) {

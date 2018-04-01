@@ -130,7 +130,7 @@ public class BreakTheCoreGame extends Game {
 		skin.add("myBall", tex);
 
 		skin.add("ball", new Texture("ball.png"));
-		skin.add("whiteFading", new Texture("whiteFading.png"));
+		skin.add("whiteFading", new Texture("asteroid.png"));
 
 		// Fonts
 		registerFont(skin, "comic_32", "comic_32.fnt");

@@ -32,7 +32,7 @@ public class RenderManager {
     public RenderManager(int sideLen, int colorCount) {
         m_batch = new SpriteBatch();
         m_shapeRenderer = new ShapeRenderer();
-        texture = new Texture("ball.png");
+        texture = new Texture("asteroid.png");
         defaultFont = new BitmapFont();
         sideLength = sideLen;
         sideLengthHalf = sideLength / 2.f;
@@ -90,13 +90,18 @@ public class RenderManager {
     public void draw(Tilemap tm) {
         TilemapTile[][] map = tm.getTilemapTiles();
         Vector2 pos;
+        float rotation = tm.getRotDegrees();
+        int texWidth = texture.getWidth();
+        int texHeight = texture.getHeight();
 
         for (TilemapTile[] arr : map) {
             for (TilemapTile tile : arr) {
                 if (tile != null) {
                     pos = tile.getPositionInWorld();
                     m_batch.setColor(colorList[tile.getColor()]);
-                    m_batch.draw(texture, pos.x - sideLengthHalf, pos.y - sideLengthHalf, sideLength, sideLength);
+//                    m_batch.draw(texture, pos.x - sideLengthHalf, pos.y - sideLengthHalf, sideLength, sideLength);
+                    m_batch.draw(texture, pos.x - sideLengthHalf, pos.y - sideLengthHalf, sideLengthHalf, sideLengthHalf, sideLength, sideLength,
+                            1, 1, -rotation, 0, 0, texWidth, texHeight, false, false);
                 }
             }
         }
