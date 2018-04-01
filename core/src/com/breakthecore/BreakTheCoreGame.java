@@ -15,6 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.breakthecore.screens.GameScreen;
@@ -26,7 +27,7 @@ import static com.badlogic.gdx.Gdx.gl;
 
 public class BreakTheCoreGame extends Game {
 	private MainMenuScreen mainMenuScreen;
-	private FitViewport m_viewport;
+	private ExtendViewport m_viewport;
 	private float dtForFrame;
 	private Skin m_skin;
 	private InputMultiplexer m_inputMultiplexer;
@@ -36,13 +37,12 @@ public class BreakTheCoreGame extends Game {
 	public void create () {
 		Gdx.input.setCatchBackKey(true);
 		WorldSettings.init();
-		m_viewport = new FitViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight());
+		m_viewport = new ExtendViewport(1080, 1920);
 		m_skin = createSkin();
 		m_inputMultiplexer = new InputMultiplexer();
 		Gdx.input.setInputProcessor(m_inputMultiplexer);
 
 		mainMenuScreen = new MainMenuScreen(this);
-
 		setMainMenuScreen();
 	}
 
@@ -92,11 +92,9 @@ public class BreakTheCoreGame extends Game {
 
 	private Skin createSkin() {
 		Skin skin = new Skin();
-		Label.LabelStyle ls;
 		Pixmap pix;
 		Texture tex;
 		NinePatch ninePatch;
-		BitmapFont bf;
 
 		int pixHeight = 30;
 		pix = new Pixmap(pixHeight, pixHeight, Pixmap.Format.RGB888);

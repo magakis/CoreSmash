@@ -18,7 +18,6 @@ import com.breakthecore.BreakTheCoreGame;
 public class GameSettingsScreen extends ScreenBase {
     private BreakTheCoreGame m_game;
     private Stage m_stage;
-    private InputMultiplexer m_inputMultiplexer;
     private Skin m_skin;
     private Table m_pickGameModeTable;
     private Table m_classicTable;
@@ -42,14 +41,10 @@ public class GameSettingsScreen extends ScreenBase {
         m_gameSettings = new GameScreen.GameSettings();
         m_gameScreen = new GameScreen(m_game);
 
-        m_inputMultiplexer = new InputMultiplexer(new BackButtonInputHandler(), m_stage);
+        screenInputMultiplexer.addProcessor(new BackButtonInputHandler());
+        screenInputMultiplexer.addProcessor(m_stage);
 
         m_stage.addActor(m_pickGameModeTable);
-    }
-
-    @Override
-    public InputProcessor getScreenInputProcessor() {
-        return m_inputMultiplexer;
     }
 
     public void tmpReset() {
@@ -132,8 +127,18 @@ public class GameSettingsScreen extends ScreenBase {
         mt.add(m_cMaxRotSlider).colspan(2).fill().expandX().padBottom(100).fill().row();
 
 
-        TextButton playBtn = new TextButton("Play", m_skin);
-        playBtn.addListener(new ChangeListener() {
+        TextButton tbtn = new TextButton("Back", m_skin);
+        tbtn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                m_stage.clear();
+                m_stage.addActor(m_pickGameModeTable);
+            }
+        });
+        mt.add(tbtn).width(250).height(200).align(Align.left);
+
+        tbtn = new TextButton("Play", m_skin);
+        tbtn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 m_gameSettings.initRadius = (int) m_cRadiusSlider.getValue();
@@ -144,7 +149,7 @@ public class GameSettingsScreen extends ScreenBase {
                 m_game.setScreen(m_gameScreen);
             }
         });
-        mt.add(playBtn).colspan(2).width(250).height(200).align(Align.right);
+        mt.add(tbtn).width(250).height(200).align(Align.right);
 
         return mt;
     }
@@ -205,9 +210,18 @@ public class GameSettingsScreen extends ScreenBase {
         mt.add(m_stcLauncherCDLabel).width(m_stcLauncherCDLabel.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
         mt.add(m_stcLauncherCDSlider).colspan(2).fill().expandX().padBottom(100).fill().row();
 
+        TextButton tbtn = new TextButton("Back", m_skin);
+        tbtn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                m_stage.clear();
+                m_stage.addActor(m_pickGameModeTable);
+            }
+        });
+        mt.add(tbtn).width(250).height(200).align(Align.left);
 
-        TextButton playBtn = new TextButton("Play", m_skin);
-        playBtn.addListener(new ChangeListener() {
+        tbtn = new TextButton("Play", m_skin);
+        tbtn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 m_gameSettings.initRadius = (int) m_stcRadiusSlider.getValue();
@@ -218,7 +232,7 @@ public class GameSettingsScreen extends ScreenBase {
                 m_game.setScreen(m_gameScreen);
             }
         });
-        mt.add(playBtn).colspan(2).width(250).height(200).align(Align.right);
+        mt.add(tbtn).colspan(2).width(250).height(200).align(Align.right);
 
         return mt;
     }
@@ -232,8 +246,8 @@ public class GameSettingsScreen extends ScreenBase {
         dummy = new Label("Game Mode", m_skin, "comic_96b");
         tbl.add(dummy).padBottom(100).row();
 
-        String txt = "The core is spinning and your goal is to shoot balls of the right color in order to match-3" +
-                " and beat it.";
+        String txt = "The core is spinning and your goal is to match balls of the same color " +
+                "in order to beat it.";
         dummy = new Label(":Classic Mode:", m_skin, "comic_48b");
         TextButton tb = new TextButton(txt, m_skin, "modeButton");
         tb.getLabel().setWrap(true);
@@ -251,7 +265,7 @@ public class GameSettingsScreen extends ScreenBase {
         tbl.add(tb).expandX().height(250).fill().padBottom(200).row();
 
 
-        txt = "You spin the core while balls get launched at you. Your goal is to match-3 the right colors " +
+        txt = "You spin the core while balls get launched at you. Your goal is to match-3 of the right colors " +
                 "in order to beat it.";
         dummy = new Label(":Spin The Core Mode:", m_skin, "comic_48b");
         tb = new TextButton(txt, m_skin, "modeButton");

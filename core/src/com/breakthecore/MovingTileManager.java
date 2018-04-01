@@ -117,7 +117,7 @@ public class MovingTileManager {
         }
     }
 
-    public void reset() {
+    public void clear() {
         ListIterator<MovingTile> iter = activeList.listIterator();
         MovingTile tile;
         while (iter.hasNext()) {

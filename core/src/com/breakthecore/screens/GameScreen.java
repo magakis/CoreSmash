@@ -40,7 +40,6 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private Tilemap m_tilemap;
     private TilemapManager m_tilemapManager;
-    private InputMultiplexer m_inputMultiplexer;
     private RenderManager renderManager;
 
     private InputProcessor m_classicGestureDetector, m_spinTheCoreGestureDetector, m_backButtonHandler;
@@ -69,6 +68,8 @@ public class GameScreen extends ScreenBase implements Observer {
     public GameScreen(BreakTheCoreGame game) {
         m_game = game;
         m_camera = (OrthographicCamera) m_game.getWorldViewport().getCamera();
+        m_skin = m_game.getSkin();
+
         renderManager = new RenderManager(sideLength, colorCount);
         m_movingTileManager = new MovingTileManager(sideLength, colorCount);
 
@@ -77,7 +78,6 @@ public class GameScreen extends ScreenBase implements Observer {
         m_tilemap = new Tilemap(new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4), 20, sideLength);
         m_tilemapManager = new TilemapManager(m_tilemap);
 
-        m_inputMultiplexer = new InputMultiplexer();
         m_classicGestureDetector = new CustomGestureDetector(new ClassicModeInputListener());
         m_spinTheCoreGestureDetector = new CustomGestureDetector(new SpinTheCoreModeInputListener(m_tilemap.getPositionInWorld()));
 
@@ -86,15 +86,15 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     private void setInputHanlderFor(GameMode mode) {
-        m_inputMultiplexer.clear();
-        m_inputMultiplexer.addProcessor(m_stage);
+        screenInputMultiplexer.clear();
+        screenInputMultiplexer.addProcessor(m_stage);
         switch (mode) {
             case CLASSIC:
-                m_inputMultiplexer.addProcessor(m_classicGestureDetector);
+                screenInputMultiplexer.addProcessor(m_classicGestureDetector);
                 break;
 
             case SPIN_THE_CORE:
-                m_inputMultiplexer.addProcessor(m_spinTheCoreGestureDetector);
+                screenInputMultiplexer.addProcessor(m_spinTheCoreGestureDetector);
                 break;
         }
     }
@@ -108,24 +108,24 @@ public class GameScreen extends ScreenBase implements Observer {
         m_stage.addActor(m_stack);
         m_tilemapManager.initHexTilemap(m_tilemap, settings.initRadius);
         m_gameMode = settings.gameMode;
-        m_movingTileManager.reset();
+        m_movingTileManager.clear();
 
         m_livesLbl.setText(String.valueOf(m_lives));
 
         switch (m_gameMode) {
             case CLASSIC:
+                m_tilemapManager.setAutoRotation(true);
                 m_tilemapManager.setMinMaxRotationSpeed(settings.minRotationSpeed, settings.maxRotationSpeed);
                 m_movingTileManager.setDefaultSpeed(15);
-                m_highscoreLbl.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("classic_highscore")));
-                m_tilemapManager.setAutoRotation(true);
                 m_movingTileManager.setAutoEject(false);
+                m_highscoreLbl.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("classic_highscore")));
                 break;
 
             case SPIN_THE_CORE:
                 m_tilemapManager.setAutoRotation(false);
                 m_movingTileManager.setLaunchDelay(settings.launcherCooldown);
-                m_movingTileManager.setAutoEject(true);
                 m_movingTileManager.setDefaultSpeed(settings.movingTileSpeed);
+                m_movingTileManager.setAutoEject(true);
                 m_highscoreLbl.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("spinthecore_highscore", 0)));
                 break;
         }
@@ -171,12 +171,9 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private void setupUI() {
         Label staticTimeLbl, staticScoreLbl, staticLivesLbl;
-
-        m_skin = m_game.getSkin();
-
         HorizontalGroup hgrp;
 
-        m_stage = new Stage(new FitViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight()));
+        m_stage = new Stage(m_game.getWorldViewport());
         m_stack = new Stack();
         m_stack.setFillParent(true);
         mainTable = new Table();
@@ -189,6 +186,9 @@ public class GameScreen extends ScreenBase implements Observer {
 
         m_livesLbl = new Label("null", m_skin, "comic_48");
         m_livesLbl.setAlignment(Align.center);
+
+        m_highscoreLbl = new Label("", m_skin, "comic_32b");
+        m_highscoreLbl.setAlignment(Align.center);
 
         staticTimeLbl = new Label("Time:", m_skin, "comic_48b");
         staticScoreLbl = new Label("Score:", m_skin, "comic_48b");
@@ -205,7 +205,6 @@ public class GameScreen extends ScreenBase implements Observer {
         grpScore.addActor(img);
         grpScore.addActor(m_scoreLbl);
 
-
         hgrp = new HorizontalGroup();
         hgrp.addActor(staticLivesLbl);
         hgrp.addActor(m_livesLbl);
@@ -218,18 +217,15 @@ public class GameScreen extends ScreenBase implements Observer {
         mainTable.add().expandX();
         mainTable.add(grpScore).width(200).height(100).padRight(-10).row();
         mainTable.add().colspan(2);
+        mainTable.add(new Label("Highscore:", m_skin, "comic_32b")).row();
+        mainTable.add().colspan(2);
+        mainTable.add(m_highscoreLbl);
 
-        hgrp = new HorizontalGroup();
-        m_highscoreLbl = new Label("", m_skin, "comic_32b");
-        hgrp.addActor(new Label("Highscore:", m_skin, "comic_32b"));
-        hgrp.addActor(m_highscoreLbl);
-        hgrp.space(10);
-        mainTable.add(hgrp).align(Align.left);
-
-
-        debugTable = createDebugTable();
 
         m_stack.add(mainTable);
+        // WARNING: If you skip the creation of a debug table the game will crash
+        // cause it tries to update labels that have not been initialized
+        debugTable = createDebugTable();
 //        m_stack.add(debugTable);
         m_stage.addActor(m_stack);
     }
@@ -319,11 +315,6 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     @Override
-    public InputProcessor getScreenInputProcessor() {
-        return m_inputMultiplexer;
-    }
-
-    @Override
     public void onNotify(NotificationType type, Object ob) {
         switch (type) {
             case NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED:
@@ -348,7 +339,6 @@ public class GameScreen extends ScreenBase implements Observer {
                 }
         }
     }
-
 
     public enum GameMode {
         CLASSIC,

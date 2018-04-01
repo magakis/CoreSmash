@@ -3,22 +3,12 @@ package com.breakthecore.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.actions.MoveByAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -27,11 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.viewport.FillViewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.breakthecore.BreakTheCoreGame;
 import com.breakthecore.WorldSettings;
 
@@ -42,7 +28,6 @@ import com.breakthecore.WorldSettings;
 public class MainMenuScreen extends ScreenBase {
     private BreakTheCoreGame m_game;
     private GameSettingsScreen m_gameSettingsScreen;
-    private InputMultiplexer m_inputMultiplexer;
     private Stage m_stage;
     private Table menuTable;
     private Skin m_skin;
@@ -51,7 +36,8 @@ public class MainMenuScreen extends ScreenBase {
     public MainMenuScreen(BreakTheCoreGame game) {
         m_game = game;
         m_stage = new Stage(game.getWorldViewport());
-        m_inputMultiplexer = new InputMultiplexer(new BackButtonInputHandler(), m_stage);
+        screenInputMultiplexer.addProcessor(new BackButtonInputHandler());
+        screenInputMultiplexer.addProcessor(m_stage);
         setupMainMenuStage(m_stage);
         m_gameSettingsScreen = new GameSettingsScreen(game);
     }
@@ -105,10 +91,6 @@ public class MainMenuScreen extends ScreenBase {
         menuTable.add(playBtn).padBottom(Value.percentHeight(1 / 32f, menuTable)).padBottom(Value.percentHeight(3 / 16f, menuTable)).row();
         menuTable.add(versInfo).align(Align.center).height(versInfo.getPrefHeight());
         //        menuTable.add(scoresBtn);
-    }
-
-    public InputProcessor getScreenInputProcessor() {
-        return m_inputMultiplexer;
     }
 
     public Container newMenuButton(String text, String name, EventListener el) {
