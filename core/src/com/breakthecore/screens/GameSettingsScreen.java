@@ -2,8 +2,6 @@ package com.breakthecore.screens;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -24,6 +22,7 @@ public class GameSettingsScreen extends ScreenBase {
     private Table m_spinTheCoreTable;
     private GameScreen.GameSettings m_gameSettings;
     private GameScreen m_gameScreen;
+    private CampaignScreen m_campaignScreen;
 
     private Slider m_cRadiusSlider, m_cMinRotSlider, m_cMaxRotSlider;
     private Label m_cRadiusLabel, m_cMinRotLabel, m_cMaxRotLabel;
@@ -40,6 +39,7 @@ public class GameSettingsScreen extends ScreenBase {
         m_pickGameModeTable = createPickGameModeTable();
         m_gameSettings = new GameScreen.GameSettings();
         m_gameScreen = new GameScreen(m_game);
+        m_campaignScreen = new CampaignScreen(m_game);
 
         screenInputMultiplexer.addProcessor(new BackButtonInputHandler());
         screenInputMultiplexer.addProcessor(m_stage);
@@ -145,7 +145,7 @@ public class GameSettingsScreen extends ScreenBase {
                 m_gameSettings.minRotationSpeed = (int) m_cMinRotSlider.getValue();
                 m_gameSettings.maxRotationSpeed = (int) m_cMaxRotSlider.getValue();
 
-                m_gameScreen.initializeGameScreen(m_gameSettings);
+                m_gameScreen.initialize(m_gameSettings);
                 m_game.setScreen(m_gameScreen);
             }
         });
@@ -228,7 +228,7 @@ public class GameSettingsScreen extends ScreenBase {
                 m_gameSettings.movingTileSpeed = (int) m_stcBallSpeedSlider.getValue();
                 m_gameSettings.launcherCooldown = m_stcLauncherCDSlider.getValue();
 
-                m_gameScreen.initializeGameScreen(m_gameSettings);
+                m_gameScreen.initialize(m_gameSettings);
                 m_game.setScreen(m_gameScreen);
             }
         });
@@ -284,17 +284,15 @@ public class GameSettingsScreen extends ScreenBase {
         tbl.add(tb).expandX().height(250).fill().padBottom(200).row();
 
 
-        txt = "Shoot the core as fast as you can while you keep matching balls of the same color.";
-        dummy = new Label(":Shoot'Em Up Mode:", m_skin, "comic_48b");
+        txt = "Expiremental campaign mode..";
+        dummy = new Label(":Campaign:", m_skin, "comic_48b");
         tb = new TextButton(txt, m_skin, "modeButton");
         tb.getLabel().setWrap(true);
         tb.getLabelCell().pad(10);
         tb.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                m_stage.clear();
-                m_stage.addActor(m_classicTable);
-                m_gameSettings.gameMode = GameScreen.GameMode.CLASSIC;
+                m_game.setScreen(m_campaignScreen);
             }
         });
 

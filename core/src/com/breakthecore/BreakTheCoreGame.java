@@ -18,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.breakthecore.screens.CampaignScreen;
 import com.breakthecore.screens.GameScreen;
 import com.breakthecore.screens.GameSettingsScreen;
 import com.breakthecore.screens.MainMenuScreen;
@@ -44,6 +45,7 @@ public class BreakTheCoreGame extends Game {
 
 		mainMenuScreen = new MainMenuScreen(this);
 		setMainMenuScreen();
+//		setScreen(new CampaignScreen(this));
 	}
 
 	@Override
@@ -96,6 +98,7 @@ public class BreakTheCoreGame extends Game {
 		Texture tex;
 		NinePatch ninePatch;
 
+		// Nine-Patches
 		int pixHeight = 30;
 		pix = new Pixmap(pixHeight, pixHeight, Pixmap.Format.RGB888);
 		pix.setColor(Color.WHITE);
@@ -103,7 +106,6 @@ public class BreakTheCoreGame extends Game {
 		pix.setColor(Color.BLACK);
 		pix.fillRectangle(5, 5, pix.getWidth() - 10, pixHeight - 10);
 		tex = new Texture(pix);
-
 		ninePatch = new NinePatch(tex, 10, 10, 10, 10);
 		skin.add("box_white_5", ninePatch);
 
@@ -113,21 +115,24 @@ public class BreakTheCoreGame extends Game {
 		pix.setColor(Color.BLACK);
 		pix.fillRectangle(10, 10, pix.getWidth() - 20, pixHeight - 20);
 		tex = new Texture(pix);
-
 		ninePatch = new NinePatch(tex, 10, 10, 10, 10);
 		skin.add("box_white_10", ninePatch);
 
-		pix = new Pixmap(pixHeight - 1, pixHeight - 1, Pixmap.Format.RGBA8888);
+		// Textures
+		pix = new Pixmap(41, 41, Pixmap.Format.RGBA8888);
 		pix.setColor(Color.alpha(0));
 		pix.fill();
-		pix.setColor(Color.BLACK);
-		pix.fillCircle(15, 15, pixHeight / 2 - 1);
-		pix.setColor(Color.WHITE);
-		pix.fillCircle(15, 15, pixHeight / 2 - 3);
+		pix.setColor(Color.DARK_GRAY);
+		pix.fillCircle(20, 20, 20);
+		pix.setColor(Color.GRAY);
+		pix.fillCircle(20, 20, 19);
 		tex = new Texture(pix);
-
 		skin.add("myBall", tex);
 
+		skin.add("ball", new Texture("ball.png"));
+		skin.add("whiteFading", new Texture("whiteFading.png"));
+
+		// Fonts
 		registerFont(skin, "comic_32", "comic_32.fnt");
 		registerFont(skin, "comic_48", "comic_48.fnt");
 
@@ -136,9 +141,10 @@ public class BreakTheCoreGame extends Game {
 		registerFont(skin, "comic_48b", "comic_48b.fnt");
 		registerFont(skin, "comic_96b", "comic_96b.fnt");
 
-		skin.add("ball", new Texture("ball.png"));
+		registerFont(skin, "comic_72bo", "comic_72bo.fnt");
+		registerFont(skin, "comic_96bo", "comic_96bo.fnt");
 
-		// ButtonStyles
+		// TextButtonStyles
 		TextButton.TextButtonStyle stb = new TextButton.TextButtonStyle();
 		stb.up = skin.newDrawable("box_white_10", Color.WHITE);
 		stb.down = skin.newDrawable("box_white_10", Color.GRAY);
@@ -159,6 +165,21 @@ public class BreakTheCoreGame extends Game {
 		stb.checked = stb.up;
 		stb.font = skin.getFont("comic_48b");
 		skin.add("default", stb);
+
+		stb = new TextButton.TextButtonStyle();
+		stb.up = skin.newDrawable("whiteFading", Color.WHITE);
+		stb.down = skin.newDrawable("whiteFading", Color.GRAY);
+		stb.checked = stb.up;
+		stb.font = skin.getFont("comic_72bo");
+		skin.add("levelBtnEnabled", stb);
+
+		stb = new TextButton.TextButtonStyle();
+		stb.up = skin.newDrawable("whiteFading", Color.DARK_GRAY);
+		stb.down = skin.newDrawable("whiteFading", Color.DARK_GRAY);
+		stb.checked = stb.up;
+		stb.font = skin.getFont("comic_72bo");
+		skin.add("levelBtnDisabled", stb);
+
 
 		//SliderStyles
 		Slider.SliderStyle ss = new Slider.SliderStyle();

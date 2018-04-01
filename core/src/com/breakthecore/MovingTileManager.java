@@ -137,7 +137,7 @@ public class MovingTileManager {
         }
     }
 
-    public void setDefaultSpeed(int defaultSpeed) {
+    public void setDefaultBallSpeed(int defaultSpeed) {
         m_defaultSpeed = defaultSpeed;
         for (MovingTile mt : launcher) {
             mt.setSpeed(defaultSpeed);
