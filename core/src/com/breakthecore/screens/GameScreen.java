@@ -20,6 +20,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.breakthecore.BreakTheCoreGame;
+import com.breakthecore.ScoreManager;
+import com.breakthecore.StreakUI;
 import com.breakthecore.managers.CollisionManager;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observer;
@@ -43,6 +45,8 @@ public class GameScreen extends ScreenBase implements Observer {
     private MovingTileManager m_movingTileManager;
     private RenderManager renderManager;
     private CollisionManager m_collisionManager;
+    private ScoreManager m_scoreManager;
+    private StreakUI m_streakUI;
 
     private RoundEndListener m_roundEndListener;
 
@@ -50,7 +54,6 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private boolean isGameActive;
     private boolean roundWon;
-    private int m_score;
     private float m_time;
     private int m_lives;
 
@@ -61,6 +64,7 @@ public class GameScreen extends ScreenBase implements Observer {
     private ResultUI m_resultUI;
     private Skin m_skin;
     private Stage m_stage;
+    private Stack m_root;
     //===========
 
     private int colorCount = 7;
@@ -87,8 +91,16 @@ public class GameScreen extends ScreenBase implements Observer {
 
         m_gameUI = new GameUI();
         m_resultUI = new ResultUI();
+        m_streakUI = new StreakUI(m_skin);
+
+        m_scoreManager = new ScoreManager();
+        m_scoreManager.addObserver(m_streakUI);
+        m_tilemapManager.addObserver(m_scoreManager);
 
         m_stage = new Stage(game.getWorldViewport());
+
+        m_root = new Stack(m_gameUI.getRoot(), m_streakUI.getRoot());
+        m_root.setFillParent(true);
     }
 
     private void setInputHanlderFor(GameMode mode) {
@@ -106,17 +118,17 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     public void initialize(GameSettings settings) {
-        m_score = 0;
         m_time = 0;
         m_lives = 3;
         m_roundEndListener = null;
         isGameActive = true;
-        m_stage.clear();
-        m_stage.addActor(m_gameUI.getRoot());
         m_tilemapManager.initHexTilemap(m_tilemap, settings.initRadius);
         m_gameMode = settings.gameMode;
         m_movingTileManager.reset();
+        m_scoreManager.reset();
 
+        m_stage.clear();
+        m_stage.addActor(m_root);
         m_gameUI.livesLbl.setText(String.valueOf(m_lives));
 
         switch (m_gameMode) {
@@ -170,33 +182,36 @@ public class GameScreen extends ScreenBase implements Observer {
             m_movingTileManager.update(delta);
             m_tilemapManager.update(delta);
             m_collisionManager.checkForCollision(m_movingTileManager, m_tilemapManager);
+            m_scoreManager.update();
             updateStage();
         }
     }
 
     private void updateStage() {
+        m_stage.act();
         m_gameUI.timeLbl.setText(String.format("%d:%02d", (int) m_time / 60, (int) m_time % 60));
-        m_gameUI.scoreLbl.setText(String.valueOf(m_score));
+        m_gameUI.scoreLbl.setText(String.valueOf(m_scoreManager.getScore()));
     }
 
     public void handleGameEnd() {
         m_resultUI.update();
         m_stage.clear();
         m_stage.addActor(m_resultUI.getRoot());
+        int score = m_scoreManager.getScore();
 
         // NOTE: It's questionable whether I want to store such scores because mainly of this campaign.
         if (roundWon) {
             Preferences prefs = Gdx.app.getPreferences("highscores");
             switch (m_gameMode) {
                 case CLASSIC:
-                    if (prefs.getInteger("classic_highscore", 0) < m_score) {
-                        prefs.putInteger("classic_highscore", m_score);
+                    if (prefs.getInteger("classic_highscore", 0) < score) {
+                        prefs.putInteger("classic_highscore", score);
                         prefs.flush();
                     }
                     break;
                 case SPIN_THE_CORE:
-                    if (prefs.getInteger("spinthecore_highscore", 0) < m_score) {
-                        prefs.putInteger("spinthecore_highscore", m_score);
+                    if (prefs.getInteger("spinthecore_highscore", 0) < score) {
+                        prefs.putInteger("spinthecore_highscore", score);
                         prefs.flush();
                     }
                     break;
@@ -217,11 +232,6 @@ public class GameScreen extends ScreenBase implements Observer {
                 handleGameEnd();
                 break;
 
-            case NOTIFICATION_TYPE_TILE_DESTROYED:
-                if (isGameActive) {
-                    m_score++;
-                }
-                break;
             case NOTIFICATION_TYPE_NO_COLOR_MATCH:
                 if (m_lives == 1) {
                     roundWon = false;
@@ -232,33 +242,6 @@ public class GameScreen extends ScreenBase implements Observer {
                     m_gameUI.livesLbl.setText(String.valueOf(m_lives));
                 }
         }
-    }
-
-    public enum GameMode {
-        CLASSIC,
-        SPIN_THE_CORE,
-        SHOOT_EM_UP;
-
-    }
-
-    public static class GameSettings {
-
-        public GameMode gameMode;
-        public int initRadius;
-        public float minRotationSpeed;
-        public float maxRotationSpeed;
-        public int movingTileSpeed;
-        public float launcherCooldown;
-
-        public void reset() {
-            gameMode = null;
-            initRadius = 0;
-            minRotationSpeed = 0;
-            maxRotationSpeed = 0;
-            movingTileSpeed = 0;
-            launcherCooldown = 0;
-        }
-
     }
 
     private class ClassicModeInputListener implements GestureDetector.GestureListener {
@@ -412,6 +395,33 @@ public class GameScreen extends ScreenBase implements Observer {
 
     }
 
+    public enum GameMode {
+        CLASSIC,
+        SPIN_THE_CORE,
+        SHOOT_EM_UP;
+
+    }
+
+    public static class GameSettings {
+
+        public GameMode gameMode;
+        public int initRadius;
+        public float minRotationSpeed;
+        public float maxRotationSpeed;
+        public int movingTileSpeed;
+        public float launcherCooldown;
+
+        public void reset() {
+            gameMode = null;
+            initRadius = 0;
+            minRotationSpeed = 0;
+            maxRotationSpeed = 0;
+            movingTileSpeed = 0;
+            launcherCooldown = 0;
+        }
+
+    }
+
     private class GameUI extends UIBase {
         Label timeLbl, scoreLbl, livesLbl, highscoreLbl;
 
@@ -511,7 +521,7 @@ public class GameScreen extends ScreenBase implements Observer {
             String resultText = roundWon ? "Congratulations!" : "You Failed!";
             resultTextLbl.setText(resultText);
             timeLbl.setText(m_gameUI.timeLbl.getText());
-            scoreLbl.setText(String.valueOf(m_score));
+            scoreLbl.setText(String.valueOf(m_scoreManager.getScore()));
         }
     }
 

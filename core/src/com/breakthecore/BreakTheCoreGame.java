@@ -77,11 +77,6 @@ public class BreakTheCoreGame extends Game {
 		return m_viewport;
 	}
 
-//	public void setMainMenuScreen() {
-//			setInputProcessor(mainMenuScreen.getScreenInputProcessor());
-//			setScreen(mainMenuScreen);
-//	}
-
 	public RenderManager getRenderManager() {
 		return m_renderManager;
 	}
