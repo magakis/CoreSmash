@@ -53,9 +53,10 @@ public class TilemapManager extends Observable implements Observer {
         return direction;
     }
 
-    public void checkForCollision(List<MovingTile> list) {
+    // TODO: 4/2/2018 Collision detection should happen in MovingTileManager
+    public void checkForCollision(MovingTileManager mtm) {
         TilemapTile solidTile;
-
+        List<MovingTile> list = mtm.getActiveList();
         for (MovingTile mt : list) {
             solidTile = m_collisionManager.findCollision(tm, mt);
             if (solidTile == null) continue;
@@ -63,27 +64,31 @@ public class TilemapManager extends Observable implements Observer {
             direction.set(mt.m_positionInWorld).sub(solidTile.getPositionInWorld());
             direction.nor();
 
-            addTile(mt.getColor(), solidTile, m_collisionManager.getClosestSides(solidTile, direction));
+            addTile(mt.extractTile(), solidTile, m_collisionManager.getClosestSides(tm.getCosT(), tm.getSinT(), direction));
 
             mt.dispose();
         }
+        mtm.disposeInactive();
+    }
 
+    public float[] getVerticesOnMiddleEdges(float cosT, float sinT) {
+        return m_collisionManager.getVerticesOnMiddleEdges(cosT, sinT);
     }
 
     public void setAutoRotation(boolean autoRotation) {
         isRotating = autoRotation;
     }
 
-    public boolean addTile(int color, TilemapTile solidTile, Tile.Side[] sides) {
+    public boolean addTile(Tile tile, TilemapTile solidTile, TileContainer.Side[] sides) {
         for (int i = 0; i < 6; ++i) {
-            if (addTile(color, solidTile, sides[i])) {
+            if (addTile(tile, solidTile, sides[i])) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean addTile(int color, TilemapTile solidTile, Tile.Side side) {
+    public boolean addTile(Tile tile, TilemapTile solidTile, TileContainer.Side side) {
         TilemapTile newTile = null;
         boolean placedNewTile = false;
         Vector2 tilePos = solidTile.getPositionInTilemap();
@@ -91,7 +96,7 @@ public class TilemapManager extends Observable implements Observer {
         switch (side) {
             case top:
                 if (tm.getTile((int) tilePos.x, (int) tilePos.y + 2) == null) {
-                    newTile = createTilemapTile(color);
+                    newTile = createTilemapTile(tile);
                     tm.setTile((int) tilePos.x, (int) tilePos.y + 2, newTile);
                     placedNewTile = true;
                 }
@@ -99,7 +104,7 @@ public class TilemapManager extends Observable implements Observer {
             case topLeft:
                 xOffset = (tilePos.y % 2) == 0 ? -1 : 0;
                 if (tm.getTile((int) tilePos.x + xOffset, (int) tilePos.y + 1) == null) {
-                    newTile = createTilemapTile(color);
+                    newTile = createTilemapTile(tile);
                     tm.setTile((int) tilePos.x + xOffset, (int) tilePos.y + 1, newTile);
                     placedNewTile = true;
                 }
@@ -107,14 +112,14 @@ public class TilemapManager extends Observable implements Observer {
             case topRight:
                 xOffset = (tilePos.y % 2) == 0 ? 0 : 1;
                 if (tm.getTile((int) tilePos.x + xOffset, (int) tilePos.y + 1) == null) {
-                    newTile = createTilemapTile(color);
+                    newTile = createTilemapTile(tile);
                     tm.setTile((int) tilePos.x + xOffset, (int) tilePos.y + 1, newTile);
                     placedNewTile = true;
                 }
                 break;
             case bottom:
                 if (tm.getTile((int) tilePos.x, (int) tilePos.y - 2) == null) {
-                    newTile = createTilemapTile(color);
+                    newTile = createTilemapTile(tile);
                     tm.setTile((int) tilePos.x, (int) tilePos.y - 2, newTile);
                     placedNewTile = true;
                 }
@@ -122,7 +127,7 @@ public class TilemapManager extends Observable implements Observer {
             case bottomLeft:
                 xOffset = (tilePos.y % 2) == 0 ? -1 : 0;
                 if (tm.getTile((int) tilePos.x + xOffset, (int) tilePos.y - 1) == null) {
-                    newTile = createTilemapTile(color);
+                    newTile = createTilemapTile(tile);
                     tm.setTile((int) tilePos.x + xOffset, (int) tilePos.y - 1, newTile);
                     placedNewTile = true;
                 }
@@ -130,7 +135,7 @@ public class TilemapManager extends Observable implements Observer {
             case bottomRight:
                 xOffset = (tilePos.y % 2) == 0 ? 0 : 1;
                 if (tm.getTile((int) tilePos.x + xOffset, (int) tilePos.y - 1) == null) {
-                    newTile = createTilemapTile(color);
+                    newTile = createTilemapTile(tile);
                     tm.setTile((int) tilePos.x + xOffset, (int) tilePos.y - 1, newTile);
                     placedNewTile = true;
                 }
@@ -143,8 +148,8 @@ public class TilemapManager extends Observable implements Observer {
         return false;
     }
 
-    public TilemapTile createTilemapTile(int color) {
-        TilemapTile res = new TilemapTile(color);
+    public TilemapTile createTilemapTile(Tile tile) {
+        TilemapTile res = new TilemapTile(tile);
         res.addObserver(this);
         notifyObservers(NotificationType.NOTIFICATION_TYPE_NEW_TILE_CREATED, null);
         return res;
@@ -225,7 +230,7 @@ public class TilemapManager extends Observable implements Observer {
 
         TilemapTile dummy;
         if (radius == 0) {
-            dummy = new TilemapTile(WorldSettings.getRandomInt(7));
+            dummy = new TilemapTile(new Tile(WorldSettings.getRandomInt(7)));
             dummy.addObserver(this);
             tm.setTile(0, 0, dummy);
             return;
@@ -235,7 +240,7 @@ public class TilemapManager extends Observable implements Observer {
             float xOffset = ((y) % 2 == 0) ? 0 : .75f;
             for (int x = -radius; x < radius; ++x) {
                 if (Vector2.dst(x * 1.5f + xOffset, y * 0.5f, 0, 0) <= radius) {
-                    dummy = new TilemapTile(WorldSettings.getRandomInt(7));
+                    dummy = new TilemapTile(new Tile(WorldSettings.getRandomInt(7)));
                     dummy.addObserver(this);
                     tm.setTile(x, y, dummy);
                 }
@@ -245,7 +250,7 @@ public class TilemapManager extends Observable implements Observer {
     }
 
     private void fillEntireTilemap(Tilemap tm) {
-        Tile[][] tiles = tm.getTilemapTiles();
+        TileContainer[][] tiles = tm.getTilemapTiles();
         int center_tile = tm.getSize() / 2;
         int oddOrEvenFix = tm.getSize() % 2 == 1 ? 1 : 0;
         int tmp = (tm.getSize() * 3) / 2;
@@ -253,7 +258,7 @@ public class TilemapManager extends Observable implements Observer {
             for (int x = -tm.getSize() / 2; x < tm.getSize() / 2 + oddOrEvenFix; ++x) {
                 tiles[y + (center_tile) * 3 + oddOrEvenFix][x + center_tile] = new TilemapTile(
                         x, y,
-                        WorldSettings.getRandomInt(7));
+                        new Tile(WorldSettings.getRandomInt(7)));
             }
         }
     }

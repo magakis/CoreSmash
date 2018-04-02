@@ -8,7 +8,7 @@ import java.util.Comparator;
 
 public class CollisionManager {
     private ArrayList<DistanceSideStruct> m_collisionDisSide;
-    private Tile.Side[] m_closestSidesOutput;
+    private TileContainer.Side[] m_closestSidesOutput;
     private Comparator<DistanceSideStruct> m_disSideComp;
 
     public CollisionManager() {
@@ -24,7 +24,7 @@ public class CollisionManager {
             }
         };
 
-        m_closestSidesOutput = new Tile.Side[6];
+        m_closestSidesOutput = new TileContainer.Side[6];
     }
 
     public TilemapTile findCollision(Tilemap tm, MovingTile moveTile) {
@@ -50,39 +50,39 @@ public class CollisionManager {
         return null;
     }
 
-    public Tile.Side[] getClosestSides(Tile solidTile, Vector2 point) {
-        float[] vertices = solidTile.getVerticesOnMiddleEdges();
+    public TileContainer.Side[] getClosestSides(float cosT, float sinT, Vector2 point) {
+        float[] vertices = getVerticesOnMiddleEdges(cosT, sinT);
         DistanceSideStruct curr;
 
         float topLeft = Vector2.dst(vertices[0], vertices[1], point.x, point.y);
         curr = m_collisionDisSide.get(0);
         curr.distance = topLeft;
-        curr.side = Tile.Side.topLeft;
+        curr.side = TileContainer.Side.topLeft;
 
         float top = Vector2.dst(vertices[2], vertices[3], point.x, point.y);
         curr = m_collisionDisSide.get(1);
         curr.distance = top;
-        curr.side = Tile.Side.top;
+        curr.side = TileContainer.Side.top;
 
         float topRight = Vector2.dst(vertices[4], vertices[5], point.x, point.y);
         curr = m_collisionDisSide.get(2);
         curr.distance = topRight;
-        curr.side = Tile.Side.topRight;
+        curr.side = TileContainer.Side.topRight;
 
         float bottomRight = Vector2.dst(vertices[6], vertices[7], point.x, point.y);
         curr = m_collisionDisSide.get(3);
         curr.distance = bottomRight;
-        curr.side = Tile.Side.bottomRight;
+        curr.side = TileContainer.Side.bottomRight;
 
         float bottom = Vector2.dst(vertices[8], vertices[9], point.x, point.y);
         curr = m_collisionDisSide.get(4);
         curr.distance = bottom;
-        curr.side = Tile.Side.bottom;
+        curr.side = TileContainer.Side.bottom;
 
         float bottomLeft = Vector2.dst(vertices[10], vertices[11], point.x, point.y);
         curr = m_collisionDisSide.get(5);
         curr.distance = bottomLeft;
-        curr.side = Tile.Side.bottomLeft;
+        curr.side = TileContainer.Side.bottomLeft;
 
         Collections.sort(m_collisionDisSide, m_disSideComp);
 
@@ -93,8 +93,17 @@ public class CollisionManager {
         return m_closestSidesOutput;
     }
 
+    public float[] getVerticesOnMiddleEdges(float cosT, float sinT) {
+        float[] result = new float[12];
+        for (int i = 0; i < 12; i += 2) {
+            result[i] = TileContainer.s_verticesOnMiddleEdges[i] * cosT + TileContainer.s_verticesOnMiddleEdges[i + 1] * sinT;
+            result[i + 1] = TileContainer.s_verticesOnMiddleEdges[i] * -sinT + TileContainer.s_verticesOnMiddleEdges[i + 1] * cosT;
+        }
+        return result;
+    }
+
     private class DistanceSideStruct {
         public float distance;
-        public Tile.Side side;
+        public TileContainer.Side side;
     }
 }

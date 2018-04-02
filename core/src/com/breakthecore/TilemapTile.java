@@ -2,7 +2,7 @@ package com.breakthecore;
 
 import com.badlogic.gdx.math.Vector2;
 
-public class TilemapTile extends Tile {
+public class TilemapTile extends TileContainer {
     private Vector2 m_positionInTilemap;
     private int m_distanceFromCenter;
 
@@ -11,13 +11,13 @@ public class TilemapTile extends Tile {
         m_distanceFromCenter = calcDistnanceFromCenter(tilex , tiley);
     }
 
-    public TilemapTile(float tilex, float tiley, int colorid) {
+    public TilemapTile(float tilex, float tiley, Tile tile) {
         this(tilex, tiley);
-        setColor(colorid);
+        m_tile = tile;
     }
 
-    public TilemapTile(int color) {
-        super(color);
+    public TilemapTile(Tile tile) {
+        m_tile = tile;
         m_positionInTilemap = new Vector2();
     }
 
@@ -32,6 +32,10 @@ public class TilemapTile extends Tile {
     public void setPositionInTilemap(float tilex, float tiley) {
         m_positionInTilemap.set(tilex, tiley);
         m_distanceFromCenter = calcDistnanceFromCenter(tilex, tiley);
+    }
+
+    public int getColor() {
+        return m_tile.getColor();
     }
 
     //XXX: calcDistanceFromCenter is not accurate at all!...

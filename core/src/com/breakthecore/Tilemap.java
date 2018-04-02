@@ -92,7 +92,6 @@ public class Tilemap {
     }
 
     public void updateTilemapTile(TilemapTile hex) {
-        hex.setRotation(m_cosT, m_sinT);
         Vector2 tilePos = hex.getPositionInTilemap();
         float x = tilePos.x;
         float y = tilePos.y;
@@ -150,6 +149,14 @@ public class Tilemap {
 
     private void emptyTileAt(int x, int y) {
         m_tileList[y + m_centerTileY][x + m_centerTileX] = null;
+    }
+
+    public float getCosT() {
+        return m_cosT;
+    }
+
+    public float getSinT() {
+        return m_sinT;
     }
 
     public Vector2 getPositionInWorld() {

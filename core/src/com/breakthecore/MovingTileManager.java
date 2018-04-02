@@ -3,10 +3,9 @@ package com.breakthecore;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Queue;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
-
-import sun.java2d.opengl.WGLSurfaceData;
 
 /**
  * Created by Michail on 24/3/2018.
@@ -36,12 +35,7 @@ public class MovingTileManager {
         m_colorCount = colorCount;
         isActive = true;
         m_defaultSpeed = 15;
-
-        for (int i = 0; i < 3; ++i) {
-            launcher.addLast(new MovingTile(launcherPos.x, launcherPos.y - i * tileSize, getRandomColor(), m_defaultSpeed));
-        }
-
-        launchDelay = tileSize / launcher.first().getSpeed();
+        launchDelay = .1f;
     }
 
     public MovingTile getFirstActiveTile() {
@@ -60,7 +54,6 @@ public class MovingTileManager {
     }
 
     public void update(float delta) {
-        disposeInactive();
         if (isActive) {
             updateActiveList(delta);
 
@@ -105,20 +98,18 @@ public class MovingTileManager {
             launcher.get(0).setPositionInWorld(launcherPos.x, launcherPos.y);
             launcher.get(1).setPositionInWorld(launcherPos.x, launcherPos.y - m_tileSize);
 
-            if (movtPool.size() > 0) {
-                launcher.addLast(movtPool.removeFirst());
-                launcher.last().setPositionInWorld(launcherPos.x, launcherPos.y - 2 * m_tileSize);
-                launcher.last().setColor(getRandomColor());
-                launcher.last().setSpeed(m_defaultSpeed);
-            } else {
-                launcher.addLast(new MovingTile(launcherPos.x, launcherPos.y - 2 * m_tileSize, getRandomColor(), m_defaultSpeed));
-            }
+            launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - 2 * m_tileSize, new Tile(getRandomColor())));
+
             launchDelayCounter = launchDelay;
         }
     }
 
-    public void clear() {
-        ListIterator<MovingTile> iter = activeList.listIterator();
+    public void reset() {
+        isActive = true;
+        m_defaultSpeed = 15;
+        launchDelay = 0.1f;
+
+        Iterator<MovingTile> iter = activeList.iterator();
         MovingTile tile;
         while (iter.hasNext()) {
             tile = iter.next();
@@ -128,12 +119,17 @@ public class MovingTileManager {
             movtPool.add(tile);
             iter.remove();
         }
-        isActive = true;
-        m_defaultSpeed = 15;
-        launchDelay = m_tileSize / launcher.first().getSpeed();
-        for (MovingTile mt : launcher) {
-            mt.setSpeed(m_defaultSpeed);
-            mt.setColor(WorldSettings.getRandomInt(7));
+
+        iter = launcher.iterator();
+        while (iter.hasNext()) {
+            tile = iter.next();
+            tile.setSpeed(m_defaultSpeed);
+            tile.extractTile(); //TODO: Remove tile in a pool of tiles
+            tile.setTile(new Tile(WorldSettings.getRandomInt(7)));
+        }
+
+        while (launcher.size < 3) {
+            launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * m_tileSize, new Tile(WorldSettings.getRandomInt(7))));
         }
     }
 
@@ -144,7 +140,7 @@ public class MovingTileManager {
         }
     }
 
-    private void disposeInactive() {
+    public void disposeInactive() {
         ListIterator<MovingTile> iter = activeList.listIterator();
         MovingTile tile;
         while (iter.hasNext()) {
@@ -158,5 +154,18 @@ public class MovingTileManager {
                 iter.remove();
             }
         }
+    }
+
+    private MovingTile createMovingTile(float x, float y, Tile tile) {
+        MovingTile res;
+        if (movtPool.size() > 0) {
+            res = movtPool.removeFirst();
+            res.setPositionInWorld(x, y);
+            res.setTile(tile);
+            res.setSpeed(m_defaultSpeed);
+        } else {
+            res = new MovingTile(x, y, m_defaultSpeed, new Tile(WorldSettings.getRandomInt(7)));
+        }
+        return res;
     }
 }

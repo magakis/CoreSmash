@@ -110,7 +110,7 @@ public class GameScreen extends ScreenBase implements Observer {
         m_stage.addActor(m_stack);
         m_tilemapManager.initHexTilemap(m_tilemap, settings.initRadius);
         m_gameMode = settings.gameMode;
-        m_movingTileManager.clear();
+        m_movingTileManager.reset();
 
         m_livesLbl.setText(String.valueOf(m_lives));
 
@@ -153,6 +153,7 @@ public class GameScreen extends ScreenBase implements Observer {
             renderManager.draw(m_movingTileManager.getActiveList());
             renderManager.end();
 
+//            renderManager.DBdraw(m_tilemapManager,m_tilemap);
             renderManager.renderCenterDot(m_camera.combined);
         }
         m_stage.draw();
@@ -163,7 +164,7 @@ public class GameScreen extends ScreenBase implements Observer {
             m_time += delta;
             m_movingTileManager.update(delta);
             m_tilemapManager.update(delta);
-            m_tilemapManager.checkForCollision(m_movingTileManager.getActiveList());
+            m_tilemapManager.checkForCollision(m_movingTileManager);
             updateStage();
         }
     }
