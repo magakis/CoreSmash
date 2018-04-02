@@ -1,6 +1,5 @@
-package com.breakthecore;
+package com.breakthecore.managers;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -10,8 +9,11 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 
 import com.badlogic.gdx.utils.Queue;
+import com.breakthecore.Tilemap;
+import com.breakthecore.WorldSettings;
+import com.breakthecore.tiles.MovingTile;
+import com.breakthecore.tiles.TilemapTile;
 
-import java.util.Collection;
 import java.util.List;
 
 
@@ -108,18 +110,18 @@ public class RenderManager {
     }
 
 
-    public void DBdraw(TilemapManager tmm, Tilemap tm) {
+    public void DBdraw(CollisionManager cm, Tilemap tm) {
         TilemapTile[][] map = tm.getTilemapTiles();
         Vector2 pos;
         int sideLen = tm.getSideLength() / 2;
 
         m_shapeRenderer.setColor(Color.WHITE);
         m_shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        float[] vetices = tmm.getVerticesOnMiddleEdges(tm.getCosT(), tm.getSinT());
+        float[] vetices = cm.getVerticesOnMiddleEdges(tm.getCosT(), tm.getSinT());
         for (TilemapTile[] arr : map) {
             for (TilemapTile tile : arr) {
                 if (tile != null) {
-                    pos = tile.m_positionInWorld;
+                    pos = tile.getPositionInWorld();
 
                     for (int i = 0; i < 12; i += 2) {
                         m_shapeRenderer.circle(vetices[i] * sideLen + pos.x, vetices[i + 1] * sideLen + pos.y, 3);

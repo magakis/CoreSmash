@@ -1,8 +1,7 @@
 package com.breakthecore;
 
 import com.badlogic.gdx.math.Vector2;
-
-import java.util.ListIterator;
+import com.breakthecore.tiles.TilemapTile;
 
 /**
  * Created by Michail on 18/3/2018.

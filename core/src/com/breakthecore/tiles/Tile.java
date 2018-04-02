@@ -1,4 +1,4 @@
-package com.breakthecore;
+package com.breakthecore.tiles;
 
 public class Tile {
     private TileType m_type;

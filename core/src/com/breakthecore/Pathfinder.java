@@ -1,6 +1,7 @@
 package com.breakthecore;
 
 import com.badlogic.gdx.math.Vector2;
+import com.breakthecore.tiles.TilemapTile;
 
 import java.util.ArrayList;
 import java.util.Collections;

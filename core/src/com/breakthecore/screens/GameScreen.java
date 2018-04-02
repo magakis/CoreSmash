@@ -20,12 +20,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.breakthecore.BreakTheCoreGame;
+import com.breakthecore.managers.CollisionManager;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observer;
 import com.breakthecore.RoundEndListener;
-import com.breakthecore.TilemapManager;
-import com.breakthecore.MovingTileManager;
-import com.breakthecore.RenderManager;
+import com.breakthecore.managers.TilemapManager;
+import com.breakthecore.managers.MovingTileManager;
+import com.breakthecore.managers.RenderManager;
 import com.breakthecore.Tilemap;
 import com.breakthecore.WorldSettings;
 
@@ -40,6 +41,7 @@ public class GameScreen extends ScreenBase implements Observer {
     private Tilemap m_tilemap;
     private TilemapManager m_tilemapManager;
     private RenderManager renderManager;
+    private CollisionManager m_collisionManager;
 
     private RoundEndListener m_roundEndListener;
 
@@ -73,6 +75,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
         renderManager = new RenderManager(sideLength, colorCount);
         m_movingTileManager = new MovingTileManager(sideLength, colorCount);
+        m_collisionManager = new CollisionManager();
 
         setupUI();
 
@@ -164,7 +167,7 @@ public class GameScreen extends ScreenBase implements Observer {
             m_time += delta;
             m_movingTileManager.update(delta);
             m_tilemapManager.update(delta);
-            m_tilemapManager.checkForCollision(m_movingTileManager);
+            m_collisionManager.checkForCollision(m_movingTileManager, m_tilemapManager);
             updateStage();
         }
     }
@@ -227,7 +230,7 @@ public class GameScreen extends ScreenBase implements Observer {
                     isGameActive = false;
                     handleGameEnd();
                 } else {
-                    --m_lives;
+//                    --m_lives;
                     m_livesLbl.setText(String.valueOf(m_lives));
                 }
         }

@@ -1,14 +1,23 @@
-package com.breakthecore;
+package com.breakthecore.managers;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.breakthecore.NotificationType;
+import com.breakthecore.Observable;
+import com.breakthecore.Observer;
+import com.breakthecore.Pathfinder;
+import com.breakthecore.Tilemap;
+import com.breakthecore.WorldSettings;
+import com.breakthecore.tiles.Tile;
+import com.breakthecore.tiles.TileContainer;
+import com.breakthecore.tiles.TilemapTile;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TilemapManager extends Observable implements Observer {
     private Tilemap tm;
-    private CollisionManager m_collisionManager;
+
     private ArrayList<TilemapTile> match = new ArrayList<TilemapTile>();
     private ArrayList<TilemapTile> exclude = new ArrayList<TilemapTile>();
     private boolean isRotating = true;
@@ -18,15 +27,12 @@ public class TilemapManager extends Observable implements Observer {
     private float minRotSpeed = 0;
     private float maxRotSpeed = 0;
 
-    private Vector2 direction;
     private float maxRotAddedSpeed;
     private float rotationSpeed;
 
     public TilemapManager(Tilemap map) {
         tm = map;
-        m_collisionManager = new CollisionManager();
         m_pathfinder = new Pathfinder();
-        direction = new Vector2();
         maxRotAddedSpeed = maxRotSpeed - minRotSpeed;
     }
 
@@ -49,30 +55,8 @@ public class TilemapManager extends Observable implements Observer {
         return rotationSpeed;
     }
 
-    public Vector2 getDBDirection() {
-        return direction;
-    }
-
-    // TODO: 4/2/2018 Collision detection should happen in MovingTileManager
-    public void checkForCollision(MovingTileManager mtm) {
-        TilemapTile solidTile;
-        List<MovingTile> list = mtm.getActiveList();
-        for (MovingTile mt : list) {
-            solidTile = m_collisionManager.findCollision(tm, mt);
-            if (solidTile == null) continue;
-
-            direction.set(mt.m_positionInWorld).sub(solidTile.getPositionInWorld());
-            direction.nor();
-
-            addTile(mt.extractTile(), solidTile, m_collisionManager.getClosestSides(tm.getCosT(), tm.getSinT(), direction));
-
-            mt.dispose();
-        }
-        mtm.disposeInactive();
-    }
-
-    public float[] getVerticesOnMiddleEdges(float cosT, float sinT) {
-        return m_collisionManager.getVerticesOnMiddleEdges(cosT, sinT);
+    public Tilemap getTileMap() {
+        return tm;
     }
 
     public void setAutoRotation(boolean autoRotation) {

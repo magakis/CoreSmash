@@ -1,6 +1,7 @@
-package com.breakthecore;
+package com.breakthecore.tiles;
 
 import com.badlogic.gdx.math.Vector2;
+import com.breakthecore.Observable;
 
 /**
  * Created by Michail on 18/3/2018.

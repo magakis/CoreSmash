@@ -1,7 +1,10 @@
-package com.breakthecore;
+package com.breakthecore.managers;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Queue;
+import com.breakthecore.WorldSettings;
+import com.breakthecore.tiles.MovingTile;
+import com.breakthecore.tiles.Tile;
 
 import java.util.Iterator;
 import java.util.LinkedList;

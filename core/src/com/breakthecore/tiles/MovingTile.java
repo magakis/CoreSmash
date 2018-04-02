@@ -1,4 +1,4 @@
-package com.breakthecore;
+package com.breakthecore.tiles;
 
 import com.badlogic.gdx.math.Vector2;
 

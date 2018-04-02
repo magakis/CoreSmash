@@ -1,17 +1,24 @@
-package com.breakthecore;
+package com.breakthecore.managers;
 
 import com.badlogic.gdx.math.Vector2;
+import com.breakthecore.Tilemap;
+import com.breakthecore.tiles.MovingTile;
+import com.breakthecore.tiles.TileContainer;
+import com.breakthecore.tiles.TilemapTile;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 public class CollisionManager {
     private ArrayList<DistanceSideStruct> m_collisionDisSide;
     private TileContainer.Side[] m_closestSidesOutput;
     private Comparator<DistanceSideStruct> m_disSideComp;
+    private Vector2 direction;
 
     public CollisionManager() {
+        direction = new Vector2();
         m_collisionDisSide = new ArrayList<DistanceSideStruct>(6);
         for (int i = 0; i < 6; ++i) {
             m_collisionDisSide.add(new DistanceSideStruct());
@@ -35,7 +42,7 @@ public class CollisionManager {
 
         movhexPos = moveTile.getPositionInWorld();
 
-        //HACK: Arbitary value to decrease range and match better the texture
+        //HACK: Arbitrary value to decrease range and match better the texture
         minDist = sideHalf + sideHalf * moveTile.getScale() * 0.8f;
 
         for (TilemapTile[] arr : m_hexTiles) {
@@ -101,6 +108,26 @@ public class CollisionManager {
         }
         return result;
     }
+
+    public void checkForCollision(MovingTileManager mtm, TilemapManager tmm) {
+
+        TilemapTile solidTile;
+        Tilemap tm = tmm.getTileMap();
+        List<MovingTile> list = mtm.getActiveList();
+        for (MovingTile mt : list) {
+            solidTile = findCollision(tm, mt);
+            if (solidTile == null) continue;
+
+            direction.set(mt.getPositionInWorld()).sub(solidTile.getPositionInWorld());
+            direction.nor();
+
+            tmm.addTile(mt.extractTile(), solidTile, getClosestSides(tm.getCosT(), tm.getSinT(), direction));
+
+            mt.dispose();
+        }
+        mtm.disposeInactive();
+    }
+
 
     private class DistanceSideStruct {
         public float distance;
