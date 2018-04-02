@@ -26,15 +26,15 @@ import com.breakthecore.WorldSettings;
  */
 
 public class MainMenuScreen extends ScreenBase {
-    private BreakTheCoreGame m_game;
     private GameSettingsScreen m_gameSettingsScreen;
     private Stage m_stage;
     private Table menuTable;
     private Skin m_skin;
     private Label dblbl;
 
+
     public MainMenuScreen(BreakTheCoreGame game) {
-        m_game = game;
+        super(game);
         m_stage = new Stage(game.getWorldViewport());
         screenInputMultiplexer.addProcessor(new BackButtonInputHandler());
         screenInputMultiplexer.addProcessor(m_stage);

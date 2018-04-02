@@ -14,7 +14,6 @@ import com.badlogic.gdx.utils.Align;
 import com.breakthecore.BreakTheCoreGame;
 
 public class GameSettingsScreen extends ScreenBase {
-    private BreakTheCoreGame m_game;
     private Stage m_stage;
     private Skin m_skin;
     private Table m_pickGameModeTable;
@@ -31,7 +30,7 @@ public class GameSettingsScreen extends ScreenBase {
     private Label m_stcRadiusLabel, m_stcBallSpeedLabel, m_stcLauncherCDLabel;
 
     public GameSettingsScreen(BreakTheCoreGame game) {
-        m_game = game;
+        super(game);
         m_skin = game.getSkin();
         m_stage = new Stage(game.getWorldViewport());
         m_classicTable = createClassicTable();
@@ -306,7 +305,12 @@ public class GameSettingsScreen extends ScreenBase {
         @Override
         public boolean keyDown(int keycode) {
             if (keycode == Input.Keys.BACK) {
-                m_game.setMainMenuScreen();
+                if (m_pickGameModeTable.getStage() == null) {
+                    m_stage.clear();
+                    m_stage.addActor(m_pickGameModeTable);
+                } else {
+                    m_game.setPrevScreen();
+                }
                 return false;
             }
             return false;

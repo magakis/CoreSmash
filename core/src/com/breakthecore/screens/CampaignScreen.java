@@ -16,7 +16,6 @@ import com.breakthecore.RoundEndListener;
 import com.breakthecore.WorldSettings;
 
 public class CampaignScreen extends ScreenBase implements RoundEndListener {
-    BreakTheCoreGame m_game;
     GameScreen m_gameScreen;
     GameScreen.GameSettings m_settings;
     GestureDetector gd;
@@ -28,7 +27,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     int activeLevel;
 
     public CampaignScreen(BreakTheCoreGame game) {
-        m_game = game;
+        super(game);
         m_skin = game.getSkin();
         m_stage = new Stage(game.getWorldViewport());
         gd = new CustomGestureDetector(new InputListener());
@@ -179,7 +178,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         @Override
         public boolean keyDown(int keycode) {
             if (keycode == Input.Keys.BACK) {
-                m_game.setMainMenuScreen();
+                m_game.setPrevScreen();
                 return false;
             }
             return false;

@@ -1,5 +1,6 @@
 package com.breakthecore.managers;
 
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -23,22 +24,25 @@ import java.util.List;
 
 public class RenderManager {
     private SpriteBatch m_batch;
+    private AssetManager m_assetManager;
     private ShapeRenderer m_shapeRenderer;
-    private float sideLength;
+    private float sideLength = 64;
     private float sideLengthHalf;
 
     private BitmapFont defaultFont;
     private Texture texture;
     private Color[] colorList;
 
-    public RenderManager(int sideLen, int colorCount) {
+    public RenderManager(AssetManager am) {
         m_batch = new SpriteBatch();
         m_shapeRenderer = new ShapeRenderer();
-        texture = new Texture("asteroid.png");
+        m_assetManager = am;
+
+        texture = m_assetManager.get("asteroid.png");
+
         defaultFont = new BitmapFont();
-        sideLength = sideLen;
         sideLengthHalf = sideLength / 2.f;
-        colorList = new Color[colorCount];
+        colorList = new Color[7];
 
         colorList[0] = new Color(1, 0, 0, 1);
         colorList[1] = new Color(1, 1, 0, 1);
@@ -84,7 +88,7 @@ public class RenderManager {
         int i = 0;
         for (MovingTile mt : list) {
             m_batch.setColor(colorList[mt.getColor()]);
-            m_batch.draw(texture, 20, WorldSettings.getWorldHeight() / 2 - 120 * i, 100, 100);
+            m_batch.draw(texture, 20, WorldSettings.getWorldHeight() / 2 - 10 * i, 80, 80);
             ++i;
         }
     }
@@ -109,7 +113,6 @@ public class RenderManager {
         }
     }
 
-
     public void DBdraw(CollisionManager cm, Tilemap tm) {
         TilemapTile[][] map = tm.getTilemapTiles();
         Vector2 pos;
@@ -131,7 +134,6 @@ public class RenderManager {
         }
         m_shapeRenderer.end();
     }
-
 
     public void DBTileDistances(TilemapTile[][] map) {
         Vector2 pos;

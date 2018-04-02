@@ -35,7 +35,6 @@ import com.breakthecore.WorldSettings;
  */
 
 public class GameScreen extends ScreenBase implements Observer {
-    private BreakTheCoreGame m_game;
     private OrthographicCamera m_camera;
 
     private Tilemap m_tilemap;
@@ -45,7 +44,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private RoundEndListener m_roundEndListener;
 
-    private InputProcessor m_classicGestureDetector, m_spinTheCoreGestureDetector, m_backButtonHandler;
+    private InputProcessor m_classicGestureDetector, m_spinTheCoreGestureDetector;
 
     private Label m_timeLbl, m_scoreLbl, m_highscoreLbl, m_livesLbl;
     private boolean isGameActive;
@@ -69,11 +68,11 @@ public class GameScreen extends ScreenBase implements Observer {
 
 
     public GameScreen(BreakTheCoreGame game) {
-        m_game = game;
+        super(game);
         m_camera = (OrthographicCamera) m_game.getWorldViewport().getCamera();
         m_skin = m_game.getSkin();
 
-        renderManager = new RenderManager(sideLength, colorCount);
+        renderManager = m_game.getRenderManager();
         m_movingTileManager = new MovingTileManager(sideLength, colorCount);
         m_collisionManager = new CollisionManager();
 
@@ -373,19 +372,41 @@ public class GameScreen extends ScreenBase implements Observer {
 
     }
 
-    private class CustomGestureDetector extends GestureDetector {
-        public CustomGestureDetector(GestureListener listener) {
-            super(listener);
-        }
+    public Table createResultTable() {
+        Table res = new Table();
+        res.setFillParent(true);
+        String resultText = roundWon ? "Congratulations!" : "You lost";
 
-        @Override
-        public boolean keyDown(int keycode) {
-            if (keycode == Input.Keys.BACK) {
-                m_game.setMainMenuScreen();
-                return false;
+        Label m_resultLabel = new Label(resultText, m_skin, "comic_96b");
+        Label staticTime = new Label("Time:", m_skin, "comic_48b");
+        Label staticScore = new Label("Score:", m_skin, "comic_48b");
+        Label time = new Label(m_timeLbl.getText(), m_skin, "comic_48");
+        Label score = new Label(String.valueOf(m_score), m_skin, "comic_48");
+
+        TextButton tb = new TextButton("Menu", m_skin);
+        tb.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                m_game.setPrevScreen();
             }
-            return false;
-        }
+        });
+
+        tb.getLabelCell().width(200).height(150);
+
+        HorizontalGroup hg = new HorizontalGroup();
+        hg.align(Align.center);
+        hg.addActor(tb);
+
+
+        res.center();
+        res.add(m_resultLabel).colspan(2).padBottom(50).row();
+        res.add(staticTime);
+        res.add(staticScore).row();
+        res.add(time);
+        res.add(score).row();
+        res.add(hg).colspan(2).padTop(50);
+
+        return res;
     }
 
     private void setupUI() {
@@ -472,41 +493,19 @@ public class GameScreen extends ScreenBase implements Observer {
         return dbtb;
     }
 
-    public Table createResultTable() {
-        Table res = new Table();
-        res.setFillParent(true);
-        String resultText = roundWon ? "Congratulations!" : "You lost";
+    private class CustomGestureDetector extends GestureDetector {
+        public CustomGestureDetector(GestureListener listener) {
+            super(listener);
+        }
 
-        Label m_resultLabel = new Label(resultText, m_skin, "comic_96b");
-        Label staticTime = new Label("Time:", m_skin, "comic_48b");
-        Label staticScore = new Label("Score:", m_skin, "comic_48b");
-        Label time = new Label(m_timeLbl.getText(), m_skin, "comic_48");
-        Label score = new Label(String.valueOf(m_score), m_skin, "comic_48");
-
-        TextButton tb = new TextButton("Menu", m_skin);
-        tb.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                m_game.setMainMenuScreen();
+        @Override
+        public boolean keyDown(int keycode) {
+            if (keycode == Input.Keys.BACK) {
+                m_game.setPrevScreen();
+                return false;
             }
-        });
-
-        tb.getLabelCell().width(200).height(150);
-
-        HorizontalGroup hg = new HorizontalGroup();
-        hg.align(Align.center);
-        hg.addActor(tb);
-
-
-        res.center();
-        res.add(m_resultLabel).colspan(2).padBottom(50).row();
-        res.add(staticTime);
-        res.add(staticScore).row();
-        res.add(time);
-        res.add(score).row();
-        res.add(hg).colspan(2).padTop(50);
-
-        return res;
+            return false;
+        }
     }
 
     public static class GameSettings {
