@@ -14,12 +14,11 @@ public class StreakUI extends UIBase implements Observer {
     Skin m_skin;
     Table tbl;
     Container<Label> m_label;
-    Action m_actionOnScoreIncrement;
 
     public StreakUI(Skin skin) {
         m_skin = skin;
         tbl = new Table();
-        Label label = new Label("", m_skin, "comic_96b");
+        Label label = new Label("", m_skin, "comic_96bo");
 
         m_label = new Container<Label>(label);
         m_label.setTransform(true);

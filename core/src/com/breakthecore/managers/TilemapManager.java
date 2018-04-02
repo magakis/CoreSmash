@@ -170,6 +170,13 @@ public class TilemapManager extends Observable implements Observer {
         }
     }
 
+    public void getColorMatches(TilemapTile tile) {
+        match.clear();
+        exclude.clear();
+
+        addSurroundingColorMatches(tile, match, exclude);
+    }
+
     //FIXME: Somehow I matched three on the outside and the middle tile got removed??!?
     //XXX: HORRIBLE CODE! DON'T READ OR YOUR BRAIN MIGHT CRASH! Blehh..
     public void addSurroundingColorMatches(TilemapTile tile, List<TilemapTile> match, List<TilemapTile> exclude) {
@@ -211,8 +218,9 @@ public class TilemapManager extends Observable implements Observer {
 
     public void initHexTilemap(Tilemap tm, int radius) {
         tm.clear();
-
         TilemapTile dummy;
+        Tile tile;
+
         if (radius == 0) {
             dummy = new TilemapTile(new Tile(WorldSettings.getRandomInt(7)));
             dummy.addObserver(this);
@@ -224,13 +232,29 @@ public class TilemapManager extends Observable implements Observer {
             float xOffset = ((y) % 2 == 0) ? 0 : .75f;
             for (int x = -radius; x < radius; ++x) {
                 if (Vector2.dst(x * 1.5f + xOffset, y * 0.5f, 0, 0) <= radius) {
-                    dummy = new TilemapTile(new Tile(WorldSettings.getRandomInt(7)));
+                    tile = new Tile(WorldSettings.getRandomInt(7));
+                    dummy = new TilemapTile(tile);
                     dummy.addObserver(this);
                     tm.setTile(x, y, dummy);
                 }
             }
         }
         initTileCount = tm.getTileCount();
+
+        balanceTilemap();
+    }
+
+    private void balanceTilemap() {
+        TilemapTile[][] tiles = tm.getTilemapTiles();
+        for (TilemapTile[] arr : tiles) {
+            for (TilemapTile t : arr) {
+                if (t == null) continue;
+                getColorMatches(t);
+                if (match.size() > 2) {
+                    match.get(1).getTile().setColor(WorldSettings.getRandomInt(7));
+                }
+            }
+        }
     }
 
     private void fillEntireTilemap(Tilemap tm) {

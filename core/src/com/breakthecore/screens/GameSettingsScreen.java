@@ -23,8 +23,8 @@ public class GameSettingsScreen extends ScreenBase {
     private GameScreen m_gameScreen;
     private CampaignScreen m_campaignScreen;
 
-    private Slider m_cRadiusSlider, m_cMinRotSlider, m_cMaxRotSlider;
-    private Label m_cRadiusLabel, m_cMinRotLabel, m_cMaxRotLabel;
+    private Slider m_cRadiusSlider, m_cMinRotSlider, m_cMaxRotSlider, m_cBallSpeedSlider;
+    private Label m_cRadiusLabel, m_cMinRotLabel, m_cMaxRotLabel, m_cBallSpeedLabel;
 
     private Slider m_stcRadiusSlider, m_stcBallSpeedSlider, m_stcLauncherCDSlider;
     private Label m_stcRadiusLabel, m_stcBallSpeedLabel, m_stcLauncherCDLabel;
@@ -65,7 +65,7 @@ public class GameSettingsScreen extends ScreenBase {
 
         Label dummy = new Label(": Game Setup :", m_skin, "comic_96b");
         mt.top().pad(100);
-        mt.add(dummy).pad(100).padBottom(400).colspan(2).row();
+        mt.add(dummy).pad(100).padBottom(200).colspan(2).row();
 
 
         m_cRadiusSlider = new Slider(1, 8, 1, false, m_skin);
@@ -125,6 +125,19 @@ public class GameSettingsScreen extends ScreenBase {
         mt.add(m_cMaxRotLabel).width(m_cMaxRotLabel.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
         mt.add(m_cMaxRotSlider).colspan(2).fill().expandX().padBottom(100).fill().row();
 
+        m_cBallSpeedSlider = new Slider(5, 20, 1, false, m_skin);
+        m_cBallSpeedSlider.setValue(15);
+        m_cBallSpeedLabel = new Label(String.valueOf((int) m_cBallSpeedSlider.getValue()), m_skin, "comic_48");
+        m_cBallSpeedSlider.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                m_cBallSpeedLabel.setText(String.valueOf((int) m_cBallSpeedSlider.getValue()));
+            }
+        });
+        dummy = new Label("Ball Speed:", m_skin, "comic_48b");
+        mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
+        mt.add(m_cBallSpeedLabel).width(m_cBallSpeedLabel.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
+        mt.add(m_cBallSpeedSlider).colspan(2).fill().expandX().padBottom(100).fill().row();
 
         TextButton tbtn = new TextButton("Back", m_skin);
         tbtn.addListener(new ChangeListener() {
@@ -143,6 +156,7 @@ public class GameSettingsScreen extends ScreenBase {
                 m_gameSettings.initRadius = (int) m_cRadiusSlider.getValue();
                 m_gameSettings.minRotationSpeed = (int) m_cMinRotSlider.getValue();
                 m_gameSettings.maxRotationSpeed = (int) m_cMaxRotSlider.getValue();
+                m_gameSettings.movingTileSpeed = (int) m_cBallSpeedSlider.getValue();
 
                 m_gameScreen.initialize(m_gameSettings);
                 m_game.setScreen(m_gameScreen);

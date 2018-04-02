@@ -9,10 +9,24 @@ public class ScoreManager extends Observable implements Observer {
     }
 
     public void update() {
-        if (m_streak > 0) {
-            m_scoreAdded = m_streak * 10;
-            m_score += m_scoreAdded;
-            notifyObservers(NotificationType.NOTIFICATION_TYPE_SCORE_INCREMENTED, m_scoreAdded);
+        if (m_streak != 0) {
+            switch (m_streak) {
+                case 3:
+                    m_scoreAdded = m_streak * 10;
+                    m_score += m_scoreAdded;
+                    notifyObservers(NotificationType.NOTIFICATION_TYPE_SCORE_INCREMENTED, m_scoreAdded);
+                    break;
+                case 4:
+                    m_scoreAdded = m_streak * 12;
+                    m_score += m_scoreAdded;
+                    notifyObservers(NotificationType.NOTIFICATION_TYPE_SCORE_INCREMENTED, m_scoreAdded);
+                    break;
+                default:
+                    m_scoreAdded = m_streak * 15;
+                    m_score += m_scoreAdded;
+                    notifyObservers(NotificationType.NOTIFICATION_TYPE_SCORE_INCREMENTED, m_scoreAdded);
+                    break;
+            }
             m_streak = 0;
         }
     }

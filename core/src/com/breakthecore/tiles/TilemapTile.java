@@ -21,6 +21,10 @@ public class TilemapTile extends TileContainer {
         m_positionInTilemap = new Vector2();
     }
 
+    public Tile getTile() {
+        return m_tile;
+    }
+
     public int getDistanceFromCenter() {
         return m_distanceFromCenter;
     }

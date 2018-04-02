@@ -135,7 +135,7 @@ public class GameScreen extends ScreenBase implements Observer {
             case CLASSIC:
                 m_tilemapManager.setAutoRotation(true);
                 m_tilemapManager.setMinMaxRotationSpeed(settings.minRotationSpeed, settings.maxRotationSpeed);
-                m_movingTileManager.setDefaultBallSpeed(15);
+                m_movingTileManager.setDefaultBallSpeed(settings.movingTileSpeed);
                 m_movingTileManager.setAutoEject(false);
                 m_gameUI.highscoreLbl.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("classic_highscore", 0)));
                 break;
