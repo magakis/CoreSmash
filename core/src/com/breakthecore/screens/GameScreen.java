@@ -29,6 +29,7 @@ import com.breakthecore.managers.MovingTileManager;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.Tilemap;
 import com.breakthecore.WorldSettings;
+import com.breakthecore.ui.UIBase;
 
 /**
  * Created by Michail on 17/3/2018.
@@ -39,6 +40,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private Tilemap m_tilemap;
     private TilemapManager m_tilemapManager;
+    private MovingTileManager m_movingTileManager;
     private RenderManager renderManager;
     private CollisionManager m_collisionManager;
 
@@ -46,7 +48,6 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private InputProcessor m_classicGestureDetector, m_spinTheCoreGestureDetector;
 
-    private Label m_timeLbl, m_scoreLbl, m_highscoreLbl, m_livesLbl;
     private boolean isGameActive;
     private boolean roundWon;
     private int m_score;
@@ -56,13 +57,12 @@ public class GameScreen extends ScreenBase implements Observer {
     private GameMode m_gameMode;
 
     //===========
+    private GameUI m_gameUI;
+    private ResultUI m_resultUI;
     private Skin m_skin;
     private Stage m_stage;
-    private MovingTileManager m_movingTileManager;
-    private Label dblb1, dblb2, dblb3, dblb4, dblb5;
-    private Stack m_stack;
-    private Table mainTable, debugTable, resultTable;
     //===========
+
     private int colorCount = 7;
     private int sideLength = 64;
 
@@ -76,8 +76,6 @@ public class GameScreen extends ScreenBase implements Observer {
         m_movingTileManager = new MovingTileManager(sideLength, colorCount);
         m_collisionManager = new CollisionManager();
 
-        setupUI();
-
         m_tilemap = new Tilemap(new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4), 20, sideLength);
         m_tilemapManager = new TilemapManager(m_tilemap);
 
@@ -86,6 +84,11 @@ public class GameScreen extends ScreenBase implements Observer {
 
         isGameActive = true;
         m_tilemapManager.addObserver(this);
+
+        m_gameUI = new GameUI();
+        m_resultUI = new ResultUI();
+
+        m_stage = new Stage(game.getWorldViewport());
     }
 
     private void setInputHanlderFor(GameMode mode) {
@@ -109,12 +112,12 @@ public class GameScreen extends ScreenBase implements Observer {
         m_roundEndListener = null;
         isGameActive = true;
         m_stage.clear();
-        m_stage.addActor(m_stack);
+        m_stage.addActor(m_gameUI.getRoot());
         m_tilemapManager.initHexTilemap(m_tilemap, settings.initRadius);
         m_gameMode = settings.gameMode;
         m_movingTileManager.reset();
 
-        m_livesLbl.setText(String.valueOf(m_lives));
+        m_gameUI.livesLbl.setText(String.valueOf(m_lives));
 
         switch (m_gameMode) {
             case CLASSIC:
@@ -122,7 +125,7 @@ public class GameScreen extends ScreenBase implements Observer {
                 m_tilemapManager.setMinMaxRotationSpeed(settings.minRotationSpeed, settings.maxRotationSpeed);
                 m_movingTileManager.setDefaultBallSpeed(15);
                 m_movingTileManager.setAutoEject(false);
-                m_highscoreLbl.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("classic_highscore", 0)));
+                m_gameUI.highscoreLbl.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("classic_highscore", 0)));
                 break;
 
             case SPIN_THE_CORE:
@@ -130,7 +133,7 @@ public class GameScreen extends ScreenBase implements Observer {
                 m_movingTileManager.setLaunchDelay(settings.launcherCooldown);
                 m_movingTileManager.setDefaultBallSpeed(settings.movingTileSpeed);
                 m_movingTileManager.setAutoEject(true);
-                m_highscoreLbl.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("spinthecore_highscore", 0)));
+                m_gameUI.highscoreLbl.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("spinthecore_highscore", 0)));
                 break;
         }
 
@@ -172,18 +175,14 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     private void updateStage() {
-        m_timeLbl.setText(String.format("%d:%02d", (int) m_time / 60, (int) m_time % 60));
-        m_scoreLbl.setText(String.valueOf(m_score));
-
-        dblb1.setText("ballCount: " + m_tilemap.getTileCount());
-        dblb2.setText(String.format("rotSpeed: %.3f", m_tilemapManager.getRotationSpeed()));
-
+        m_gameUI.timeLbl.setText(String.format("%d:%02d", (int) m_time / 60, (int) m_time % 60));
+        m_gameUI.scoreLbl.setText(String.valueOf(m_score));
     }
 
     public void handleGameEnd() {
-        resultTable = createResultTable();
+        m_resultUI.update();
         m_stage.clear();
-        m_stage.addActor(resultTable);
+        m_stage.addActor(m_resultUI.getRoot());
 
         // NOTE: It's questionable whether I want to store such scores because mainly of this campaign.
         if (roundWon) {
@@ -229,8 +228,8 @@ public class GameScreen extends ScreenBase implements Observer {
                     isGameActive = false;
                     handleGameEnd();
                 } else {
-//                    --m_lives;
-                    m_livesLbl.setText(String.valueOf(m_lives));
+                    --m_lives;
+                    m_gameUI.livesLbl.setText(String.valueOf(m_lives));
                 }
         }
     }
@@ -242,7 +241,28 @@ public class GameScreen extends ScreenBase implements Observer {
 
     }
 
+    public static class GameSettings {
+
+        public GameMode gameMode;
+        public int initRadius;
+        public float minRotationSpeed;
+        public float maxRotationSpeed;
+        public int movingTileSpeed;
+        public float launcherCooldown;
+
+        public void reset() {
+            gameMode = null;
+            initRadius = 0;
+            minRotationSpeed = 0;
+            maxRotationSpeed = 0;
+            movingTileSpeed = 0;
+            launcherCooldown = 0;
+        }
+
+    }
+
     private class ClassicModeInputListener implements GestureDetector.GestureListener {
+
         @Override
         public boolean touchDown(float x, float y, int pointer, int button) {
             return false;
@@ -294,9 +314,11 @@ public class GameScreen extends ScreenBase implements Observer {
         public void pinchStop() {
 
         }
+
     }
 
     private class SpinTheCoreModeInputListener implements GestureDetector.GestureListener {
+
         private boolean isPanning;
         private Vector2 tmPos;
         private Vector3 scrPos;
@@ -370,130 +392,11 @@ public class GameScreen extends ScreenBase implements Observer {
 
         }
 
-    }
 
-    public Table createResultTable() {
-        Table res = new Table();
-        res.setFillParent(true);
-        String resultText = roundWon ? "Congratulations!" : "You lost";
-
-        Label m_resultLabel = new Label(resultText, m_skin, "comic_96b");
-        Label staticTime = new Label("Time:", m_skin, "comic_48b");
-        Label staticScore = new Label("Score:", m_skin, "comic_48b");
-        Label time = new Label(m_timeLbl.getText(), m_skin, "comic_48");
-        Label score = new Label(String.valueOf(m_score), m_skin, "comic_48");
-
-        TextButton tb = new TextButton("Menu", m_skin);
-        tb.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                m_game.setPrevScreen();
-            }
-        });
-
-        tb.getLabelCell().width(200).height(150);
-
-        HorizontalGroup hg = new HorizontalGroup();
-        hg.align(Align.center);
-        hg.addActor(tb);
-
-
-        res.center();
-        res.add(m_resultLabel).colspan(2).padBottom(50).row();
-        res.add(staticTime);
-        res.add(staticScore).row();
-        res.add(time);
-        res.add(score).row();
-        res.add(hg).colspan(2).padTop(50);
-
-        return res;
-    }
-
-    private void setupUI() {
-        Label staticTimeLbl, staticScoreLbl, staticLivesLbl;
-        HorizontalGroup hgrp;
-
-        m_stage = new Stage(m_game.getWorldViewport());
-        m_stack = new Stack();
-        m_stack.setFillParent(true);
-        mainTable = new Table();
-
-        m_timeLbl = new Label("0", m_skin, "comic_48");
-        m_timeLbl.setAlignment(Align.center);
-
-        m_scoreLbl = new Label("0", m_skin, "comic_48");
-        m_scoreLbl.setAlignment(Align.center);
-
-        m_livesLbl = new Label("null", m_skin, "comic_48");
-        m_livesLbl.setAlignment(Align.center);
-
-        m_highscoreLbl = new Label("", m_skin, "comic_32b");
-        m_highscoreLbl.setAlignment(Align.center);
-
-        staticTimeLbl = new Label("Time:", m_skin, "comic_48b");
-        staticScoreLbl = new Label("Score:", m_skin, "comic_48b");
-        staticLivesLbl = new Label("Lives: ", m_skin, "comic_48b");
-
-        Stack grpTime = new Stack();
-        Stack grpScore = new Stack();
-
-        Image img = new Image(m_skin.getDrawable("box_white_5"));
-        grpTime.addActor(img);
-        grpTime.addActor(m_timeLbl);
-
-        img = new Image(m_skin.getDrawable("box_white_5"));
-        grpScore.addActor(img);
-        grpScore.addActor(m_scoreLbl);
-
-        hgrp = new HorizontalGroup();
-        hgrp.addActor(staticLivesLbl);
-        hgrp.addActor(m_livesLbl);
-
-        mainTable.setFillParent(true);
-        mainTable.top().left();
-        mainTable.add(staticTimeLbl, hgrp, staticScoreLbl);
-        mainTable.row();
-        mainTable.add(grpTime).width(200).height(100).padLeft(-10);
-        mainTable.add().expandX();
-        mainTable.add(grpScore).width(200).height(100).padRight(-10).row();
-        mainTable.add().colspan(2);
-        mainTable.add(new Label("Highscore:", m_skin, "comic_32b")).row();
-        mainTable.add().colspan(2);
-        mainTable.add(m_highscoreLbl);
-
-
-        m_stack.add(mainTable);
-        // WARNING: If you skip the creation of a debug table the game will crash
-        // cause it tries to update labels that have not been initialized
-        debugTable = createDebugTable();
-//        m_stack.add(debugTable);
-        m_stage.addActor(m_stack);
-    }
-
-    public Table createDebugTable() {
-        Table dbtb = new Table();
-        dblb1 = new Label("db1:", m_skin, "comic_24b");
-        dblb1.setAlignment(Align.left);
-        dblb2 = new Label("db1:", m_skin, "comic_24b");
-        dblb2.setAlignment(Align.left);
-        dblb3 = new Label("db1:", m_skin, "comic_24b");
-        dblb3.setAlignment(Align.left);
-        dblb4 = new Label("db1:", m_skin, "comic_24b");
-        dblb4.setAlignment(Align.left);
-        dblb5 = new Label("db1:", m_skin, "comic_24b");
-        dblb5.setAlignment(Align.left);
-
-        dbtb.bottom().left();
-        dbtb.add(dblb1).fillX().row();
-        dbtb.add(dblb2).fillX().row();
-        dbtb.add(dblb3).fillX().row();
-        dbtb.add(dblb4).fillX().row();
-        dbtb.add(dblb5).fillX();
-
-        return dbtb;
     }
 
     private class CustomGestureDetector extends GestureDetector {
+
         public CustomGestureDetector(GestureListener listener) {
             super(listener);
         }
@@ -506,27 +409,147 @@ public class GameScreen extends ScreenBase implements Observer {
             }
             return false;
         }
+
     }
 
-    public static class GameSettings {
-        public GameMode gameMode;
-        public int initRadius;
-        public float minRotationSpeed;
-        public float maxRotationSpeed;
-        public int movingTileSpeed;
-        public float launcherCooldown;
+    private class GameUI extends UIBase {
+        Label timeLbl, scoreLbl, livesLbl, highscoreLbl;
 
-        public void reset() {
-            gameMode = null;
-            initRadius = 0;
-            minRotationSpeed = 0;
-            maxRotationSpeed = 0;
-            movingTileSpeed = 0;
-            launcherCooldown = 0;
+        public GameUI() {
+            Label staticTimeLbl, staticScoreLbl, staticLivesLbl;
+            HorizontalGroup hgrp;
+
+            Table mainTable = new Table();
+
+            timeLbl = new Label("0", m_skin, "comic_48");
+            timeLbl.setAlignment(Align.center);
+
+            scoreLbl = new Label("0", m_skin, "comic_48");
+            scoreLbl.setAlignment(Align.center);
+
+            livesLbl = new Label("null", m_skin, "comic_48");
+            livesLbl.setAlignment(Align.center);
+
+            highscoreLbl = new Label("", m_skin, "comic_32b");
+            highscoreLbl.setAlignment(Align.center);
+
+            staticTimeLbl = new Label("Time:", m_skin, "comic_48b");
+            staticScoreLbl = new Label("Score:", m_skin, "comic_48b");
+            staticLivesLbl = new Label("Lives: ", m_skin, "comic_48b");
+
+            Stack grpTime = new Stack();
+            Stack grpScore = new Stack();
+
+            Image img = new Image(m_skin.getDrawable("box_white_5"));
+            grpTime.addActor(img);
+            grpTime.addActor(timeLbl);
+
+            img = new Image(m_skin.getDrawable("box_white_5"));
+            grpScore.addActor(img);
+            grpScore.addActor(scoreLbl);
+
+            hgrp = new HorizontalGroup();
+            hgrp.addActor(staticLivesLbl);
+            hgrp.addActor(livesLbl);
+
+            mainTable.setFillParent(true);
+            mainTable.top().left();
+            mainTable.add(staticTimeLbl, hgrp, staticScoreLbl);
+            mainTable.row();
+            mainTable.add(grpTime).width(200).height(100).padLeft(-10);
+            mainTable.add().expandX();
+            mainTable.add(grpScore).width(200).height(100).padRight(-10).row();
+            mainTable.add().colspan(2);
+            mainTable.add(new Label("Highscore:", m_skin, "comic_32b")).row();
+            mainTable.add().colspan(2);
+            mainTable.add(highscoreLbl);
+
+            root = mainTable;
         }
     }
 
+    private class ResultUI extends UIBase {
+        Label resultTextLbl, timeLbl, scoreLbl;
+
+        public ResultUI() {
+            Table tbl = new Table();
+            tbl.setFillParent(true);
+
+            Label staticTime = new Label("Time:", m_skin, "comic_48b");
+            Label staticScore = new Label("Score:", m_skin, "comic_48b");
+            resultTextLbl = new Label("null", m_skin, "comic_96b");
+            timeLbl = new Label("null", m_skin, "comic_48");
+            scoreLbl = new Label("null", m_skin, "comic_48");
+
+            TextButton tb = new TextButton("Menu", m_skin);
+            tb.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+                    m_game.setPrevScreen();
+                }
+            });
+
+            tb.getLabelCell().width(200).height(150);
+
+            HorizontalGroup hg = new HorizontalGroup();
+            hg.align(Align.center);
+            hg.addActor(tb);
+
+
+            tbl.center();
+            tbl.add(resultTextLbl).colspan(2).padBottom(50).row();
+            tbl.add(staticTime);
+            tbl.add(staticScore).row();
+            tbl.add(timeLbl);
+            tbl.add(scoreLbl).row();
+            tbl.add(hg).colspan(2).padTop(100);
+
+            root = tbl;
+        }
+
+        public void update() {
+            String resultText = roundWon ? "Congratulations!" : "You Failed!";
+            resultTextLbl.setText(resultText);
+            timeLbl.setText(m_gameUI.timeLbl.getText());
+            scoreLbl.setText(String.valueOf(m_score));
+        }
+    }
+
+    private class DebugUI extends UIBase {
+        private Label dblb1, dblb2, dblb3, dblb4, dblb5;
+
+        public DebugUI() {
+            Table dbtb = new Table();
+            dblb1 = new Label("db1:", m_skin, "comic_24b");
+            dblb1.setAlignment(Align.left);
+            dblb2 = new Label("db1:", m_skin, "comic_24b");
+            dblb2.setAlignment(Align.left);
+            dblb3 = new Label("db1:", m_skin, "comic_24b");
+            dblb3.setAlignment(Align.left);
+            dblb4 = new Label("db1:", m_skin, "comic_24b");
+            dblb4.setAlignment(Align.left);
+            dblb5 = new Label("db1:", m_skin, "comic_24b");
+            dblb5.setAlignment(Align.left);
+
+            dbtb.bottom().left();
+            dbtb.add(dblb1).fillX().row();
+            dbtb.add(dblb2).fillX().row();
+            dbtb.add(dblb3).fillX().row();
+            dbtb.add(dblb4).fillX().row();
+            dbtb.add(dblb5).fillX();
+
+            root = dbtb;
+        }
+    }
 }
+
+
+
+
+
+
+
+
 
 
 

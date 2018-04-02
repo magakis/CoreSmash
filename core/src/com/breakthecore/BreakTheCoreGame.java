@@ -19,6 +19,7 @@ import java.util.Stack;
 import static com.badlogic.gdx.Gdx.gl;
 
 public class BreakTheCoreGame extends Game {
+	boolean isInitialized;
 	private MainMenuScreen mainMenuScreen;
 	private ExtendViewport m_viewport;
 	private RenderManager m_renderManager;
@@ -89,11 +90,14 @@ public class BreakTheCoreGame extends Game {
 		return m_assetManager;
 	}
 
-	public void initialize() {
-		m_renderManager = new RenderManager(m_assetManager);
-		mainMenuScreen = new MainMenuScreen(this);
-		setInputProcessor(mainMenuScreen.getScreenInputProcessor());
-		super.setScreen(mainMenuScreen);
+	public void initApp() {
+		if (!isInitialized) {
+			m_renderManager = new RenderManager(m_assetManager);
+			mainMenuScreen = new MainMenuScreen(this);
+			setInputProcessor(mainMenuScreen.getScreenInputProcessor());
+			super.setScreen(mainMenuScreen);
+			isInitialized = true;
+		}
 	}
 
 	@Override

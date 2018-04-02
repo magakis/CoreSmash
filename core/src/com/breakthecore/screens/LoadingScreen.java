@@ -41,7 +41,7 @@ public class LoadingScreen extends ScreenBase {
     public void render(float delta) {
         if (am.update()) {
             setupSkin();
-            m_game.initialize();
+            m_game.initApp();
         }
         percent.setText(String.format("%.0f %%", am.getProgress() * 100));
 
