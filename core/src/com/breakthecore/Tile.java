@@ -42,26 +42,6 @@ public class Tile extends Observable {
         return result;
     }
 
-    public Vector2 getPositionInWorld() {
-        return m_positionInWorld;
-    }
-
-    public int getColor() {return m_color;}
-
-    public void setColor(int colorId) {
-        m_color = colorId;
-    }
-
-    public float getCosTheta() {
-        return m_cosTheta;
-    }
-
-    public float getSinTheta() {
-        return m_sinTheta;
-    }
-
-    public static float[] getVertices() {return s_vertices;}
-
     public float[] getVerticesOnMiddleEdges() {
         float[] result = new float[12];
         for (int i = 0; i < 12; i += 2) {
@@ -69,6 +49,18 @@ public class Tile extends Observable {
             result[i + 1] = s_verticesOnMiddleEdges[i] * -m_sinTheta + s_verticesOnMiddleEdges[i + 1] * m_cosTheta;
         }
         return result;
+    }
+
+    public int getColor() {
+        return m_color;
+    }
+
+    public void setColor(int colorId) {
+        m_color = colorId;
+    }
+
+    public Vector2 getPositionInWorld() {
+        return m_positionInWorld;
     }
 
     public void setPositionInWorld(float x, float y) {

@@ -90,6 +90,18 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 m_settings.minRotationSpeed = 20;
                 m_settings.maxRotationSpeed = 30;
                 break;
+            case 3:
+                m_settings.gameMode = GameScreen.GameMode.SPIN_THE_CORE;
+                m_settings.initRadius = 2;
+                m_settings.movingTileSpeed = 2;
+                m_settings.launcherCooldown = 3;
+                break;
+            case 4:
+                m_settings.gameMode = GameScreen.GameMode.SPIN_THE_CORE;
+                m_settings.initRadius = 3;
+                m_settings.movingTileSpeed = 2;
+                m_settings.launcherCooldown = 3;
+                break;
             default:
                 return;
         }

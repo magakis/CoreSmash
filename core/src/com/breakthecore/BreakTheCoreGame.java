@@ -122,10 +122,10 @@ public class BreakTheCoreGame extends Game {
 		pix = new Pixmap(41, 41, Pixmap.Format.RGBA8888);
 		pix.setColor(Color.alpha(0));
 		pix.fill();
-		pix.setColor(Color.DARK_GRAY);
+		pix.setColor(Color.BLACK);
 		pix.fillCircle(20, 20, 20);
-		pix.setColor(Color.GRAY);
-		pix.fillCircle(20, 20, 19);
+		pix.setColor(Color.WHITE);
+		pix.fillCircle(20, 20, 17);
 		tex = new Texture(pix);
 		skin.add("myBall", tex);
 
