@@ -209,8 +209,8 @@ public class GameSettingsScreen extends ScreenBase {
         mt.add(m_stcBallSpeedSlider).colspan(2).fill().expandX().padBottom(100).row();
 
 
-        m_stcLauncherCDSlider = new Slider(.4f, 3, .2f, false, m_skin);
-        m_stcLauncherCDSlider.setValue(1.6f);
+        m_stcLauncherCDSlider = new Slider(1f, 4, .2f, false, m_skin);
+        m_stcLauncherCDSlider.setValue(1.8f);
         m_stcLauncherCDLabel = new Label(String.format("%.2f sec", m_stcLauncherCDSlider.getValue()), m_skin, "comic_48");
         m_stcLauncherCDSlider.addListener(new ChangeListener() {
             @Override

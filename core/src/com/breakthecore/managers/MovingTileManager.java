@@ -6,6 +6,8 @@ import com.breakthecore.WorldSettings;
 import com.breakthecore.tiles.MovingTile;
 import com.breakthecore.tiles.Tile;
 
+import org.omg.PortableServer.POAPackage.WrongAdapter;
+
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -101,7 +103,7 @@ public class MovingTileManager {
             launcher.get(0).setPositionInWorld(launcherPos.x, launcherPos.y);
             launcher.get(1).setPositionInWorld(launcherPos.x, launcherPos.y - m_tileSize);
 
-            launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - 2 * m_tileSize, new Tile(getRandomColor())));
+            launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - 2 * m_tileSize, createTile()));
 
             launchDelayCounter = launchDelay;
         }
@@ -114,6 +116,7 @@ public class MovingTileManager {
 
         Iterator<MovingTile> iter = activeList.iterator();
         MovingTile tile;
+
         while (iter.hasNext()) {
             tile = iter.next();
             if (tile.getFlag()) {
@@ -128,11 +131,12 @@ public class MovingTileManager {
             tile = iter.next();
             tile.setSpeed(m_defaultSpeed);
             tile.extractTile(); //TODO: Remove tile in a pool of tiles
-            tile.setTile(new Tile(WorldSettings.getRandomInt(7)));
+            movtPool.add(tile);
+            iter.remove();
         }
 
         while (launcher.size < 3) {
-            launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * m_tileSize, new Tile(WorldSettings.getRandomInt(7))));
+            launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * m_tileSize, createTile()));
         }
     }
 
@@ -167,8 +171,27 @@ public class MovingTileManager {
             res.setTile(tile);
             res.setSpeed(m_defaultSpeed);
         } else {
-            res = new MovingTile(x, y, m_defaultSpeed, new Tile(WorldSettings.getRandomInt(7)));
+            res = new MovingTile(x, y, m_defaultSpeed, createTile());
         }
         return res;
+    }
+
+    private Tile createTile() {
+        Tile t = new Tile(WorldSettings.getRandomInt(7));
+
+        outer:
+        while (true) {
+            for (MovingTile mt : launcher) {
+                if (mt.hasTile()) {
+                    if (mt.getColor() == t.getColor()) {
+                        t.setColor(getRandomColor());
+                        continue outer;
+                    }
+                }
+            }
+            break;
+        }
+
+        return t;
     }
 }

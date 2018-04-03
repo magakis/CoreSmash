@@ -69,6 +69,10 @@ public class MovingTile extends TileContainer {
         return res;
     }
 
+    public boolean hasTile() {
+        return m_tile == null ? false : true;
+    }
+
     public int getColor() {
         return m_tile.getColor();
     }

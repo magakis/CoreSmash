@@ -13,6 +13,8 @@ import com.breakthecore.tiles.TileContainer;
 import com.breakthecore.tiles.TilemapTile;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class TilemapManager extends Observable implements Observer {
@@ -221,6 +223,11 @@ public class TilemapManager extends Observable implements Observer {
         TilemapTile dummy;
         Tile tile;
 
+        ArrayList<ArrayList<Tile>> color = new ArrayList<ArrayList<Tile>>(7);
+        for (int i = 0; i < 7; ++i) {
+            color.add(new ArrayList<Tile>());
+        }
+
         if (radius == 0) {
             dummy = new TilemapTile(new Tile(WorldSettings.getRandomInt(7)));
             dummy.addObserver(this);
@@ -233,6 +240,7 @@ public class TilemapManager extends Observable implements Observer {
             for (int x = -radius; x < radius; ++x) {
                 if (Vector2.dst(x * 1.5f + xOffset, y * 0.5f, 0, 0) <= radius) {
                     tile = new Tile(WorldSettings.getRandomInt(7));
+                    color.get(tile.getColor()).add(tile);
                     dummy = new TilemapTile(tile);
                     dummy.addObserver(this);
                     tm.setTile(x, y, dummy);
@@ -241,7 +249,7 @@ public class TilemapManager extends Observable implements Observer {
         }
         initTileCount = tm.getTileCount();
 
-        balanceTilemap();
+        balanceTilemap(color);
     }
 
     private void balanceTilemap() {
@@ -254,6 +262,43 @@ public class TilemapManager extends Observable implements Observer {
                     match.get(1).getTile().setColor(WorldSettings.getRandomInt(7));
                 }
             }
+        }
+    }
+
+    // XXX(4/3/2018): Rquires a better implementation!
+    private void balanceTilemap(ArrayList<ArrayList<Tile>> colors) {
+        int totalTiles = tm.getTileCount();
+        int med = totalTiles / 7;
+        int donateMax, donorSize, size, need;
+        int rand;
+        Tile tile;
+
+        Comparator<List<Tile>> comp = new Comparator<List<Tile>>() {
+            @Override
+            public int compare(List<Tile> o1, List<Tile> o2) {
+                return o1.size() > o2.size() ? 1 : -1;
+            }
+        };
+
+        Collections.sort(colors, comp);
+        size = colors.get(0).size();
+        while (size < med) { //if it's -1 it crashes
+            donorSize = colors.get(6).size();
+            donateMax = donorSize - med;
+            need = med - size;
+            while (donateMax != 0 && need != 0) {
+                rand = WorldSettings.getRandomInt(donorSize);
+                tile = colors.get(6).get(rand);
+                tile.setColor(colors.get(0).get(0).getColor());
+                colors.get(0).add(tile);
+                colors.get(6).remove(tile);
+                --donateMax;
+                --donorSize;
+                --need;
+            }
+
+            Collections.sort(colors, comp);
+            size = colors.get(0).size();
         }
     }
 
