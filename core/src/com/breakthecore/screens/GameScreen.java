@@ -4,20 +4,28 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Preferences;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Event;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.graphics.g2d.NinePatch;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Align;
 import com.breakthecore.BreakTheCoreGame;
 import com.breakthecore.StatsManager;
@@ -79,7 +87,7 @@ public class GameScreen extends ScreenBase implements Observer {
         m_movingTileManager = new MovingTileManager(sideLength, colorCount);
         m_collisionManager = new CollisionManager();
 
-        m_tilemap = new Tilemap(new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4), 21, sideLength);
+        m_tilemap = new Tilemap(new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4), 31, sideLength);
         m_tilemapManager = new TilemapManager(m_tilemap);
 
         m_classicGestureDetector = new CustomGestureDetector(new ClassicModeInputListener());
@@ -493,7 +501,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private class GameUI extends UIBase {
         Label timeLbl, scoreLbl, livesLbl, highscoreLbl;
-
+        TextButton tbPower1;
         public GameUI() {
             Label staticTimeLbl, staticScoreLbl, staticLivesLbl;
             HorizontalGroup hgrp;
@@ -531,6 +539,34 @@ public class GameScreen extends ScreenBase implements Observer {
             hgrp.addActor(staticLivesLbl);
             hgrp.addActor(livesLbl);
 
+            tbPower1 = new TextButton("2", m_skin, "tmpPowerup");
+            tbPower1.setTransform(true);
+            tbPower1.scaleBy(3);
+            tbPower1.setOrigin(tbPower1.getPrefWidth()/2, tbPower1.getPrefHeight()/2);
+
+
+            Drawable tmp = m_skin.newDrawable("box_white_5");
+            tmp.setMinHeight(300);
+            tmp.setMinWidth(200);
+            Image powerupsBackround = new Image(tmp);
+
+            VerticalGroup powerupsGrp = new VerticalGroup();
+            powerupsGrp.center();
+            powerupsGrp.addActor(tbPower1);
+
+            Group grp = new Group();
+            grp.addActor(powerupsBackround);
+            grp.addActor(powerupsGrp);
+            powerupsGrp.setPosition(powerupsBackround.getWidth()/2, powerupsBackround.getHeight()/2);
+
+            powerupsBackround.addCaptureListener(new EventListener() {
+                @Override
+                public boolean handle(Event event) {
+                    event.handle();
+                    return true;
+                }
+            });
+
             mainTable.setFillParent(true);
             mainTable.top().left();
             mainTable.add(staticTimeLbl, hgrp, staticScoreLbl);
@@ -541,7 +577,10 @@ public class GameScreen extends ScreenBase implements Observer {
             mainTable.add().colspan(2);
             mainTable.add(new Label("Highscore:", m_skin, "comic_32b")).row();
             mainTable.add().colspan(2);
-            mainTable.add(highscoreLbl);
+            mainTable.add(highscoreLbl).row();
+            mainTable.add().colspan(2);
+            mainTable.add(grp).height(300).width(200).expandY().fill();
+
 
             root = mainTable;
         }

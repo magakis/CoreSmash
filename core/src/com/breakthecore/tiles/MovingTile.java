@@ -76,4 +76,5 @@ public class MovingTile extends TileContainer {
     public int getColor() {
         return m_tile.getColor();
     }
+
 }

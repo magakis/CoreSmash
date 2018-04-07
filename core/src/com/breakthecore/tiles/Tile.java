@@ -5,7 +5,7 @@ public class Tile {
     private int m_color;
 
     public Tile(int color) {
-        m_type = TileType.REGULAR_COMET;
+        m_type = TileType.REGULAR;
         m_color = color;
     }
 
@@ -18,6 +18,7 @@ public class Tile {
     }
 
     public enum TileType {
-        REGULAR_COMET
+        REGULAR,
+
     }
 }

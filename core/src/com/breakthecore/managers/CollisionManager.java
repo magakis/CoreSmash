@@ -110,7 +110,6 @@ public class CollisionManager {
     }
 
     public void checkForCollision(MovingTileManager mtm, TilemapManager tmm) {
-
         TilemapTile solidTile;
         Tilemap tm = tmm.getTileMap();
         List<MovingTile> list = mtm.getActiveList();
@@ -118,16 +117,20 @@ public class CollisionManager {
             solidTile = findCollision(tm, mt);
             if (solidTile == null) continue;
 
-            direction.set(mt.getPositionInWorld()).sub(solidTile.getPositionInWorld());
-            direction.nor();
-
-            tmm.addTile(mt.extractTile(), solidTile, getClosestSides(tm.getCosT(), tm.getSinT(), direction));
-
-            mt.dispose();
+            handleCollision(mt, solidTile, tmm);
         }
         mtm.disposeInactive();
     }
 
+    private void handleCollision(MovingTile mt, TilemapTile st, TilemapManager tmm) {
+        Tilemap tm = tmm.getTileMap();
+        direction.set(mt.getPositionInWorld()).sub(st.getPositionInWorld());
+        direction.nor();
+
+        tmm.addTile(mt.extractTile(), st, getClosestSides(tm.getCosT(), tm.getSinT(), direction));
+
+        mt.dispose();
+    }
 
     private class DistanceSideStruct {
         public float distance;
