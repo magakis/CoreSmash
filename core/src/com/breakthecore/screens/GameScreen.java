@@ -20,7 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.breakthecore.BreakTheCoreGame;
-import com.breakthecore.ScoreManager;
+import com.breakthecore.StatsManager;
 import com.breakthecore.StreakUI;
 import com.breakthecore.managers.CollisionManager;
 import com.breakthecore.NotificationType;
@@ -31,6 +31,7 @@ import com.breakthecore.managers.MovingTileManager;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.Tilemap;
 import com.breakthecore.WorldSettings;
+import com.breakthecore.tiles.MovingTile;
 import com.breakthecore.ui.UIBase;
 
 /**
@@ -45,17 +46,15 @@ public class GameScreen extends ScreenBase implements Observer {
     private MovingTileManager m_movingTileManager;
     private RenderManager renderManager;
     private CollisionManager m_collisionManager;
-    private ScoreManager m_scoreManager;
+    private StatsManager m_statsManager;
     private StreakUI m_streakUI;
 
     private RoundEndListener m_roundEndListener;
 
-    private InputProcessor m_classicGestureDetector, m_spinTheCoreGestureDetector;
+    private InputProcessor m_classicGestureDetector, m_spinTheCoreGestureDetector, m_debugGestureDetector;
 
     private boolean isGameActive;
     private boolean roundWon;
-    private float m_time;
-    private int m_lives;
 
     private GameMode m_gameMode;
 
@@ -68,7 +67,7 @@ public class GameScreen extends ScreenBase implements Observer {
     //===========
 
     private int colorCount = 7;
-    private int sideLength = 64;
+    private int sideLength = WorldSettings.getTileSize();
 
 
     public GameScreen(BreakTheCoreGame game) {
@@ -80,22 +79,26 @@ public class GameScreen extends ScreenBase implements Observer {
         m_movingTileManager = new MovingTileManager(sideLength, colorCount);
         m_collisionManager = new CollisionManager();
 
-        m_tilemap = new Tilemap(new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4), 20, sideLength);
+        m_tilemap = new Tilemap(new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4), 21, sideLength);
         m_tilemapManager = new TilemapManager(m_tilemap);
 
         m_classicGestureDetector = new CustomGestureDetector(new ClassicModeInputListener());
         m_spinTheCoreGestureDetector = new CustomGestureDetector(new SpinTheCoreModeInputListener(m_tilemap.getPositionInWorld()));
+        m_debugGestureDetector = new CustomGestureDetector(new DebugModeInputListener());
+
 
         isGameActive = true;
-        m_tilemapManager.addObserver(this);
-
         m_gameUI = new GameUI();
         m_resultUI = new ResultUI();
         m_streakUI = new StreakUI(m_skin);
 
-        m_scoreManager = new ScoreManager();
-        m_scoreManager.addObserver(m_streakUI);
-        m_tilemapManager.addObserver(m_scoreManager);
+        m_statsManager = new StatsManager();
+
+        m_statsManager.addObserver(this);
+        m_statsManager.addObserver(m_streakUI);
+
+        m_tilemapManager.addObserver(this);
+        m_tilemapManager.addObserver(m_statsManager);
 
         m_stage = new Stage(game.getWorldViewport());
 
@@ -107,6 +110,10 @@ public class GameScreen extends ScreenBase implements Observer {
         screenInputMultiplexer.clear();
         screenInputMultiplexer.addProcessor(m_stage);
         switch (mode) {
+            case SHOOT_EM_UP:
+                screenInputMultiplexer.addProcessor(m_debugGestureDetector);
+                break;
+
             case CLASSIC:
                 screenInputMultiplexer.addProcessor(m_classicGestureDetector);
                 break;
@@ -118,20 +125,27 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     public void initialize(GameSettings settings) {
-        m_time = 0;
-        m_lives = 3;
         m_roundEndListener = null;
         isGameActive = true;
-        m_tilemapManager.initHexTilemap(m_tilemap, settings.initRadius);
+        m_tilemapManager.initTilemapCicle(m_tilemap, settings.initRadius);
         m_gameMode = settings.gameMode;
         m_movingTileManager.reset();
-        m_scoreManager.reset();
+        m_statsManager.reset();
 
         m_stage.clear();
         m_stage.addActor(m_root);
-        m_gameUI.livesLbl.setText(String.valueOf(m_lives));
+        m_gameUI.livesLbl.setText(String.valueOf(m_statsManager.getLives()));
 
         switch (m_gameMode) {
+            case SHOOT_EM_UP:
+                m_tilemapManager.setAutoRotation(false);
+                m_tilemapManager.setMinMaxRotationSpeed(settings.minRotationSpeed, settings.maxRotationSpeed);
+                m_movingTileManager.setDefaultBallSpeed(settings.movingTileSpeed);
+                m_movingTileManager.setAutoEject(false);
+                m_movingTileManager.setLaunchDelay(0);
+                m_movingTileManager.setActiveState(false);
+                m_gameUI.highscoreLbl.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("classic_highscore", 0)));
+                break;
             case CLASSIC:
                 m_tilemapManager.setAutoRotation(true);
                 m_tilemapManager.setMinMaxRotationSpeed(settings.minRotationSpeed, settings.maxRotationSpeed);
@@ -166,11 +180,9 @@ public class GameScreen extends ScreenBase implements Observer {
             renderManager.start(m_camera.combined);
             renderManager.draw(m_tilemap);
             renderManager.drawLauncher(m_movingTileManager.getLauncherQueue(), m_movingTileManager.getLauncherPos());
-//            renderManager.drawOnLeftSide(m_movingTileManager.getLauncherQueue());
             renderManager.draw(m_movingTileManager.getActiveList());
             renderManager.end();
 
-//            renderManager.DBdraw(m_tilemapManager,m_tilemap);
             renderManager.renderCenterDot(m_camera.combined);
         }
         m_stage.draw();
@@ -178,26 +190,26 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private void update(float delta) {
         if (isGameActive) {
-            m_time += delta;
             m_movingTileManager.update(delta);
             m_tilemapManager.update(delta);
             m_collisionManager.checkForCollision(m_movingTileManager, m_tilemapManager);
-            m_scoreManager.update();
+            m_statsManager.update(delta);
             updateStage();
         }
     }
 
     private void updateStage() {
         m_stage.act();
-        m_gameUI.timeLbl.setText(String.format("%d:%02d", (int) m_time / 60, (int) m_time % 60));
-        m_gameUI.scoreLbl.setText(String.valueOf(m_scoreManager.getScore()));
+        float time = m_statsManager.getTime();
+        m_gameUI.timeLbl.setText(String.format("%d:%02d", (int) time / 60, (int) time % 60));
+        m_gameUI.scoreLbl.setText(String.valueOf(m_statsManager.getScore()));
     }
 
     public void handleGameEnd() {
         m_resultUI.update();
         m_stage.clear();
         m_stage.addActor(m_resultUI.getRoot());
-        int score = m_scoreManager.getScore();
+        int score = m_statsManager.getScore();
 
         // NOTE: It's questionable whether I want to store such scores because mainly of this campaign.
         if (roundWon) {
@@ -232,15 +244,16 @@ public class GameScreen extends ScreenBase implements Observer {
                 handleGameEnd();
                 break;
 
-            case NOTIFICATION_TYPE_NO_COLOR_MATCH:
-                if (m_lives == 1) {
-                    roundWon = false;
+            case NOTIFICATION_TYPE_LIVES_CHANGED:
+                int lives = m_statsManager.getLives();
+                if (lives == 0) {
                     isGameActive = false;
+                    roundWon = false;
                     handleGameEnd();
                 } else {
-                    --m_lives;
-                    m_gameUI.livesLbl.setText(String.valueOf(m_lives));
+                    m_gameUI.livesLbl.setText(String.valueOf(lives));
                 }
+                break;
         }
     }
 
@@ -275,6 +288,62 @@ public class GameScreen extends ScreenBase implements Observer {
 //            mt = movingTileManager.getFirstActiveTile();
 //        }
 //        mt.moveBy(deltaX, -deltaY);
+            return true;
+        }
+
+        @Override
+        public boolean panStop(float x, float y, int pointer, int button) {
+            return false;
+        }
+
+        @Override
+        public boolean zoom(float initialDistance, float distance) {
+            return false;
+        }
+
+        @Override
+        public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
+            return false;
+        }
+
+        @Override
+        public void pinchStop() {
+
+        }
+
+    }
+
+    private class DebugModeInputListener implements GestureDetector.GestureListener {
+
+        @Override
+        public boolean touchDown(float x, float y, int pointer, int button) {
+            return false;
+        }
+
+        @Override
+        public boolean tap(float x, float y, int count, int button) {
+//            m_movingTileManager.eject();
+            return true;
+        }
+
+        @Override
+        public boolean longPress(float x, float y) {
+            return false;
+        }
+
+        @Override
+        public boolean fling(float velocityX, float velocityY, int button) {
+            return false;
+        }
+
+        @Override
+        public boolean pan(float x, float y, float deltaX, float deltaY) {
+            MovingTile mt = m_movingTileManager.getFirstActiveTile();
+            if (mt == null) {
+                m_movingTileManager.eject();
+                mt = m_movingTileManager.getFirstActiveTile();
+            }
+            mt.moveBy(deltaX, -deltaY);
             return true;
         }
 
@@ -521,7 +590,7 @@ public class GameScreen extends ScreenBase implements Observer {
             String resultText = roundWon ? "Congratulations!" : "You Failed!";
             resultTextLbl.setText(resultText);
             timeLbl.setText(m_gameUI.timeLbl.getText());
-            scoreLbl.setText(String.valueOf(m_scoreManager.getScore()));
+            scoreLbl.setText(String.valueOf(m_statsManager.getScore()));
         }
     }
 

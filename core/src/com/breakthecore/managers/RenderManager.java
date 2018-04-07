@@ -26,7 +26,7 @@ public class RenderManager {
     private SpriteBatch m_batch;
     private AssetManager m_assetManager;
     private ShapeRenderer m_shapeRenderer;
-    private float sideLength = 64;
+    private float sideLength = WorldSettings.getTileSize();
     private float sideLengthHalf;
 
     private BitmapFont defaultFont;
@@ -49,7 +49,8 @@ public class RenderManager {
         colorList[2] = new Color(1, 1, 1, 1);
         colorList[3] = new Color(0, 1, 0, 1);
         colorList[4] = new Color(1, 0, 1, 1);
-        colorList[5] = new Color(0, 1, 1, 1);
+//        colorList[5] = new Color(0, 1, 1, 1);
+        colorList[5] = Color.BROWN; // color-blind
         colorList[6] = new Color(0, 0, 1, 1);
     }
 
@@ -95,7 +96,7 @@ public class RenderManager {
 
     public void draw(Tilemap tm) {
         TilemapTile[][] map = tm.getTilemapTiles();
-        Vector2 pos;
+        Vector2 pos, posTm;
         float rotation = tm.getRotDegrees();
         int texWidth = texture.getWidth();
         int texHeight = texture.getHeight();
@@ -105,8 +106,8 @@ public class RenderManager {
                 if (tile != null) {
                     pos = tile.getPositionInWorld();
                     m_batch.setColor(colorList[tile.getColor()]);
-//                    m_batch.draw(texture, pos.x - sideLengthHalf, pos.y - sideLengthHalf, sideLength, sideLength);
-                    m_batch.draw(texture, pos.x - sideLengthHalf, pos.y - sideLengthHalf, sideLengthHalf, sideLengthHalf, sideLength, sideLength,
+                    m_batch.draw(texture, pos.x - sideLengthHalf, pos.y - sideLengthHalf,
+                            sideLengthHalf, sideLengthHalf, sideLength, sideLength,
                             1, 1, -rotation, 0, 0, texWidth, texHeight, false, false);
                 }
             }
@@ -136,13 +137,15 @@ public class RenderManager {
     }
 
     public void DBTileDistances(TilemapTile[][] map) {
-        Vector2 pos;
+        Vector2 pos, post;
         for (TilemapTile[] arr : map) {
             for (TilemapTile tile : arr) {
                 if (tile != null) {
                     pos = tile.getPositionInWorld();
+                    post = tile.getPositionInTilemap();
                     m_batch.setColor(Color.BLACK);
-                    defaultFont.draw(m_batch, String.valueOf(tile.getDistanceFromCenter()), pos.x, pos.y);
+//                    defaultFont.draw(m_batch,String.format("%.0f,%.0f", post.x, post.y) , pos.x -sideLengthHalf/2, pos.y);
+                    defaultFont.draw(m_batch,String.valueOf(tile.getDistanceFromCenter()) , pos.x -sideLengthHalf/2, pos.y);
                 }
             }
         }

@@ -14,7 +14,6 @@ import com.breakthecore.tiles.TilemapTile;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -79,51 +78,46 @@ public class TilemapManager extends Observable implements Observer {
         TilemapTile newTile = null;
         boolean placedNewTile = false;
         Vector2 tilePos = solidTile.getPositionInTilemap();
-        int xOffset;
         switch (side) {
-            case top:
-                if (tm.getTile((int) tilePos.x, (int) tilePos.y + 2) == null) {
+            case TOP_RIGHT:
+                if (tm.getTile((int) tilePos.x, (int) tilePos.y + 1) == null) {
                     newTile = createTilemapTile(tile);
-                    tm.setTile((int) tilePos.x, (int) tilePos.y + 2, newTile);
+                    tm.setTilemapTile((int) tilePos.x, (int) tilePos.y + 1, newTile);
                     placedNewTile = true;
                 }
                 break;
-            case topLeft:
-                xOffset = (tilePos.y % 2) == 0 ? -1 : 0;
-                if (tm.getTile((int) tilePos.x + xOffset, (int) tilePos.y + 1) == null) {
+            case TOP_LEFT:
+                if (tm.getTile((int) tilePos.x - 1, (int) tilePos.y + 1) == null) {
                     newTile = createTilemapTile(tile);
-                    tm.setTile((int) tilePos.x + xOffset, (int) tilePos.y + 1, newTile);
+                    tm.setTilemapTile((int) tilePos.x - 1, (int) tilePos.y + 1, newTile);
                     placedNewTile = true;
                 }
                 break;
-            case topRight:
-                xOffset = (tilePos.y % 2) == 0 ? 0 : 1;
-                if (tm.getTile((int) tilePos.x + xOffset, (int) tilePos.y + 1) == null) {
+            case RIGHT:
+                if (tm.getTile((int) tilePos.x + 1, (int) tilePos.y) == null) {
                     newTile = createTilemapTile(tile);
-                    tm.setTile((int) tilePos.x + xOffset, (int) tilePos.y + 1, newTile);
+                    tm.setTilemapTile((int) tilePos.x + 1, (int) tilePos.y, newTile);
                     placedNewTile = true;
                 }
                 break;
-            case bottom:
-                if (tm.getTile((int) tilePos.x, (int) tilePos.y - 2) == null) {
+            case LEFT:
+                if (tm.getTile((int) tilePos.x - 1, (int) tilePos.y) == null) {
                     newTile = createTilemapTile(tile);
-                    tm.setTile((int) tilePos.x, (int) tilePos.y - 2, newTile);
+                    tm.setTilemapTile((int) tilePos.x - 1, (int) tilePos.y, newTile);
                     placedNewTile = true;
                 }
                 break;
-            case bottomLeft:
-                xOffset = (tilePos.y % 2) == 0 ? -1 : 0;
-                if (tm.getTile((int) tilePos.x + xOffset, (int) tilePos.y - 1) == null) {
+            case BOTTOM_LEFT:
+                if (tm.getTile((int) tilePos.x, (int) tilePos.y - 1) == null) {
                     newTile = createTilemapTile(tile);
-                    tm.setTile((int) tilePos.x + xOffset, (int) tilePos.y - 1, newTile);
+                    tm.setTilemapTile((int) tilePos.x, (int) tilePos.y - 1, newTile);
                     placedNewTile = true;
                 }
                 break;
-            case bottomRight:
-                xOffset = (tilePos.y % 2) == 0 ? 0 : 1;
-                if (tm.getTile((int) tilePos.x + xOffset, (int) tilePos.y - 1) == null) {
+            case BOTTOM_RIGHT:
+                if (tm.getTile((int) tilePos.x + 1, (int) tilePos.y - 1) == null) {
                     newTile = createTilemapTile(tile);
-                    tm.setTile((int) tilePos.x + xOffset, (int) tilePos.y - 1, newTile);
+                    tm.setTilemapTile((int) tilePos.x + 1, (int) tilePos.y - 1, newTile);
                     placedNewTile = true;
                 }
                 break;
@@ -184,42 +178,64 @@ public class TilemapManager extends Observable implements Observer {
     //XXX: HORRIBLE CODE! DON'T READ OR YOUR BRAIN MIGHT CRASH! Blehh..
     public void addSurroundingColorMatches(TilemapTile tile, List<TilemapTile> match, List<TilemapTile> exclude) {
         Vector2 tpos = tile.getPositionInTilemap();
-        boolean isLeft = tpos.y % 2 == 0 ? true : false;
         int tx = (int) tpos.x;
         int ty = (int) tpos.y;
 
         TilemapTile tt;
-        boolean flag = true;
-        int x;
 
         match.add(tile);
         exclude.add(tile);
 
-
-        for (int y = -2; y < 3; ++y) {
-            if (y == 0) continue;
-            if ((flag) && (y == -1 || y == +1)) {
-                x = isLeft ? -1 : 1;
-            } else {
-                x = 0;
+        //top_left
+        tt = tm.getTile(tx - 1, ty + 1);
+        if (tt != null && !exclude.contains(tt)) {
+            if (tt.getColor() == tile.getColor()) {
+                addSurroundingColorMatches(tt, match, exclude);
             }
-            tt = tm.getTile(tx + x, ty + y);
+        }
 
-            if (flag && y == 1) {
-                flag = false;
-                y = -2;
+        //top_right
+        tt = tm.getTile(tx, ty + 1);
+        if (tt != null && !exclude.contains(tt)) {
+            if (tt.getColor() == tile.getColor()) {
+                addSurroundingColorMatches(tt, match, exclude);
             }
+        }
 
-            if (tt == null || exclude.contains(tt))
-                continue;
+        //right
+        tt = tm.getTile(tx + 1, ty);
+        if (tt != null && !exclude.contains(tt)) {
+            if (tt.getColor() == tile.getColor()) {
+                addSurroundingColorMatches(tt, match, exclude);
+            }
+        }
 
+        //bottom_right
+        tt = tm.getTile(tx + 1, ty - 1);
+        if (tt != null && !exclude.contains(tt)) {
+            if (tt.getColor() == tile.getColor()) {
+                addSurroundingColorMatches(tt, match, exclude);
+            }
+        }
+
+        //bottom_left
+        tt = tm.getTile(tx , ty - 1);
+        if (tt != null && !exclude.contains(tt)) {
+            if (tt.getColor() == tile.getColor()) {
+                addSurroundingColorMatches(tt, match, exclude);
+            }
+        }
+
+        //left
+        tt = tm.getTile(tx - 1, ty);
+        if (tt != null && !exclude.contains(tt)) {
             if (tt.getColor() == tile.getColor()) {
                 addSurroundingColorMatches(tt, match, exclude);
             }
         }
     }
 
-    public void initHexTilemap(Tilemap tm, int radius) {
+    public void initTilemapCicle(Tilemap tm, int radius) {
         tm.clear();
         TilemapTile dummy;
         Tile tile;
@@ -232,25 +248,33 @@ public class TilemapManager extends Observable implements Observer {
         if (radius == 0) {
             dummy = new TilemapTile(new Tile(WorldSettings.getRandomInt(7)));
             dummy.addObserver(this);
-            tm.setTile(0, 0, dummy);
+            tm.setTilemapTile(0, 0, dummy);
             return;
         }
 
-        for (int y = -radius * 3; y < radius * 3; ++y) {
-            float xOffset = ((y) % 2 == 0) ? 0 : .75f;
-            for (int x = -radius; x < radius; ++x) {
-                if (Vector2.dst(x * 1.5f + xOffset, y * 0.5f, 0, 0) <= radius) {
+        for (int y = -radius-1; y < radius+1; ++y) {
+            for (int x = -radius-1; x < radius+1; ++x) {
+                if (GetTileDistance(x, y, 0, 0) <= radius) {
                     tile = new Tile(WorldSettings.getRandomInt(7));
                     colors[tile.getColor()].list.add(tile);
                     dummy = new TilemapTile(tile);
                     dummy.addObserver(this);
-                    tm.setTile(x, y, dummy);
+                    tm.setTilemapTile(x, y, dummy);
                 }
             }
         }
-        initTileCount = tm.getTileCount();
 
+        initTileCount = tm.getTileCount();
         balanceTilemap(colors);
+    }
+
+    int GetTileDistance(int aX1, int aY1, int aX2, int aY2) {
+        int dx = aX1 - aX2;     // signed deltas
+        int dy = aY1 - aY2;
+        int x = Math.abs(dx);  // absolute deltas
+        int y = Math.abs(dy);
+
+        return Math.max(x, Math.max(y, Math.abs(dx+dy)));
     }
 
     // XXX(4/3/2018): Rquires a better implementation!
@@ -304,16 +328,14 @@ public class TilemapManager extends Observable implements Observer {
         }
     }
 
-    private void fillEntireTilemap(Tilemap tm) {
+    public void fillEntireTilemap(Tilemap tm) {
         TileContainer[][] tiles = tm.getTilemapTiles();
         int center_tile = tm.getSize() / 2;
-        int oddOrEvenFix = tm.getSize() % 2 == 1 ? 1 : 0;
-        int tmp = (tm.getSize() * 3) / 2;
+//        int oddOrEvenFix = tm.getSize() % 2 == 1 ? 1 : 0;
+        int tmp = (tm.getSize()) / 2;
         for (int y = -tmp; y < tmp; ++y) {
-            for (int x = -tm.getSize() / 2; x < tm.getSize() / 2 + oddOrEvenFix; ++x) {
-                tiles[y + (center_tile) * 3 + oddOrEvenFix][x + center_tile] = new TilemapTile(
-                        x, y,
-                        new Tile(WorldSettings.getRandomInt(7)));
+            for (int x = -tm.getSize() / 2; x < tm.getSize() / 2; ++x) {
+                tm.setTilemapTile(x, y, new TilemapTile(new Tile(WorldSettings.getRandomInt(7))));
             }
         }
     }

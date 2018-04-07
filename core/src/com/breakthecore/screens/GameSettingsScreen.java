@@ -301,7 +301,7 @@ public class GameSettingsScreen extends ScreenBase {
             tbl.add(tb).expandX().height(250).fill().padBottom(200).row();
 
 
-            txt = "You spin the core while balls get launched at you. Your goal is to match-3 of the right colors " +
+            txt = "You spin the core while balls get launched at you. Your goal is to match-3 of the BOTTOM_LEFT colors " +
                     "in order to beat it.";
             dummy = new Label(":Spin The Core Mode:", m_skin, "comic_48b");
             tb = new TextButton(txt, m_skin, "modeButton");

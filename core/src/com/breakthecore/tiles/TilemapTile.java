@@ -8,7 +8,7 @@ public class TilemapTile extends TileContainer {
 
     public TilemapTile(float tilex , float tiley) {
         m_positionInTilemap = new Vector2(tilex, tiley);
-        m_distanceFromCenter = calcDistnanceFromCenter(tilex , tiley);
+        m_distanceFromCenter = calcDistnanceFromCenter((int)tilex , (int)tiley, 0, 0);
     }
 
     public TilemapTile(float tilex, float tiley, Tile tile) {
@@ -35,19 +35,19 @@ public class TilemapTile extends TileContainer {
 
     public void setPositionInTilemap(float tilex, float tiley) {
         m_positionInTilemap.set(tilex, tiley);
-        m_distanceFromCenter = calcDistnanceFromCenter(tilex, tiley);
+        m_distanceFromCenter = calcDistnanceFromCenter((int)tilex, (int)tiley, 0, 0);
     }
 
     public int getColor() {
         return m_tile.getColor();
     }
 
-    //XXX: calcDistanceFromCenter is not accurate at all!...
-    private int calcDistnanceFromCenter(float tileX, float tileY) {
-        int result = 0;
-        float xOffset = ((tileY) % 2 == 0)? 0 : 1f;
+    int calcDistnanceFromCenter(int aX1, int aY1, int aX2, int aY2) {
+        int dx = aX1 - aX2;     // signed deltas
+        int dy = aY1 - aY2;
+        int x = Math.abs(dx);  // absolute deltas
+        int y = Math.abs(dy);
 
-        result = (int) (Math.round(Vector2.dst(tileX * 2f + xOffset, tileY * 0.5f, 0, 0)));
-        return result;
+        return Math.max(x, Math.max(y, Math.abs(dx+dy)));
     }
 }

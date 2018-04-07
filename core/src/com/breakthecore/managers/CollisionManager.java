@@ -64,32 +64,32 @@ public class CollisionManager {
         float topLeft = Vector2.dst(vertices[0], vertices[1], point.x, point.y);
         curr = m_collisionDisSide.get(0);
         curr.distance = topLeft;
-        curr.side = TileContainer.Side.topLeft;
+        curr.side = TileContainer.Side.TOP_LEFT;
 
         float top = Vector2.dst(vertices[2], vertices[3], point.x, point.y);
         curr = m_collisionDisSide.get(1);
         curr.distance = top;
-        curr.side = TileContainer.Side.top;
+        curr.side = TileContainer.Side.TOP_RIGHT;
 
         float topRight = Vector2.dst(vertices[4], vertices[5], point.x, point.y);
         curr = m_collisionDisSide.get(2);
         curr.distance = topRight;
-        curr.side = TileContainer.Side.topRight;
+        curr.side = TileContainer.Side.RIGHT;
 
         float bottomRight = Vector2.dst(vertices[6], vertices[7], point.x, point.y);
         curr = m_collisionDisSide.get(3);
         curr.distance = bottomRight;
-        curr.side = TileContainer.Side.bottomRight;
+        curr.side = TileContainer.Side.BOTTOM_RIGHT;
 
         float bottom = Vector2.dst(vertices[8], vertices[9], point.x, point.y);
         curr = m_collisionDisSide.get(4);
         curr.distance = bottom;
-        curr.side = TileContainer.Side.bottom;
+        curr.side = TileContainer.Side.BOTTOM_LEFT;
 
         float bottomLeft = Vector2.dst(vertices[10], vertices[11], point.x, point.y);
         curr = m_collisionDisSide.get(5);
         curr.distance = bottomLeft;
-        curr.side = TileContainer.Side.bottomLeft;
+        curr.side = TileContainer.Side.LEFT;
 
         Collections.sort(m_collisionDisSide, m_disSideComp);
 
@@ -103,8 +103,8 @@ public class CollisionManager {
     public float[] getVerticesOnMiddleEdges(float cosT, float sinT) {
         float[] result = new float[12];
         for (int i = 0; i < 12; i += 2) {
-            result[i] = TileContainer.s_verticesOnMiddleEdges[i] * cosT + TileContainer.s_verticesOnMiddleEdges[i + 1] * sinT;
-            result[i + 1] = TileContainer.s_verticesOnMiddleEdges[i] * -sinT + TileContainer.s_verticesOnMiddleEdges[i + 1] * cosT;
+            result[i] = TileContainer.s_vertices[i] * cosT + TileContainer.s_vertices[i + 1] * sinT;
+            result[i + 1] = TileContainer.s_vertices[i] * -sinT + TileContainer.s_vertices[i + 1] * cosT;
         }
         return result;
     }

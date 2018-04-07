@@ -8,6 +8,7 @@ public final class WorldSettings {
     private static int s_width;
     private static int s_height;
     private static float s_aspect;
+    private static int s_tileSize;
     private static Random s_rng;
 
     public static void init() {
@@ -15,8 +16,12 @@ public final class WorldSettings {
         s_width = (int) (1920 * s_aspect);
         s_height = 1920;
 
+        s_tileSize = 70;
+
         s_rng = new Random();
     }
+
+    public static int getTileSize() {return s_tileSize;}
 
     public static int getWorldWidth() {
         return s_width;

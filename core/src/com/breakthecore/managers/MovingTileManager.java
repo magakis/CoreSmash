@@ -75,6 +75,10 @@ public class MovingTileManager {
         }
     }
 
+    public void setActiveState(boolean active) {
+        isActive = active;
+    }
+
     public void setAutoEject(boolean autoEject) {
         m_autoEject = autoEject;
     }

@@ -59,34 +59,49 @@ public class Pathfinder {
         }
     }
 
-    private void getSurroundingTiles(TilemapTile tt, Tilemap tm, LinkedList<TilemapTile> active, ArrayList<TilemapTile> exclude) {
-        Vector2 tpos = tt.getPositionInTilemap();
-        boolean isLeft = tpos.y % 2 == 0 ? true : false;
+    private void getSurroundingTiles(TilemapTile tmt, Tilemap tm, LinkedList<TilemapTile> active, ArrayList<TilemapTile> exclude) {
+        Vector2 tpos = tmt.getPositionInTilemap();
         int tx = (int) tpos.x;
         int ty = (int) tpos.y;
 
-        TilemapTile tmpt;
-        boolean flag = true;
-        int x;
+        TilemapTile tt;
 
-        for (int y = -2; y < 3; ++y) {
-            if (y == 0) continue;
-            if ((flag) && (y == -1 || y == +1)) {
-                x = isLeft ? -1 : 1;
-            } else {
-                x = 0;
-            }
-            tmpt = tm.getTile(tx + x, ty + y);
-
-            if (flag && y == 1) {
-                flag = false;
-                y = -2;
-            }
-
-            if (tmpt == null || exclude.contains(tmpt) || active.contains(tmpt))
-                continue;
-
-            active.add(tmpt);
+        //top_left
+        tt = tm.getTile(tx - 1, ty + 1);
+        if (tt != null && !exclude.contains(tt) && !active.contains(tt)) {
+            active.add(tt);
         }
+
+        //top_right
+        tt = tm.getTile(tx, ty + 1);
+        if (tt != null && !exclude.contains(tt) && !active.contains(tt)) {
+            active.add(tt);
+        }
+
+        //right
+        tt = tm.getTile(tx + 1, ty);
+        if (tt != null && !exclude.contains(tt) && !active.contains(tt)) {
+            active.add(tt);
+        }
+
+        //bottom_right
+        tt = tm.getTile(tx + 1, ty - 1);
+        if (tt != null && !exclude.contains(tt) && !active.contains(tt)) {
+            active.add(tt);
+        }
+
+
+        //bottom_left
+        tt = tm.getTile(tx, ty - 1);
+        if (tt != null && !exclude.contains(tt) && !active.contains(tt)) {
+            active.add(tt);
+        }
+
+        //left
+        tt = tm.getTile(tx - 1, ty);
+        if (tt != null && !exclude.contains(tt) && !active.contains(tt)) {
+            active.add(tt);
+        }
+
     }
 }

@@ -96,23 +96,23 @@ public class Tilemap {
         float y = tilePos.y;
 
         float X_world, Y_world;
-        float tileXDistance = m_sideLength + m_sideLengthHalf;
-        float tileYDistance = m_sideLengthHalf;
+        float tileXDistance = m_sideLength*.95f;
+        float tileYDistance = m_sideLength*.85f;
 
-        float xOffset = ((y) % 2 == 1) || ((y) % 2 == -1) ? m_sideLengthHalf * 1.5f : 0;
+        float xOffset = x % 2 == 0 ? 0 : tileYDistance/2;
 
         X_world = m_position.x +
-                (x * tileXDistance + xOffset) * m_cosT +
-                (y * tileYDistance) * m_sinT;
+                (x * tileXDistance + y * m_sideLengthHalf ) * m_cosT +
+                (y * tileYDistance ) * m_sinT;
 
         Y_world = m_position.y +
-                (x * tileXDistance + xOffset) * -m_sinT +
+                (x * tileXDistance + y * m_sideLengthHalf ) * -m_sinT +
                 (y * tileYDistance) * m_cosT;
 
         hex.setPositionInWorld(X_world, Y_world);
     }
 
-    public void setTile(int x, int y, TilemapTile tile) {
+    public void setTilemapTile(int x, int y, TilemapTile tile) {
         if (tile == null) return;
 
         if (getTile(x, y) == null) {
@@ -139,7 +139,7 @@ public class Tilemap {
     }
 
     public void setTileLiteral(int x, int y, TilemapTile tile) {
-        setTile(x - m_centerTileX, y - m_centerTileY, tile);
+        setTilemapTile(x - m_centerTileX, y - m_centerTileY, tile);
     }
 
     public TilemapTile getTile(int x, int y) {

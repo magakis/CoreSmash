@@ -9,7 +9,7 @@ import com.breakthecore.Observable;
 
 public class TileContainer extends Observable {
     public static final float[] s_verticesOnMiddleEdges = generateVertices(0);
-    private static final float[] s_vertices = generateVertices(30);
+    public static final float[] s_vertices = generateVertices(30);
     protected Tile m_tile;
 
     protected Vector2 m_positionInWorld;
@@ -43,6 +43,6 @@ public class TileContainer extends Observable {
         m_tile = tile;
     }
 
-    public enum Side {bottomRight, bottom, bottomLeft, topLeft, top, topRight}
+    public enum Side {BOTTOM_RIGHT, BOTTOM_LEFT, LEFT, TOP_LEFT, TOP_RIGHT, RIGHT}
 
 }

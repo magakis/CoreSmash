@@ -16,7 +16,7 @@ public class MovingTile extends TileContainer {
     }
 
     public MovingTile(Vector2 pos, int speed) {
-        scale = 3/5f;
+        scale = 1/2f;
         m_speed = speed * 100;
         m_positionInWorld.set(pos);
     }
@@ -70,7 +70,7 @@ public class MovingTile extends TileContainer {
     }
 
     public boolean hasTile() {
-        return m_tile == null ? false : true;
+        return m_tile != null;
     }
 
     public int getColor() {
