@@ -8,6 +8,7 @@ import com.breakthecore.Observer;
 import com.breakthecore.Pathfinder;
 import com.breakthecore.Tilemap;
 import com.breakthecore.WorldSettings;
+import com.breakthecore.tiles.RegularTile;
 import com.breakthecore.tiles.Tile;
 import com.breakthecore.tiles.TileContainer;
 import com.breakthecore.tiles.TilemapTile;
@@ -246,7 +247,7 @@ public class TilemapManager extends Observable implements Observer {
         }
 
         if (radius == 0) {
-            dummy = new TilemapTile(new Tile(WorldSettings.getRandomInt(7)));
+            dummy = new TilemapTile(new RegularTile());
             dummy.addObserver(this);
             tm.setTilemapTile(0, 0, dummy);
             return;
@@ -255,7 +256,7 @@ public class TilemapManager extends Observable implements Observer {
         for (int y = -radius-1; y < radius+1; ++y) {
             for (int x = -radius-1; x < radius+1; ++x) {
                 if (GetTileDistance(x, y, 0, 0) <= radius) {
-                    tile = new Tile(WorldSettings.getRandomInt(7));
+                    tile = new RegularTile();
                     colors[tile.getColor()].list.add(tile);
                     dummy = new TilemapTile(tile);
                     dummy.addObserver(this);
@@ -283,7 +284,7 @@ public class TilemapManager extends Observable implements Observer {
         int med = totalTiles / 7;
         int donateMax, donorSize, size, need;
         int rand;
-        Tile tile;
+        RegularTile tile;
 
         Comparator<ColorGroupContainer> comp = new Comparator<ColorGroupContainer>() {
             @Override
@@ -298,7 +299,8 @@ public class TilemapManager extends Observable implements Observer {
                 if (t == null) continue;
                 getColorMatches(t);
                 if (match.size() > 2) {
-                    tile = match.get(match.size() / 2).getTile();
+                    // check its type first through getType()?
+                    tile = (RegularTile)match.get(match.size() / 2).getTile();
                     colors[tile.getColor()].list.remove(tile);
                     tile.setColor(WorldSettings.getRandomInt(7));
                     colors[tile.getColor()].list.add(tile);
@@ -314,7 +316,7 @@ public class TilemapManager extends Observable implements Observer {
             need = med - size;
             while (donateMax != 0 && need != 0) {
                 rand = WorldSettings.getRandomInt(donorSize);
-                tile = colors[6].list.get(rand);
+                tile = (RegularTile)colors[6].list.get(rand);
                 tile.setColor(colors[0].groupColor);
                 colors[0].list.add(tile);
                 colors[6].list.remove(tile);
@@ -335,7 +337,7 @@ public class TilemapManager extends Observable implements Observer {
         int tmp = (tm.getSize()) / 2;
         for (int y = -tmp; y < tmp; ++y) {
             for (int x = -tm.getSize() / 2; x < tm.getSize() / 2; ++x) {
-                tm.setTilemapTile(x, y, new TilemapTile(new Tile(WorldSettings.getRandomInt(7))));
+                tm.setTilemapTile(x, y, new TilemapTile(new RegularTile()));
             }
         }
     }

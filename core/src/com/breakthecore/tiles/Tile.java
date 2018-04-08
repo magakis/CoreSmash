@@ -1,20 +1,31 @@
 package com.breakthecore.tiles;
 
-public class Tile {
-    private TileType m_type;
-    private int m_color;
+import com.badlogic.gdx.math.Vector2;
+import com.breakthecore.WorldSettings;
+import com.breakthecore.managers.CollisionManager;
+import com.breakthecore.managers.TilemapManager;
 
-    public Tile(int color) {
-        m_type = TileType.REGULAR;
-        m_color = color;
+import java.util.Collections;
+
+abstract public class Tile {
+    private TileType m_type;
+    protected int m_color;
+
+    public Tile(TileType tileType) {
+        m_type = tileType;
+        m_color = WorldSettings.getRandomInt(7);
     }
+
+    abstract public void onCollide(MovingTile mt, TilemapTile tt, TilemapManager tmm, CollisionManager cm);
+
+    abstract public void update(float delta);
 
     public int getColor() {
         return m_color;
     }
 
-    public void setColor(int colorId) {
-        m_color = colorId;
+    public TileType getType() {
+        return m_type;
     }
 
     public enum TileType {

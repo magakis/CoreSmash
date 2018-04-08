@@ -117,19 +117,15 @@ public class CollisionManager {
             solidTile = findCollision(tm, mt);
             if (solidTile == null) continue;
 
-            handleCollision(mt, solidTile, tmm);
+            mt.getTile().onCollide(mt, solidTile, tmm, this);
         }
         mtm.disposeInactive();
     }
 
-    private void handleCollision(MovingTile mt, TilemapTile st, TilemapManager tmm) {
-        Tilemap tm = tmm.getTileMap();
-        direction.set(mt.getPositionInWorld()).sub(st.getPositionInWorld());
+    public Vector2 getDirection(Vector2 pos, Vector2 origin) {
+        direction.set(pos).sub(origin);
         direction.nor();
-
-        tmm.addTile(mt.extractTile(), st, getClosestSides(tm.getCosT(), tm.getSinT(), direction));
-
-        mt.dispose();
+        return direction;
     }
 
     private class DistanceSideStruct {

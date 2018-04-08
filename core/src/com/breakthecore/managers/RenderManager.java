@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.Queue;
 import com.breakthecore.Tilemap;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.tiles.MovingTile;
+import com.breakthecore.tiles.Tile;
 import com.breakthecore.tiles.TilemapTile;
 
 import java.util.List;
@@ -74,9 +75,14 @@ public class RenderManager {
 
     public void draw(MovingTile mt) {
         Vector2 atPos = mt.getPositionInWorld();
-        float sideLen = sideLengthHalf * mt.getScale();
-        m_batch.setColor(colorList[mt.getColor()]);
-        m_batch.draw(texture, atPos.x - sideLen, atPos.y - sideLen, sideLen * 2, sideLen * 2);
+        Tile tile = mt.getTile();
+        switch (tile.getType()) {
+            case REGULAR:
+                float sideLen = sideLengthHalf * mt.getScale();
+                m_batch.setColor(colorList[mt.getColor()]);
+                m_batch.draw(texture, atPos.x - sideLen, atPos.y - sideLen, sideLen * 2, sideLen * 2);
+                break;
+        }
     }
 
     public void draw(List<MovingTile> mt) {

@@ -1,6 +1,7 @@
 package com.breakthecore.tiles;
 
 import com.badlogic.gdx.math.Vector2;
+import com.breakthecore.managers.TilemapManager;
 
 /**
  * Created by Michail on 19/3/2018.
@@ -29,6 +30,10 @@ public class MovingTile extends TileContainer {
     public MovingTile(float x, float y, int speed, Tile tile) {
         this(x, y, speed);
         m_tile = tile;
+    }
+
+    public Tile getTile() {
+        return m_tile;
     }
 
     public float getSpeed() {

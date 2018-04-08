@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Queue;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.tiles.MovingTile;
+import com.breakthecore.tiles.RegularTile;
 import com.breakthecore.tiles.Tile;
 
 import org.omg.PortableServer.POAPackage.WrongAdapter;
@@ -181,7 +182,7 @@ public class MovingTileManager {
     }
 
     private Tile createTile() {
-        Tile t = new Tile(WorldSettings.getRandomInt(7));
+        RegularTile t = new RegularTile();
 
         outer:
         while (true) {
