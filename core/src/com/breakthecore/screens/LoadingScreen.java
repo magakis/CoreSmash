@@ -166,7 +166,7 @@ public class LoadingScreen extends ScreenBase {
         stb = new TextButton.TextButtonStyle();
         stb.up = skin.newDrawable("myBall", Color.CORAL);
         stb.down = skin.newDrawable("myBall", Color.RED);
-        stb.font = skin.getFont("comic_24b");
+        stb.font = skin.getFont("comic_48b");
         skin.add("tmpPowerup", stb);
 
         //SliderStyles

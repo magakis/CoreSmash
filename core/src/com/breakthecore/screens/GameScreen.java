@@ -37,7 +37,6 @@ import com.breakthecore.managers.RenderManager;
 import com.breakthecore.Tilemap;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.tiles.MovingTile;
-import com.breakthecore.tiles.Tile;
 import com.breakthecore.ui.UIBase;
 
 /**
@@ -65,7 +64,7 @@ public class GameScreen extends ScreenBase implements Observer {
     private GameMode m_gameMode;
 
     //===========
-    private GameUI m_gameUI;
+    private GameUI gameUI;
     private ResultUI m_resultUI;
     private Skin m_skin;
     private Stage m_stage;
@@ -94,12 +93,10 @@ public class GameScreen extends ScreenBase implements Observer {
 
 
         isGameActive = true;
-        m_gameUI = new GameUI();
-        m_resultUI = new ResultUI();
-        m_streakUI = new StreakUI(m_skin);
 
         statsManager = new StatsManager();
 
+        m_streakUI = new StreakUI(m_skin);
         statsManager.addObserver(this);
         statsManager.addObserver(m_streakUI);
 
@@ -108,7 +105,10 @@ public class GameScreen extends ScreenBase implements Observer {
 
         m_stage = new Stage(game.getWorldViewport());
 
-        m_root = new Stack(m_gameUI.getRoot(), m_streakUI.getRoot());
+        gameUI = new GameUI();
+        m_resultUI = new ResultUI();
+
+        m_root = new Stack(gameUI.getRoot(), m_streakUI.getRoot());
         m_root.setFillParent(true);
     }
 
@@ -140,7 +140,6 @@ public class GameScreen extends ScreenBase implements Observer {
 
         m_stage.clear();
         m_stage.addActor(m_root);
-        m_gameUI.livesLbl.setText(String.valueOf(statsManager.getLives()));
 
         switch (m_gameMode) {
             case SHOOT_EM_UP:
@@ -150,14 +149,14 @@ public class GameScreen extends ScreenBase implements Observer {
                 movingTileManager.setAutoEject(false);
                 movingTileManager.setLaunchDelay(0);
                 movingTileManager.setActiveState(false);
-                m_gameUI.highscoreLbl.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("classic_highscore", 0)));
+                gameUI.highscoreLbl.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("classic_highscore", 0)));
                 break;
             case CLASSIC:
                 tilemapManager.setAutoRotation(true);
                 tilemapManager.setMinMaxRotationSpeed(settings.minRotationSpeed, settings.maxRotationSpeed);
                 movingTileManager.setDefaultBallSpeed(settings.movingTileSpeed);
                 movingTileManager.setAutoEject(false);
-                m_gameUI.highscoreLbl.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("classic_highscore", 0)));
+                gameUI.highscoreLbl.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("classic_highscore", 0)));
                 break;
 
             case SPIN_THE_CORE:
@@ -165,9 +164,12 @@ public class GameScreen extends ScreenBase implements Observer {
                 movingTileManager.setLaunchDelay(settings.launcherCooldown);
                 movingTileManager.setDefaultBallSpeed(settings.movingTileSpeed);
                 movingTileManager.setAutoEject(true);
-                m_gameUI.highscoreLbl.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("spinthecore_highscore", 0)));
+                gameUI.highscoreLbl.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("spinthecore_highscore", 0)));
                 break;
         }
+
+        gameUI.livesLbl.setText(String.valueOf(statsManager.getLives()));
+        gameUI.tbPower1.setText(String.valueOf(statsManager.getSpecialBallCount()));
 
         setInputHanlderFor(settings.gameMode);
     }
@@ -208,8 +210,8 @@ public class GameScreen extends ScreenBase implements Observer {
     private void updateStage() {
         m_stage.act();
         float time = statsManager.getTime();
-        m_gameUI.timeLbl.setText(String.format("%d:%02d", (int) time / 60, (int) time % 60));
-        m_gameUI.scoreLbl.setText(String.valueOf(statsManager.getScore()));
+        gameUI.timeLbl.setText(String.format("%d:%02d", (int) time / 60, (int) time % 60));
+        gameUI.scoreLbl.setText(String.valueOf(statsManager.getScore()));
     }
 
     public void handleGameEnd() {
@@ -258,7 +260,7 @@ public class GameScreen extends ScreenBase implements Observer {
                     roundWon = false;
                     handleGameEnd();
                 } else {
-                    m_gameUI.livesLbl.setText(String.valueOf(lives));
+                    gameUI.livesLbl.setText(String.valueOf(lives));
                 }
                 break;
         }
@@ -501,8 +503,9 @@ public class GameScreen extends ScreenBase implements Observer {
     private class GameUI extends UIBase {
         Label timeLbl, scoreLbl, livesLbl, highscoreLbl;
         TextButton tbPower1;
+
         public GameUI() {
-            Label staticTimeLbl, staticScoreLbl, staticLivesLbl;
+            final Label staticTimeLbl, staticScoreLbl, staticLivesLbl;
             HorizontalGroup hgrp;
 
             Table mainTable = new Table();
@@ -538,31 +541,31 @@ public class GameScreen extends ScreenBase implements Observer {
             hgrp.addActor(staticLivesLbl);
             hgrp.addActor(livesLbl);
 
-            tbPower1 = new TextButton("2", m_skin, "tmpPowerup");
-            tbPower1.setTransform(true);
-            tbPower1.scaleBy(3);
-            tbPower1.setOrigin(tbPower1.getPrefWidth()/2, tbPower1.getPrefHeight()/2);
+            tbPower1 = new TextButton("null", m_skin, "tmpPowerup");
+            tbPower1.getLabel().setAlignment(Align.bottomLeft);
+            tbPower1.getLabelCell().padBottom(5).padLeft(10);
             tbPower1.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    movingTileManager.insertSpecialTile(Tile.TileType.BOMB);
+                    statsManager.consumeSpecialBall(movingTileManager);
+                    if (statsManager.getSpecialBallCount() == 0) {
+                        tbPower1.setDisabled(true);
+                        tbPower1.setText(String.valueOf(statsManager.getSpecialBallCount()));
+                    }
                 }
             });
 
 
             Drawable tmp = m_skin.newDrawable("box_white_5");
-            tmp.setMinHeight(300);
-            tmp.setMinWidth(200);
             Image powerupsBackround = new Image(tmp);
 
-            VerticalGroup powerupsGrp = new VerticalGroup();
-            powerupsGrp.center();
-            powerupsGrp.addActor(tbPower1);
+            Table powerUpTable = new Table();
+            powerUpTable.center();
+            powerUpTable.add(tbPower1).size(100,100);
 
-            Group grp = new Group();
-            grp.addActor(powerupsBackround);
-            grp.addActor(powerupsGrp);
-            powerupsGrp.setPosition(powerupsBackround.getWidth()/2, powerupsBackround.getHeight()/2);
+            Stack powerUpStack = new Stack();
+            powerUpStack.add(powerupsBackround);
+            powerUpStack.add(powerUpTable);
 
             powerupsBackround.addCaptureListener(new EventListener() {
                 @Override
@@ -584,7 +587,7 @@ public class GameScreen extends ScreenBase implements Observer {
             mainTable.add().colspan(2);
             mainTable.add(highscoreLbl).row();
             mainTable.add().colspan(2);
-            mainTable.add(grp).height(300).width(200).expandY().fill();
+            mainTable.add(powerUpStack).height(300).width(140).expandY().fill().bottom().padBottom(150);
 
 
             root = mainTable;
@@ -633,7 +636,7 @@ public class GameScreen extends ScreenBase implements Observer {
         public void update() {
             String resultText = roundWon ? "Congratulations!" : "You Failed!";
             resultTextLbl.setText(resultText);
-            timeLbl.setText(m_gameUI.timeLbl.getText());
+            timeLbl.setText(gameUI.timeLbl.getText());
             scoreLbl.setText(String.valueOf(statsManager.getScore()));
         }
     }
