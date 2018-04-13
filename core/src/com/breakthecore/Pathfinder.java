@@ -57,9 +57,9 @@ public class Pathfinder {
     }
 */
     private void getSurroundingTiles(TilemapTile tmt, Tilemap tm, LinkedList<TilemapTile> active, ArrayList<TilemapTile> exclude) {
-        Vector2 tpos = tmt.getRelativePositionInTilemap();
-        int tx = (int) tpos.x;
-        int ty = (int) tpos.y;
+        Coords2D tpos = tmt.getRelativePositionInTilemap();
+        int tx =  tpos.x;
+        int ty =  tpos.y;
 
         TilemapTile tt;
 
@@ -117,10 +117,10 @@ public class Pathfinder {
     }
 
     private Node getFastestPathForCenter(TilemapTile startTile, Tilemap tm) {
-        Vector2 absolutePosition = startTile.getAbsolutePositionInTilemap();
+        Coords2D absolutePosition = startTile.getAbsolutePositionInTilemap();
         int centerTilePos = tm.getCenterTilePos();
 
-        Node initNode = nodeMap[(int) absolutePosition.y][(int) absolutePosition.x];
+        Node initNode = nodeMap[ absolutePosition.y][ absolutePosition.x];
         initNode.parentNode = null;
         initNode.tile = startTile;
         initNode.G = 0;
@@ -147,11 +147,11 @@ public class Pathfinder {
     }
 
     private void evaluateSurroundingNodes(Node midNode, Tilemap tm) {
-        Vector2 posT = midNode.tile.getAbsolutePositionInTilemap();
+        Coords2D posT = midNode.tile.getAbsolutePositionInTilemap();
         int tmSize = tm.getSize();
 
-        int curX = (int) posT.x;
-        int curY = (int) posT.y;
+        int curX =  posT.x;
+        int curY =  posT.y;
         int x, y;
 
         closed.add(midNode);

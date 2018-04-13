@@ -1,6 +1,7 @@
 package com.breakthecore.tiles;
 
 import com.badlogic.gdx.math.Vector2;
+import com.breakthecore.Coords2D;
 import com.breakthecore.Tilemap;
 import com.breakthecore.managers.CollisionManager;
 import com.breakthecore.managers.TilemapManager;
@@ -12,11 +13,11 @@ public class BombTile extends Tile {
 
     @Override
     public void onCollide(MovingTile mt, TilemapTile tt, TilemapManager tmm, CollisionManager cm) {
-        Vector2 posT = tt.getRelativePositionInTilemap();
+        Coords2D posT = tt.getRelativePositionInTilemap();
         Tilemap tm = tmm.getTileMap();
 
-        int collidedTileX = (int) posT.x;
-        int collidedTileY = (int) posT.y;
+        int collidedTileX = posT.x;
+        int collidedTileY = posT.y;
 
         for (int y = collidedTileY - 2; y < collidedTileY + 3; ++y) {
             for (int x = collidedTileX - 2; x < collidedTileX + 3; ++x) {

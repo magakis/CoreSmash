@@ -10,6 +10,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 
 import com.badlogic.gdx.utils.Queue;
+import com.breakthecore.Coords2D;
 import com.breakthecore.Tilemap;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.tiles.MovingTile;
@@ -148,7 +149,8 @@ public class RenderManager {
     }
 
     public void DBTileDistances(TilemapTile[][] map) {
-        Vector2 pos, post;
+        Vector2 pos;
+        Coords2D post;
         for (TilemapTile[] arr : map) {
             for (TilemapTile tile : arr) {
                 if (tile != null) {

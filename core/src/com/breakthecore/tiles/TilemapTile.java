@@ -1,30 +1,30 @@
 package com.breakthecore.tiles;
 
-import com.badlogic.gdx.math.Vector2;
+import com.breakthecore.Coords2D;
 
 public class TilemapTile extends TileContainer {
-    private Vector2 relativePositionInTilemap;
-    private Vector2 absolutePositionInTilemap;
+    private Coords2D relativePositionInTilemap;
+    private Coords2D absolutePositionInTilemap;
 
     public TilemapTile(Tile tile) {
         m_tile = tile;
-        relativePositionInTilemap = new Vector2();
-        absolutePositionInTilemap = new Vector2();
+        relativePositionInTilemap = new Coords2D();
+        absolutePositionInTilemap = new Coords2D();
     }
 
     public Tile getTile() {
         return m_tile;
     }
 
-    public Vector2 getAbsolutePositionInTilemap() {
+    public Coords2D getAbsolutePositionInTilemap() {
         return absolutePositionInTilemap;
     }
 
-    public Vector2 getRelativePositionInTilemap() {
+    public Coords2D getRelativePositionInTilemap() {
         return relativePositionInTilemap;
     }
 
-    public void setPositionInTilemap(float relativeX, float relativeY, int centerTile) {
+    public void setPositionInTilemap(int relativeX, int relativeY, int centerTile) {
         relativePositionInTilemap.set(relativeX, relativeY);
         absolutePositionInTilemap.set(relativeX+centerTile, relativeY+centerTile);
     }

@@ -85,7 +85,7 @@ public class Tilemap {
     }
 
     public void updateTilemapTile(TilemapTile hex) {
-        Vector2 tilePos = hex.getRelativePositionInTilemap();
+        Coords2D tilePos = hex.getRelativePositionInTilemap();
         float x = tilePos.x;
         float y = tilePos.y;
 
