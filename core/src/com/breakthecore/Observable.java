@@ -23,7 +23,7 @@ public class Observable {
         m_observers.remove(ob);
     }
 
-    public void emptyObserverList() {
+    public void clearObserverList() {
         m_observers.clear();
     }
 }

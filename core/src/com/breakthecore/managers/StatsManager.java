@@ -1,14 +1,19 @@
-package com.breakthecore;
+package com.breakthecore.managers;
+
+import com.breakthecore.NotificationType;
+import com.breakthecore.Observable;
+import com.breakthecore.Observer;
 
 import java.util.Random;
 
 public class StatsManager extends Observable implements Observer {
-    private int m_score;
     private Random rand = new Random();
-
     private Integer m_scoreAdded;
+
+    private int m_score;
     private int m_lives;
     private float m_time;
+    private int m_moves;
 
     private int m_streak;
 
@@ -73,7 +78,7 @@ public class StatsManager extends Observable implements Observer {
                 ++m_streak;
                 break;
 
-            case NOTIFICATION_TYPE_NO_COLOR_MATCH:
+            case NO_COLOR_MATCH:
                 --m_lives;
                 notifyObservers(NotificationType.NOTIFICATION_TYPE_LIVES_CHANGED, null);
                 break;

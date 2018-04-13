@@ -3,11 +3,10 @@ package com.breakthecore.managers;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Queue;
 import com.breakthecore.WorldSettings;
+import com.breakthecore.tiles.BombTile;
 import com.breakthecore.tiles.MovingTile;
 import com.breakthecore.tiles.RegularTile;
 import com.breakthecore.tiles.Tile;
-
-import org.omg.PortableServer.POAPackage.WrongAdapter;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -26,8 +25,10 @@ public class MovingTileManager {
     private int m_tileSize;
     private float launchDelay;
     private float launchDelayCounter;
+    private boolean hasSpecial;
 
     private int m_defaultSpeed;
+    private float m_defaultScale;
 
     private boolean isActive;
     private boolean m_autoEject;
@@ -41,7 +42,25 @@ public class MovingTileManager {
         m_colorCount = colorCount;
         isActive = true;
         m_defaultSpeed = 15;
+        m_defaultScale = 1/2f;
         launchDelay = .1f;
+    }
+
+    public void insertSpecialTile(Tile.TileType tileType) {
+        // Remove pre-existing special tiles
+        if (hasSpecial) {
+            launcher.removeFirst();
+            hasSpecial = false;
+        }
+
+        switch (tileType) {
+            case BOMB:
+                //TODO: WORK ON THIS
+                launcher.addFirst(createMovingTile(launcherPos.x, launcherPos.y + m_tileSize, new BombTile()));
+                launcher.first().setScale(1);
+                hasSpecial = true;
+                break;
+        }
     }
 
     public MovingTile getFirstActiveTile() {
@@ -104,13 +123,19 @@ public class MovingTileManager {
 
     public void eject() {
         if (launchDelayCounter == 0) {
-            activeList.add(launcher.removeFirst());
-            launcher.get(0).setPositionInWorld(launcherPos.x, launcherPos.y);
-            launcher.get(1).setPositionInWorld(launcherPos.x, launcherPos.y - m_tileSize);
-
-            launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - 2 * m_tileSize, createTile()));
-
-            launchDelayCounter = launchDelay;
+            if (launcher.size > 0) {
+                activeList.add(launcher.removeFirst());
+                if (!hasSpecial) {
+                    launcher.get(0).setPositionInWorld(launcherPos.x, launcherPos.y);
+                    launcher.get(1).setPositionInWorld(launcherPos.x, launcherPos.y - m_tileSize);
+                    launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - 2 * m_tileSize, createRegularTile()));
+                } else {
+                    hasSpecial = false;
+                }
+                launchDelayCounter = launchDelay;
+            } else {
+                throw new NullPointerException("WTF?");
+            }
         }
     }
 
@@ -141,7 +166,7 @@ public class MovingTileManager {
         }
 
         while (launcher.size < 3) {
-            launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * m_tileSize, createTile()));
+            launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * m_tileSize, createRegularTile()));
         }
     }
 
@@ -161,7 +186,7 @@ public class MovingTileManager {
                 tile.setFlag(false);
                 // NOTE: It's questionable whether I want to remove the observes since MovingTiles
                 // practically never get disposed. They are pooled.
-//                tile.emptyObserverList();
+//                tile.clearObserverList();
                 movtPool.add(tile);
                 iter.remove();
             }
@@ -175,13 +200,14 @@ public class MovingTileManager {
             res.setPositionInWorld(x, y);
             res.setTile(tile);
             res.setSpeed(m_defaultSpeed);
+            res.setScale(m_defaultScale);
         } else {
-            res = new MovingTile(x, y, m_defaultSpeed, createTile());
+            res = new MovingTile(x, y, m_defaultSpeed, tile);
         }
         return res;
     }
 
-    private Tile createTile() {
+    private RegularTile createRegularTile() {
         RegularTile t = new RegularTile();
 
         outer:

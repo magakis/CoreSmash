@@ -51,6 +51,7 @@ public class LoadingScreen extends ScreenBase {
 
     private void loadAllTextures() {
         loadTexture("asteroid.png");
+        loadTexture("balloon.png");
         loadTexture("ball.png");
     }
 

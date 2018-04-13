@@ -32,6 +32,10 @@ public class MovingTile extends TileContainer {
         m_tile = tile;
     }
 
+    public void setScale(float scale) {
+        this.scale = scale;
+    }
+
     public Tile getTile() {
         return m_tile;
     }

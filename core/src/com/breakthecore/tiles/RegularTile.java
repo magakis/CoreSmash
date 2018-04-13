@@ -2,12 +2,15 @@ package com.breakthecore.tiles;
 
 import com.badlogic.gdx.math.Vector2;
 import com.breakthecore.Tilemap;
+import com.breakthecore.WorldSettings;
 import com.breakthecore.managers.CollisionManager;
 import com.breakthecore.managers.TilemapManager;
 
 public class RegularTile extends Tile {
     public RegularTile() {
         super(TileType.REGULAR);
+        m_color = WorldSettings.getRandomInt(7);
+
     }
 
     @Override
@@ -18,7 +21,6 @@ public class RegularTile extends Tile {
         tmm.addTile(mt.extractTile(), st, cm.getClosestSides(tm.getCosT(), tm.getSinT(), direction));
 
         mt.dispose();
-
     }
 
     @Override

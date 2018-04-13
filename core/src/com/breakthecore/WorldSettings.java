@@ -16,7 +16,7 @@ public final class WorldSettings {
         s_width = (int) (1920 * s_aspect);
         s_height = 1920;
 
-        s_tileSize = 70;
+        s_tileSize = 75;
 
         s_rng = new Random();
     }

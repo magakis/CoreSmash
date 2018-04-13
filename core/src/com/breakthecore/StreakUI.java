@@ -37,6 +37,7 @@ public class StreakUI extends UIBase implements Observer {
             case NOTIFICATION_TYPE_SCORE_INCREMENTED:
                 m_label.getActor().setText("+" + ob.toString());
                 m_label.setOrigin(m_label.getPrefWidth() / 2, m_label.getPrefHeight() / 2);
+                m_label.clearActions();
                 m_label.addAction(Actions.sequence(
                         Actions.alpha(1),
                         Actions.parallel(

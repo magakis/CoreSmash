@@ -9,11 +9,11 @@ import java.util.Collections;
 
 abstract public class Tile {
     private TileType m_type;
-    protected int m_color;
+    protected int m_color ;
 
     public Tile(TileType tileType) {
         m_type = tileType;
-        m_color = WorldSettings.getRandomInt(7);
+        m_color = 7; // 7 is white defined by RenderManager
     }
 
     abstract public void onCollide(MovingTile mt, TilemapTile tt, TilemapManager tmm, CollisionManager cm);
@@ -30,6 +30,6 @@ abstract public class Tile {
 
     public enum TileType {
         REGULAR,
-
+        BOMB
     }
 }

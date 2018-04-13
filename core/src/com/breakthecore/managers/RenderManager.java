@@ -43,7 +43,7 @@ public class RenderManager {
 
         defaultFont = new BitmapFont();
         sideLengthHalf = sideLength / 2.f;
-        colorList = new Color[7];
+        colorList = new Color[8];
 
         colorList[0] = new Color(1, 0, 0, 1);
         colorList[1] = new Color(1, 1, 0, 1);
@@ -53,6 +53,7 @@ public class RenderManager {
 //        colorList[5] = new Color(0, 1, 1, 1);
         colorList[5] = Color.BROWN; // color-blind
         colorList[6] = new Color(0, 0, 1, 1);
+        colorList[7] = Color.WHITE;
     }
 
     public void start(Matrix4 combined) {
@@ -70,17 +71,21 @@ public class RenderManager {
         m_shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         m_shapeRenderer.circle(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4, 15);
         m_shapeRenderer.end();
-
     }
 
     public void draw(MovingTile mt) {
         Vector2 atPos = mt.getPositionInWorld();
         Tile tile = mt.getTile();
+        float sideLen = sideLengthHalf * mt.getScale();
+        m_batch.setColor(colorList[mt.getColor()]);
+
         switch (tile.getType()) {
             case REGULAR:
-                float sideLen = sideLengthHalf * mt.getScale();
-                m_batch.setColor(colorList[mt.getColor()]);
                 m_batch.draw(texture, atPos.x - sideLen, atPos.y - sideLen, sideLen * 2, sideLen * 2);
+                break;
+
+            case BOMB:
+                m_batch.draw(m_assetManager.get("balloon.png", Texture.class), atPos.x - sideLen, atPos.y - sideLen, sideLen * 2, sideLen * 2);
                 break;
         }
     }
@@ -148,26 +153,26 @@ public class RenderManager {
             for (TilemapTile tile : arr) {
                 if (tile != null) {
                     pos = tile.getPositionInWorld();
-                    post = tile.getPositionInTilemap();
+                    post = tile.getRelativePositionInTilemap();
                     m_batch.setColor(Color.BLACK);
-//                    defaultFont.draw(m_batch,String.format("%.0f,%.0f", post.x, post.y) , pos.x -sideLengthHalf/2, pos.y);
-                    defaultFont.draw(m_batch,String.valueOf(tile.getDistanceFromCenter()) , pos.x -sideLengthHalf/2, pos.y);
+                    defaultFont.draw(m_batch,String.format("%.0f,%.0f", post.x, post.y) , pos.x -sideLengthHalf/2, pos.y);
                 }
             }
         }
     }
 
     public void drawLauncher(Queue<MovingTile> launcher, Vector2 atPos) {
-        float scale;
-        float sideLength;
+//        float scale;
+//        float sideLength;
         MovingTile mt;
 
         for (int i = 0; i < launcher.size; ++i) {
             mt = launcher.get(i);
-            scale = mt.getScale();
-            sideLength = sideLengthHalf * scale;
-            m_batch.setColor(colorList[mt.getColor()]);
-            m_batch.draw(texture, atPos.x - sideLength, atPos.y - sideLength - i * this.sideLength, sideLength * 2, sideLength * 2);
+            draw(mt);
+            //            scale = mt.getScale();
+//            sideLength = sideLengthHalf * scale;
+//            m_batch.setColor(colorList[mt.getColor()]);
+//            m_batch.draw(texture, atPos.x - sideLength, atPos.y - sideLength - i * this.sideLength, sideLength * 2, sideLength * 2);
         }
     }
 }

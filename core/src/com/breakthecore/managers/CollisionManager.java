@@ -42,7 +42,7 @@ public class CollisionManager {
 
         movhexPos = moveTile.getPositionInWorld();
 
-        //HACK: Arbitrary value to decrease range and match better the texture
+        //XXX(HACK): Arbitrary value to decrease range and match better the texture
         minDist = sideHalf + sideHalf * moveTile.getScale() * 0.8f;
 
         for (TilemapTile[] arr : m_hexTiles) {
