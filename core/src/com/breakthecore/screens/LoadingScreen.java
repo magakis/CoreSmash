@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
@@ -177,6 +178,14 @@ public class LoadingScreen extends ScreenBase {
         ss.knob.setMinHeight(80);
         ss.knob.setMinWidth(80);
         skin.add("default-horizontal", ss);
+
+        //CheckboxStyles
+        CheckBox.CheckBoxStyle cbs = new CheckBox.CheckBoxStyle();
+        cbs.checkboxOff = skin.newDrawable("box_white_10", Color.RED);
+        cbs.checkboxOn = skin.newDrawable("box_white_10", Color.GREEN);
+        cbs.font = skin.getFont("comic_48b");
+        cbs.disabledFontColor = Color.DARK_GRAY;
+        skin.add("default",cbs);
     }
 
     private void registerFont(Skin skin, String fntName, String path) {

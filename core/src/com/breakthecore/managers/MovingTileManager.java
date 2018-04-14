@@ -2,6 +2,8 @@ package com.breakthecore.managers;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Queue;
+import com.breakthecore.NotificationType;
+import com.breakthecore.Observable;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.tiles.BombTile;
 import com.breakthecore.tiles.MovingTile;
@@ -16,7 +18,7 @@ import java.util.ListIterator;
  * Created by Michail on 24/3/2018.
  */
 
-public class MovingTileManager {
+public class MovingTileManager extends Observable {
     private Queue<MovingTile> launcher;
     private LinkedList<MovingTile> activeList;
     private LinkedList<MovingTile> movtPool;
@@ -121,6 +123,10 @@ public class MovingTileManager {
         return launcher;
     }
 
+    public void setLastBallColor(int colorId) {
+        launcher.last().getTile().setColor(colorId);
+    }
+
     public void eject() {
         if (launchDelayCounter == 0) {
             if (launcher.size > 0) {
@@ -129,6 +135,7 @@ public class MovingTileManager {
                     launcher.get(0).setPositionInWorld(launcherPos.x, launcherPos.y);
                     launcher.get(1).setPositionInWorld(launcherPos.x, launcherPos.y - m_tileSize);
                     launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - 2 * m_tileSize, createRegularTile()));
+                    notifyObservers(NotificationType.BALL_LAUNCHED, null);
                 } else {
                     hasSpecial = false;
                 }

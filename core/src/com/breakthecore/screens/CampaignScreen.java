@@ -12,12 +12,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.breakthecore.BreakTheCoreGame;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.breakthecore.GameRoundSettings;
 import com.breakthecore.RoundEndListener;
 import com.breakthecore.WorldSettings;
 
 public class CampaignScreen extends ScreenBase implements RoundEndListener {
     GameScreen m_gameScreen;
-    GameScreen.GameSettings m_settings;
+    GameRoundSettings m_settings;
     GestureDetector gd;
     Skin m_skin;
     Stage m_stage;
@@ -35,7 +36,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         screenInputMultiplexer.addProcessor(gd);
 
         m_gameScreen = new GameScreen(m_game);
-        m_settings = new GameScreen.GameSettings();
+        m_settings = new GameRoundSettings();
 
         m_levelButtons = new LevelButton[20];
 
@@ -78,27 +79,27 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             case 1:
                 m_settings.gameMode = GameScreen.GameMode.CLASSIC;
                 m_settings.initRadius = 2;
-                m_settings.movingTileSpeed = 15;
+                m_settings.ballSpeed = 15;
                 m_settings.minRotationSpeed = 20;
                 m_settings.maxRotationSpeed = 30;
                 break;
             case 2:
                 m_settings.gameMode = GameScreen.GameMode.CLASSIC;
                 m_settings.initRadius = 3;
-                m_settings.movingTileSpeed = 15;
+                m_settings.ballSpeed = 15;
                 m_settings.minRotationSpeed = 20;
                 m_settings.maxRotationSpeed = 30;
                 break;
             case 3:
                 m_settings.gameMode = GameScreen.GameMode.SPIN_THE_CORE;
                 m_settings.initRadius = 2;
-                m_settings.movingTileSpeed = 2;
+                m_settings.ballSpeed = 2;
                 m_settings.launcherCooldown = 3;
                 break;
             case 4:
                 m_settings.gameMode = GameScreen.GameMode.SPIN_THE_CORE;
                 m_settings.initRadius = 3;
-                m_settings.movingTileSpeed = 2;
+                m_settings.ballSpeed = 2;
                 m_settings.launcherCooldown = 3;
                 break;
             default:

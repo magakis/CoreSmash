@@ -31,6 +31,11 @@ public class StreakUI extends UIBase implements Observer {
         root = tbl;
     }
 
+    public void reset() {
+        m_label.clearActions();
+        m_label.getActor().setText("");
+    }
+
     @Override
     public void onNotify(NotificationType type, Object ob) {
         switch (type) {

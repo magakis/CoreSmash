@@ -9,7 +9,7 @@ import com.breakthecore.managers.TilemapManager;
 public class RegularTile extends Tile {
     public RegularTile() {
         super(TileType.REGULAR);
-        m_color = WorldSettings.getRandomInt(7);
+        color = WorldSettings.getRandomInt(7);
 
     }
 
@@ -28,7 +28,4 @@ public class RegularTile extends Tile {
 
     }
 
-    public void setColor(int color) {
-        m_color = color;
-    }
 }

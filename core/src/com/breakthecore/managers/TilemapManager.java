@@ -131,7 +131,7 @@ public class TilemapManager extends Observable implements Observer {
         return false;
     }
 
-    public void cleanTilemap() {
+    public void checkForDisconnectedTiles() {
         if (!isTilemapValid) {
             removeDisconnectedTiles();
             isTilemapValid = true;
@@ -228,6 +228,18 @@ public class TilemapManager extends Observable implements Observer {
                 addSurroundingColorMatches(tt, match, exclude);
             }
         }
+    }
+
+    public void reset() {
+        tm.clear();
+        isRotationEnabled = false;
+        isTilemapValid = true;
+        rotationDegrees = 0;
+        initTileCount = 0;
+        minRotSpeed = 0;
+        maxRotSpeed = 0;
+        maxRotAddedSpeed = 0;
+        rotationSpeed = 0;
     }
 
     public void initTilemapCircle(Tilemap tm, int radius) {

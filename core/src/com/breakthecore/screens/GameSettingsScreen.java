@@ -4,14 +4,19 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Scaling;
 import com.breakthecore.BreakTheCoreGame;
+import com.breakthecore.GameRoundSettings;
 import com.breakthecore.ui.UIBase;
 
 public class GameSettingsScreen extends ScreenBase {
@@ -20,8 +25,9 @@ public class GameSettingsScreen extends ScreenBase {
     private PickGameModeUI m_pickGameModeUI;
     private ClassicSettingsUI m_classicSettingsUI;
     private SpinTheCoreSettingsUI m_spinTheCoreSettingsUI;
-    private GameScreen.GameSettings m_gameSettings;
-    private GameScreen m_gameScreen;
+    private GameRoundSettings roundSettings;
+    private GameScreen gameScreen;
+    private GameScreen.RoundBuilder roundBuilder;
     private CampaignScreen m_campaignScreen;
 
     public GameSettingsScreen(BreakTheCoreGame game) {
@@ -31,9 +37,10 @@ public class GameSettingsScreen extends ScreenBase {
         m_classicSettingsUI = new ClassicSettingsUI();
         m_spinTheCoreSettingsUI = new SpinTheCoreSettingsUI();
         m_pickGameModeUI = new PickGameModeUI();
-        m_gameSettings = new GameScreen.GameSettings();
+        roundSettings = new GameRoundSettings();
 
-        m_gameScreen = new GameScreen(m_game);
+        gameScreen = new GameScreen(m_game);
+        roundBuilder = gameScreen.getRoundBuilder();
         m_campaignScreen = new CampaignScreen(m_game);
 
         screenInputMultiplexer.addProcessor(new BackButtonInputHandler());
@@ -53,20 +60,27 @@ public class GameSettingsScreen extends ScreenBase {
         m_stage.draw();
     }
 
-    private class ClassicSettingsUI extends UIBase {
+    private class ClassicSettingsUI extends UIBase  {
         Slider radiusSlider, minRotSlider, maxRotSlider, ballSpeedSlider;
         Label radiusLbl, minRotLbl, maxRotLbl, ballSpeedLbl;
+        CheckBox cbUseMoves, cbUseLives, cbUseTime;
 
+        final int settingsPadding = 50;
+
+        // XXX(14/4/2018): *TOO* many magic values
         public ClassicSettingsUI() {
-            Table mt = new Table();
+            Table mainTable = new Table();
+//            tblMain.debugAll();
+            mainTable.setFillParent(true);
 
-            mt.setFillParent(true);
-            mt.setDebug(false);
+            Label dummy = new Label("Game Setup", m_skin, "comic_96b");
+            mainTable.top().pad(50);
+            mainTable.add(dummy).padBottom(100).colspan(2).row();
 
-            Label dummy = new Label(": Game Setup :", m_skin, "comic_96b");
-            mt.top().pad(100);
-            mt.add(dummy).pad(100).padBottom(200).colspan(2).row();
-
+            Table settingsTbl = new Table();
+//            settingsTbl.debugAll();
+            ScrollPane scrollPane = new ScrollPane(settingsTbl);
+            mainTable.add(scrollPane).colspan(2).expand().fill().row();
 
             radiusSlider = new Slider(1, 8, 1, false, m_skin);
             radiusSlider.setValue(4);
@@ -77,10 +91,7 @@ public class GameSettingsScreen extends ScreenBase {
                     radiusLbl.setText(String.valueOf((int) radiusSlider.getValue()));
                 }
             });
-            dummy = new Label("Circle Radius:", m_skin, "comic_48b");
-            mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
-            mt.add(radiusLbl).width(radiusLbl.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
-            mt.add(radiusSlider).colspan(2).fill().expandX().padBottom(100).row();
+            attachSliderToTable("Circle Radius", radiusSlider, radiusLbl, settingsTbl);
 
             minRotSlider = new Slider(10, 120, 1, false, m_skin);
             minRotSlider.setValue(30);
@@ -98,11 +109,7 @@ public class GameSettingsScreen extends ScreenBase {
                     minRotLbl.setText(String.valueOf(slider2));
                 }
             });
-            dummy = new Label("Min Rotation Speed:", m_skin, "comic_48b");
-            mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
-            mt.add(minRotLbl).width(minRotLbl.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
-            mt.add(minRotSlider).colspan(2).fill().expandX().padBottom(100).row();
-
+            attachSliderToTable("Min Rotation Speed", minRotSlider, minRotLbl, settingsTbl);
 
             maxRotSlider = new Slider(10, 120, 1, false, m_skin);
             maxRotSlider.setValue(70);
@@ -120,10 +127,7 @@ public class GameSettingsScreen extends ScreenBase {
                     maxRotLbl.setText(String.valueOf((int) maxRotSlider.getValue()));
                 }
             });
-            dummy = new Label("Max Rotation Speed:", m_skin, "comic_48b");
-            mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
-            mt.add(maxRotLbl).width(maxRotLbl.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
-            mt.add(maxRotSlider).colspan(2).fill().expandX().padBottom(100).fill().row();
+            attachSliderToTable("Max Rotation Speed", maxRotSlider, maxRotLbl, settingsTbl);
 
             ballSpeedSlider = new Slider(5, 20, 1, false, m_skin);
             ballSpeedSlider.setValue(15);
@@ -134,11 +138,26 @@ public class GameSettingsScreen extends ScreenBase {
                     ballSpeedLbl.setText(String.valueOf((int) ballSpeedSlider.getValue()));
                 }
             });
-            dummy = new Label("Ball Speed:", m_skin, "comic_48b");
-            mt.add(dummy).padRight(30).align(Align.right).padBottom(10).uniformX();
-            mt.add(ballSpeedLbl).width(ballSpeedLbl.getPrefWidth()).align(Align.left).padBottom(10).uniformX().row();
-            mt.add(ballSpeedSlider).colspan(2).fill().expandX().padBottom(100).fill().row();
+            attachSliderToTable("Ball Speed", ballSpeedSlider, ballSpeedLbl, settingsTbl);
 
+            cbUseLives = new CheckBox("Use Lives", m_skin);
+            cbUseLives.getImageCell().width(cbUseLives.getLabel().getPrefHeight()).height(cbUseLives.getLabel().getPrefHeight()).padRight(15);
+            cbUseLives.getImage().setScaling(Scaling.fill);
+            settingsTbl.add(cbUseLives).left().padBottom(settingsPadding).row();
+            cbUseLives.setChecked(true);
+
+            cbUseMoves = new CheckBox("Use Moves", m_skin);
+            cbUseMoves.getImageCell().width(cbUseMoves.getLabel().getPrefHeight()).height(cbUseMoves.getLabel().getPrefHeight()).padRight(15);
+            cbUseMoves.getImage().setScaling(Scaling.fill);
+            settingsTbl.add(cbUseMoves).left().padBottom(settingsPadding).row();
+
+            cbUseTime = new CheckBox("Use Time", m_skin);
+            cbUseTime.getImageCell().width(cbUseTime.getLabel().getPrefHeight()).height(cbUseTime.getLabel().getPrefHeight()).padRight(15);
+            cbUseTime.getImage().setScaling(Scaling.fill);
+            settingsTbl.add(cbUseTime).left().padBottom(settingsPadding).row();
+            cbUseTime.setChecked(true);
+
+            //======= Play & Back Buttons =======
             TextButton tbtn = new TextButton("Back", m_skin);
             tbtn.addListener(new ChangeListener() {
                 @Override
@@ -147,24 +166,40 @@ public class GameSettingsScreen extends ScreenBase {
                     m_stage.addActor(m_pickGameModeUI.getRoot());
                 }
             });
-            mt.add(tbtn).width(250).height(200).align(Align.left);
+            mainTable.add(tbtn).width(250).height(200).align(Align.left);
 
             tbtn = new TextButton("Play", m_skin);
             tbtn.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    m_gameSettings.initRadius = (int) radiusSlider.getValue();
-                    m_gameSettings.minRotationSpeed = (int) minRotSlider.getValue();
-                    m_gameSettings.maxRotationSpeed = (int) maxRotSlider.getValue();
-                    m_gameSettings.movingTileSpeed = (int) ballSpeedSlider.getValue();
+                    roundSettings.reset();
+                    roundSettings.gameMode = GameScreen.GameMode.CLASSIC;
+                    roundSettings.initRadius = (int) radiusSlider.getValue();
+                    roundSettings.minRotationSpeed = (int) minRotSlider.getValue();
+                    roundSettings.maxRotationSpeed = (int) maxRotSlider.getValue();
+                    roundSettings.ballSpeed = (int) ballSpeedSlider.getValue();
+                    roundSettings.autoRotationEnabled = true;
+                    roundSettings.isMovesEnabled = cbUseMoves.isChecked();
+                    roundSettings.moveCount = 40;
+                    roundSettings.isTimeEnabled = cbUseTime.isChecked();
+                    roundSettings.timeAmount = 0;
+                    roundSettings.isLivesEnabled = cbUseLives.isChecked();
+                    roundSettings.livesAmount = 3;
 
-                    m_gameScreen.initialize(m_gameSettings);
-                    m_game.setScreen(m_gameScreen);
+                    roundBuilder.buildRound(roundSettings);
+                    m_game.setScreen(gameScreen);
                 }
             });
-            mt.add(tbtn).width(250).height(200).align(Align.right);
+            mainTable.add(tbtn).width(250).height(200).align(Align.right);
 
-            root = mt;
+            root = mainTable;
+        }
+
+        private void attachSliderToTable(String name, Slider slider, Label amountLbl, Table tbl) {
+            Label dummy = new Label(name + ":", m_skin, "comic_48b");
+            tbl.add(dummy).padRight(30).align(Align.right).padBottom(10);
+            tbl.add(amountLbl).align(Align.left).padBottom(10).expandX().row();
+            tbl.add(slider).colspan(2).fill().expandX().padBottom(settingsPadding).row();
         }
     }
 
@@ -258,12 +293,12 @@ public class GameSettingsScreen extends ScreenBase {
             tbtn.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    m_gameSettings.initRadius = (int) m_stcRadiusSlider.getValue();
-                    m_gameSettings.movingTileSpeed = (int) m_stcBallSpeedSlider.getValue();
-                    m_gameSettings.launcherCooldown = m_stcLauncherCDSlider.getValue();
+                    roundSettings.initRadius = (int) m_stcRadiusSlider.getValue();
+                    roundSettings.ballSpeed = (int) m_stcBallSpeedSlider.getValue();
+                    roundSettings.launcherCooldown = m_stcLauncherCDSlider.getValue();
 
-                    m_gameScreen.initialize(m_gameSettings);
-                    m_game.setScreen(m_gameScreen);
+                    roundBuilder.buildRound(roundSettings);
+                    m_game.setScreen(gameScreen);
                 }
             });
             mt.add(tbtn).colspan(2).width(250).height(200).align(Align.right);
@@ -273,14 +308,22 @@ public class GameSettingsScreen extends ScreenBase {
     }
 
     private class PickGameModeUI extends UIBase {
+        int gameModeCount = 3;
+        Value blockHeight;
+        Value blockPad;
+
         public PickGameModeUI() {
             Table tbl = new Table();
             Label dummy;
             tbl.setFillParent(true);
-            tbl.pad(100);
+            tbl.padLeft(Value.percentWidth(.05f));
+            tbl.padRight(Value.percentWidth(.05f));
+
+            blockHeight = Value.percentHeight(.6f / (gameModeCount+1), tbl);
+            blockPad = Value.percentHeight(.3f / (gameModeCount + 2), tbl);
 
             dummy = new Label("Game Mode", m_skin, "comic_96b");
-            tbl.add(dummy).padBottom(100).row();
+            tbl.add(dummy).padTop(blockPad).padBottom(blockPad).row();
 
             String txt = "The core is spinning and your goal is to match balls of the same color " +
                     "in order to beat it.";
@@ -293,15 +336,15 @@ public class GameSettingsScreen extends ScreenBase {
                 public void changed(ChangeEvent event, Actor actor) {
                     m_stage.clear();
                     m_stage.addActor(m_classicSettingsUI.getRoot());
-                    m_gameSettings.gameMode = GameScreen.GameMode.CLASSIC;
+                    roundSettings.gameMode = GameScreen.GameMode.CLASSIC;
                 }
             });
 
             tbl.add(dummy).row();
-            tbl.add(tb).expandX().height(250).fill().padBottom(200).row();
+            tbl.add(tb).expandX().height(blockHeight).fill().padBottom(blockPad).row();
 
 
-            txt = "You spin the core while balls get launched at you. Your goal is to match-3 of the BOTTOM_LEFT colors " +
+            txt = "You spin the core while balls get launched at you. Your goal is to match-3 of the right colors " +
                     "in order to beat it.";
             dummy = new Label(":Spin The Core Mode:", m_skin, "comic_48b");
             tb = new TextButton(txt, m_skin, "modeButton");
@@ -312,13 +355,12 @@ public class GameSettingsScreen extends ScreenBase {
                 public void changed(ChangeEvent event, Actor actor) {
                     m_stage.clear();
                     m_stage.addActor(m_spinTheCoreSettingsUI.getRoot());
-                    m_gameSettings.gameMode = GameScreen.GameMode.SPIN_THE_CORE;
+                    roundSettings.gameMode = GameScreen.GameMode.SPIN_THE_CORE;
                 }
             });
 
             tbl.add(dummy).row();
-            tbl.add(tb).expandX().height(250).fill().padBottom(200).row();
-
+            tbl.add(tb).expandX().height(blockHeight).fill().padBottom(blockPad).row();
 
             txt = "Expiremental campaign mode..";
             dummy = new Label(":Campaign:", m_skin, "comic_48b");
@@ -333,7 +375,7 @@ public class GameSettingsScreen extends ScreenBase {
             });
 
             tbl.add(dummy).row();
-            tbl.add(tb).expandX().height(250).fill().padBottom(200).row();
+            tbl.add(tb).expandX().height(blockHeight).fill().padBottom(blockPad).row();
 
             root = tbl;
         }
