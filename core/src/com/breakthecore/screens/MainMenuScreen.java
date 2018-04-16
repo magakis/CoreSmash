@@ -3,6 +3,7 @@ package com.breakthecore.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -27,38 +28,35 @@ import com.breakthecore.WorldSettings;
 
 public class MainMenuScreen extends ScreenBase {
     private GameSettingsScreen m_gameSettingsScreen;
-    private Stage m_stage;
+    private Stage stage;
     private Table menuTable;
-    private Skin m_skin;
-    private Label dblbl;
+    private Skin skin;
 
 
     public MainMenuScreen(BreakTheCoreGame game) {
         super(game);
-        m_stage = new Stage(game.getWorldViewport());
+        stage = new Stage(game.getWorldViewport());
         screenInputMultiplexer.addProcessor(new BackButtonInputHandler());
-        screenInputMultiplexer.addProcessor(m_stage);
-        setupMainMenuStage(m_stage);
+        screenInputMultiplexer.addProcessor(stage);
+        setupMainMenuStage(stage);
         m_gameSettingsScreen = new GameSettingsScreen(game);
     }
 
     @Override
     public void render(float delta) {
-        m_stage.act(delta);
-        m_stage.draw();
+        stage.act(delta);
+        stage.draw();
     }
 
     @Override
     public void resize(int width, int height) {
-        m_stage.getViewport().update(width, height);
+        stage.getViewport().update(width, height);
     }
 
     private void setupMainMenuStage(Stage stage) {
-        stage.clear(); // start with empty m_stage
+        stage.clear(); // start with empty stage
 
-        m_skin = m_game.getSkin();
-
-        dblbl = new Label("null", m_skin, "comic_24b", Color.GOLD);
+        skin = m_game.getSkin();
 
         setupMenuTable();
 
@@ -72,11 +70,20 @@ public class MainMenuScreen extends ScreenBase {
     private void setupMenuTable() {
         menuTable = new Table();
 
-        Container playBtn = newMenuButton("Play", "playBtn", new ChangeListener() {
+        Container btnPlay = newMenuButton("Play", "btnPlay", new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                m_gameSettingsScreen.tmpReset();
-                m_game.setScreen(m_gameSettingsScreen);
+                if (checkForLocalAccount()) {
+                    m_gameSettingsScreen.tmpReset();
+                    m_game.setScreen(m_gameSettingsScreen);
+                }
+            }
+        });
+
+        Container btnAccount = newMenuButton("Account", "btnAccount", new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+
             }
         });
 
@@ -85,16 +92,46 @@ public class MainMenuScreen extends ScreenBase {
                 .height(WorldSettings.getWorldHeight() * 2 / 16)
                 .fill();
 
-        Label versInfo = new Label("v.1.0.0 - Michail Angelos Gakis", m_skin, "comic_24b", Color.DARK_GRAY);
+        Label versInfo = new Label("v.1.0.0 - Michail Angelos Gakis", skin, "comic_24b", Color.DARK_GRAY);
         versInfo.setAlignment(Align.bottom);
         menuTable.bottom();
-        menuTable.add(playBtn).padBottom(Value.percentHeight(1 / 32f, menuTable)).padBottom(Value.percentHeight(3 / 16f, menuTable)).row();
+        menuTable.add(btnPlay).padBottom(Value.percentHeight(1 / 16f, menuTable)).row();
+        menuTable.add(btnAccount).padBottom(Value.percentHeight(3 / 16f, menuTable)).row();
         menuTable.add(versInfo).align(Align.center).height(versInfo.getPrefHeight());
         //        menuTable.add(scoresBtn);
     }
 
+    public boolean checkForLocalAccount() {
+        Preferences prefs = Gdx.app.getPreferences("account");
+
+        if (!prefs.getBoolean("valid", false)) {
+            Gdx.input.getTextInput(new Input.TextInputListener() {
+                @Override
+                public void input(String text) {
+                    if (text.length() < 3) {
+                        return;
+                    }
+                    Preferences prefs = Gdx.app.getPreferences("account");
+                    prefs.putString("username", text);
+                    prefs.putBoolean("valid", true);
+                    prefs.flush();
+                }
+
+                @Override
+                public void canceled() {
+                    return;
+                }
+            }, "Setup Username:", "", "Minimum 3 chars");
+
+        } else {
+            return true;
+        }
+
+        return prefs.getBoolean("valid");
+    }
+
     public Container newMenuButton(String text, String name, EventListener el) {
-        TextButton bt = new TextButton(text, m_skin.get("menuButton", TextButton.TextButtonStyle.class));
+        TextButton bt = new TextButton(text, skin.get("menuButton", TextButton.TextButtonStyle.class));
         bt.setName(name);
         bt.addListener(el);
 

@@ -27,7 +27,7 @@ public class StatsManager extends Observable implements Observer {
 
     public void update(float delta) {
         if (isTimeEnabled) {
-            time += delta;
+            time -= delta;
         }
 
         if (ballsDestroyedThisFrame != 0) {
@@ -113,8 +113,10 @@ public class StatsManager extends Observable implements Observer {
     }
 
     public void consumeSpecialBall(MovingTileManager movingTileManager) {
-        movingTileManager.insertSpecialTile(Tile.TileType.BOMB);
-        --specialBallCount;
+        if (!movingTileManager.isLoadedWithSpecial()) {
+            movingTileManager.insertSpecialTile(Tile.TileType.BOMB);
+            --specialBallCount;
+        }
     }
 
     @Override

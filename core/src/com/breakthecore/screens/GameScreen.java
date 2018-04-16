@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -63,7 +64,7 @@ public class GameScreen extends ScreenBase implements Observer {
     //===========
     private GameUI gameUI;
     private ResultUI m_resultUI;
-    private Skin m_skin;
+    private Skin skin;
     private Stage stage;
     private Stack rootUIStack;
     //===========
@@ -75,7 +76,7 @@ public class GameScreen extends ScreenBase implements Observer {
     public GameScreen(BreakTheCoreGame game) {
         super(game);
         m_camera = (OrthographicCamera) m_game.getWorldViewport().getCamera();
-        m_skin = m_game.getSkin();
+        skin = m_game.getSkin();
 
         renderManager = m_game.getRenderManager();
         movingTileManager = new MovingTileManager(sideLength, colorCount);
@@ -93,7 +94,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
         statsManager = new StatsManager();
 
-        streakUI = new StreakUI(m_skin);
+        streakUI = new StreakUI(skin);
         statsManager.addObserver(this);
         statsManager.addObserver(streakUI);
 
@@ -117,6 +118,9 @@ public class GameScreen extends ScreenBase implements Observer {
             endGame();
         }
 
+        if (statsManager.getTime() < 0) {
+            endGame();
+        }
         if (statsManager.getLives() == 0) {
             endGame();
         }
@@ -183,7 +187,8 @@ public class GameScreen extends ScreenBase implements Observer {
             checkEndingConditions();
 
             if (statsManager.getMoves() == 3) {
-                movingTileManager.setLastBallColor(tilemapManager.getTileMap().getRelativeTile(0,0).getColor());
+                movingTileManager.setLastTileColor(tilemapManager.getTileMap().getRelativeTile(0, 0).getColor());
+                movingTileManager.setBallGenerationEnabled(false);
             }
         }
     }
@@ -486,33 +491,33 @@ public class GameScreen extends ScreenBase implements Observer {
         public GameUI() {
             tblMain = new Table();
 
-            lblTime = new Label("0", m_skin, "comic_48");
+            lblTime = new Label("0", skin, "comic_48");
             lblTime.setAlignment(Align.center);
 
-            lblScore = new Label("0", m_skin, "comic_48");
+            lblScore = new Label("0", skin, "comic_48");
             lblScore.setAlignment(Align.center);
 
-            lblLives = new Label("null", m_skin, "comic_48");
+            lblLives = new Label("null", skin, "comic_48");
             lblLives.setAlignment(Align.center);
 
-            lblMoves = new Label("null", m_skin, "comic_48");
+            lblMoves = new Label("null", skin, "comic_48");
             lblMoves.setAlignment(Align.center);
 
-            lblHighscore = new Label("", m_skin, "comic_32b");
+            lblHighscore = new Label("", skin, "comic_32b");
             lblHighscore.setAlignment(Align.center);
 
-            lblStaticTime = new Label("Time:", m_skin, "comic_48b");
-            lblStaticScore = new Label("Score:", m_skin, "comic_48b");
-            lblStaticLives = new Label("Lives: ", m_skin, "comic_48b");
-            lblStaticMoves = new Label("Moves Left: ", m_skin, "comic_48b");
+            lblStaticTime = new Label("Time:", skin, "comic_48b");
+            lblStaticScore = new Label("Score:", skin, "comic_48b");
+            lblStaticLives = new Label("Lives: ", skin, "comic_48b");
+            lblStaticMoves = new Label("Moves Left: ", skin, "comic_48b");
 
             tblTime = new Table();
             tblScore = new Table();
 
-            tblTime.setBackground(m_skin.getDrawable("box_white_5"));
+            tblTime.setBackground(skin.getDrawable("box_white_5"));
             tblTime.add(lblTime).center();
 
-            tblScore.setBackground(m_skin.getDrawable("box_white_5"));
+            tblScore.setBackground(skin.getDrawable("box_white_5"));
             tblScore.add(lblScore).center();
 
             grpLives = new HorizontalGroup();
@@ -526,7 +531,7 @@ public class GameScreen extends ScreenBase implements Observer {
             grpTop = new HorizontalGroup();
             grpTop.space(30);
 
-            tbPower1 = new TextButton("null", m_skin, "tmpPowerup");
+            tbPower1 = new TextButton("null", skin, "tmpPowerup");
             tbPower1.getLabel().setAlignment(Align.bottomLeft);
             tbPower1.getLabelCell().padBottom(5).padLeft(10);
             tbPower1.addListener(new ChangeListener() {
@@ -542,10 +547,11 @@ public class GameScreen extends ScreenBase implements Observer {
 
 
             tblPowerUps = new Table();
-            tblPowerUps.setBackground(m_skin.getDrawable("box_white_5"));
+            tblPowerUps.setBackground(skin.getDrawable("box_white_5"));
             tblPowerUps.center();
             tblPowerUps.add(tbPower1).size(100, 100);
 
+            tblPowerUps.setTouchable(Touchable.enabled);
             tblPowerUps.addCaptureListener(new EventListener() {
                 @Override
                 public boolean handle(Event event) {
@@ -566,6 +572,8 @@ public class GameScreen extends ScreenBase implements Observer {
             lblStaticTime.setVisible(config.isTimeEnabled);
             tblTime.setVisible(config.isTimeEnabled);
 
+            tbPower1.setDisabled(false);
+
             if (config.isLivesEnabled) {
                 grpTop.addActor(grpLives);
             }
@@ -580,7 +588,7 @@ public class GameScreen extends ScreenBase implements Observer {
             tblMain.add().expandX();
             tblMain.add(tblScore).width(200).height(100).padRight(-10).row();
             tblMain.add().colspan(2);
-            tblMain.add(new Label("Highscore:", m_skin, "comic_32b")).row();
+            tblMain.add(new Label("Highscore:", skin, "comic_32b")).row();
             tblMain.add().colspan(2);
             tblMain.add(lblHighscore).row();
             tblMain.add().colspan(2);
@@ -595,13 +603,13 @@ public class GameScreen extends ScreenBase implements Observer {
             Table tbl = new Table();
             tbl.setFillParent(true);
 
-            Label staticTime = new Label("Time:", m_skin, "comic_48b");
-            Label staticScore = new Label("Score:", m_skin, "comic_48b");
-            resultTextLbl = new Label("null", m_skin, "comic_96b");
-            timeLbl = new Label("null", m_skin, "comic_48");
-            scoreLbl = new Label("null", m_skin, "comic_48");
+            Label staticTime = new Label("Time:", skin, "comic_48b");
+            Label staticScore = new Label("Score:", skin, "comic_48b");
+            resultTextLbl = new Label("null", skin, "comic_96b");
+            timeLbl = new Label("null", skin, "comic_48");
+            scoreLbl = new Label("null", skin, "comic_48");
 
-            TextButton tb = new TextButton("Menu", m_skin);
+            TextButton tb = new TextButton("Menu", skin);
             tb.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeListener.ChangeEvent event, Actor actor) {
@@ -640,15 +648,15 @@ public class GameScreen extends ScreenBase implements Observer {
 
         public DebugUI() {
             Table dbtb = new Table();
-            dblb1 = new Label("db1:", m_skin, "comic_24b");
+            dblb1 = new Label("db1:", skin, "comic_24b");
             dblb1.setAlignment(Align.left);
-            dblb2 = new Label("db1:", m_skin, "comic_24b");
+            dblb2 = new Label("db1:", skin, "comic_24b");
             dblb2.setAlignment(Align.left);
-            dblb3 = new Label("db1:", m_skin, "comic_24b");
+            dblb3 = new Label("db1:", skin, "comic_24b");
             dblb3.setAlignment(Align.left);
-            dblb4 = new Label("db1:", m_skin, "comic_24b");
+            dblb4 = new Label("db1:", skin, "comic_24b");
             dblb4.setAlignment(Align.left);
-            dblb5 = new Label("db1:", m_skin, "comic_24b");
+            dblb5 = new Label("db1:", skin, "comic_24b");
             dblb5.setAlignment(Align.left);
 
             dbtb.bottom().left();
@@ -663,6 +671,10 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     public class RoundBuilder {
+        /* TODO: Read below:
+         * There should be _*NO*_ static values in this function.
+         * Everything should be configurable through the GameRoundSettings class.
+         */
         public void buildRound(GameRoundSettings settings) {
             resetGameScreen();
             config = settings;
@@ -672,6 +684,7 @@ public class GameScreen extends ScreenBase implements Observer {
             tilemapManager.setMinMaxRotationSpeed(config.minRotationSpeed, config.maxRotationSpeed);
 
             movingTileManager.setActiveState(true);
+            movingTileManager.setBallGenerationEnabled(true);
             movingTileManager.setAutoEject(config.autoEjectEnabled);
             movingTileManager.setDefaultBallSpeed(config.ballSpeed);
             movingTileManager.setLaunchDelay(config.launcherCooldown);
@@ -679,7 +692,6 @@ public class GameScreen extends ScreenBase implements Observer {
             statsManager.setLives(config.isLivesEnabled, config.livesAmount);
             statsManager.setMoves(config.isMovesEnabled, config.moveCount);
             statsManager.setTime(config.isTimeEnabled, config.timeAmount);
-            // TODO(14/4/2018): Add specialBallCount in GameSettings
             statsManager.setSpecialBallCount(2);
 
             gameUI.setup();
@@ -704,6 +716,7 @@ public class GameScreen extends ScreenBase implements Observer {
             config = null;
 
             isGameActive = false;
+            roundWon = false;
             stage.clear();
             rootUIStack.clear();
         }

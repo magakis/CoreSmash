@@ -27,11 +27,12 @@ public class MovingTileManager extends Observable {
     private int m_tileSize;
     private float launchDelay;
     private float launchDelayCounter;
-    private boolean hasSpecial;
+    private boolean loadedWithSpecial;
 
-    private int m_defaultSpeed;
+    private int defaultSpeed;
     private float m_defaultScale;
 
+    private boolean isBallGenerationEnabled;
     private boolean isActive;
     private boolean m_autoEject;
 
@@ -43,26 +44,30 @@ public class MovingTileManager extends Observable {
         m_tileSize = tileSize;
         m_colorCount = colorCount;
         isActive = true;
-        m_defaultSpeed = 15;
+        defaultSpeed = 15;
         m_defaultScale = 1/2f;
         launchDelay = .1f;
     }
 
-    public void insertSpecialTile(Tile.TileType tileType) {
-        // Remove pre-existing special tiles
-        if (hasSpecial) {
-            launcher.removeFirst();
-            hasSpecial = false;
-        }
+    public boolean isLoadedWithSpecial() {
+        return loadedWithSpecial;
+    }
 
-        switch (tileType) {
-            case BOMB:
-                //TODO: WORK ON THIS
-                launcher.addFirst(createMovingTile(launcherPos.x, launcherPos.y + m_tileSize, new BombTile()));
-                launcher.first().setScale(1);
-                hasSpecial = true;
-                break;
+    public void insertSpecialTile(Tile.TileType tileType) {
+        if (!loadedWithSpecial) {
+            switch (tileType) {
+                case BOMB:
+                    //TODO: WORK ON THIS
+                    launcher.addFirst(createMovingTile(launcherPos.x, launcherPos.y + m_tileSize, new BombTile()));
+                    launcher.first().setScale(1);
+                    loadedWithSpecial = true;
+                    break;
+            }
         }
+    }
+
+    public void setBallGenerationEnabled(boolean state) {
+        isBallGenerationEnabled = state;
     }
 
     public MovingTile getFirstActiveTile() {
@@ -107,6 +112,7 @@ public class MovingTileManager extends Observable {
 
     public void setLaunchDelay(float delay) {
         launchDelay = delay;
+        launchDelayCounter = delay;
     }
 
     private void updateActiveList(float delta) {
@@ -123,7 +129,7 @@ public class MovingTileManager extends Observable {
         return launcher;
     }
 
-    public void setLastBallColor(int colorId) {
+    public void setLastTileColor(int colorId) {
         launcher.last().getTile().setColor(colorId);
     }
 
@@ -131,14 +137,20 @@ public class MovingTileManager extends Observable {
         if (launchDelayCounter == 0) {
             if (launcher.size > 0) {
                 activeList.add(launcher.removeFirst());
-                if (!hasSpecial) {
-                    launcher.get(0).setPositionInWorld(launcherPos.x, launcherPos.y);
-                    launcher.get(1).setPositionInWorld(launcherPos.x, launcherPos.y - m_tileSize);
-                    launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - 2 * m_tileSize, createRegularTile()));
+
+                if (!loadedWithSpecial) {
+                    if (launcher.size > 0) {
+                        launcher.last().setPositionInWorld(launcherPos.x, launcherPos.y - m_tileSize);
+                        launcher.first().setPositionInWorld(launcherPos.x, launcherPos.y);
+                    }
+                    if (isBallGenerationEnabled) {
+                        launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - 2 * m_tileSize, createRegularTile()));
+                    }
                     notifyObservers(NotificationType.BALL_LAUNCHED, null);
                 } else {
-                    hasSpecial = false;
+                    loadedWithSpecial = false;
                 }
+
                 launchDelayCounter = launchDelay;
             } else {
                 throw new NullPointerException("WTF?");
@@ -147,9 +159,10 @@ public class MovingTileManager extends Observable {
     }
 
     public void reset() {
-        isActive = true;
-        m_defaultSpeed = 15;
-        launchDelay = 0.1f;
+        isActive = false;
+        defaultSpeed = 0;
+        launchDelay = 0;
+        isBallGenerationEnabled = false;
 
         Iterator<MovingTile> iter = activeList.iterator();
         MovingTile tile;
@@ -166,7 +179,6 @@ public class MovingTileManager extends Observable {
         iter = launcher.iterator();
         while (iter.hasNext()) {
             tile = iter.next();
-            tile.setSpeed(m_defaultSpeed);
             tile.extractTile(); //TODO: Remove tile in a pool of tiles
             movtPool.add(tile);
             iter.remove();
@@ -178,7 +190,7 @@ public class MovingTileManager extends Observable {
     }
 
     public void setDefaultBallSpeed(int defaultSpeed) {
-        m_defaultSpeed = defaultSpeed;
+        this.defaultSpeed = defaultSpeed;
         for (MovingTile mt : launcher) {
             mt.setSpeed(defaultSpeed);
         }
@@ -206,10 +218,10 @@ public class MovingTileManager extends Observable {
             res = movtPool.removeFirst();
             res.setPositionInWorld(x, y);
             res.setTile(tile);
-            res.setSpeed(m_defaultSpeed);
+            res.setSpeed(defaultSpeed);
             res.setScale(m_defaultScale);
         } else {
-            res = new MovingTile(x, y, m_defaultSpeed, tile);
+            res = new MovingTile(x, y, defaultSpeed, tile);
         }
         return res;
     }

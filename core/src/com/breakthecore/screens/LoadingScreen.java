@@ -13,27 +13,28 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.Align;
 import com.breakthecore.BreakTheCoreGame;
 
 public class LoadingScreen extends ScreenBase {
     AssetManager am;
-    Stage m_stage;
+    Stage stage;
     Skin skin;
 
     Label percent;
 
     public LoadingScreen(BreakTheCoreGame game) {
         super(game);
-        m_stage = new Stage(m_game.getWorldViewport());
+        stage = new Stage(m_game.getWorldViewport());
         am = game.getAssetManager();
         skin = game.getSkin();
         percent = new Label("null", new Label.LabelStyle(new BitmapFont(Gdx.files.internal("comic_96b.fnt"), false), Color.WHITE));
         percent.setAlignment(Align.center);
         percent.setFillParent(true);
-        m_stage.addActor(percent);
+        stage.addActor(percent);
 
-        screenInputMultiplexer.addProcessor(m_stage);
+        screenInputMultiplexer.addProcessor(stage);
         loadAllTextures();
         loadAllBitmapFonts();
     }
@@ -46,8 +47,8 @@ public class LoadingScreen extends ScreenBase {
         }
         percent.setText(String.format("%.0f %%", am.getProgress() * 100));
 
-        m_stage.act();
-        m_stage.draw();
+        stage.act();
+        stage.draw();
     }
 
     private void loadAllTextures() {
@@ -170,7 +171,7 @@ public class LoadingScreen extends ScreenBase {
         stb.font = skin.getFont("comic_48b");
         skin.add("tmpPowerup", stb);
 
-        //SliderStyles
+        // SliderStyles
         Slider.SliderStyle ss = new Slider.SliderStyle();
         ss.background = skin.getDrawable("box_white_5");
         ss.background.setMinHeight(60);
@@ -179,13 +180,20 @@ public class LoadingScreen extends ScreenBase {
         ss.knob.setMinWidth(80);
         skin.add("default-horizontal", ss);
 
-        //CheckboxStyles
+        // CheckboxStyles
         CheckBox.CheckBoxStyle cbs = new CheckBox.CheckBoxStyle();
         cbs.checkboxOff = skin.newDrawable("box_white_10", Color.RED);
         cbs.checkboxOn = skin.newDrawable("box_white_10", Color.GREEN);
         cbs.font = skin.getFont("comic_48b");
         cbs.disabledFontColor = Color.DARK_GRAY;
         skin.add("default",cbs);
+
+        // Textfield
+        TextField.TextFieldStyle tfs = new TextField.TextFieldStyle();
+        tfs.background = skin.getDrawable("box_white_5");
+        tfs.font = skin.getFont("comic_48");
+        tfs.fontColor = Color.WHITE;
+        skin.add("default",tfs);
     }
 
     private void registerFont(Skin skin, String fntName, String path) {
