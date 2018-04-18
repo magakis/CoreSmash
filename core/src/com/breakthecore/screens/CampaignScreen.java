@@ -5,107 +5,120 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Container;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.breakthecore.BreakTheCoreGame;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.breakthecore.GameRoundSettings;
 import com.breakthecore.RoundEndListener;
 import com.breakthecore.WorldSettings;
 
 public class CampaignScreen extends ScreenBase implements RoundEndListener {
-    GameScreen m_gameScreen;
-    GameRoundSettings m_settings;
+    GameScreen gameScreen;
     GestureDetector gd;
     Skin m_skin;
-    Stage m_stage;
-
-    LevelButton[] m_levelButtons;
+    Stage stage;
+    Table tblCampaignMap;
+    ScrollPane scrollPane;
+    LevelButton[] levelButtons;
     int nextLevel;
     int activeLevel;
 
     public CampaignScreen(BreakTheCoreGame game) {
         super(game);
         m_skin = game.getSkin();
-        m_stage = new Stage(game.getWorldViewport());
+        stage = new Stage(game.getWorldViewport());
         gd = new CustomGestureDetector(new InputListener());
-        screenInputMultiplexer.addProcessor(m_stage);
+
+        screenInputMultiplexer.addProcessor(stage);
         screenInputMultiplexer.addProcessor(gd);
+        tblCampaignMap = new Table();
+        gameScreen = new GameScreen(gameInstance);
 
-        m_gameScreen = new GameScreen(m_game);
-        m_settings = new GameRoundSettings();
+        levelButtons = new LevelButton[20];
 
-        m_levelButtons = new LevelButton[20];
-
-        Group buttonsGroup = createButtonGroup();
+        WidgetGroup buttonsGroup = createButtonGroup();
+        scrollPane = new ScrollPane(buttonsGroup);
+        scrollPane.setFillParent(true);
+        scrollPane.setOverscroll(false, false);
+        scrollPane.validate();
+        scrollPane.setSmoothScrolling(false);
+        scrollPane.setScrollPercentY(100);
 
         //Enable levels that can be played
         nextLevel = Gdx.app.getPreferences("highscores").getInteger("campaign_level", 0) + 1;
         for (int i = 0; i < nextLevel; ++i) {
-            m_levelButtons[i].enable();
+            levelButtons[i].enable();
         }
 
-
-        m_stage.addActor(buttonsGroup);
+        stage.addActor(scrollPane);
     }
 
     @Override
     public void render(float delta) {
-        m_stage.act();
-        m_stage.draw();
+        stage.act();
+        stage.draw();
     }
 
-    private Group createButtonGroup() {
-        Group grp = new Group();
+    private Container<WidgetGroup> createButtonGroup() {
+        WidgetGroup grp = new WidgetGroup();
 
         float x;
         float y;
-        for (int i = 0; i < 10; ++i) {
+        for (int i = 0; i < 20; ++i) {
             x = WorldSettings.getWorldWidth() / 2 + (WorldSettings.getWorldWidth() / 3) * (float) Math.cos(i * Math.PI / 2);
-            y = 100 + i * 190;
-            m_levelButtons[i] = new LevelButton(i + 1, (int) x, (int) y);
-            grp.addActor(m_levelButtons[i]);
+            y = 200 + i * 190;
+            levelButtons[i] = new LevelButton(i + 1, (int) x, (int) y);
+            grp.addActor(levelButtons[i]);
         }
-        return grp;
+
+        Container<WidgetGroup> container = new Container<WidgetGroup>(grp);
+        container.prefSize(WorldSettings.getWorldWidth(), 200+20*190);
+
+        return container;
     }
 
     private void startCampaignLevel(int lvl) {
         activeLevel = lvl;
-        m_settings.reset();
+        GameScreen.RoundSettings config = gameScreen.setupRound();
         switch (lvl) {
             case 1:
-                m_settings.gameMode = GameScreen.GameMode.CLASSIC;
-                m_settings.initRadius = 2;
-                m_settings.ballSpeed = 15;
-                m_settings.minRotationSpeed = 20;
-                m_settings.maxRotationSpeed = 30;
+                config.gameMode = GameScreen.GameMode.CLASSIC;
+                config.initRadius = 2;
+                config.ballSpeed = 15;
+                config.minRotationSpeed = 20;
+                config.maxRotationSpeed = 30;
                 break;
             case 2:
-                m_settings.gameMode = GameScreen.GameMode.CLASSIC;
-                m_settings.initRadius = 3;
-                m_settings.ballSpeed = 15;
-                m_settings.minRotationSpeed = 20;
-                m_settings.maxRotationSpeed = 30;
+                config.gameMode = GameScreen.GameMode.CLASSIC;
+                config.initRadius = 3;
+                config.ballSpeed = 15;
+                config.minRotationSpeed = 20;
+                config.maxRotationSpeed = 30;
                 break;
             case 3:
-                m_settings.gameMode = GameScreen.GameMode.SPIN_THE_CORE;
-                m_settings.initRadius = 2;
-                m_settings.ballSpeed = 2;
-                m_settings.launcherCooldown = 3;
+                config.gameMode = GameScreen.GameMode.SPIN_THE_CORE;
+                config.initRadius = 2;
+                config.ballSpeed = 2;
+                config.launcherCooldown = 3;
                 break;
             case 4:
-                m_settings.gameMode = GameScreen.GameMode.SPIN_THE_CORE;
-                m_settings.initRadius = 3;
-                m_settings.ballSpeed = 2;
-                m_settings.launcherCooldown = 3;
+                config.gameMode = GameScreen.GameMode.SPIN_THE_CORE;
+                config.initRadius = 3;
+                config.ballSpeed = 2;
+                config.launcherCooldown = 3;
                 break;
             default:
                 return;
         }
-        m_gameScreen.startRound(m_settings, this);
+
     }
 
     @Override
@@ -117,7 +130,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 prefs.putInteger("campaign_level", activeLevel);
                 prefs.flush();
             }
-            m_levelButtons[nextLevel].enable();
+            levelButtons[nextLevel].enable();
             ++nextLevel;
         }
         //Round LOST
@@ -179,7 +192,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         @Override
         public boolean keyDown(int keycode) {
             if (keycode == Input.Keys.BACK) {
-                m_game.setPrevScreen();
+                gameInstance.setPrevScreen();
                 return false;
             }
             return false;
@@ -204,8 +217,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
         public LevelButton(int lvl, int x, int y) {
             super(String.valueOf(lvl), m_skin, "levelBtnDisabled");
-            setSize(200, 160);
-            setPosition(x - 100, y - 80);
+            setSize(160, 160);
+            setPosition(x - 80, y - 80);
             addListener(new LevelLauncher(lvl));
             m_level = lvl;
             setDisabled(true);

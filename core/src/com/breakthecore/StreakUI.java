@@ -1,16 +1,14 @@
 package com.breakthecore;
 
 import com.badlogic.gdx.math.Interpolation;
-import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.utils.Align;
-import com.breakthecore.ui.UIBase;
+import com.breakthecore.ui.UIComponent;
 
-public class StreakUI extends UIBase implements Observer {
+public class StreakUI extends UIComponent implements Observer {
     Skin m_skin;
     Table tbl;
     Container<Label> m_label;
@@ -28,7 +26,7 @@ public class StreakUI extends UIBase implements Observer {
         tbl.center().top().padTop(100);
         tbl.add(m_label);
 
-        root = tbl;
+        setRoot(tbl);
     }
 
     public void reset() {

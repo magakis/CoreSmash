@@ -22,7 +22,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.breakthecore.BreakTheCoreGame;
-import com.breakthecore.GameRoundSettings;
 import com.breakthecore.managers.StatsManager;
 import com.breakthecore.StreakUI;
 import com.breakthecore.managers.CollisionManager;
@@ -35,7 +34,7 @@ import com.breakthecore.managers.RenderManager;
 import com.breakthecore.Tilemap;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.tiles.MovingTile;
-import com.breakthecore.ui.UIBase;
+import com.breakthecore.ui.UIComponent;
 
 /**
  * Created by Michail on 17/3/2018.
@@ -51,9 +50,8 @@ public class GameScreen extends ScreenBase implements Observer {
     private CollisionManager collisionManager;
     private StatsManager statsManager;
     private StreakUI streakUI;
-    private RoundBuilder roundBuilder;
 
-    private GameRoundSettings config;
+    private RoundSettings config;
 
     private InputProcessor m_classicGestureDetector, m_spinTheCoreGestureDetector, m_debugGestureDetector;
 
@@ -72,13 +70,15 @@ public class GameScreen extends ScreenBase implements Observer {
     private int colorCount = 7;
     private int sideLength = WorldSettings.getTileSize();
 
-
+    // TODO(17/4/2018): Clean the constructor
     public GameScreen(BreakTheCoreGame game) {
         super(game);
-        m_camera = (OrthographicCamera) m_game.getWorldViewport().getCamera();
-        skin = m_game.getSkin();
+        m_camera = (OrthographicCamera) gameInstance.getWorldViewport().getCamera();
+        skin = gameInstance.getSkin();
 
-        renderManager = m_game.getRenderManager();
+        config = new RoundSettings();
+
+        renderManager = gameInstance.getRenderManager();
         movingTileManager = new MovingTileManager(sideLength, colorCount);
         collisionManager = new CollisionManager();
 
@@ -90,7 +90,7 @@ public class GameScreen extends ScreenBase implements Observer {
         m_debugGestureDetector = new CustomGestureDetector(new DebugModeInputListener());
 
         isGameActive = true;
-        roundBuilder = new RoundBuilder();
+        config = new RoundSettings();
 
         statsManager = new StatsManager();
 
@@ -129,10 +129,6 @@ public class GameScreen extends ScreenBase implements Observer {
         }
     }
 
-    private void endGame() {
-        isGameActive = false;
-        handleGameEnd();
-    }
 
     private void setInputHanlderFor(GameMode mode) {
         screenInputMultiplexer.clear();
@@ -150,10 +146,6 @@ public class GameScreen extends ScreenBase implements Observer {
                 screenInputMultiplexer.addProcessor(m_spinTheCoreGestureDetector);
                 break;
         }
-    }
-
-    public void startRound(GameRoundSettings settings, RoundEndListener listener) {
-        m_game.setScreen(this);
     }
 
     @Override
@@ -202,13 +194,14 @@ public class GameScreen extends ScreenBase implements Observer {
         gameUI.lblScore.setText(String.valueOf(statsManager.getScore()));
     }
 
-    public void handleGameEnd() {
+    public void endGame() {
+        isGameActive = false;
         m_resultUI.update();
         stage.clear();
         stage.addActor(m_resultUI.getRoot());
         int score = statsManager.getScore();
 
-        // NOTE: It's questionable whether I want to store such scores because mainly of this campaign.
+        // NOTE: It's questionable whether I want to store such highscores because mainly of this campaign.
         if (roundWon) {
             Preferences prefs = Gdx.app.getPreferences("highscores");
             switch (config.gameMode) {
@@ -232,9 +225,54 @@ public class GameScreen extends ScreenBase implements Observer {
         }
     }
 
-    public RoundBuilder getRoundBuilder() {
-        return roundBuilder;
+    public void buildRound() {
+        tilemapManager.initTilemapCircle(tilemap, config.initRadius);
+        tilemapManager.setAutoRotation(config.autoRotationEnabled);
+        tilemapManager.setMinMaxRotationSpeed(config.minRotationSpeed, config.maxRotationSpeed);
+
+        movingTileManager.setActiveState(true);
+        movingTileManager.setBallGenerationEnabled(true);
+        movingTileManager.setAutoEject(config.autoEjectEnabled);
+        movingTileManager.setDefaultBallSpeed(config.ballSpeed);
+        movingTileManager.setLaunchDelay(config.launcherCooldown);
+
+        statsManager.setLives(config.isLivesEnabled, config.livesAmount);
+        statsManager.setMoves(config.isMovesEnabled, config.moveCount);
+        statsManager.setTime(config.isTimeEnabled, config.timeAmount);
+        statsManager.setSpecialBallCount(2);
+
+        gameUI.setup();
+        gameUI.lblHighscore.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("classic_highscore")));
+        gameUI.lblLives.setText(String.valueOf(statsManager.getLives()));
+        gameUI.tbPower1.setText(String.valueOf(statsManager.getSpecialBallCount()));
+        gameUI.lblMoves.setText(String.valueOf(statsManager.getMoves()));
+
+        rootUIStack.add(gameUI.getRoot());
+        rootUIStack.add(streakUI.getRoot());
+        stage.addActor(rootUIStack);
+        setInputHanlderFor(config.gameMode);
+
+        isGameActive = true;
     }
+
+    public RoundSettings setupRound() {
+        resetGameScreen();
+        config.reset();
+        return config;
+    }
+
+    private void resetGameScreen() {
+        tilemapManager.reset();
+        movingTileManager.reset();
+        statsManager.reset();
+        streakUI.reset();
+
+        isGameActive = false;
+        roundWon = false;
+        stage.clear();
+        rootUIStack.clear();
+    }
+
 
     @Override
     public void onNotify(NotificationType type, Object ob) {
@@ -248,7 +286,7 @@ public class GameScreen extends ScreenBase implements Observer {
                 if (lives == 0) {
                     isGameActive = false;
                     roundWon = false;
-                    handleGameEnd();
+                    endGame();
                 } else {
                     gameUI.lblLives.setText(String.valueOf(lives));
                 }
@@ -260,7 +298,7 @@ public class GameScreen extends ScreenBase implements Observer {
                 if (moves < 0) {
                     isGameActive = false;
                     roundWon = false;
-                    handleGameEnd();
+                    endGame();
                 }
                 break;
         }
@@ -465,7 +503,7 @@ public class GameScreen extends ScreenBase implements Observer {
         @Override
         public boolean keyDown(int keycode) {
             if (keycode == Input.Keys.BACK) {
-                m_game.setPrevScreen();
+                gameInstance.setPrevScreen();
                 return false;
             }
             return false;
@@ -480,7 +518,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
     }
 
-    private class GameUI extends UIBase {
+    private class GameUI extends UIComponent {
         Table tblMain, tblPowerUps;
         Table tblTime, tblScore;
         HorizontalGroup grpTop, grpLives, grpMoves;
@@ -562,7 +600,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
             tblMain.setFillParent(true);
 
-            root = tblMain;
+            setRoot(tblMain);
         }
 
         public void setup() {
@@ -596,7 +634,7 @@ public class GameScreen extends ScreenBase implements Observer {
         }
     }
 
-    private class ResultUI extends UIBase {
+    private class ResultUI extends UIComponent {
         Label resultTextLbl, timeLbl, scoreLbl;
 
         public ResultUI() {
@@ -609,19 +647,19 @@ public class GameScreen extends ScreenBase implements Observer {
             timeLbl = new Label("null", skin, "comic_48");
             scoreLbl = new Label("null", skin, "comic_48");
 
-            TextButton tb = new TextButton("Menu", skin);
-            tb.addListener(new ChangeListener() {
+            TextButton tbMenu = new TextButton("Menu", skin);
+            tbMenu.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeListener.ChangeEvent event, Actor actor) {
-                    m_game.setPrevScreen();
+                    gameInstance.setPrevScreen();
                 }
             });
 
-            tb.getLabelCell().width(200).height(150);
+            tbMenu.getLabelCell().width(200).height(150);
 
             HorizontalGroup hg = new HorizontalGroup();
             hg.align(Align.center);
-            hg.addActor(tb);
+            hg.addActor(tbMenu);
 
 
             tbl.center();
@@ -632,7 +670,7 @@ public class GameScreen extends ScreenBase implements Observer {
             tbl.add(scoreLbl).row();
             tbl.add(hg).colspan(2).padTop(100);
 
-            root = tbl;
+            setRoot(tbl);
         }
 
         public void update() {
@@ -643,7 +681,7 @@ public class GameScreen extends ScreenBase implements Observer {
         }
     }
 
-    private class DebugUI extends UIBase {
+    private class DebugUI extends UIComponent {
         private Label dblb1, dblb2, dblb3, dblb4, dblb5;
 
         public DebugUI() {
@@ -666,59 +704,52 @@ public class GameScreen extends ScreenBase implements Observer {
             dbtb.add(dblb4).fillX().row();
             dbtb.add(dblb5).fillX();
 
-            root = dbtb;
+            setRoot(dbtb);
         }
     }
 
-    public class RoundBuilder {
-        /* TODO: Read below:
-         * There should be _*NO*_ static values in this function.
-         * Everything should be configurable through the GameRoundSettings class.
-         */
-        public void buildRound(GameRoundSettings settings) {
-            resetGameScreen();
-            config = settings;
+    public class RoundSettings {
+        private RoundSettings() {};
 
-            tilemapManager.initTilemapCircle(tilemap, config.initRadius);
-            tilemapManager.setAutoRotation(config.autoRotationEnabled);
-            tilemapManager.setMinMaxRotationSpeed(config.minRotationSpeed, config.maxRotationSpeed);
+        public GameScreen.GameMode gameMode;
+        public RoundEndListener onRoundEndListener;
+        public int initRadius;
+        public float minRotationSpeed;
+        public float maxRotationSpeed;
+        public int ballSpeed;
+        public float launcherCooldown;
+        public boolean autoEjectEnabled;
+        public boolean autoRotationEnabled;
 
-            movingTileManager.setActiveState(true);
-            movingTileManager.setBallGenerationEnabled(true);
-            movingTileManager.setAutoEject(config.autoEjectEnabled);
-            movingTileManager.setDefaultBallSpeed(config.ballSpeed);
-            movingTileManager.setLaunchDelay(config.launcherCooldown);
+        public boolean isMovesEnabled;
+        public int moveCount;
 
-            statsManager.setLives(config.isLivesEnabled, config.livesAmount);
-            statsManager.setMoves(config.isMovesEnabled, config.moveCount);
-            statsManager.setTime(config.isTimeEnabled, config.timeAmount);
-            statsManager.setSpecialBallCount(2);
+        public boolean isTimeEnabled;
+        public int timeAmount;
 
-            gameUI.setup();
-            gameUI.lblHighscore.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("classic_highscore")));
-            gameUI.lblLives.setText(String.valueOf(statsManager.getLives()));
-            gameUI.tbPower1.setText(String.valueOf(statsManager.getSpecialBallCount()));
-            gameUI.lblMoves.setText(String.valueOf(statsManager.getMoves()));
+        public boolean isLivesEnabled;
+        public int livesAmount;
 
-            rootUIStack.add(gameUI.getRoot());
-            rootUIStack.add(streakUI.getRoot());
-            stage.addActor(rootUIStack);
-            setInputHanlderFor(config.gameMode);
+        public void reset() {
+            gameMode = null;
+            onRoundEndListener = null;
 
-            isGameActive = true;
-        }
+            initRadius = 0;
+            minRotationSpeed = 0;
+            maxRotationSpeed = 0;
+            ballSpeed = 0;
+            launcherCooldown = 0;
 
-        private void resetGameScreen() {
-            tilemapManager.reset();
-            movingTileManager.reset();
-            statsManager.reset();
-            streakUI.reset();
-            config = null;
+            isMovesEnabled = false;
+            moveCount = 0;
+            isTimeEnabled = false;
+            timeAmount = 0;
+            isLivesEnabled = false;
+            livesAmount = 0;
 
-            isGameActive = false;
-            roundWon = false;
-            stage.clear();
-            rootUIStack.clear();
+            autoEjectEnabled = false;
+            autoRotationEnabled = false;
         }
     }
+
 }

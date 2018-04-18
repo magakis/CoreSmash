@@ -6,11 +6,11 @@ import com.badlogic.gdx.ScreenAdapter;
 import com.breakthecore.BreakTheCoreGame;
 
 public abstract class ScreenBase extends ScreenAdapter {
-    protected BreakTheCoreGame m_game;
+    protected BreakTheCoreGame gameInstance;
     protected InputMultiplexer screenInputMultiplexer;
 
     public ScreenBase(BreakTheCoreGame game) {
-        m_game = game;
+        gameInstance = game;
         screenInputMultiplexer = new InputMultiplexer();
     }
 

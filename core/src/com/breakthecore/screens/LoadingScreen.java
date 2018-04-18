@@ -26,7 +26,7 @@ public class LoadingScreen extends ScreenBase {
 
     public LoadingScreen(BreakTheCoreGame game) {
         super(game);
-        stage = new Stage(m_game.getWorldViewport());
+        stage = new Stage(gameInstance.getWorldViewport());
         am = game.getAssetManager();
         skin = game.getSkin();
         percent = new Label("null", new Label.LabelStyle(new BitmapFont(Gdx.files.internal("comic_96b.fnt"), false), Color.WHITE));
@@ -43,7 +43,7 @@ public class LoadingScreen extends ScreenBase {
     public void render(float delta) {
         if (am.update()) {
             setupSkin();
-            m_game.initApp();
+            gameInstance.initApp();
         }
         percent.setText(String.format("%.0f %%", am.getProgress() * 100));
 
@@ -55,6 +55,9 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("asteroid.png");
         loadTexture("balloon.png");
         loadTexture("ball.png");
+        loadTexture("cog.png");
+        loadTexture("group.png");
+        loadTexture("speaker.png");
     }
 
     private void loadAllBitmapFonts() {
@@ -114,8 +117,10 @@ public class LoadingScreen extends ScreenBase {
         tex = new Texture(pix);
         skin.add("myBall", tex);
 
+        skin.add("cog", am.get("cog.png"));
         skin.add("ball", am.get("ball.png"));
         skin.add("whiteFading", am.get("asteroid.png"));
+        skin.add("speaker", am.get("speaker.png"));
 
         // Fonts
         registerFont(skin, "comic_32", "comic_32.fnt");
@@ -194,6 +199,7 @@ public class LoadingScreen extends ScreenBase {
         tfs.font = skin.getFont("comic_48");
         tfs.fontColor = Color.WHITE;
         skin.add("default",tfs);
+
     }
 
     private void registerFont(Skin skin, String fntName, String path) {
