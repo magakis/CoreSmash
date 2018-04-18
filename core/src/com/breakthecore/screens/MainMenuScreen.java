@@ -417,7 +417,7 @@ public class MainMenuScreen extends ScreenBase {
             tbtn.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    GameScreen.RoundSettings config = gameScreen.setupRound();
+                    GameScreen.LevelSettings config = gameScreen.setupRound();
                     Preferences prefs = Gdx.app.getPreferences("game_settings");
 
                     if (tfMoves.getText().isEmpty()) tfMoves.setText("0");

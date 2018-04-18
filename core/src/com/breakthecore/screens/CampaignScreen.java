@@ -5,9 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
@@ -19,6 +17,7 @@ import com.breakthecore.BreakTheCoreGame;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.breakthecore.RoundEndListener;
 import com.breakthecore.WorldSettings;
+import com.breakthecore.levels.Level1;
 
 public class CampaignScreen extends ScreenBase implements RoundEndListener {
     GameScreen gameScreen;
@@ -28,7 +27,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     Table tblCampaignMap;
     ScrollPane scrollPane;
     LevelButton[] levelButtons;
-    int nextLevel;
+    int currentLevel;
     int activeLevel;
 
     public CampaignScreen(BreakTheCoreGame game) {
@@ -53,8 +52,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         scrollPane.setScrollPercentY(100);
 
         //Enable levels that can be played
-        nextLevel = Gdx.app.getPreferences("highscores").getInteger("campaign_level", 0) + 1;
-        for (int i = 0; i < nextLevel; ++i) {
+        currentLevel = Gdx.app.getPreferences("highscores").getInteger("campaign_level", 1);
+        for (int i = 0; i < currentLevel; ++i) {
             levelButtons[i].enable();
         }
 
@@ -87,33 +86,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
     private void startCampaignLevel(int lvl) {
         activeLevel = lvl;
-        GameScreen.RoundSettings config = gameScreen.setupRound();
         switch (lvl) {
             case 1:
-                config.gameMode = GameScreen.GameMode.CLASSIC;
-                config.initRadius = 2;
-                config.ballSpeed = 15;
-                config.minRotationSpeed = 20;
-                config.maxRotationSpeed = 30;
-                break;
-            case 2:
-                config.gameMode = GameScreen.GameMode.CLASSIC;
-                config.initRadius = 3;
-                config.ballSpeed = 15;
-                config.minRotationSpeed = 20;
-                config.maxRotationSpeed = 30;
-                break;
-            case 3:
-                config.gameMode = GameScreen.GameMode.SPIN_THE_CORE;
-                config.initRadius = 2;
-                config.ballSpeed = 2;
-                config.launcherCooldown = 3;
-                break;
-            case 4:
-                config.gameMode = GameScreen.GameMode.SPIN_THE_CORE;
-                config.initRadius = 3;
-                config.ballSpeed = 2;
-                config.launcherCooldown = 3;
+                gameScreen.deployLevel(new Level1(this));
                 break;
             default:
                 return;
@@ -126,12 +101,12 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         // Round WON
         if (result) {
             Preferences prefs = Gdx.app.getPreferences("highscores");
-            if (prefs.getInteger("campaign_level", 0) < activeLevel) {
-                prefs.putInteger("campaign_level", activeLevel);
+            if (currentLevel == activeLevel) {
+                prefs.putInteger("campaign_level", currentLevel+1);
                 prefs.flush();
+                levelButtons[currentLevel].enable();
+                ++currentLevel;
             }
-            levelButtons[nextLevel].enable();
-            ++nextLevel;
         }
         //Round LOST
     }
