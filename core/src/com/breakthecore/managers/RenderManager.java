@@ -51,8 +51,8 @@ public class RenderManager {
         colorList[2] = new Color(1, 1, 1, 1);
         colorList[3] = new Color(0, 1, 0, 1);
         colorList[4] = new Color(1, 0, 1, 1);
-//        colorList[5] = new Color(0, 1, 1, 1);
-        colorList[5] = Color.BROWN; // color-blind
+        colorList[5] = new Color(0, 1, 1, 1);
+//        colorList[5] = Color.BROWN; // color-blind
         colorList[6] = new Color(0, 0, 1, 1);
         colorList[7] = Color.WHITE;
     }
@@ -107,14 +107,16 @@ public class RenderManager {
     }
 
     public void draw(Tilemap tm) {
-        TilemapTile[][] map = tm.getTilemapTiles();
-        Vector2 pos, posTm;
-        float rotation = tm.getRotDegrees();
+        Vector2 pos;
+        int tilesPerSide = tm.getTilesPerSide();
+        float rotation = tm.getRotation();
         int texWidth = texture.getWidth();
         int texHeight = texture.getHeight();
 
-        for (TilemapTile[] arr : map) {
-            for (TilemapTile tile : arr) {
+        TilemapTile tile;
+        for (int y = 0; y < tilesPerSide; ++y) {
+            for (int x = 0; x < tilesPerSide; ++x) {
+                tile = tm.getAbsoluteTile(x, y);
                 if (tile != null) {
                     pos = tile.getPositionInWorld();
                     m_batch.setColor(colorList[tile.getColor()]);
@@ -127,15 +129,18 @@ public class RenderManager {
     }
 
     public void DBdraw(CollisionManager cm, Tilemap tm) {
-        TilemapTile[][] map = tm.getTilemapTiles();
         Vector2 pos;
+        int tilesPerSide = tm.getTilesPerSide();
         int sideLen = tm.getSideLength() / 2;
 
         m_shapeRenderer.setColor(Color.WHITE);
         m_shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        float[] vetices = cm.getVerticesOnMiddleEdges(tm.getCosT(), tm.getSinT());
-        for (TilemapTile[] arr : map) {
-            for (TilemapTile tile : arr) {
+        float[] vetices = cm.getVerticesOnMiddleEdges(tm.getCos(), tm.getSin());
+
+        TilemapTile tile;
+        for (int y = 0; y < tilesPerSide; ++y) {
+            for (int x = 0; x < tilesPerSide; ++x) {
+                tile = tm.getAbsoluteTile(x, y);
                 if (tile != null) {
                     pos = tile.getPositionInWorld();
 
@@ -155,7 +160,7 @@ public class RenderManager {
             for (TilemapTile tile : arr) {
                 if (tile != null) {
                     pos = tile.getPositionInWorld();
-                    post = tile.getRelativePositionInTilemap();
+                    post = tile.getRelativePosition();
                     m_batch.setColor(Color.BLACK);
                     defaultFont.draw(m_batch,String.format("%.0f,%.0f", post.x, post.y) , pos.x -sideLengthHalf/2, pos.y);
                 }

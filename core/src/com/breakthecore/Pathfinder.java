@@ -1,6 +1,5 @@
 package com.breakthecore;
 
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Pool.Poolable;
 import com.breakthecore.tiles.TilemapTile;
 
@@ -57,7 +56,7 @@ public class Pathfinder {
     }
 */
     private void getSurroundingTiles(TilemapTile tmt, Tilemap tm, LinkedList<TilemapTile> active, ArrayList<TilemapTile> exclude) {
-        Coords2D tpos = tmt.getRelativePositionInTilemap();
+        Coords2D tpos = tmt.getRelativePosition();
         int tx =  tpos.x;
         int ty =  tpos.y;
 
@@ -148,7 +147,7 @@ public class Pathfinder {
 
     private void evaluateSurroundingNodes(Node midNode, Tilemap tm) {
         Coords2D posT = midNode.tile.getAbsolutePositionInTilemap();
-        int tmSize = tm.getSize();
+        int tmSize = tm.getTilesPerSide();
 
         int curX =  posT.x;
         int curY =  posT.y;

@@ -12,7 +12,14 @@ abstract public class Tile {
         color = 7; // 7 is white defined by RenderManager
     }
 
-    abstract public void onCollide(MovingTile mt, TilemapTile tt, TilemapManager tmm, CollisionManager cm);
+    /* It's questionable whether I should just pass the GameScreen */
+    abstract public void onCollide(
+            MovingTile movingTile,
+            TilemapTile tilemapTile,
+            int index,
+            TilemapManager tilemapManager,
+            CollisionManager collisionManager
+    );
 
     abstract public void update(float delta);
 

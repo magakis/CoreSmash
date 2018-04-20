@@ -14,13 +14,18 @@ public class RegularTile extends Tile {
     }
 
     @Override
-    public void onCollide(MovingTile mt, TilemapTile st, TilemapManager tmm, CollisionManager cm) {
-        Tilemap tm = tmm.getTileMap();
-        Vector2 direction = cm.getDirection(mt.m_positionInWorld, st.m_positionInWorld);
+    public void onCollide(MovingTile movingTile, TilemapTile tileHit, int layer, TilemapManager tilemapManager, CollisionManager collisionManager) {
+        Tilemap tm = tilemapManager.getTilemap(layer);
+        Vector2 direction = collisionManager.getDirection(movingTile.m_positionInWorld, tileHit.m_positionInWorld);
 
-        tmm.addTile(mt.extractTile(), st, cm.getClosestSides(tm.getCosT(), tm.getSinT(), direction));
+        tilemapManager.attachTile(
+                layer,
+                movingTile.extractTile(),
+                tileHit.getRelativePosition(),
+                collisionManager.getClosestSides(tm.getCos(), tm.getSin(), direction)
+        );
 
-        mt.dispose();
+        movingTile.dispose();
     }
 
     @Override

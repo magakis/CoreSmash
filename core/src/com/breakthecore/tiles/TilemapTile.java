@@ -20,7 +20,7 @@ public class TilemapTile extends TileContainer {
         return absolutePositionInTilemap;
     }
 
-    public Coords2D getRelativePositionInTilemap() {
+    public Coords2D getRelativePosition() {
         return relativePositionInTilemap;
     }
 

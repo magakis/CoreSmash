@@ -3,6 +3,7 @@ package com.breakthecore.managers;
 import com.badlogic.gdx.math.Vector2;
 import com.breakthecore.Tilemap;
 import com.breakthecore.tiles.MovingTile;
+import com.breakthecore.tiles.Tile;
 import com.breakthecore.tiles.TileContainer;
 import com.breakthecore.tiles.TilemapTile;
 
@@ -37,16 +38,18 @@ public class CollisionManager {
     public TilemapTile findCollision(Tilemap tm, MovingTile moveTile) {
         float minDist;
         int sideHalf = tm.getSideLength() / 2;
+        int tilesPerSide = tm.getTilesPerSide();
         Vector2 movhexPos;
-        TilemapTile[][] m_hexTiles = tm.getTilemapTiles();
 
         movhexPos = moveTile.getPositionInWorld();
 
         //XXX(HACK): Arbitrary value to decrease range and match better the texture
         minDist = sideHalf + sideHalf * moveTile.getScale() * 0.8f;
 
-        for (TilemapTile[] arr : m_hexTiles) {
-            for (TilemapTile tile : arr) {
+        TilemapTile tile;
+        for (int y = 0; y < tilesPerSide; ++y) {
+            for (int x = 0; x < tilesPerSide; ++x) {
+                tile = tm.getAbsoluteTile(x, y);
                 if (tile != null) {
                     if (movhexPos.dst(tile.getPositionInWorld()) < minDist) {
                         return tile;
@@ -109,17 +112,23 @@ public class CollisionManager {
         return result;
     }
 
-    public void checkForCollision(MovingTileManager mtm, TilemapManager tmm) {
+    public void checkForCollision(MovingTileManager movingTileManager, TilemapManager tilemapManager) {
         TilemapTile solidTile;
-        Tilemap tm = tmm.getTileMap();
-        List<MovingTile> list = mtm.getActiveList();
-        for (MovingTile mt : list) {
-            solidTile = findCollision(tm, mt);
-            if (solidTile == null) continue;
+        Tilemap tm;
 
-            mt.getTile().onCollide(mt, solidTile, tmm, this);
+        for (int i = 0; i < tilemapManager.getTilemapCount(); ++i) {
+            tm = tilemapManager.getTilemap(i);
+            List<MovingTile> list = movingTileManager.getActiveList();
+
+            for (MovingTile mt : list) {
+                solidTile = findCollision(tm, mt);
+                if (solidTile == null) continue;
+
+                mt.getTile().onCollide(mt, solidTile, i, tilemapManager, this);
+            }
+
+            movingTileManager.disposeInactive();
         }
-        mtm.disposeInactive();
     }
 
     public Vector2 getDirection(Vector2 pos, Vector2 origin) {

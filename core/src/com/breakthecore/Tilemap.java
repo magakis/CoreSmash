@@ -1,6 +1,6 @@
 package com.breakthecore;
 
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.MathUtils;
 import com.breakthecore.tiles.TilemapTile;
 
 /**
@@ -8,66 +8,118 @@ import com.breakthecore.tiles.TilemapTile;
  */
 
 public class Tilemap {
-    private int m_size;
-    private int m_sideLength;
-    private float m_sideLengthHalf;
+    private int tilesPerSide;
+    private int tileSize;
+    private float tileSizeHalf;
     private int centerTile;
-    private Vector2 m_position;
-    private TilemapTile[][] m_tileList;
+    private Coords2D screenPosition;
+    private TilemapTile[][] listTilemapTiles;
 
-    private float m_rotDegrees;
-    private float m_cosT;
-    private float m_sinT;
+    private boolean isInitilized;
+    public boolean needsValidation;
 
-    private int m_tileCount;
+    private float rotation;
 
-    public Tilemap(Vector2 pos, int size, int sideLength) {
-        m_size = size;
-        m_position = pos;
-        m_sideLength = sideLength;
-        m_sideLengthHalf = sideLength / 2.f;
-        centerTile = size / 2;
-        m_tileList = new TilemapTile[size][size];
-        m_cosT = 1;
-        m_sinT = 0;
+    private boolean autoRotationEnabled;
+    private float minRotationSpeed;
+    private float maxRotationSpeed;
+    private float speedDiff;
+
+    private float cos;
+    private float sin;
+
+    private int initTileCount;
+    private int tileCount;
+
+    public Tilemap() {
+        tilesPerSide = 30; // NOTE: If this is changed, change it also in pathfinder!
+        screenPosition = new Coords2D(WorldSettings.getWorldWidth()/2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
+        tileSize = WorldSettings.getTileSize();
+        tileSizeHalf = tileSize / 2.f;
+        centerTile = tilesPerSide / 2;
+        listTilemapTiles = new TilemapTile[tilesPerSide][tilesPerSide];
+        cos = 1;
+        sin = 0;
     }
 
     public int getCenterTilePos() {
         return centerTile;
     }
 
-    public int getSize() {
-        return m_size;
+    public int getTilesPerSide() {
+        return tilesPerSide;
     }
 
-    public float getRotDegrees() {
-        return m_rotDegrees;
+    public int getSideLength() {
+        return tileSize;
     }
 
-    public void clear() {
-        for (int y = 0; y < m_size; ++y) {
-            for (int x = 0; x < m_size; ++x) {
-                m_tileList[y][x] = null;
+    public int getTileCount() {
+        return tileCount;
+    }
+
+    public float getRotation() {
+        return rotation;
+    }
+
+    public float getCos() {
+        return cos;
+    }
+
+    public float getSin() {
+        return sin;
+    }
+
+    public Coords2D getPositionInWorld() {
+        return new Coords2D(screenPosition);
+    }
+
+    public TilemapTile getAbsoluteTile(int x, int y) {
+        return listTilemapTiles[y][x];
+    }
+
+    public TilemapTile getRelativeTile(int x, int y) {
+        return listTilemapTiles[centerTile + y][centerTile + x];
+    }
+
+    public void setAutoRotation(boolean autoRotate) {
+        autoRotationEnabled = autoRotate;
+    }
+
+    public void setMinMaxSpeed(float min, float max) {
+        minRotationSpeed = min;
+        maxRotationSpeed = max;
+        speedDiff = max-min;
+    }
+
+    public void setTileLiteral(int x, int y, TilemapTile tile) {
+        setTilemapTile(x - centerTile, y - centerTile, tile);
+    }
+
+    public void setTilemapTile(int x, int y, TilemapTile tile) {
+        if (tile == null) return;
+
+        if (getRelativeTile(x, y) == null) {
+            if (!isInitilized){
+                ++initTileCount;
             }
+            ++tileCount;
         }
-        m_tileCount = 0;
-        m_rotDegrees = 0;
-        m_cosT = 1;
-        m_sinT = 0;
-    }
 
-    public void rotate(float deg) {
-        m_rotDegrees += deg;
-        setRotation(m_rotDegrees);
+        tile.setPositionInTilemap(x, y, centerTile);
+
+        updateTilemapTile(tile);
+
+        listTilemapTiles[centerTile + y][centerTile + x] = tile;
     }
 
     public void setRotation(float deg) {
-        m_rotDegrees = deg;
+        rotation = deg;
         float rotRad = (float) Math.toRadians(deg);
-        m_cosT = (float) Math.cos(rotRad);
-        m_sinT = (float) Math.sin(rotRad);
+        cos = (float) Math.cos(rotRad);
+        sin = (float) Math.sin(rotRad);
 
-        for (TilemapTile[] arr : m_tileList) {
+        for (TilemapTile[] arr : listTilemapTiles) {
             for (TilemapTile hex : arr) {
                 if (hex != null) {
                     updateTilemapTile(hex);
@@ -76,48 +128,8 @@ public class Tilemap {
         }
     }
 
-    public TilemapTile[][] getTilemapTiles() {
-        return m_tileList;
-    }
-
-    public int getSideLength() {
-        return m_sideLength;
-    }
-
-    public void updateTilemapTile(TilemapTile hex) {
-        Coords2D tilePos = hex.getRelativePositionInTilemap();
-        float x = tilePos.x;
-        float y = tilePos.y;
-
-        float X_world, Y_world;
-        float tileXDistance = m_sideLength*.95f;
-        float tileYDistance = m_sideLength*.85f;
-
-        float xOffset = x % 2 == 0 ? 0 : tileYDistance/2;
-
-        X_world = m_position.x +
-                (x * tileXDistance + y * m_sideLengthHalf ) * m_cosT +
-                (y * tileYDistance ) * m_sinT;
-
-        Y_world = m_position.y +
-                (x * tileXDistance + y * m_sideLengthHalf ) * -m_sinT +
-                (y * tileYDistance) * m_cosT;
-
-        hex.setPositionInWorld(X_world, Y_world);
-    }
-
-    public void setTilemapTile(int x, int y, TilemapTile tile) {
-        if (tile == null) return;
-
-        if (getRelativeTile(x, y) == null) {
-            ++m_tileCount;
-        }
-
-        tile.setPositionInTilemap(x, y, centerTile);
-
-        updateTilemapTile(tile);
-
-        m_tileList[centerTile + y][centerTile + x] = tile;
+    public void setInitialized(boolean state) {
+        isInitilized = true;
     }
 
     public void destroyAbsoluteTile(int absX, int absY) {
@@ -132,39 +144,70 @@ public class Tilemap {
         }
         t.notifyObservers(NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED, null);
         t.clear();
-        emptyTileAt(tileX, tileY);
-        --m_tileCount;
+        emptyRelativeTile(tileX, tileY);
+        --tileCount;
+        needsValidation = true;
     }
 
-    public int getTileCount() {
-        return m_tileCount;
+    public void rotate(float deg) {
+        rotation += deg;
+        setRotation(rotation);
     }
 
-    public void setTileLiteral(int x, int y, TilemapTile tile) {
-        setTilemapTile(x - centerTile, y - centerTile, tile);
+    public void reset() {
+        for (int y = 0; y < tilesPerSide; ++y) {
+            for (int x = 0; x < tilesPerSide; ++x) {
+                TilemapTile t = getAbsoluteTile(x, y);
+                if (t == null) continue;
+                t.clear();
+                emptyAbsoluteTile(x, y);
+                --tileCount;
+            }
+        }
+        minRotationSpeed = 0;
+        maxRotationSpeed = 0;
+        isInitilized = false;
+        needsValidation = false;
+        speedDiff = 0;
+        initTileCount = 0;
+        tileCount = 0;
+        rotation = 0;
+        cos = 1;
+        sin = 0;
     }
 
-    public TilemapTile getAbsoluteTile(int x, int y) {
-        return m_tileList[y][x];
+    public void update(float delta) {
+        if (autoRotationEnabled) {
+            rotate(MathUtils.clamp(maxRotationSpeed - speedDiff * ((float)tileCount / initTileCount), minRotationSpeed, maxRotationSpeed) * delta);
+        }
     }
 
-    public TilemapTile getRelativeTile(int x, int y) {
-        return m_tileList[centerTile + y][centerTile + x];
+    public void updateTilemapTile(TilemapTile hex) {
+        Coords2D tilePos = hex.getRelativePosition();
+        float x = tilePos.x;
+        float y = tilePos.y;
+
+        float X_world, Y_world;
+        float tileXDistance = tileSize *.95f;
+        float tileYDistance = tileSize *.85f;
+
+        X_world = screenPosition.x +
+                (x * tileXDistance + y * tileSizeHalf) * cos +
+                (y * tileYDistance ) * sin;
+
+        Y_world = screenPosition.y +
+                (x * tileXDistance + y * tileSizeHalf) * -sin +
+                (y * tileYDistance) * cos;
+
+        hex.setPositionInWorld(X_world, Y_world);
     }
 
-    private void emptyTileAt(int x, int y) {
-        m_tileList[y + centerTile][x + centerTile] = null;
+    private void emptyRelativeTile(int x, int y) {
+        listTilemapTiles[y + centerTile][x + centerTile] = null;
     }
 
-    public float getCosT() {
-        return m_cosT;
+    private void emptyAbsoluteTile(int x, int y) {
+        listTilemapTiles[y][x] = null;
     }
 
-    public float getSinT() {
-        return m_sinT;
-    }
-
-    public Vector2 getPositionInWorld() {
-        return new Vector2(m_position);
-    }
 }

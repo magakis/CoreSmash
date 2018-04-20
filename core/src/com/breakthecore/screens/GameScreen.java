@@ -22,6 +22,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.breakthecore.BreakTheCoreGame;
+import com.breakthecore.Coords2D;
 import com.breakthecore.levels.Level;
 import com.breakthecore.managers.StatsManager;
 import com.breakthecore.StreakUI;
@@ -44,7 +45,6 @@ import com.breakthecore.ui.UIComponent;
 public class GameScreen extends ScreenBase implements Observer {
     private OrthographicCamera m_camera;
 
-    private Tilemap tilemap;
     private TilemapManager tilemapManager;
     private MovingTileManager movingTileManager;
     private RenderManager renderManager;
@@ -72,7 +72,6 @@ public class GameScreen extends ScreenBase implements Observer {
     private int colorCount = 7;
     private int sideLength = WorldSettings.getTileSize();
 
-    // TODO(17/4/2018): Clean the constructor
     public GameScreen(BreakTheCoreGame game) {
         super(game);
         m_camera = (OrthographicCamera) gameInstance.getWorldViewport().getCamera();
@@ -84,11 +83,10 @@ public class GameScreen extends ScreenBase implements Observer {
         movingTileManager = new MovingTileManager(sideLength, colorCount);
         collisionManager = new CollisionManager();
 
-        tilemap = new Tilemap(new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4), 31, sideLength);
-        tilemapManager = new TilemapManager(tilemap);
+        tilemapManager = new TilemapManager();
 
         m_classicGestureDetector = new CustomGestureDetector(new ClassicModeInputListener());
-        m_spinTheCoreGestureDetector = new CustomGestureDetector(new SpinTheCoreModeInputListener(tilemap.getPositionInWorld()));
+        m_spinTheCoreGestureDetector = new CustomGestureDetector(new SpinTheCoreModeInputListener(tilemapManager.getTilemap(0).getPositionInWorld()));
         m_debugGestureDetector = new CustomGestureDetector(new DebugModeInputListener());
 
         isGameActive = true;
@@ -155,7 +153,9 @@ public class GameScreen extends ScreenBase implements Observer {
 
 //        if (isGameActive) {
         renderManager.start(m_camera.combined);
-        renderManager.draw(tilemap);
+        for (int i = 0; i < tilemapManager.getTilemapCount(); ++i) {
+            renderManager.draw(tilemapManager.getTilemap(i));
+        }
         renderManager.drawLauncher(movingTileManager.getLauncherQueue(), movingTileManager.getLauncherPos());
         renderManager.draw(movingTileManager.getActiveList());
         renderManager.end();
@@ -183,7 +183,7 @@ public class GameScreen extends ScreenBase implements Observer {
             checkEndingConditions();
 
             if (statsManager.getMoves() == 3) {
-                movingTileManager.setLastTileColor(tilemapManager.getTileMap().getRelativeTile(0, 0).getColor());
+                movingTileManager.setLastTileColor(tilemapManager.getTilemap(0).getRelativeTile(0, 0).getColor());
                 movingTileManager.setBallGenerationEnabled(false);
             }
         }
@@ -232,20 +232,12 @@ public class GameScreen extends ScreenBase implements Observer {
                 prefs.putInteger("level"+activeLevel.getLevelNumber(), score);
                 prefs.flush();
             }
-            activeLevel.end(roundWon);
+            activeLevel.end(roundWon, statsManager);
         }
     }
 
     public void buildRound() {
-        tilemapManager.initTilemapCircle(tilemap, config.initRadius);
-        tilemapManager.setAutoRotation(config.autoRotationEnabled);
-        tilemapManager.setMinMaxRotationSpeed(config.minRotationSpeed, config.maxRotationSpeed);
-
         movingTileManager.setActiveState(true);
-        movingTileManager.setBallGenerationEnabled(true);
-        movingTileManager.setAutoEject(config.autoEjectEnabled);
-        movingTileManager.setDefaultBallSpeed(config.ballSpeed);
-        movingTileManager.setLaunchDelay(config.launcherCooldown);
 
         statsManager.setLives(config.isLivesEnabled, config.livesAmount);
         statsManager.setMoves(config.isMovesEnabled, config.moveCount);
@@ -253,7 +245,7 @@ public class GameScreen extends ScreenBase implements Observer {
         statsManager.setSpecialBallCount(2);
 
         gameUI.setup();
-        gameUI.lblHighscore.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("classic_highscore")));
+        gameUI.lblHighscore.setText("" );
         gameUI.lblLives.setText(String.valueOf(statsManager.getLives()));
         gameUI.tbPower1.setText(String.valueOf(statsManager.getSpecialBallCount()));
         gameUI.lblMoves.setText(String.valueOf(statsManager.getMoves()));
@@ -267,12 +259,9 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     private void initManagers() {
-        tilemapManager.setAutoRotation(config.autoRotationEnabled);
-        tilemapManager.setMinMaxRotationSpeed(config.minRotationSpeed, config.maxRotationSpeed);
-
         movingTileManager.setActiveState(true);
         movingTileManager.setBallGenerationEnabled(true);
-        movingTileManager.setAutoEject(config.autoEjectEnabled);
+        movingTileManager.setAutoEject(config.gameMode != GameMode.CLASSIC);
         movingTileManager.setDefaultBallSpeed(config.ballSpeed);
         movingTileManager.setLaunchDelay(config.launcherCooldown);
 
@@ -283,7 +272,6 @@ public class GameScreen extends ScreenBase implements Observer {
 
         gameUI.setup();
         if (activeLevel != null) {
-//            gameUI.lblHighscore.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("classic_highscore")));
             gameUI.lblHighscore.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("level"+activeLevel.getLevelNumber(),0)));
         }
         gameUI.lblLives.setText(String.valueOf(statsManager.getLives()));
@@ -302,10 +290,27 @@ public class GameScreen extends ScreenBase implements Observer {
     public void deployLevel(Level level) {
         reset();
         activeLevel = level;
+        level.initialize(config, tilemapManager, movingTileManager);
 
-        level.initialize(config, tilemapManager);
-        initManagers();
+        statsManager.setLives(config.isLivesEnabled, config.livesAmount);
+        statsManager.setMoves(config.isMovesEnabled, config.moveCount);
+        statsManager.setTime(config.isTimeEnabled, config.timeAmount);
+        statsManager.setSpecialBallCount(0);
 
+        gameUI.setup();
+        if (activeLevel != null) {
+            gameUI.lblHighscore.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("level"+activeLevel.getLevelNumber(),0)));
+        }
+        gameUI.lblLives.setText(String.valueOf(statsManager.getLives()));
+        gameUI.tbPower1.setText(String.valueOf(statsManager.getSpecialBallCount()));
+        gameUI.lblMoves.setText(String.valueOf(statsManager.getMoves()));
+
+        rootUIStack.add(gameUI.getRoot());
+        rootUIStack.add(streakUI.getRoot());
+        stage.addActor(rootUIStack);
+        setInputHanlderFor(config.gameMode);
+
+        isGameActive = true;
         gameInstance.setScreen(this);
     }
 
@@ -367,7 +372,9 @@ public class GameScreen extends ScreenBase implements Observer {
 
         @Override
         public boolean tap(float x, float y, int count, int button) {
-            movingTileManager.eject();
+            if (statsManager.getMoves() > 0) {
+                movingTileManager.eject();
+            }
             return true;
         }
 
@@ -473,12 +480,12 @@ public class GameScreen extends ScreenBase implements Observer {
     private class SpinTheCoreModeInputListener implements GestureDetector.GestureListener {
 
         private boolean isPanning;
-        private Vector2 tmPos;
+        private Coords2D tmPos;
         private Vector3 scrPos;
         private float initAngle;
         private Vector2 currPoint;
 
-        public SpinTheCoreModeInputListener(Vector2 tilemapPos) {
+        public SpinTheCoreModeInputListener(Coords2D tilemapPos) {
             tmPos = tilemapPos;
             scrPos = new Vector3();
             currPoint = new Vector2();
@@ -506,22 +513,25 @@ public class GameScreen extends ScreenBase implements Observer {
 
         @Override
         public boolean pan(float x, float y, float deltaX, float deltaY) {
-            if (isPanning) {
-                float currAngle;
-                scrPos.set(x, y, 0);
-                scrPos = m_camera.unproject(scrPos);
-                currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
-                currAngle = currPoint.angle();
-                tilemap.rotate((initAngle - currAngle) * 2.5f);
-                initAngle = currAngle;
-            } else {
-                isPanning = true;
-                scrPos.set(x, y, 0);
-                scrPos = m_camera.unproject(scrPos);
-                currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
-                initAngle = currPoint.angle();
+            if (isGameActive) {
+                if (isPanning) {
+                    float currAngle;
+                    scrPos.set(x, y, 0);
+                    scrPos = m_camera.unproject(scrPos);
+                    currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
+                    currAngle = currPoint.angle();
+                    tilemapManager.getTilemap(0).rotate((initAngle - currAngle) * 2.5f);
+                    initAngle = currAngle;
+                } else {
+                    isPanning = true;
+                    scrPos.set(x, y, 0);
+                    scrPos = m_camera.unproject(scrPos);
+                    currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
+                    initAngle = currPoint.angle();
+                }
+                return true;
             }
-            return true;
+            return false;
         }
 
         @Override
@@ -763,20 +773,14 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     public class LevelSettings {
+        // disable constructor
         private LevelSettings() {
         }
 
-        ;
-
         public GameScreen.GameMode gameMode;
         public RoundEndListener onRoundEndListener;
-        public int initRadius;
-        public float minRotationSpeed;
-        public float maxRotationSpeed;
         public int ballSpeed;
         public float launcherCooldown;
-        public boolean autoEjectEnabled;
-        public boolean autoRotationEnabled;
 
         public boolean isMovesEnabled;
         public int moveCount;
@@ -791,9 +795,6 @@ public class GameScreen extends ScreenBase implements Observer {
             gameMode = null;
             onRoundEndListener = null;
 
-            initRadius = 0;
-            minRotationSpeed = 0;
-            maxRotationSpeed = 0;
             ballSpeed = 0;
             launcherCooldown = 0;
 
@@ -803,10 +804,10 @@ public class GameScreen extends ScreenBase implements Observer {
             timeAmount = 0;
             isLivesEnabled = false;
             livesAmount = 0;
-
-            autoEjectEnabled = false;
-            autoRotationEnabled = false;
+        }
+        public void enableMoves(int amount) {
+            isMovesEnabled = true;
+            moveCount = amount;
         }
     }
-
 }

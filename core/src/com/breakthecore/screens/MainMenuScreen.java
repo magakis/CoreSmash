@@ -28,7 +28,13 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.breakthecore.BreakTheCoreGame;
+import com.breakthecore.Tilemap;
 import com.breakthecore.WorldSettings;
+import com.breakthecore.levels.AbstractLevel;
+import com.breakthecore.levels.Level;
+import com.breakthecore.managers.MovingTileManager;
+import com.breakthecore.managers.StatsManager;
+import com.breakthecore.managers.TilemapManager;
 import com.breakthecore.ui.UIComponent;
 
 import java.util.Locale;
@@ -351,7 +357,7 @@ public class MainMenuScreen extends ScreenBase {
             tfMoves = new TextField("", skin);
             tfMoves.setAlignment(Align.center);
             tfMoves.setMaxLength(3);
-            tfMoves.setText(String.valueOf(prefs.getInteger("moves_amount", 40)));
+            tfMoves.setText(String.valueOf(prefs.getInteger("move_count", 40)));
             tfMoves.setTextFieldFilter(new TextField.TextFieldFilter.DigitsOnlyFilter());
             tfMoves.setTextFieldListener(returnOnNewLineListener);
             tfMoves.addListener(new ClickListener() {
@@ -417,46 +423,78 @@ public class MainMenuScreen extends ScreenBase {
             tbtn.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    GameScreen.LevelSettings config = gameScreen.setupRound();
-                    Preferences prefs = Gdx.app.getPreferences("game_settings");
-
                     if (tfMoves.getText().isEmpty()) tfMoves.setText("0");
                     if (tfLives.getText().isEmpty()) tfLives.setText("0");
                     if (tfTime.getText().isEmpty()) tfTime.setText("0");
 
-                    boolean spinTheCoreEnabled = cbSpinTheCoreMode.isChecked();
-                    prefs.putBoolean("spinthecore_enabled", spinTheCoreEnabled);
+                    Level dbLevel = new AbstractLevel(null) {
+                        @Override
+                        public void initialize(GameScreen.LevelSettings levelSettings, TilemapManager tilemapManager, MovingTileManager movingTileManager) {
+                            Preferences prefs = Gdx.app.getPreferences("game_settings");
 
-                    config.gameMode = spinTheCoreEnabled ? GameMode.SPIN_THE_CORE : GameMode.CLASSIC;
-                    config.autoRotationEnabled = !spinTheCoreEnabled;
-                    config.autoEjectEnabled = spinTheCoreEnabled;
-                    config.initRadius = (int) radiusSlider.getValue();
-                    prefs.putInteger("init_radius", config.initRadius);
-                    config.minRotationSpeed = minRotSlider.getValue();
-                    prefs.putFloat("min_rotation_speed", config.minRotationSpeed);
-                    config.maxRotationSpeed = maxRotSlider.getValue();
-                    prefs.putFloat("max_rotation_speed", config.maxRotationSpeed);
-                    config.launcherCooldown = sldrLauncherCooldown.getValue();
-                    prefs.putFloat("launcher_cooldown", config.launcherCooldown);
-                    config.ballSpeed = (int) ballSpeedSlider.getValue();
-                    prefs.putFloat("ball_speed", config.ballSpeed);
+                            boolean spinTheCoreEnabled = cbSpinTheCoreMode.isChecked();
+                            boolean autoRotationEnabled = !spinTheCoreEnabled;
+                            boolean autoEjectEnabled = spinTheCoreEnabled;
+                            int initRadius = (int) radiusSlider.getValue();
+                            float minRotationSpeed = minRotSlider.getValue();
+                            float maxRotationSpeed = maxRotSlider.getValue();
 
-                    config.isMovesEnabled = cbUseMoves.isChecked();
-                    prefs.putBoolean("moves_enabled", config.isMovesEnabled);
-                    config.moveCount = Integer.parseInt(tfMoves.getText());
-                    prefs.putInteger("move_count", config.moveCount);
-                    config.isTimeEnabled = cbUseTime.isChecked();
-                    prefs.putBoolean("time_enabled", config.isTimeEnabled);
-                    config.timeAmount = Integer.parseInt(tfTime.getText());
-                    prefs.putInteger("time_amount",config.timeAmount);
-                    config.isLivesEnabled = cbUseLives.isChecked();
-                    prefs.putBoolean("lives_enabled", config.isLivesEnabled);
-                    config.livesAmount = Integer.parseInt(tfLives.getText());
-                    prefs.putInteger("lives_amount", config.livesAmount);
+                            tilemapManager.init(1);
+                            Tilemap tm = tilemapManager.getTilemap(0);
+                            tilemapManager.initTilemapRadius(tm, initRadius);
+                            tm.setMinMaxSpeed(minRotationSpeed, maxRotationSpeed);
+                            tm.setAutoRotation(autoRotationEnabled);
+                            tm.setInitialized(true);
 
-                    prefs.flush();
-                    gameScreen.buildRound();
-                    gameInstance.setScreen(gameScreen);
+                            movingTileManager.setBallGenerationEnabled(true);
+                            movingTileManager.setLaunchDelay(sldrLauncherCooldown.getValue());
+                            movingTileManager.setActiveState(true);
+                            movingTileManager.setAutoEject(autoEjectEnabled);
+                            movingTileManager.setDefaultBallSpeed((int) ballSpeedSlider.getValue());
+
+                            levelSettings.launcherCooldown = sldrLauncherCooldown.getValue();
+                            levelSettings.ballSpeed = (int) ballSpeedSlider.getValue();
+                            levelSettings.gameMode = spinTheCoreEnabled ? GameMode.SPIN_THE_CORE : GameMode.CLASSIC;
+                            levelSettings.isMovesEnabled = cbUseMoves.isChecked();
+                            levelSettings.moveCount = Integer.parseInt(tfMoves.getText());
+                            levelSettings.isTimeEnabled = cbUseTime.isChecked();
+                            levelSettings.timeAmount = Integer.parseInt(tfTime.getText());
+                            levelSettings.isLivesEnabled = cbUseLives.isChecked();
+                            levelSettings.livesAmount = Integer.parseInt(tfLives.getText());
+
+                            prefs.putBoolean("spinthecore_enabled", spinTheCoreEnabled);
+                            prefs.putInteger("init_radius", initRadius);
+                            prefs.putFloat("min_rotation_speed", minRotationSpeed);
+                            prefs.putFloat("max_rotation_speed", maxRotationSpeed);
+                            prefs.putFloat("launcher_cooldown", levelSettings.launcherCooldown);
+                            prefs.putFloat("ball_speed", levelSettings.ballSpeed);
+                            prefs.putBoolean("moves_enabled", levelSettings.isMovesEnabled);
+                            prefs.putInteger("move_count", levelSettings.moveCount);
+                            prefs.putBoolean("time_enabled", levelSettings.isTimeEnabled);
+                            prefs.putInteger("time_amount",levelSettings.timeAmount);
+                            prefs.putBoolean("lives_enabled", levelSettings.isLivesEnabled);
+                            prefs.putInteger("lives_amount", levelSettings.livesAmount);
+                            prefs.flush();
+
+                        }
+
+                        @Override
+                        public void update(float delta, TilemapManager tilemapManager) {
+
+                        }
+
+                        @Override
+                        public int getLevelNumber() {
+                            return 999;
+                        }
+
+                        @Override
+                        public void end(boolean roundWon, StatsManager statsManager) {
+                        }
+                    };
+
+
+                    gameScreen.deployLevel(dbLevel);
                 }
             });
             mainTable.add(tbtn).width(250).height(200).align(Align.right);

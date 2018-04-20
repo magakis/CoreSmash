@@ -133,6 +133,7 @@ public class MovingTileManager extends Observable {
         launcher.last().getTile().setColor(colorId);
     }
 
+
     public void eject() {
         if (launchDelayCounter == 0) {
             if (launcher.size > 0) {
