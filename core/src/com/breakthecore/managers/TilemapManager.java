@@ -17,6 +17,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Random;
 
 /**
  * The TilemapManager is responsible for every interaction with the Tilemaps and provides the
@@ -239,16 +240,26 @@ public class TilemapManager extends Observable implements Observer {
      * can be used in arbitrary coordinates */
     public class TilemapGenerator {
         private TilemapManager tilemapManager;
+        private Random rand = new Random();
+        private int colorCount;
 
         private TilemapGenerator(TilemapManager tilemapManager) {
             this.tilemapManager = tilemapManager;
+        }
+
+        public void init(int colorCount) {
+            this.colorCount = colorCount;
+        }
+        public void init(int colorCount, long seed) {
+            this.colorCount = colorCount;
+            rand.setSeed(seed);
         }
 
         public void generateRadius(Tilemap tm, int radius) {
             for (int y = -radius - 1; y < radius + 1; ++y) {
                 for (int x = -radius - 1; x < radius + 1; ++x) {
                     if (pathfinder.getTileDistance(x, y, 0, 0) <= radius) {
-                        tm.setRelativeTile(x, y, createTilemapTile(new RegularTile()));
+                        tm.setRelativeTile(x, y, createTilemapTile(new RegularTile(rand.nextInt(colorCount))));
                     }
                 }
             }
@@ -259,7 +270,7 @@ public class TilemapManager extends Observable implements Observer {
             for (int y = -size; y <= size; ++y) {
                 signFix = y > 0 ? 1 : 0;
                 for (int x = -size; x <= size; ++x) {
-                    tm.setRelativeTile(x - (y + signFix) / 2, y, createTilemapTile(new RegularTile()));
+                    tm.setRelativeTile(x - (y + signFix) / 2, y, createTilemapTile(new RegularTile(rand.nextInt(colorCount))));
                 }
             }
         }
@@ -272,7 +283,7 @@ public class TilemapManager extends Observable implements Observer {
                 absY = Math.abs(y);
                 fixSign = y < 0 ? absY : 0;
                 for (int x = -size; x <= size - absY; ++x) {
-                    tm.setRelativeTile(x + fixSign, y, createTilemapTile(new RegularTile()));
+                    tm.setRelativeTile(x + fixSign, y, createTilemapTile(new RegularTile(rand.nextInt(colorCount))));
                 }
             }
         }
@@ -281,13 +292,13 @@ public class TilemapManager extends Observable implements Observer {
             if (flipX) {
                 for (int y = -size; y <= size; ++y) {
                     for (int x = -size; x <= size; ++x) {
-                        tm.setRelativeTile(x - y, y, createTilemapTile(new RegularTile()));
+                        tm.setRelativeTile(x - y, y, createTilemapTile(new RegularTile(rand.nextInt(colorCount))));
                     }
                 }
             } else {
                 for (int y = -size; y <= size; ++y) {
                     for (int x = -size; x <= size; ++x) {
-                        tm.setRelativeTile(x, y, createTilemapTile(new RegularTile()));
+                        tm.setRelativeTile(x, y, createTilemapTile(new RegularTile(rand.nextInt(colorCount))));
                     }
                 }
             }
@@ -298,13 +309,13 @@ public class TilemapManager extends Observable implements Observer {
             if (flipY) {
                 for (int y = -sizeY; y <= size; ++y) {
                     for (int x = -size-y; x <= size; ++x) {
-                        tm.setRelativeTile(x, y, createTilemapTile(new RegularTile()));
+                        tm.setRelativeTile(x, y, createTilemapTile(new RegularTile(rand.nextInt(colorCount))));
                     }
                 }
             } else {
                 for (int y = -size; y <= sizeY; ++y) {
                     for (int x = -size; x <= size - y; ++x) {
-                        tm.setRelativeTile(x, y, createTilemapTile(new RegularTile()));
+                        tm.setRelativeTile(x, y, createTilemapTile(new RegularTile(rand.nextInt(colorCount))));
                     }
                 }
             }
@@ -318,9 +329,9 @@ public class TilemapManager extends Observable implements Observer {
         public void balanceTilemap(Tilemap tm) {
             // XXX(4/3/2018): Rquires a better implementation!
             int totalTiles = tm.getTileCount();
-            int med = totalTiles / 7;
+            int med = totalTiles / colorCount;
             int donateMax, donorSize, size, need;
-            int rand;
+            int randomTile;
 
             Comparator<ColorGroupContainer> comp = new Comparator<ColorGroupContainer>() {
                 @Override
@@ -342,13 +353,13 @@ public class TilemapManager extends Observable implements Observer {
                     if (match.size() > 2) {
                         // XXX(19/4/2018): check its type first through getType()?
                         regularTile = (RegularTile) match.get(match.size() / 2).getTile();
-                        regularTile.setColor(WorldSettings.getRandomInt(7));
+                        regularTile.setColor(rand.nextInt(colorCount));
                     }
                 }
             }
 
-            ColorGroupContainer[] colors = new ColorGroupContainer[7];
-            for (int i = 0; i < 7; ++i) {
+            ColorGroupContainer[] colors = new ColorGroupContainer[colorCount];
+            for (int i = 0; i < colorCount; ++i) {
                 colors[i] = new ColorGroupContainer(i);
             }
 
@@ -361,18 +372,19 @@ public class TilemapManager extends Observable implements Observer {
                 }
             }
 
+            int maxColorArrayIndex = colorCount-1;
             Arrays.sort(colors, comp);
             size = colors[0].list.size();
             while (size < med) { //if it's -1 it crashes
-                donorSize = colors[6].list.size();
+                donorSize = colors[maxColorArrayIndex].list.size();
                 donateMax = donorSize - med;
                 need = med - size;
                 while (donateMax != 0 && need != 0) {
-                    rand = WorldSettings.getRandomInt(donorSize);
-                    regularTile = (RegularTile) colors[6].list.get(rand);
+                    randomTile = WorldSettings.getRandomInt(donorSize);
+                    regularTile = (RegularTile) colors[maxColorArrayIndex].list.get(randomTile);
                     regularTile.setColor(colors[0].groupColor);
                     colors[0].list.add(regularTile);
-                    colors[6].list.remove(regularTile);
+                    colors[maxColorArrayIndex].list.remove(regularTile);
                     --donateMax;
                     --donorSize;
                     --need;

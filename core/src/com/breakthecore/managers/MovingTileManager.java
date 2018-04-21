@@ -42,16 +42,15 @@ public class MovingTileManager extends Observable {
     private float defaultScale;
 
     private boolean isLoadedWithSpecial;
-    private boolean isBallGenerationEnabled;
+    private boolean isLauncherLoadingEnabled;
     private boolean isAutoEjectEnabled;
     private boolean isActive;
 
-    public MovingTileManager(int tileSize, int colorCount) {
+    public MovingTileManager(int tileSize) {
         launcher = new Queue<MovingTile>(3);
         launcherPos = new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() / 5);
         activeList = new LinkedList<MovingTile>();
         this.tileSize = tileSize;
-        this.colorCount = colorCount;
         rand = new Random();
 
         isActive = true;
@@ -108,8 +107,12 @@ public class MovingTileManager extends Observable {
         rand.setSeed(seed);
     }
 
-    public void setBallGenerationEnabled(boolean state) {
-        isBallGenerationEnabled = state;
+    public void setColorCount(int colorCount) {
+        this.colorCount = colorCount;
+    }
+
+    public void setLauncherLoadingEnabled(boolean state) {
+        isLauncherLoadingEnabled = state;
     }
 
     public void setDefaultBallSpeed(int defaultSpeed) {
@@ -194,16 +197,18 @@ public class MovingTileManager extends Observable {
     }
 
     public void loadLauncher() {
-        if (colorSequenceList.hasNext()) {
-            launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * tileSize, new RegularTile(colorSequenceList.getNext())));
-        } else if (isBallGenerationEnabled) {
-            launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * tileSize, createRegularTile()));
+        if (isLauncherLoadingEnabled) {
+            if (colorSequenceList.hasNext()) {
+                launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * tileSize, new RegularTile(colorSequenceList.getNext())));
+            } else {
+                launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * tileSize, createRegularTile()));
+            }
         }
     }
 
     public void initLauncher(int launcherSize) {
         this.launcherSize = launcherSize;
-        while (launcher.size < launcherSize && (isBallGenerationEnabled || colorSequenceList.hasNext())) {
+        while (launcher.size < launcherSize && (isLauncherLoadingEnabled || colorSequenceList.hasNext())) {
             loadLauncher();
         }
     }
@@ -212,7 +217,7 @@ public class MovingTileManager extends Observable {
         isActive = true;
         defaultSpeed = 0;
         launcherCooldown = 0;
-        isBallGenerationEnabled = true;
+        isLauncherLoadingEnabled = true;
 
         Iterator<MovingTile> iter = activeList.iterator();
         MovingTile tile;
@@ -262,19 +267,14 @@ public class MovingTileManager extends Observable {
 
     private RegularTile createRegularTile() {
         // TODO(20/4/2018): Change the name and take the following logic elsewhere
-        RegularTile t = new RegularTile();
+        RegularTile t = new RegularTile(getRandomColor());
 
-        outer:
-        while (true) {
-            for (MovingTile mt : launcher) {
-                if (mt.hasTile()) {
-                    if (mt.getColor() == t.getColor()) {
-                        t.setColor(getRandomColor());
-                        continue outer;
-                    }
+        if (colorCount > 1) {
+            if (launcher.size > 0) {
+                while (launcher.last().getColor() == t.getColor()) {
+                    t.setColor(getRandomColor());
                 }
             }
-            break;
         }
 
         return t;

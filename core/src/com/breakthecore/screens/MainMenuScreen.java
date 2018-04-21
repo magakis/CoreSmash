@@ -306,7 +306,7 @@ public class MainMenuScreen extends ScreenBase {
             });
             attachSliderToTable("Ball Speed", sldrBallSpeed, ballSpeedLbl, settingsTbl);
 
-            sldrLauncherCooldown = new Slider(.16f, 4.8f, .16f, false, skin);
+            sldrLauncherCooldown = new Slider(0f, 4.8f, .16f, false, skin);
             sldrLauncherCooldown.setValue(prefs.getFloat("launcher_cooldown", 0.16f));
             lblLauncherCooldown = new Label(String.format(Locale.ENGLISH,"%.2f",sldrLauncherCooldown.getValue()), skin, "comic_48");
             sldrLauncherCooldown.addListener(new ChangeListener() {
@@ -435,8 +435,10 @@ public class MainMenuScreen extends ScreenBase {
                             int initRadius = (int) radiusSlider.getValue();
                             float minRotationSpeed = minRotSlider.getValue();
                             float maxRotationSpeed = maxRotSlider.getValue();
+                            int colorCount = 7;
 
                             TilemapManager.TilemapGenerator tilemapGenerator = tilemapManager.getTilemapGenerator();
+                            tilemapGenerator.init(colorCount);
 
                             tilemapManager.init(1);
                             Tilemap tm = tilemapManager.getTilemap(0);
@@ -447,7 +449,8 @@ public class MainMenuScreen extends ScreenBase {
                             tm.initialized();
 
                             movingTileManager.setLauncherCooldown(sldrLauncherCooldown.getValue());
-//                            movingTileManager.setAutoEject(spinTheCoreEnabled);
+                            movingTileManager.setColorCount(colorCount);
+                            // movingTileManager.setAutoEject(spinTheCoreEnabled);
                             movingTileManager.setDefaultBallSpeed((int) sldrBallSpeed.getValue());
                             movingTileManager.initLauncher(4);
 

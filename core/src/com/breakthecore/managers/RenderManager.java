@@ -46,15 +46,20 @@ public class RenderManager {
         sideLengthHalf = sideLength / 2.f;
         colorList = new Color[8];
 
-        colorList[0] = new Color(1, 0, 0, 1);
-        colorList[1] = new Color(1, 1, 0, 1);
-        colorList[2] = new Color(1, 1, 1, 1);
-        colorList[3] = new Color(0, 1, 0, 1);
-        colorList[4] = new Color(1, 0, 1, 1);
-        colorList[5] = new Color(0, 1, 1, 1);
-//        colorList[5] = Color.BROWN; // color-blind
-        colorList[6] = new Color(0, 0, 1, 1);
-        colorList[7] = Color.WHITE;
+        colorList[0] = new Color(0xff0000ff);
+        colorList[1] = new Color(0x00ff00ff);
+        colorList[2] = new Color(0x0000ffff);
+        colorList[3] = new Color(0xffff00ff);
+        colorList[4] = new Color(0x00ffffff);
+        colorList[5] = new Color(0xff00ffff);
+        colorList[6] = new Color(0xc0c0c0ff);
+
+//        colorList[1] = new Color(0x3cb44bff);
+//        colorList[2] = new Color(0xffe119ff);
+//        colorList[3] = new Color(0x0082c8ff);
+//        colorList[4] = new Color(0xf58231ff);
+//        colorList[5] = new Color(0x911eb4ff);
+//        colorList[6] = new Color(0x46f0f0ff);
     }
 
     public void start(Matrix4 combined) {

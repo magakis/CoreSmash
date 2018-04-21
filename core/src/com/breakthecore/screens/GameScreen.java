@@ -29,7 +29,6 @@ import com.breakthecore.StreakUI;
 import com.breakthecore.managers.CollisionManager;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observer;
-import com.breakthecore.RoundEndListener;
 import com.breakthecore.managers.TilemapManager;
 import com.breakthecore.managers.MovingTileManager;
 import com.breakthecore.managers.RenderManager;
@@ -67,7 +66,6 @@ public class GameScreen extends ScreenBase implements Observer {
     private Stack rootUIStack;
     //===========
 
-    private int colorCount = 7;
     private int sideLength = WorldSettings.getTileSize();
 
     public GameScreen(BreakTheCoreGame game) {
@@ -76,7 +74,7 @@ public class GameScreen extends ScreenBase implements Observer {
         skin = gameInstance.getSkin();
 
         renderManager = gameInstance.getRenderManager();
-        movingTileManager = new MovingTileManager(sideLength, colorCount);
+        movingTileManager = new MovingTileManager(sideLength);
         collisionManager = new CollisionManager();
 
         tilemapManager = new TilemapManager();
@@ -155,9 +153,9 @@ public class GameScreen extends ScreenBase implements Observer {
             updateStage();
             checkEndingConditions();
 
-            if (statsManager.getMoves() == movingTileManager.getLauncherSize()) {
+            if (statsManager.isMovesEnabled() && statsManager.getMoves() == movingTileManager.getLauncherSize()) {
                 movingTileManager.setLastTileColor(tilemapManager.getTilemap(0).getRelativeTile(0, 0).getColor());
-                movingTileManager.setBallGenerationEnabled(false);
+                movingTileManager.setLauncherLoadingEnabled(false);
             }
         }
     }
