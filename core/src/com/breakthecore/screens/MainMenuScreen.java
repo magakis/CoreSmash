@@ -30,16 +30,15 @@ import com.badlogic.gdx.utils.Scaling;
 import com.breakthecore.BreakTheCoreGame;
 import com.breakthecore.Tilemap;
 import com.breakthecore.WorldSettings;
-import com.breakthecore.levels.AbstractLevel;
+import com.breakthecore.levels.CampaignLevel;
 import com.breakthecore.levels.Level;
 import com.breakthecore.managers.MovingTileManager;
 import com.breakthecore.managers.StatsManager;
 import com.breakthecore.managers.TilemapManager;
+import com.breakthecore.screens.GameScreen.GameMode;
 import com.breakthecore.ui.UIComponent;
 
 import java.util.Locale;
-
-import static com.breakthecore.screens.GameScreen.*;
 
 /**
  * Created by Michail on 16/3/2018.
@@ -223,7 +222,7 @@ public class MainMenuScreen extends ScreenBase {
     }
 
     private class UIGameSettings extends UIComponent {
-        Slider radiusSlider, minRotSlider, maxRotSlider, ballSpeedSlider, sldrLauncherCooldown;
+        Slider radiusSlider, minRotSlider, maxRotSlider, sldrBallSpeed, sldrLauncherCooldown;
         Label radiusLbl, minRotLbl, maxRotLbl, ballSpeedLbl, lblLauncherCooldown;
         CheckBox cbUseMoves, cbUseLives, cbUseTime, cbSpinTheCoreMode;
         TextField tfMoves, tfLives, tfTime;
@@ -296,16 +295,16 @@ public class MainMenuScreen extends ScreenBase {
             });
             attachSliderToTable("Max Rotation Speed", maxRotSlider, maxRotLbl, settingsTbl);
 
-            ballSpeedSlider = new Slider(5, 20, 1, false, skin);
-            ballSpeedSlider.setValue(prefs.getFloat("ball_speed", 15));
-            ballSpeedLbl = new Label(String.valueOf((int) ballSpeedSlider.getValue()), skin, "comic_48");
-            ballSpeedSlider.addListener(new ChangeListener() {
+            sldrBallSpeed = new Slider(5, 20, 1, false, skin);
+            sldrBallSpeed.setValue(prefs.getFloat("ball_speed", 15));
+            ballSpeedLbl = new Label(String.valueOf((int) sldrBallSpeed.getValue()), skin, "comic_48");
+            sldrBallSpeed.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    ballSpeedLbl.setText(String.valueOf((int) ballSpeedSlider.getValue()));
+                    ballSpeedLbl.setText(String.valueOf((int) sldrBallSpeed.getValue()));
                 }
             });
-            attachSliderToTable("Ball Speed", ballSpeedSlider, ballSpeedLbl, settingsTbl);
+            attachSliderToTable("Ball Speed", sldrBallSpeed, ballSpeedLbl, settingsTbl);
 
             sldrLauncherCooldown = new Slider(.16f, 4.8f, .16f, false, skin);
             sldrLauncherCooldown.setValue(prefs.getFloat("launcher_cooldown", 0.16f));
@@ -427,55 +426,49 @@ public class MainMenuScreen extends ScreenBase {
                     if (tfLives.getText().isEmpty()) tfLives.setText("0");
                     if (tfTime.getText().isEmpty()) tfTime.setText("0");
 
-                    Level dbLevel = new AbstractLevel(null) {
+                    Level dbLevel = new CampaignLevel(999,null) {
                         @Override
-                        public void initialize(GameScreen.LevelSettings levelSettings, TilemapManager tilemapManager, MovingTileManager movingTileManager) {
+                        public void initialize(StatsManager statsManager, TilemapManager tilemapManager, MovingTileManager movingTileManager) {
                             Preferences prefs = Gdx.app.getPreferences("game_settings");
 
                             boolean spinTheCoreEnabled = cbSpinTheCoreMode.isChecked();
-                            boolean autoRotationEnabled = !spinTheCoreEnabled;
-                            boolean autoEjectEnabled = spinTheCoreEnabled;
                             int initRadius = (int) radiusSlider.getValue();
                             float minRotationSpeed = minRotSlider.getValue();
                             float maxRotationSpeed = maxRotSlider.getValue();
 
+                            TilemapManager.TilemapGenerator tilemapGenerator = tilemapManager.getTilemapGenerator();
+
                             tilemapManager.init(1);
                             Tilemap tm = tilemapManager.getTilemap(0);
-                            tilemapManager.initTilemapRadius(tm, initRadius);
+                            tilemapGenerator.generateStar(tm, initRadius);
+                            tilemapGenerator.balanceTilemap(tm);
                             tm.setMinMaxSpeed(minRotationSpeed, maxRotationSpeed);
-                            tm.setAutoRotation(autoRotationEnabled);
-                            tm.setInitialized(true);
+                            tm.setAutoRotation(!spinTheCoreEnabled);
+                            tm.initialized();
 
-                            movingTileManager.setBallGenerationEnabled(true);
-                            movingTileManager.setLaunchDelay(sldrLauncherCooldown.getValue());
-                            movingTileManager.setActiveState(true);
-                            movingTileManager.setAutoEject(autoEjectEnabled);
-                            movingTileManager.setDefaultBallSpeed((int) ballSpeedSlider.getValue());
+                            movingTileManager.setLauncherCooldown(sldrLauncherCooldown.getValue());
+//                            movingTileManager.setAutoEject(spinTheCoreEnabled);
+                            movingTileManager.setDefaultBallSpeed((int) sldrBallSpeed.getValue());
 
-                            levelSettings.launcherCooldown = sldrLauncherCooldown.getValue();
-                            levelSettings.ballSpeed = (int) ballSpeedSlider.getValue();
-                            levelSettings.gameMode = spinTheCoreEnabled ? GameMode.SPIN_THE_CORE : GameMode.CLASSIC;
-                            levelSettings.isMovesEnabled = cbUseMoves.isChecked();
-                            levelSettings.moveCount = Integer.parseInt(tfMoves.getText());
-                            levelSettings.isTimeEnabled = cbUseTime.isChecked();
-                            levelSettings.timeAmount = Integer.parseInt(tfTime.getText());
-                            levelSettings.isLivesEnabled = cbUseLives.isChecked();
-                            levelSettings.livesAmount = Integer.parseInt(tfLives.getText());
+                            statsManager.setGameMode(spinTheCoreEnabled ? GameMode.SPIN_THE_CORE : GameMode.CLASSIC);
+                            statsManager.setLives(cbUseLives.isChecked(), Integer.parseInt(tfLives.getText()));
+                            statsManager.setMoves(cbUseMoves.isChecked(), Integer.parseInt(tfMoves.getText()));
+                            statsManager.setTime(cbUseTime.isChecked(), Integer.parseInt(tfTime.getText()));
+                            statsManager.setSpecialBallCount(0);
 
                             prefs.putBoolean("spinthecore_enabled", spinTheCoreEnabled);
                             prefs.putInteger("init_radius", initRadius);
                             prefs.putFloat("min_rotation_speed", minRotationSpeed);
                             prefs.putFloat("max_rotation_speed", maxRotationSpeed);
-                            prefs.putFloat("launcher_cooldown", levelSettings.launcherCooldown);
-                            prefs.putFloat("ball_speed", levelSettings.ballSpeed);
-                            prefs.putBoolean("moves_enabled", levelSettings.isMovesEnabled);
-                            prefs.putInteger("move_count", levelSettings.moveCount);
-                            prefs.putBoolean("time_enabled", levelSettings.isTimeEnabled);
-                            prefs.putInteger("time_amount",levelSettings.timeAmount);
-                            prefs.putBoolean("lives_enabled", levelSettings.isLivesEnabled);
-                            prefs.putInteger("lives_amount", levelSettings.livesAmount);
+                            prefs.putFloat("launcher_cooldown", sldrLauncherCooldown.getValue());
+                            prefs.putFloat("ball_speed", sldrBallSpeed.getValue());
+                            prefs.putBoolean("moves_enabled", cbUseMoves.isChecked());
+                            prefs.putInteger("move_count", Integer.parseInt(tfMoves.getText()));
+                            prefs.putBoolean("time_enabled", cbUseTime.isChecked());
+                            prefs.putInteger("time_amount",Integer.parseInt(tfTime.getText()));
+                            prefs.putBoolean("lives_enabled", cbUseLives.isChecked());
+                            prefs.putInteger("lives_amount", Integer.parseInt(tfLives.getText()));
                             prefs.flush();
-
                         }
 
                         @Override
@@ -484,13 +477,7 @@ public class MainMenuScreen extends ScreenBase {
                         }
 
                         @Override
-                        public int getLevelNumber() {
-                            return 999;
-                        }
-
-                        @Override
-                        public void end(boolean roundWon, StatsManager statsManager) {
-                        }
+                        public void end(boolean roundWon, StatsManager statsManager) {}
                     };
 
 

@@ -1,6 +1,7 @@
 package com.breakthecore.managers;
 
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Queue;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observable;
@@ -20,47 +21,57 @@ import java.util.ListIterator;
 
 public class MovingTileManager extends Observable {
     private Queue<MovingTile> launcher;
+    private Pool<MovingTile> movingTilePool;
     private LinkedList<MovingTile> activeList;
-    private LinkedList<MovingTile> movtPool;
-    private int m_colorCount;
+
+    // XXX(20/4/2018): Feels like the following variables shouldn't be here
+    private int colorCount;
+    private int tileSize;
+    /////////////
+
     private Vector2 launcherPos;
-    private int m_tileSize;
-    private float launchDelay;
-    private float launchDelayCounter;
-    private boolean loadedWithSpecial;
+    private float launcherCooldown;
+    private float launcherCooldownTimer;
+    private boolean isLoadedWithSpecial;
 
     private int defaultSpeed;
-    private float m_defaultScale;
+    private float defaultScale;
 
     private boolean isBallGenerationEnabled;
     private boolean isActive;
-    private boolean m_autoEject;
+    private boolean autoEjectEnabled;
 
     public MovingTileManager(int tileSize, int colorCount) {
         launcher = new Queue<MovingTile>(3);
         launcherPos = new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() / 5);
         activeList = new LinkedList<MovingTile>();
-        movtPool = new LinkedList<MovingTile>();
-        m_tileSize = tileSize;
-        m_colorCount = colorCount;
+        this.tileSize = tileSize;
+        this.colorCount = colorCount;
         isActive = true;
         defaultSpeed = 15;
-        m_defaultScale = 1/2f;
-        launchDelay = .1f;
+        defaultScale = 1 / 2f;
+        launcherCooldown = .1f;
+
+        movingTilePool = new Pool<MovingTile>() {
+            @Override
+            protected MovingTile newObject() {
+                return new MovingTile(launcherPos, defaultSpeed);
+            }
+        };
     }
 
     public boolean isLoadedWithSpecial() {
-        return loadedWithSpecial;
+        return isLoadedWithSpecial;
     }
 
     public void insertSpecialTile(Tile.TileType tileType) {
-        if (!loadedWithSpecial) {
+        if (!isLoadedWithSpecial) {
             switch (tileType) {
                 case BOMB:
                     //TODO: WORK ON THIS
-                    launcher.addFirst(createMovingTile(launcherPos.x, launcherPos.y + m_tileSize, new BombTile()));
+                    launcher.addFirst(createMovingTile(launcherPos.x, launcherPos.y + tileSize, new BombTile()));
                     launcher.first().setScale(1);
-                    loadedWithSpecial = true;
+                    isLoadedWithSpecial = true;
                     break;
             }
         }
@@ -89,14 +100,14 @@ public class MovingTileManager extends Observable {
         if (isActive) {
             updateActiveList(delta);
 
-            if (launchDelayCounter > 0) {
-                if (launchDelayCounter - delta < 0)
-                    launchDelayCounter = 0;
+            if (launcherCooldownTimer > 0) {
+                if (launcherCooldownTimer - delta < 0)
+                    launcherCooldownTimer = 0;
                 else
-                    launchDelayCounter -= delta;
+                    launcherCooldownTimer -= delta;
             }
 
-            if (m_autoEject && launchDelayCounter == 0) {
+            if (autoEjectEnabled && launcherCooldownTimer == 0) {
                 eject();
             }
         }
@@ -107,12 +118,12 @@ public class MovingTileManager extends Observable {
     }
 
     public void setAutoEject(boolean autoEject) {
-        m_autoEject = autoEject;
+        autoEjectEnabled = autoEject;
     }
 
-    public void setLaunchDelay(float delay) {
-        launchDelay = delay;
-        launchDelayCounter = delay;
+    public void setLauncherCooldown(float delay) {
+        launcherCooldown = delay;
+        launcherCooldownTimer = delay;
     }
 
     private void updateActiveList(float delta) {
@@ -122,7 +133,7 @@ public class MovingTileManager extends Observable {
     }
 
     public int getRandomColor() {
-        return (WorldSettings.getRandomInt(m_colorCount));
+        return (WorldSettings.getRandomInt(colorCount));
     }
 
     public Queue<MovingTile> getLauncherQueue() {
@@ -133,37 +144,34 @@ public class MovingTileManager extends Observable {
         launcher.last().getTile().setColor(colorId);
     }
 
-
     public void eject() {
-        if (launchDelayCounter == 0) {
+        if (launcherCooldownTimer == 0) {
             if (launcher.size > 0) {
                 activeList.add(launcher.removeFirst());
 
-                if (!loadedWithSpecial) {
+                if (!isLoadedWithSpecial) {
                     if (launcher.size > 0) {
-                        launcher.last().setPositionInWorld(launcherPos.x, launcherPos.y - m_tileSize);
+                        launcher.last().setPositionInWorld(launcherPos.x, launcherPos.y - tileSize);
                         launcher.first().setPositionInWorld(launcherPos.x, launcherPos.y);
                     }
                     if (isBallGenerationEnabled) {
-                        launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - 2 * m_tileSize, createRegularTile()));
+                        launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - 2 * tileSize, createRegularTile()));
                     }
                     notifyObservers(NotificationType.BALL_LAUNCHED, null);
                 } else {
-                    loadedWithSpecial = false;
+                    isLoadedWithSpecial = false;
                 }
 
-                launchDelayCounter = launchDelay;
-            } else {
-                throw new NullPointerException("WTF?");
+                launcherCooldownTimer = launcherCooldown;
             }
         }
     }
 
     public void reset() {
-        isActive = false;
+        isActive = true;
         defaultSpeed = 0;
-        launchDelay = 0;
-        isBallGenerationEnabled = false;
+        launcherCooldown = 0;
+        isBallGenerationEnabled = true;
 
         Iterator<MovingTile> iter = activeList.iterator();
         MovingTile tile;
@@ -173,7 +181,7 @@ public class MovingTileManager extends Observable {
             if (tile.getFlag()) {
                 tile.setFlag(false);
             }
-            movtPool.add(tile);
+            movingTilePool.free(tile);
             iter.remove();
         }
 
@@ -181,12 +189,12 @@ public class MovingTileManager extends Observable {
         while (iter.hasNext()) {
             tile = iter.next();
             tile.extractTile(); //TODO: Remove tile in a pool of tiles
-            movtPool.add(tile);
+            movingTilePool.free(tile);
             iter.remove();
         }
 
         while (launcher.size < 3) {
-            launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * m_tileSize, createRegularTile()));
+            launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * tileSize, createRegularTile()));
         }
     }
 
@@ -207,7 +215,7 @@ public class MovingTileManager extends Observable {
                 // NOTE: It's questionable whether I want to remove the observes since MovingTiles
                 // practically never get disposed. They are pooled.
 //                tile.clearObserverList();
-                movtPool.add(tile);
+                movingTilePool.free(tile);
                 iter.remove();
             }
         }
@@ -215,19 +223,16 @@ public class MovingTileManager extends Observable {
 
     private MovingTile createMovingTile(float x, float y, Tile tile) {
         MovingTile res;
-        if (movtPool.size() > 0) {
-            res = movtPool.removeFirst();
-            res.setPositionInWorld(x, y);
-            res.setTile(tile);
-            res.setSpeed(defaultSpeed);
-            res.setScale(m_defaultScale);
-        } else {
-            res = new MovingTile(x, y, defaultSpeed, tile);
-        }
+        res = movingTilePool.obtain();
+        res.setPositionInWorld(x, y);
+        res.setTile(tile);
+        res.setSpeed(defaultSpeed);
+        res.setScale(defaultScale);
         return res;
     }
 
     private RegularTile createRegularTile() {
+        // TODO(20/4/2018): Change the name and take the following logic elsewhere
         RegularTile t = new RegularTile();
 
         outer:

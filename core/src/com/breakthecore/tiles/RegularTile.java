@@ -16,12 +16,12 @@ public class RegularTile extends Tile {
     @Override
     public void onCollide(MovingTile movingTile, TilemapTile tileHit, int layer, TilemapManager tilemapManager, CollisionManager collisionManager) {
         Tilemap tm = tilemapManager.getTilemap(layer);
-        Vector2 direction = collisionManager.getDirection(movingTile.m_positionInWorld, tileHit.m_positionInWorld);
+        Vector2 direction = collisionManager.getDirection(movingTile.positionInWorld, tileHit.positionInWorld);
 
         tilemapManager.attachTile(
                 layer,
                 movingTile.extractTile(),
-                tileHit.getRelativePosition(),
+                tileHit,
                 collisionManager.getClosestSides(tm.getCos(), tm.getSin(), direction)
         );
 

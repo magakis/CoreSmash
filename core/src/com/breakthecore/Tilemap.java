@@ -8,6 +8,7 @@ import com.breakthecore.tiles.TilemapTile;
  */
 
 public class Tilemap {
+    private int ID;
     private int tilesPerSide;
     private int tileSize;
     private float tileSizeHalf;
@@ -15,11 +16,10 @@ public class Tilemap {
     private Coords2D screenPosition;
     private TilemapTile[][] listTilemapTiles;
 
+    private boolean hadTilesDestroyed;
     private boolean isInitilized;
-    public boolean needsValidation;
 
     private float rotation;
-
     private boolean autoRotationEnabled;
     private float minRotationSpeed;
     private float maxRotationSpeed;
@@ -31,9 +31,9 @@ public class Tilemap {
     private int initTileCount;
     private int tileCount;
 
-    public Tilemap() {
+    private Tilemap(int id) {
+        ID = id;
         tilesPerSide = 30; // NOTE: If this is changed, change it also in pathfinder!
-        screenPosition = new Coords2D(WorldSettings.getWorldWidth()/2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
         tileSize = WorldSettings.getTileSize();
         tileSizeHalf = tileSize / 2.f;
         centerTile = tilesPerSide / 2;
@@ -42,15 +42,29 @@ public class Tilemap {
         sin = 0;
     }
 
+    public Tilemap(int id, int posX, int posY) {
+        this(id);
+        screenPosition = new Coords2D(posX, posY);
+    }
+
+    public Tilemap(int id, Coords2D screenPos) {
+        this(id);
+        screenPosition = screenPos;
+    }
+
     public int getCenterTilePos() {
         return centerTile;
     }
 
-    public int getTilesPerSide() {
+    public int getId() {
+        return ID;
+    }
+
+    public int getTilemapSize() {
         return tilesPerSide;
     }
 
-    public int getSideLength() {
+    public int getTileSize() {
         return tileSize;
     }
 
@@ -92,11 +106,11 @@ public class Tilemap {
         speedDiff = max-min;
     }
 
-    public void setTileLiteral(int x, int y, TilemapTile tile) {
-        setTilemapTile(x - centerTile, y - centerTile, tile);
+    public void setAbsoluteTile(int x, int y, TilemapTile tile) {
+        setRelativeTile(x - centerTile, y - centerTile, tile);
     }
 
-    public void setTilemapTile(int x, int y, TilemapTile tile) {
+    public void setRelativeTile(int x, int y, TilemapTile tile) {
         if (tile == null) return;
 
         if (getRelativeTile(x, y) == null) {
@@ -107,7 +121,7 @@ public class Tilemap {
         }
 
         tile.setPositionInTilemap(x, y, centerTile);
-
+        tile.setTilemapId(ID);
         updateTilemapTile(tile);
 
         listTilemapTiles[centerTile + y][centerTile + x] = tile;
@@ -128,7 +142,7 @@ public class Tilemap {
         }
     }
 
-    public void setInitialized(boolean state) {
+    public void initialized() {
         isInitilized = true;
     }
 
@@ -142,11 +156,11 @@ public class Tilemap {
         if (tileX == 0 && tileY == 0) {
             t.notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
         }
-        t.notifyObservers(NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED, null);
+        t.notifyObservers(NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED, t);
         t.clear();
         emptyRelativeTile(tileX, tileY);
         --tileCount;
-        needsValidation = true;
+        hadTilesDestroyed = true;
     }
 
     public void rotate(float deg) {
@@ -167,7 +181,6 @@ public class Tilemap {
         minRotationSpeed = 0;
         maxRotationSpeed = 0;
         isInitilized = false;
-        needsValidation = false;
         speedDiff = 0;
         initTileCount = 0;
         tileCount = 0;
@@ -177,12 +190,17 @@ public class Tilemap {
     }
 
     public void update(float delta) {
+        hadTilesDestroyed = false;
         if (autoRotationEnabled) {
             rotate(MathUtils.clamp(maxRotationSpeed - speedDiff * ((float)tileCount / initTileCount), minRotationSpeed, maxRotationSpeed) * delta);
         }
     }
 
-    public void updateTilemapTile(TilemapTile hex) {
+    public boolean hadTilesDestroyed() {
+        return  hadTilesDestroyed;
+    }
+
+    private void updateTilemapTile(TilemapTile hex) {
         Coords2D tilePos = hex.getRelativePosition();
         float x = tilePos.x;
         float y = tilePos.y;

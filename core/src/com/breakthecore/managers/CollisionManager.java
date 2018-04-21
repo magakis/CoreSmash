@@ -3,7 +3,6 @@ package com.breakthecore.managers;
 import com.badlogic.gdx.math.Vector2;
 import com.breakthecore.Tilemap;
 import com.breakthecore.tiles.MovingTile;
-import com.breakthecore.tiles.Tile;
 import com.breakthecore.tiles.TileContainer;
 import com.breakthecore.tiles.TilemapTile;
 
@@ -37,8 +36,8 @@ public class CollisionManager {
 
     public TilemapTile findCollision(Tilemap tm, MovingTile moveTile) {
         float minDist;
-        int sideHalf = tm.getSideLength() / 2;
-        int tilesPerSide = tm.getTilesPerSide();
+        int sideHalf = tm.getTileSize() / 2;
+        int tilesPerSide = tm.getTilemapSize();
         Vector2 movhexPos;
 
         movhexPos = moveTile.getPositionInWorld();

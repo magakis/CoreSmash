@@ -7,10 +7,9 @@ import com.breakthecore.managers.StatsManager;
 import com.breakthecore.managers.TilemapManager;
 import com.breakthecore.screens.GameScreen;
 
-public class Level1 extends CampaignLevel implements Level {
-
-    public Level1(RoundEndListener roundEndListener) {
-        super(1,roundEndListener);
+public class Level2 extends CampaignLevel {
+    public Level2(RoundEndListener roundEndListener) {
+        super(2, roundEndListener);
     }
 
     @Override
@@ -22,7 +21,9 @@ public class Level1 extends CampaignLevel implements Level {
         tm = tilemapManager.getTilemap(0);
         tm.setMinMaxSpeed(40, 70);
         tm.setAutoRotation(true);
-        tilemapGenerator.generateRadius(tm, 3);
+        tilemapGenerator.generateSquareSkewed(tm, 3, false);
+        tilemapGenerator.generateSquareSkewed(tm, 3, true);
+        tilemapGenerator.generateDiamond(tm, 3);
         tilemapGenerator.balanceTilemap(tm);
         tm.initialized();
 
@@ -32,10 +33,11 @@ public class Level1 extends CampaignLevel implements Level {
         statsManager.setGameMode(GameScreen.GameMode.CLASSIC);
         statsManager.setMoves(true,  tm.getTileCount());
         statsManager.setSpecialBallCount(0);
+
     }
 
     @Override
-    public void update(float delta, TilemapManager tmm) {
+    public void update(float delta, TilemapManager tilemapManager) {
 
     }
 }

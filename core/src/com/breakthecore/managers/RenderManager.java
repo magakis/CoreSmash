@@ -108,7 +108,7 @@ public class RenderManager {
 
     public void draw(Tilemap tm) {
         Vector2 pos;
-        int tilesPerSide = tm.getTilesPerSide();
+        int tilesPerSide = tm.getTilemapSize();
         float rotation = tm.getRotation();
         int texWidth = texture.getWidth();
         int texHeight = texture.getHeight();
@@ -130,8 +130,8 @@ public class RenderManager {
 
     public void DBdraw(CollisionManager cm, Tilemap tm) {
         Vector2 pos;
-        int tilesPerSide = tm.getTilesPerSide();
-        int sideLen = tm.getSideLength() / 2;
+        int tilesPerSide = tm.getTilemapSize();
+        int sideLen = tm.getTileSize() / 2;
 
         m_shapeRenderer.setColor(Color.WHITE);
         m_shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);

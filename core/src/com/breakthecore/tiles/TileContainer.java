@@ -12,10 +12,10 @@ public class TileContainer extends Observable {
     public static final float[] s_vertices = generateVertices(30);
     protected Tile m_tile;
 
-    protected Vector2 m_positionInWorld;
+    protected Vector2 positionInWorld;
 
     public TileContainer() {
-        m_positionInWorld = new Vector2();
+        positionInWorld = new Vector2();
     }
 
     private static float[] generateVertices(float atAngleDeg) {
@@ -32,11 +32,11 @@ public class TileContainer extends Observable {
     }
 
     public Vector2 getPositionInWorld() {
-        return m_positionInWorld;
+        return positionInWorld;
     }
 
     public void setPositionInWorld(float x, float y) {
-        m_positionInWorld.set(x, y);
+        positionInWorld.set(x, y);
     }
 
     public void setTile(Tile tile) {

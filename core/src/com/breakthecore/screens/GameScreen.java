@@ -33,7 +33,6 @@ import com.breakthecore.RoundEndListener;
 import com.breakthecore.managers.TilemapManager;
 import com.breakthecore.managers.MovingTileManager;
 import com.breakthecore.managers.RenderManager;
-import com.breakthecore.Tilemap;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.tiles.MovingTile;
 import com.breakthecore.ui.UIComponent;
@@ -52,10 +51,9 @@ public class GameScreen extends ScreenBase implements Observer {
     private StatsManager statsManager;
     private StreakUI streakUI;
 
-    private LevelSettings config;
     private Level activeLevel;
 
-    private InputProcessor m_classicGestureDetector, m_spinTheCoreGestureDetector, m_debugGestureDetector;
+    private InputProcessor gameGestureDetector;
 
     private boolean isGameActive;
     private boolean roundWon;
@@ -77,20 +75,15 @@ public class GameScreen extends ScreenBase implements Observer {
         m_camera = (OrthographicCamera) gameInstance.getWorldViewport().getCamera();
         skin = gameInstance.getSkin();
 
-        config = new LevelSettings();
-
         renderManager = gameInstance.getRenderManager();
         movingTileManager = new MovingTileManager(sideLength, colorCount);
         collisionManager = new CollisionManager();
 
         tilemapManager = new TilemapManager();
 
-        m_classicGestureDetector = new CustomGestureDetector(new ClassicModeInputListener());
-        m_spinTheCoreGestureDetector = new CustomGestureDetector(new SpinTheCoreModeInputListener(tilemapManager.getTilemap(0).getPositionInWorld()));
-        m_debugGestureDetector = new CustomGestureDetector(new DebugModeInputListener());
+        gameGestureDetector = new CustomGestureDetector(new GameInputListener());
 
         isGameActive = true;
-        config = new LevelSettings();
 
         statsManager = new StatsManager();
 
@@ -111,39 +104,23 @@ public class GameScreen extends ScreenBase implements Observer {
         rootUIStack = new Stack();
         rootUIStack.setFillParent(true);
         stage.addActor(rootUIStack);
+
+        screenInputMultiplexer.addProcessor(stage);
+        screenInputMultiplexer.addProcessor(gameGestureDetector);
     }
 
     private void checkEndingConditions() {
         if (roundWon) {
             endGame();
         }
-
-        if (config.isTimeEnabled && statsManager.getTime() < 0) {
+        if (statsManager.isTimeEnabled() && statsManager.getTime() < 0) {
             endGame();
         }
-        if (config.isLivesEnabled && statsManager.getLives() == 0) {
+        if (statsManager.isLivesEnabled() && statsManager.getLives() == 0) {
             endGame();
         }
-        if (config.isMovesEnabled && statsManager.getMoves() == 0 && movingTileManager.getActiveList().size() == 0) {
+        if (statsManager.isMovesEnabled() && statsManager.getMoves() == 0 && movingTileManager.getActiveList().size() == 0) {
             endGame();
-        }
-    }
-
-    private void setInputHanlderFor(GameMode mode) {
-        screenInputMultiplexer.clear();
-        screenInputMultiplexer.addProcessor(stage);
-        switch (mode) {
-            case SHOOT_EM_UP:
-                screenInputMultiplexer.addProcessor(m_debugGestureDetector);
-                break;
-
-            case CLASSIC:
-                screenInputMultiplexer.addProcessor(m_classicGestureDetector);
-                break;
-
-            case SPIN_THE_CORE:
-                screenInputMultiplexer.addProcessor(m_spinTheCoreGestureDetector);
-                break;
         }
     }
 
@@ -174,10 +151,6 @@ public class GameScreen extends ScreenBase implements Observer {
             tilemapManager.update(delta);
             collisionManager.checkForCollision(movingTileManager, tilemapManager);
 
-            if (!roundWon) { // If center tile has been destroyed, EVERY tile is disconnected
-                tilemapManager.checkForDisconnectedTiles();
-            }
-
             statsManager.update(delta);
             updateStage();
             checkEndingConditions();
@@ -191,7 +164,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private void updateStage() {
         stage.act();
-        if (config.isTimeEnabled) {
+        if (statsManager.isTimeEnabled()) {
             float time = statsManager.getTime();
             gameUI.lblTime.setText(String.format("%d:%02d", (int) time / 60, (int) time % 60));
         }
@@ -223,83 +196,24 @@ public class GameScreen extends ScreenBase implements Observer {
 //            }
         }
 
-        if (config.onRoundEndListener != null) {
-            config.onRoundEndListener.onRoundEnded(roundWon);
-        }
         if (activeLevel != null) {
             Preferences prefs = Gdx.app.getPreferences("highscores");
-            if (score > prefs.getInteger("level"+activeLevel.getLevelNumber(), 0)) {
-                prefs.putInteger("level"+activeLevel.getLevelNumber(), score);
+            if (score > prefs.getInteger("level" + activeLevel.getLevelNumber(), 0)) {
+                prefs.putInteger("level" + activeLevel.getLevelNumber(), score);
                 prefs.flush();
             }
             activeLevel.end(roundWon, statsManager);
         }
     }
 
-    public void buildRound() {
-        movingTileManager.setActiveState(true);
-
-        statsManager.setLives(config.isLivesEnabled, config.livesAmount);
-        statsManager.setMoves(config.isMovesEnabled, config.moveCount);
-        statsManager.setTime(config.isTimeEnabled, config.timeAmount);
-        statsManager.setSpecialBallCount(2);
-
-        gameUI.setup();
-        gameUI.lblHighscore.setText("" );
-        gameUI.lblLives.setText(String.valueOf(statsManager.getLives()));
-        gameUI.tbPower1.setText(String.valueOf(statsManager.getSpecialBallCount()));
-        gameUI.lblMoves.setText(String.valueOf(statsManager.getMoves()));
-
-        rootUIStack.add(gameUI.getRoot());
-        rootUIStack.add(streakUI.getRoot());
-        stage.addActor(rootUIStack);
-        setInputHanlderFor(config.gameMode);
-
-        isGameActive = true;
-    }
-
-    private void initManagers() {
-        movingTileManager.setActiveState(true);
-        movingTileManager.setBallGenerationEnabled(true);
-        movingTileManager.setAutoEject(config.gameMode != GameMode.CLASSIC);
-        movingTileManager.setDefaultBallSpeed(config.ballSpeed);
-        movingTileManager.setLaunchDelay(config.launcherCooldown);
-
-        statsManager.setLives(config.isLivesEnabled, config.livesAmount);
-        statsManager.setMoves(config.isMovesEnabled, config.moveCount);
-        statsManager.setTime(config.isTimeEnabled, config.timeAmount);
-        statsManager.setSpecialBallCount(0);
-
-        gameUI.setup();
-        if (activeLevel != null) {
-            gameUI.lblHighscore.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("level"+activeLevel.getLevelNumber(),0)));
-        }
-        gameUI.lblLives.setText(String.valueOf(statsManager.getLives()));
-        gameUI.tbPower1.setText(String.valueOf(statsManager.getSpecialBallCount()));
-        gameUI.lblMoves.setText(String.valueOf(statsManager.getMoves()));
-
-        rootUIStack.add(gameUI.getRoot());
-        rootUIStack.add(streakUI.getRoot());
-        stage.addActor(rootUIStack);
-        setInputHanlderFor(config.gameMode);
-
-        isGameActive = true;
-
-    }
-
     public void deployLevel(Level level) {
         reset();
         activeLevel = level;
-        level.initialize(config, tilemapManager, movingTileManager);
-
-        statsManager.setLives(config.isLivesEnabled, config.livesAmount);
-        statsManager.setMoves(config.isMovesEnabled, config.moveCount);
-        statsManager.setTime(config.isTimeEnabled, config.timeAmount);
-        statsManager.setSpecialBallCount(0);
+        level.initialize(statsManager, tilemapManager, movingTileManager);
 
         gameUI.setup();
         if (activeLevel != null) {
-            gameUI.lblHighscore.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("level"+activeLevel.getLevelNumber(),0)));
+            gameUI.lblHighscore.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("level" + activeLevel.getLevelNumber(), 0)));
         }
         gameUI.lblLives.setText(String.valueOf(statsManager.getLives()));
         gameUI.tbPower1.setText(String.valueOf(statsManager.getSpecialBallCount()));
@@ -308,15 +222,9 @@ public class GameScreen extends ScreenBase implements Observer {
         rootUIStack.add(gameUI.getRoot());
         rootUIStack.add(streakUI.getRoot());
         stage.addActor(rootUIStack);
-        setInputHanlderFor(config.gameMode);
 
         isGameActive = true;
         gameInstance.setScreen(this);
-    }
-
-    public LevelSettings setupRound() {
-        reset();
-        return config;
     }
 
     private void reset() {
@@ -324,7 +232,6 @@ public class GameScreen extends ScreenBase implements Observer {
         movingTileManager.reset();
         statsManager.reset();
         streakUI.reset();
-        config.reset();
 
         isGameActive = false;
         roundWon = false;
@@ -363,130 +270,15 @@ public class GameScreen extends ScreenBase implements Observer {
         }
     }
 
-    private class ClassicModeInputListener implements GestureDetector.GestureListener {
-
-        @Override
-        public boolean touchDown(float x, float y, int pointer, int button) {
-            return false;
-        }
-
-        @Override
-        public boolean tap(float x, float y, int count, int button) {
-            if (statsManager.getMoves() > 0) {
-                movingTileManager.eject();
-            }
-            return true;
-        }
-
-        @Override
-        public boolean longPress(float x, float y) {
-            return false;
-        }
-
-        @Override
-        public boolean fling(float velocityX, float velocityY, int button) {
-            return false;
-        }
-
-        @Override
-        public boolean pan(float x, float y, float deltaX, float deltaY) {
-//        MovingTile mt = movingTileManager.getFirstActiveTile();
-//        if (mt == null) {
-//            movingTileManager.eject();
-//            mt = movingTileManager.getFirstActiveTile();
-//        }
-//        mt.moveBy(deltaX, -deltaY);
-            return true;
-        }
-
-        @Override
-        public boolean panStop(float x, float y, int pointer, int button) {
-            return false;
-        }
-
-        @Override
-        public boolean zoom(float initialDistance, float distance) {
-            return false;
-        }
-
-        @Override
-        public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
-            return false;
-        }
-
-        @Override
-        public void pinchStop() {
-
-        }
-
-    }
-
-    private class DebugModeInputListener implements GestureDetector.GestureListener {
-
-        @Override
-        public boolean touchDown(float x, float y, int pointer, int button) {
-            return false;
-        }
-
-        @Override
-        public boolean tap(float x, float y, int count, int button) {
-//            movingTileManager.eject();
-            return true;
-        }
-
-        @Override
-        public boolean longPress(float x, float y) {
-            return false;
-        }
-
-        @Override
-        public boolean fling(float velocityX, float velocityY, int button) {
-            return false;
-        }
-
-        @Override
-        public boolean pan(float x, float y, float deltaX, float deltaY) {
-            MovingTile mt = movingTileManager.getFirstActiveTile();
-            if (mt == null) {
-                movingTileManager.eject();
-                mt = movingTileManager.getFirstActiveTile();
-            }
-            mt.moveBy(deltaX, -deltaY);
-            return true;
-        }
-
-        @Override
-        public boolean panStop(float x, float y, int pointer, int button) {
-            return false;
-        }
-
-        @Override
-        public boolean zoom(float initialDistance, float distance) {
-            return false;
-        }
-
-        @Override
-        public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
-            return false;
-        }
-
-        @Override
-        public void pinchStop() {
-
-        }
-
-    }
-
-    private class SpinTheCoreModeInputListener implements GestureDetector.GestureListener {
-
+    private class GameInputListener implements GestureDetector.GestureListener {
         private boolean isPanning;
         private Coords2D tmPos;
         private Vector3 scrPos;
         private float initAngle;
         private Vector2 currPoint;
 
-        public SpinTheCoreModeInputListener(Coords2D tilemapPos) {
-            tmPos = tilemapPos;
+        public GameInputListener() {
+            tmPos = tilemapManager.getTilemapPosition();
             scrPos = new Vector3();
             currPoint = new Vector2();
         }
@@ -498,7 +290,12 @@ public class GameScreen extends ScreenBase implements Observer {
 
         @Override
         public boolean tap(float x, float y, int count, int button) {
-            return false;
+            switch (statsManager.getGameMode()) {
+                case CLASSIC:
+                        movingTileManager.eject();
+                    break;
+            }
+            return true;
         }
 
         @Override
@@ -513,30 +310,47 @@ public class GameScreen extends ScreenBase implements Observer {
 
         @Override
         public boolean pan(float x, float y, float deltaX, float deltaY) {
-            if (isGameActive) {
-                if (isPanning) {
-                    float currAngle;
-                    scrPos.set(x, y, 0);
-                    scrPos = m_camera.unproject(scrPos);
-                    currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
-                    currAngle = currPoint.angle();
-                    tilemapManager.getTilemap(0).rotate((initAngle - currAngle) * 2.5f);
-                    initAngle = currAngle;
-                } else {
-                    isPanning = true;
-                    scrPos.set(x, y, 0);
-                    scrPos = m_camera.unproject(scrPos);
-                    currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
-                    initAngle = currPoint.angle();
-                }
-                return true;
+            switch (statsManager.getGameMode()) {
+                case SPIN_THE_CORE:
+                    // FIXME (21/4/2018) : There is a very evident bug here if you try the gamemode and spin it
+                    if (isGameActive) {
+                        if (isPanning) {
+                            float currAngle;
+                            scrPos.set(x, y, 0);
+                            scrPos = m_camera.unproject(scrPos);
+                            currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
+                            currAngle = currPoint.angle();
+                            tilemapManager.getTilemap(0).rotate((initAngle - currAngle) * 2.5f);
+                            initAngle = currAngle;
+                        } else {
+                            isPanning = true;
+                            scrPos.set(x, y, 0);
+                            scrPos = m_camera.unproject(scrPos);
+                            currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
+                            initAngle = currPoint.angle();
+                        }
+                    }
+                    break;
+
+                case SHOOT_EM_UP:
+                    MovingTile mt = movingTileManager.getFirstActiveTile();
+                    if (mt == null) {
+                        movingTileManager.eject();
+                        mt = movingTileManager.getFirstActiveTile();
+                    }
+                    mt.moveBy(deltaX, -deltaY);
+                    break;
             }
-            return false;
+            return true;
         }
 
         @Override
         public boolean panStop(float x, float y, int pointer, int button) {
-            isPanning = false;
+            switch (statsManager.getGameMode()) {
+                case SPIN_THE_CORE:
+                    isPanning = false;
+                    break;
+            }
             return false;
         }
 
@@ -554,8 +368,6 @@ public class GameScreen extends ScreenBase implements Observer {
         public void pinchStop() {
 
         }
-
-
     }
 
     private class CustomGestureDetector extends GestureDetector {
@@ -578,8 +390,8 @@ public class GameScreen extends ScreenBase implements Observer {
     public enum GameMode {
         CLASSIC,
         SPIN_THE_CORE,
-        SHOOT_EM_UP;
-
+        SHOOT_EM_UP,
+        DEBUG
     }
 
     private class GameUI extends UIComponent {
@@ -671,15 +483,16 @@ public class GameScreen extends ScreenBase implements Observer {
             tblMain.clear();
             grpTop.clear();
 
-            lblStaticTime.setVisible(config.isTimeEnabled);
-            tblTime.setVisible(config.isTimeEnabled);
+            lblStaticTime.setVisible(statsManager.isTimeEnabled());
+            tblTime.setVisible(statsManager.isTimeEnabled());
 
             tbPower1.setDisabled(false);
+            tblPowerUps.setVisible(statsManager.getSpecialBallCount() != 0);
 
-            if (config.isLivesEnabled) {
+            if (statsManager.isLivesEnabled()) {
                 grpTop.addActor(grpLives);
             }
-            if (config.isMovesEnabled) {
+            if (statsManager.isMovesEnabled()) {
                 grpTop.addActor(grpMoves);
             }
 
@@ -769,45 +582,6 @@ public class GameScreen extends ScreenBase implements Observer {
             dbtb.add(dblb5).fillX();
 
             setRoot(dbtb);
-        }
-    }
-
-    public class LevelSettings {
-        // disable constructor
-        private LevelSettings() {
-        }
-
-        public GameScreen.GameMode gameMode;
-        public RoundEndListener onRoundEndListener;
-        public int ballSpeed;
-        public float launcherCooldown;
-
-        public boolean isMovesEnabled;
-        public int moveCount;
-
-        public boolean isTimeEnabled;
-        public int timeAmount;
-
-        public boolean isLivesEnabled;
-        public int livesAmount;
-
-        public void reset() {
-            gameMode = null;
-            onRoundEndListener = null;
-
-            ballSpeed = 0;
-            launcherCooldown = 0;
-
-            isMovesEnabled = false;
-            moveCount = 0;
-            isTimeEnabled = false;
-            timeAmount = 0;
-            isLivesEnabled = false;
-            livesAmount = 0;
-        }
-        public void enableMoves(int amount) {
-            isMovesEnabled = true;
-            moveCount = amount;
         }
     }
 }

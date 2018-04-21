@@ -3,15 +3,15 @@ package com.breakthecore.managers;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observable;
 import com.breakthecore.Observer;
+import com.breakthecore.screens.GameScreen;
 import com.breakthecore.tiles.Tile;
 
 import java.util.Random;
 
 public class StatsManager extends Observable implements Observer {
     private Random rand = new Random();
-    private Integer m_scoreAdded;
-
     private int score;
+
     private int lives;
     private float time;
     private int moves;
@@ -20,33 +20,36 @@ public class StatsManager extends Observable implements Observer {
     private boolean isMovesEnabled;
     private boolean isLivesEnabled;
 
-
+    private GameScreen.GameMode gameMode;
     private int specialBallCount;
-
     private int ballsDestroyedThisFrame;
 
-    public void update(float delta) {
-        if (isTimeEnabled) {
-            time -= delta;
-        }
 
+    public void update(float delta) {
         if (ballsDestroyedThisFrame != 0) {
+            int scoreGained;
+            int multiplier = 5;
+
             switch (ballsDestroyedThisFrame) {
+                case 1:
+                case 2:
+                    break;
                 case 3:
-                    m_scoreAdded = ballsDestroyedThisFrame * 10;
-                    score += m_scoreAdded;
-                    notifyObservers(NotificationType.NOTIFICATION_TYPE_SCORE_INCREMENTED, m_scoreAdded);
+                    multiplier = 10;
                     break;
                 case 4:
-                    m_scoreAdded = ballsDestroyedThisFrame * 12;
-                    score += m_scoreAdded;
-                    notifyObservers(NotificationType.NOTIFICATION_TYPE_SCORE_INCREMENTED, m_scoreAdded);
+                    multiplier = 12;
                     break;
                 default:
-                    m_scoreAdded = ballsDestroyedThisFrame * 15;
-                    score += m_scoreAdded;
-                    notifyObservers(NotificationType.NOTIFICATION_TYPE_SCORE_INCREMENTED, m_scoreAdded);
+                    multiplier = 15;
                     break;
+            }
+            scoreGained = ballsDestroyedThisFrame * multiplier;
+            score += scoreGained;
+            notifyObservers(NotificationType.NOTIFICATION_TYPE_SCORE_INCREMENTED, scoreGained);
+
+            if (isTimeEnabled) {
+                time -= delta;
             }
 
             if (isLivesEnabled) {
@@ -63,6 +66,7 @@ public class StatsManager extends Observable implements Observer {
 
     public void reset() {
         score = 0;
+        gameMode = null;
         ballsDestroyedThisFrame = 0;
         specialBallCount = 0;
         isMovesEnabled = false;
@@ -77,16 +81,32 @@ public class StatsManager extends Observable implements Observer {
         return score;
     }
 
-    public float getTime() {
-        return time;
-    }
-
     public int getLives() {
         return lives;
     }
 
     public int getMoves() {
         return moves;
+    }
+
+    public float getTime() {
+        return time;
+    }
+
+    public boolean isMovesEnabled() {
+        return isMovesEnabled;
+    }
+
+    public boolean isLivesEnabled() {
+        return isLivesEnabled;
+    }
+
+    public boolean isTimeEnabled() {
+        return isTimeEnabled;
+    }
+
+    public GameScreen.GameMode getGameMode() {
+        return gameMode;
     }
 
     public int getSpecialBallCount() {
@@ -110,6 +130,14 @@ public class StatsManager extends Observable implements Observer {
 
     public void setSpecialBallCount(int specialBallCount) {
         this.specialBallCount = specialBallCount;
+    }
+
+    public void setGameMode(GameScreen.GameMode mode) {
+        gameMode = mode;
+    }
+
+    public void setRandomSeed(long seed) {
+        rand.setSeed(seed);
     }
 
     public void consumeSpecialBall(MovingTileManager movingTileManager) {

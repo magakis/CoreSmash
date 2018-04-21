@@ -18,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.breakthecore.RoundEndListener;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.levels.Level1;
+import com.breakthecore.levels.Level2;
 
 public class CampaignScreen extends ScreenBase implements RoundEndListener {
     GameScreen gameScreen;
@@ -90,6 +91,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             case 1:
                 gameScreen.deployLevel(new Level1(this));
                 break;
+            case 2:
+                gameScreen.deployLevel(new Level2(this));
             default:
                 return;
         }

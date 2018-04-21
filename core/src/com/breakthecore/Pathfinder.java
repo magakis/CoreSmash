@@ -147,7 +147,7 @@ public class Pathfinder {
 
     private void evaluateSurroundingNodes(Node midNode, Tilemap tm) {
         Coords2D posT = midNode.tile.getAbsolutePositionInTilemap();
-        int tmSize = tm.getTilesPerSide();
+        int tmSize = tm.getTilemapSize();
 
         int curX =  posT.x;
         int curY =  posT.y;

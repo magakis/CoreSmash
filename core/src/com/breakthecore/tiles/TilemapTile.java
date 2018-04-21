@@ -5,6 +5,7 @@ import com.breakthecore.Coords2D;
 public class TilemapTile extends TileContainer {
     private Coords2D relativePositionInTilemap;
     private Coords2D absolutePositionInTilemap;
+    private int idTilemap;
 
     public TilemapTile(Tile tile) {
         m_tile = tile;
@@ -24,9 +25,21 @@ public class TilemapTile extends TileContainer {
         return relativePositionInTilemap;
     }
 
+    public int getColor() {
+        return m_tile.getColor();
+    }
+
+    public int getTilemapId() {
+        return idTilemap;
+    }
+
     public void setPositionInTilemap(int relativeX, int relativeY, int centerTile) {
         relativePositionInTilemap.set(relativeX, relativeY);
         absolutePositionInTilemap.set(relativeX+centerTile, relativeY+centerTile);
+    }
+
+    public void setTilemapId(int id) {
+        idTilemap = id;
     }
 
     public void clear() {
@@ -34,18 +47,4 @@ public class TilemapTile extends TileContainer {
         relativePositionInTilemap.set(999,999);
         absolutePositionInTilemap.set(999,999);
     }
-
-    public int getColor() {
-        return m_tile.getColor();
-    }
-
-    int calcDistnanceFromCenter(int aX1, int aY1, int aX2, int aY2) {
-        int dx = aX1 - aX2;     // signed deltas
-        int dy = aY1 - aY2;
-        int x = Math.abs(dx);  // absolute deltas
-        int y = Math.abs(dy);
-
-        return Math.max(x, Math.max(y, Math.abs(dx+dy)));
-    }
-
 }
