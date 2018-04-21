@@ -449,6 +449,8 @@ public class MainMenuScreen extends ScreenBase {
                             movingTileManager.setLauncherCooldown(sldrLauncherCooldown.getValue());
 //                            movingTileManager.setAutoEject(spinTheCoreEnabled);
                             movingTileManager.setDefaultBallSpeed((int) sldrBallSpeed.getValue());
+                            movingTileManager.initLauncher(4);
+
 
                             statsManager.setGameMode(spinTheCoreEnabled ? GameMode.SPIN_THE_CORE : GameMode.CLASSIC);
                             statsManager.setLives(cbUseLives.isChecked(), Integer.parseInt(tfLives.getText()));

@@ -21,17 +21,16 @@ public class Level2 extends CampaignLevel {
         tm = tilemapManager.getTilemap(0);
         tm.setMinMaxSpeed(40, 70);
         tm.setAutoRotation(true);
-        tilemapGenerator.generateSquareSkewed(tm, 3, false);
-        tilemapGenerator.generateSquareSkewed(tm, 3, true);
-        tilemapGenerator.generateDiamond(tm, 3);
+        tilemapGenerator.generateStar(tm,3);
         tilemapGenerator.balanceTilemap(tm);
         tm.initialized();
 
         movingTileManager.setAutoEject(false);
         movingTileManager.setDefaultBallSpeed(15);
+        movingTileManager.initLauncher(3);
 
         statsManager.setGameMode(GameScreen.GameMode.CLASSIC);
-        statsManager.setMoves(true,  tm.getTileCount());
+        statsManager.setMoves(true,  tm.getTileCount()/3);
         statsManager.setSpecialBallCount(0);
 
     }

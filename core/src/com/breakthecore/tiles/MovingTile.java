@@ -55,7 +55,7 @@ public class MovingTile extends TileContainer {
         return flag;
     }
 
-    public void setFlag(boolean x) {
+    public void setFlagForDisposal(boolean x) {
         flag = x;
     }
 

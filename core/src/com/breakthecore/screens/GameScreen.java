@@ -155,7 +155,7 @@ public class GameScreen extends ScreenBase implements Observer {
             updateStage();
             checkEndingConditions();
 
-            if (statsManager.getMoves() == 3) {
+            if (statsManager.getMoves() == movingTileManager.getLauncherSize()) {
                 movingTileManager.setLastTileColor(tilemapManager.getTilemap(0).getRelativeTile(0, 0).getColor());
                 movingTileManager.setBallGenerationEnabled(false);
             }

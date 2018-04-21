@@ -10,7 +10,11 @@ public class RegularTile extends Tile {
     public RegularTile() {
         super(TileType.REGULAR);
         color = WorldSettings.getRandomInt(7);
+    }
 
+    public RegularTile(int colorId) {
+        super(TileType.REGULAR);
+        color = colorId;
     }
 
     @Override
