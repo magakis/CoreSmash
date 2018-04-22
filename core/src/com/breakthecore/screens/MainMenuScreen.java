@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
@@ -222,8 +223,8 @@ public class MainMenuScreen extends ScreenBase {
     }
 
     private class UIGameSettings extends UIComponent {
-        Slider radiusSlider, minRotSlider, maxRotSlider, sldrBallSpeed, sldrLauncherCooldown;
-        Label radiusLbl, minRotLbl, maxRotLbl, ballSpeedLbl, lblLauncherCooldown;
+        Slider radiusSlider, minRotSlider, maxRotSlider, sldrBallSpeed, sldrLauncherCooldown, sldrColorCount;
+        Label radiusLbl, minRotLbl, maxRotLbl, ballSpeedLbl, lblLauncherCooldown, lblColorount;
         CheckBox cbUseMoves, cbUseLives, cbUseTime, cbSpinTheCoreMode;
         TextField tfMoves, tfLives, tfTime;
         Table tblCheckboxesWithValues;
@@ -238,19 +239,30 @@ public class MainMenuScreen extends ScreenBase {
             Label dummy = new Label
                     ("Game Setup", skin, "comic_96b");
             mainTable.top().pad(50);
-            mainTable.add(dummy).padBottom(100).colspan(2).row();
+            mainTable.add(dummy).padBottom(50).colspan(2).row();
 
             Table settingsTbl = new Table();
             settingsTbl.defaults().padBottom(settingsPadding);
 
             final ScrollPane scrollPane = new ScrollPane(settingsTbl);
+            scrollPane.setScrollingDisabled(true, false);
+            scrollPane.setCancelTouchFocus(false);
+            scrollPane.setOverscroll(false,false);
             mainTable.add(scrollPane).colspan(2).expand().fill().row();
 
             Preferences prefs = Gdx.app.getPreferences("game_settings");
+            InputListener stopTouchDown = new InputListener() {
+                public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                    event.stop();
+                    return false;
+                }
+            };
+
 
             radiusSlider = new Slider(1, 8, 1, false, skin);
             radiusSlider.setValue(prefs.getInteger("init_radius", 4));
             radiusLbl = new Label(String.valueOf((int) radiusSlider.getValue()), skin, "comic_48");
+            radiusSlider.addListener(stopTouchDown);
             radiusSlider.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -262,6 +274,7 @@ public class MainMenuScreen extends ScreenBase {
             minRotSlider = new Slider(10, 120, 1, false, skin);
             minRotSlider.setValue(prefs.getFloat("min_rotation_speed", 40));
             minRotLbl = new Label(String.valueOf((int) minRotSlider.getValue()), skin, "comic_48");
+            minRotSlider.addListener(stopTouchDown);
             minRotSlider.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -280,6 +293,7 @@ public class MainMenuScreen extends ScreenBase {
             maxRotSlider = new Slider(10, 120, 1, false, skin);
             maxRotSlider.setValue(prefs.getFloat("max_rotation_speed", 70));
             maxRotLbl = new Label(String.valueOf((int) maxRotSlider.getValue()), skin, "comic_48");
+            maxRotSlider.addListener(stopTouchDown);
             maxRotSlider.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -298,6 +312,7 @@ public class MainMenuScreen extends ScreenBase {
             sldrBallSpeed = new Slider(5, 20, 1, false, skin);
             sldrBallSpeed.setValue(prefs.getFloat("ball_speed", 15));
             ballSpeedLbl = new Label(String.valueOf((int) sldrBallSpeed.getValue()), skin, "comic_48");
+            sldrBallSpeed.addListener(stopTouchDown);
             sldrBallSpeed.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -309,6 +324,7 @@ public class MainMenuScreen extends ScreenBase {
             sldrLauncherCooldown = new Slider(0f, 4.8f, .16f, false, skin);
             sldrLauncherCooldown.setValue(prefs.getFloat("launcher_cooldown", 0.16f));
             lblLauncherCooldown = new Label(String.format(Locale.ENGLISH,"%.2f",sldrLauncherCooldown.getValue()), skin, "comic_48");
+            sldrLauncherCooldown.addListener(stopTouchDown);
             sldrLauncherCooldown.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -316,6 +332,18 @@ public class MainMenuScreen extends ScreenBase {
                 }
             });
             attachSliderToTable("Launcher Cooldown", sldrLauncherCooldown, lblLauncherCooldown, settingsTbl);
+
+            sldrColorCount = new Slider(1, 8, 1, false, skin);
+            sldrColorCount.setValue(prefs.getInteger("color_count", 7));
+            lblColorount = new Label(String.valueOf((int) sldrColorCount.getValue()), skin, "comic_48");
+            sldrColorCount.addListener(stopTouchDown);
+            sldrColorCount.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    lblColorount.setText(String.valueOf((int) sldrColorCount.getValue()));
+                }
+            });
+            attachSliderToTable("Color Count", sldrColorCount, lblColorount, settingsTbl);
 
 
             tblCheckboxesWithValues = new Table();
@@ -416,7 +444,7 @@ public class MainMenuScreen extends ScreenBase {
                     rootStack.addActor(uiMenuOverlay.getRoot());
                 }
             });
-            mainTable.add(tbtn).width(250).height(200).align(Align.left);
+            mainTable.add(tbtn).width(250).height(200).padTop(50).align(Align.left);
 
             tbtn = new TextButton("Play", skin);
             tbtn.addListener(new ChangeListener() {
@@ -435,15 +463,19 @@ public class MainMenuScreen extends ScreenBase {
                             int initRadius = (int) radiusSlider.getValue();
                             float minRotationSpeed = minRotSlider.getValue();
                             float maxRotationSpeed = maxRotSlider.getValue();
-                            int colorCount = 7;
+                            int colorCount = (int)sldrColorCount.getValue();
 
                             TilemapManager.TilemapGenerator tilemapGenerator = tilemapManager.getTilemapGenerator();
-                            tilemapGenerator.init(colorCount);
+                            tilemapGenerator.setColorCount(colorCount);
 
                             tilemapManager.init(1);
                             Tilemap tm = tilemapManager.getTilemap(0);
-                            tilemapGenerator.generateStar(tm, initRadius);
-                            tilemapGenerator.balanceTilemap(tm);
+                            tilemapGenerator.generateRadius(tm, initRadius);
+
+                            tilemapGenerator.reduceColorMatches(tm, 3, 2);
+                            tilemapGenerator.balanceColorAmounts(tm);
+                            tilemapGenerator.reduceCenterTileColorMatch(tm, 2);
+
                             tm.setMinMaxSpeed(minRotationSpeed, maxRotationSpeed);
                             tm.setAutoRotation(!spinTheCoreEnabled);
                             tm.initialized();
@@ -452,7 +484,7 @@ public class MainMenuScreen extends ScreenBase {
                             movingTileManager.setColorCount(colorCount);
                             // movingTileManager.setAutoEject(spinTheCoreEnabled);
                             movingTileManager.setDefaultBallSpeed((int) sldrBallSpeed.getValue());
-                            movingTileManager.initLauncher(4);
+                            movingTileManager.initLauncher(3);
 
 
                             statsManager.setGameMode(spinTheCoreEnabled ? GameMode.SPIN_THE_CORE : GameMode.CLASSIC);
@@ -467,6 +499,7 @@ public class MainMenuScreen extends ScreenBase {
                             prefs.putFloat("max_rotation_speed", maxRotationSpeed);
                             prefs.putFloat("launcher_cooldown", sldrLauncherCooldown.getValue());
                             prefs.putFloat("ball_speed", sldrBallSpeed.getValue());
+                            prefs.putInteger("color_count", colorCount);
                             prefs.putBoolean("moves_enabled", cbUseMoves.isChecked());
                             prefs.putInteger("move_count", Integer.parseInt(tfMoves.getText()));
                             prefs.putBoolean("time_enabled", cbUseTime.isChecked());
@@ -489,7 +522,7 @@ public class MainMenuScreen extends ScreenBase {
                     gameScreen.deployLevel(dbLevel);
                 }
             });
-            mainTable.add(tbtn).width(250).height(200).align(Align.right);
+            mainTable.add(tbtn).width(250).height(200).padTop(50).align(Align.right);
 
             setRoot(mainTable);
         }

@@ -176,24 +176,6 @@ public class GameScreen extends ScreenBase implements Observer {
         stage.addActor(m_resultUI.getRoot());
         int score = statsManager.getScore();
 
-        // NOTE: It's questionable whether I want to store such highscores because mainly of this campaign.
-        if (roundWon) {
-            //            switch (config.gameMode) {
-//                case CLASSIC:
-//                    if (prefs.getInteger("classic_highscore", 0) < score) {
-//                        prefs.putInteger("classic_highscore", score);
-//                        prefs.flush();
-//                    }
-//                    break;
-//                case SPIN_THE_CORE:
-//                    if (prefs.getInteger("spinthecore_highscore", 0) < score) {
-//                        prefs.putInteger("spinthecore_highscore", score);
-//                        prefs.flush();
-//                    }
-//                    break;
-//            }
-        }
-
         if (activeLevel != null) {
             Preferences prefs = Gdx.app.getPreferences("highscores");
             if (score > prefs.getInteger("level" + activeLevel.getLevelNumber(), 0)) {

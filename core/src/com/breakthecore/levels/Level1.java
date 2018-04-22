@@ -17,17 +17,21 @@ public class Level1 extends CampaignLevel implements Level {
     public void initialize(StatsManager statsManager, TilemapManager tilemapManager, MovingTileManager movingTileManager) {
         Tilemap tm;
         TilemapManager.TilemapGenerator tilemapGenerator = tilemapManager.getTilemapGenerator();
+        tilemapGenerator.setColorCount(5);
         tilemapManager.init(1);
 
         tm = tilemapManager.getTilemap(0);
         tm.setMinMaxSpeed(40, 70);
         tm.setAutoRotation(true);
         tilemapGenerator.generateRadius(tm, 3);
-        tilemapGenerator.balanceTilemap(tm);
+        tilemapGenerator.reduceColorMatches(tm, 3, 2);
+        tilemapGenerator.balanceColorAmounts(tm);
+        tilemapGenerator.reduceCenterTileColorMatch(tm, 2);
         tm.initialized();
 
         movingTileManager.setAutoEject(false);
         movingTileManager.setDefaultBallSpeed(15);
+        movingTileManager.setColorCount(5);
         movingTileManager.initLauncher(3);
 
         statsManager.setGameMode(GameScreen.GameMode.CLASSIC);

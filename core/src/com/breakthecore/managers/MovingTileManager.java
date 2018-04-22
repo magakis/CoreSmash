@@ -196,7 +196,7 @@ public class MovingTileManager extends Observable {
         }
     }
 
-    public void loadLauncher() {
+    private void loadLauncher() {
         if (isLauncherLoadingEnabled) {
             if (colorSequenceList.hasNext()) {
                 launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * tileSize, new RegularTile(colorSequenceList.getNext())));

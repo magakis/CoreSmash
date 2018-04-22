@@ -44,7 +44,7 @@ public class RenderManager {
 
         defaultFont = new BitmapFont();
         sideLengthHalf = sideLength / 2.f;
-        colorList = new Color[8];
+        colorList = new Color[10];
 
         colorList[0] = new Color(0xff0000ff);
         colorList[1] = new Color(0x00ff00ff);
@@ -53,6 +53,9 @@ public class RenderManager {
         colorList[4] = new Color(0x00ffffff);
         colorList[5] = new Color(0xff00ffff);
         colorList[6] = new Color(0xc0c0c0ff);
+        colorList[7] = new Color(0x800000ff);
+        colorList[8] = new Color(0x808000ff);
+        colorList[9] = new Color(0x808080ff);
 
 //        colorList[1] = new Color(0x3cb44bff);
 //        colorList[2] = new Color(0xffe119ff);
