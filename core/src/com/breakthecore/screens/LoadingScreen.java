@@ -178,11 +178,11 @@ public class LoadingScreen extends ScreenBase {
 
         // SliderStyles
         Slider.SliderStyle ss = new Slider.SliderStyle();
-        ss.background = skin.getDrawable("box_white_5");
-        ss.background.setMinHeight(60);
+        ss.background = skin.newDrawable("box_white_5");
+        ss.background.setMinHeight(20);
         ss.knob = skin.getDrawable("myBall");
-        ss.knob.setMinHeight(80);
-        ss.knob.setMinWidth(80);
+        ss.knob.setMinHeight(40);
+        ss.knob.setMinWidth(40);
         skin.add("default-horizontal", ss);
 
         // CheckboxStyles

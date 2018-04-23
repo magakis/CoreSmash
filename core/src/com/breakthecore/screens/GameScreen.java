@@ -59,6 +59,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
 
     //===========
+    private DebugUI debugUI;
     private GameUI gameUI;
     private ResultUI m_resultUI;
     private Skin skin;
@@ -98,6 +99,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
         gameUI = new GameUI();
         m_resultUI = new ResultUI();
+        debugUI = new DebugUI();
 
         rootUIStack = new Stack();
         rootUIStack.setFillParent(true);
@@ -152,11 +154,6 @@ public class GameScreen extends ScreenBase implements Observer {
             statsManager.update(delta);
             updateStage();
             checkEndingConditions();
-
-            if (statsManager.isMovesEnabled() && statsManager.getMoves() == movingTileManager.getLauncherSize()) {
-                movingTileManager.setLastTileColor(tilemapManager.getTilemap(0).getRelativeTile(0, 0).getColor());
-                movingTileManager.setLauncherLoadingEnabled(false);
-            }
         }
     }
 
@@ -167,6 +164,8 @@ public class GameScreen extends ScreenBase implements Observer {
             gameUI.lblTime.setText(String.format("%d:%02d", (int) time / 60, (int) time % 60));
         }
         gameUI.lblScore.setText(String.valueOf(statsManager.getScore()));
+
+        debugUI.dblb1.setText("FPS: "+ Gdx.graphics.getFramesPerSecond());
     }
 
     public void endGame() {
@@ -201,6 +200,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
         rootUIStack.add(gameUI.getRoot());
         rootUIStack.add(streakUI.getRoot());
+        rootUIStack.add(debugUI.getRoot());
         stage.addActor(rootUIStack);
 
         isGameActive = true;
@@ -272,7 +272,11 @@ public class GameScreen extends ScreenBase implements Observer {
         public boolean tap(float x, float y, int count, int button) {
             switch (statsManager.getGameMode()) {
                 case CLASSIC:
-                        movingTileManager.eject();
+                    movingTileManager.eject();
+                    if (statsManager.isMovesEnabled() && statsManager.getMoves() == movingTileManager.getLauncherSize()) {
+                        movingTileManager.setLastTileColor(tilemapManager.getTilemap(0).getRelativeTile(0, 0).getColor());
+                        movingTileManager.setAutoReloadEnabled(false);
+                    }
                     break;
             }
             return true;
@@ -543,15 +547,15 @@ public class GameScreen extends ScreenBase implements Observer {
 
         public DebugUI() {
             Table dbtb = new Table();
-            dblb1 = new Label("db1:", skin, "comic_24b");
+            dblb1 = new Label("", skin, "comic_24b");
             dblb1.setAlignment(Align.left);
-            dblb2 = new Label("db1:", skin, "comic_24b");
+            dblb2 = new Label("", skin, "comic_24b");
             dblb2.setAlignment(Align.left);
-            dblb3 = new Label("db1:", skin, "comic_24b");
+            dblb3 = new Label("", skin, "comic_24b");
             dblb3.setAlignment(Align.left);
-            dblb4 = new Label("db1:", skin, "comic_24b");
+            dblb4 = new Label("", skin, "comic_24b");
             dblb4.setAlignment(Align.left);
-            dblb5 = new Label("db1:", skin, "comic_24b");
+            dblb5 = new Label("", skin, "comic_24b");
             dblb5.setAlignment(Align.left);
 
             dbtb.bottom().left();

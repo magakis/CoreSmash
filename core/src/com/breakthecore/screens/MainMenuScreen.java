@@ -471,8 +471,7 @@ public class MainMenuScreen extends ScreenBase {
                             tilemapManager.init(1);
                             Tilemap tm = tilemapManager.getTilemap(0);
                             tilemapGenerator.generateRadius(tm, initRadius);
-
-                            tilemapGenerator.reduceColorMatches(tm, 3, 2);
+                            tilemapGenerator.reduceColorMatches(tm, 2, 3);
                             tilemapGenerator.balanceColorAmounts(tm);
                             tilemapGenerator.reduceCenterTileColorMatch(tm, 2);
 
@@ -484,6 +483,7 @@ public class MainMenuScreen extends ScreenBase {
                             movingTileManager.setColorCount(colorCount);
                             // movingTileManager.setAutoEject(spinTheCoreEnabled);
                             movingTileManager.setDefaultBallSpeed((int) sldrBallSpeed.getValue());
+                            movingTileManager.enableControlledBallGeneration(tilemapManager);
                             movingTileManager.initLauncher(3);
 
 

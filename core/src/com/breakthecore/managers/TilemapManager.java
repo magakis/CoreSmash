@@ -31,12 +31,11 @@ public class TilemapManager extends Observable implements Observer {
     private final Coords2D tilemapPosition = new Coords2D(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
     private final int maxTilemapCount = 2;
     private int tilemapCount;
-    private boolean baseLayerLostTiles;
 
     private Pathfinder pathfinder = new Pathfinder(30);
     private TilemapGenerator tilemapGenerator = new TilemapGenerator(this);
     private Match3 match3 = new Match3();
-
+    private int[] colorsAvailable = new int[10]; // XXX(22/4/2018): MagicValue 10
 
     public TilemapManager() {
         listTilemaps = new Tilemap[maxTilemapCount];
@@ -48,6 +47,14 @@ public class TilemapManager extends Observable implements Observer {
 
     public int getTilemapCount() {
         return tilemapCount;
+    }
+
+    public int getTotalAmountOfTiles() {
+        int res = 0;
+        for (int i = 0; i < tilemapCount; ++i) {
+            res += listTilemaps[i].getTileCount();
+        }
+        return res;
     }
 
     public int getTileDistance(int x1, int y1, int x2, int y2) {
@@ -65,6 +72,21 @@ public class TilemapManager extends Observable implements Observer {
         return listTilemaps[layer];
     }
 
+    public int[] getColorAmountsAvailable() {
+        for (int i = 0; i < colorsAvailable.length; ++i) {
+            colorsAvailable[i] = 0;
+        }
+
+        for (int tmIndex = 0; tmIndex < tilemapCount; ++tmIndex) {
+            int[] listOfColorAmounts = listTilemaps[tmIndex].getColorAmountsAvailable();
+            for (int i = 0; i < listOfColorAmounts.length; ++i) {
+                colorsAvailable[i] += listOfColorAmounts[i];
+            }
+        }
+
+        return colorsAvailable;
+    }
+
     public TilemapGenerator getTilemapGenerator() {
         return tilemapGenerator;
     }
@@ -74,16 +96,15 @@ public class TilemapManager extends Observable implements Observer {
      *
      * @return Returns whether it placed the tile.
      */
-    public boolean attachTile(int layer, Tile tile, TilemapTile tileHit, TileContainer.Side[] listSides) {
+    public void attachTile(int layer, Tile tile, TilemapTile tileHit, TileContainer.Side[] listSides) {
         for (int i = 0; i < 6; ++i) {
             if (attachTile(layer, tile, tileHit, listSides[i])) {
-                return true;
+                return;
             }
         }
-        return false;
     }
 
-    public boolean attachTile(int layer, Tile tile, TilemapTile tileHit, TileContainer.Side side) {
+    private boolean attachTile(int layer, Tile tile, TilemapTile tileHit, TileContainer.Side side) {
         TilemapTile newTile = null;
         boolean placedNewTile = false;
         Tilemap tm = listTilemaps[layer];
@@ -150,8 +171,18 @@ public class TilemapManager extends Observable implements Observer {
             return;
         }
 
+        boolean centerTileDestroyed = false;
         for (TilemapTile t : match) {
-            tm.destroyRelativeTile(t.getRelativePosition().x, t.getRelativePosition().y);
+            Coords2D pos = t.getRelativePosition();
+            if (pos.x == 0 && pos.y == 0) {
+                t.notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
+                centerTileDestroyed = true;
+            }
+            tm.destroyRelativeTile(pos.x, pos.y);
+        }
+
+        if (!centerTileDestroyed) {
+            removeDisconnectedTiles();
         }
 
         notifyObservers(NotificationType.SAME_COLOR_MATCH, match.size());
@@ -171,11 +202,6 @@ public class TilemapManager extends Observable implements Observer {
     }
 
     public void update(float delta) {
-        if (baseLayerLostTiles) {
-            removeDisconnectedTiles();
-            baseLayerLostTiles = false;
-        }
-
         for (int i = 0; i < tilemapCount; ++i) {
             listTilemaps[i].update(delta);
         }
@@ -188,17 +214,6 @@ public class TilemapManager extends Observable implements Observer {
 
     @Override
     public void onNotify(NotificationType type, Object ob) {
-        /* In order to remove this logic and have the disconnected tiles destroyed the same frame,
-         * there has to be a notification that will signal the end of any operation that might destroy
-         * blocks and after which we can safely call to remove the disconnected tiles.
-         *
-         * Until then we should not use the TILE_DESTROYED notification as a signal to search for disconnnected
-         * tiles cause that <u>will</u> create bugs! */
-        if (type == NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED) {
-            if (((TilemapTile) ob).getTilemapId() == 0) {
-                baseLayerLostTiles = true;
-            }
-        }
         notifyObservers(type, ob);
     }
 
@@ -229,9 +244,9 @@ public class TilemapManager extends Observable implements Observer {
         }
     }
 
-    /* NOTE: All the shapes should use a relative coordinate system so that in the future they
-     * can be used in arbitrary coordinates */
     public class TilemapGenerator {
+        /* NOTE: All the shapes should use a relative coordinate system so that in the future they
+         * can be used in arbitrary coordinates */
         private final int maxColorCount = 10;
         private TilemapManager tilemapManager;
         private Random rand;
@@ -407,7 +422,6 @@ public class TilemapManager extends Observable implements Observer {
                 Arrays.sort(colors, compSizes);
             }
         }
-
 
         public void reduceCenterTileColorMatch(Tilemap tm, int max) {
             reduceColorMatches(tm,max,false);

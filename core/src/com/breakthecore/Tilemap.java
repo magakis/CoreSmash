@@ -15,6 +15,7 @@ public class Tilemap {
     private int centerTile;
     private Coords2D screenPosition;
     private TilemapTile[][] listTilemapTiles;
+    private int[] colorsAvailable;
 
     private boolean hadTilesDestroyed;
     private boolean isInitilized;
@@ -38,6 +39,7 @@ public class Tilemap {
         tileSizeHalf = tileSize / 2.f;
         centerTile = tilesPerSide / 2;
         listTilemapTiles = new TilemapTile[tilesPerSide][tilesPerSide];
+        colorsAvailable = new int[10]; // XXX(22/4/2018): Magic Value 10!
         cos = 1;
         sin = 0;
     }
@@ -50,6 +52,21 @@ public class Tilemap {
     public Tilemap(int id, Coords2D screenPos) {
         this(id);
         screenPosition = screenPos;
+    }
+
+    public int[] getColorAmountsAvailable() {
+        for (int i = 0; i < colorsAvailable.length; ++i) {
+            colorsAvailable[i] = 0;
+        }
+
+        for (TilemapTile[] arr : listTilemapTiles) {
+            for (TilemapTile t : arr) {
+                if (t == null) continue;
+                colorsAvailable[t.getColor()]++;
+            }
+        }
+
+        return colorsAvailable;
     }
 
     public int getCenterTilePos() {
@@ -125,6 +142,7 @@ public class Tilemap {
         updateTilemapTile(tile);
 
         listTilemapTiles[centerTile + y][centerTile + x] = tile;
+        ++colorsAvailable[tile.getColor()];
     }
 
     public void setRotation(float deg) {
@@ -153,9 +171,6 @@ public class Tilemap {
     public void destroyRelativeTile(int tileX, int tileY) {
         TilemapTile t = getRelativeTile(tileX, tileY);
         if (t == null) return;
-        if (tileX == 0 && tileY == 0) {
-            t.notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
-        }
         t.notifyObservers(NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED, t);
         t.clear();
         emptyRelativeTile(tileX, tileY);
@@ -178,6 +193,11 @@ public class Tilemap {
                 --tileCount;
             }
         }
+
+        for (int i = 0; i < colorsAvailable.length; ++i) {
+            colorsAvailable[i] = 0;
+        }
+
         minRotationSpeed = 0;
         maxRotationSpeed = 0;
         isInitilized = false;

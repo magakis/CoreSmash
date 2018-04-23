@@ -26,7 +26,7 @@ import java.util.List;
 
 public class RenderManager {
     private SpriteBatch m_batch;
-    private AssetManager m_assetManager;
+    private AssetManager assetManager;
     private ShapeRenderer m_shapeRenderer;
     private float sideLength = WorldSettings.getTileSize();
     private float sideLengthHalf;
@@ -38,11 +38,11 @@ public class RenderManager {
     public RenderManager(AssetManager am) {
         m_batch = new SpriteBatch();
         m_shapeRenderer = new ShapeRenderer();
-        m_assetManager = am;
+        assetManager = am;
 
-        texture = m_assetManager.get("asteroid.png");
+        texture = assetManager.get("asteroid.png");
 
-        defaultFont = new BitmapFont();
+        defaultFont = assetManager.get("comic_48.fnt",BitmapFont.class);
         sideLengthHalf = sideLength / 2.f;
         colorList = new Color[10];
 
@@ -94,7 +94,7 @@ public class RenderManager {
                 break;
 
             case BOMB:
-                m_batch.draw(m_assetManager.get("balloon.png", Texture.class), atPos.x - sideLen, atPos.y - sideLen, sideLen * 2, sideLen * 2);
+                m_batch.draw(assetManager.get("balloon.png", Texture.class), atPos.x - sideLen, atPos.y - sideLen, sideLen * 2, sideLen * 2);
                 break;
         }
     }
@@ -159,6 +159,22 @@ public class RenderManager {
             }
         }
         m_shapeRenderer.end();
+    }
+
+    public void DBTileColor(Tilemap tm) {
+        int tilesPerSide = tm.getTilemapSize();
+        TilemapTile tile;
+
+        for (int y = 0; y < tilesPerSide; ++y) {
+            for (int x = 0; x < tilesPerSide; ++x) {
+                tile = tm.getAbsoluteTile(x, y);
+                if (tile != null) {
+                    Vector2 pos = tile.getPositionInWorld();
+                    m_batch.setColor(Color.BLACK);
+                    defaultFont.draw(m_batch, String.valueOf(tile.getColor()), pos.x -sideLengthHalf/2, pos.y);
+                }
+            }
+        }
     }
 
     public void DBTileDistances(TilemapTile[][] map) {

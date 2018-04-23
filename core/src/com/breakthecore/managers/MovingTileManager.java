@@ -12,6 +12,8 @@ import com.breakthecore.tiles.RegularTile;
 import com.breakthecore.tiles.Tile;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -27,6 +29,8 @@ public class MovingTileManager extends Observable {
     private LinkedList<MovingTile> activeList;
     private Random rand;
     private ColorSequenceList colorSequenceList;
+    private ChanceColorPicker chanceColorPicker;
+    private TilemapManager tilemapManager;
 
     // XXX(20/4/2018): Feels like the following variables shouldn't be here
     private int colorCount;
@@ -42,8 +46,9 @@ public class MovingTileManager extends Observable {
     private float defaultScale;
 
     private boolean isLoadedWithSpecial;
-    private boolean isLauncherLoadingEnabled;
     private boolean isAutoEjectEnabled;
+    private boolean isControlledBallGenerationEnabled;
+    private boolean isAutoReloadEnabled;
     private boolean isActive;
 
     public MovingTileManager(int tileSize) {
@@ -52,6 +57,7 @@ public class MovingTileManager extends Observable {
         activeList = new LinkedList<MovingTile>();
         this.tileSize = tileSize;
         rand = new Random();
+        chanceColorPicker = new ChanceColorPicker();
 
         isActive = true;
         defaultSpeed = 15;
@@ -86,7 +92,9 @@ public class MovingTileManager extends Observable {
         return null;
     }
 
-    /** A list of predefined colors that will be used to load the Launcher insead of random ones. */
+    /**
+     * A list of predefined colors that will be used to load the Launcher insead of random ones.
+     */
     public ColorSequenceList getColorSequenceList() {
         return colorSequenceList;
     }
@@ -111,10 +119,6 @@ public class MovingTileManager extends Observable {
         this.colorCount = colorCount;
     }
 
-    public void setLauncherLoadingEnabled(boolean state) {
-        isLauncherLoadingEnabled = state;
-    }
-
     public void setDefaultBallSpeed(int defaultSpeed) {
         this.defaultSpeed = defaultSpeed;
         for (MovingTile mt : launcher) {
@@ -124,6 +128,10 @@ public class MovingTileManager extends Observable {
 
     public void setAutoEject(boolean autoEject) {
         isAutoEjectEnabled = autoEject;
+    }
+
+    public void setAutoReloadEnabled(boolean autoReload) {
+        isAutoReloadEnabled = autoReload;
     }
 
     public void setLauncherCooldown(float delay) {
@@ -184,7 +192,9 @@ public class MovingTileManager extends Observable {
                         }
                     }
 
-                    loadLauncher();
+                    if (isAutoReloadEnabled) {
+                        loadLauncher();
+                    }
 
                     notifyObservers(NotificationType.BALL_LAUNCHED, null);
                 } else {
@@ -197,27 +207,48 @@ public class MovingTileManager extends Observable {
     }
 
     private void loadLauncher() {
-        if (isLauncherLoadingEnabled) {
-            if (colorSequenceList.hasNext()) {
-                launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * tileSize, new RegularTile(colorSequenceList.getNext())));
-            } else {
-                launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * tileSize, createRegularTile()));
-            }
+        if (colorSequenceList.hasNext()) {
+            launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * tileSize, new RegularTile(colorSequenceList.getNext())));
+        } else if (isControlledBallGenerationEnabled) {
+            launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * tileSize, new RegularTile(getColorBasedOnTilemap())));
+        } else {
+            launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * tileSize, createRegularTile()));
         }
+    }
+
+    private int getColorBasedOnTilemap() {
+        if (!isControlledBallGenerationEnabled)
+            throw new RuntimeException("ControlledBallGeneration is disabled..?!");
+
+        int[] amountOfColor = tilemapManager.getColorAmountsAvailable();
+        int totalTiles = tilemapManager.getTotalAmountOfTiles();
+
+        chanceColorPicker.load(amountOfColor, totalTiles);
+        if (launcher.size > 0) {
+            chanceColorPicker.disabledColor = launcher.last().getColor();
+        }
+        return chanceColorPicker.get();
     }
 
     public void initLauncher(int launcherSize) {
         this.launcherSize = launcherSize;
-        while (launcher.size < launcherSize && (isLauncherLoadingEnabled || colorSequenceList.hasNext())) {
+        while (launcher.size < launcherSize && (isAutoReloadEnabled || colorSequenceList.hasNext())) {
             loadLauncher();
         }
+    }
+
+    public void enableControlledBallGeneration(TilemapManager tilemapManager) {
+        this.tilemapManager = tilemapManager;
+        isControlledBallGenerationEnabled = true;
     }
 
     public void reset() {
         isActive = true;
         defaultSpeed = 0;
         launcherCooldown = 0;
-        isLauncherLoadingEnabled = true;
+        isControlledBallGenerationEnabled = false;
+        isAutoReloadEnabled = true;
+        tilemapManager = null;
 
         Iterator<MovingTile> iter = activeList.iterator();
         MovingTile tile;
@@ -283,9 +314,11 @@ public class MovingTileManager extends Observable {
     public class ColorSequenceList {
         private int index;
         private ArrayList<Integer> listColors = new ArrayList<Integer>();
-        private ColorSequenceList() {}
 
-        public int getNext(){
+        private ColorSequenceList() {
+        }
+
+        public int getNext() {
             return listColors.get(index++);
         }
 
@@ -304,6 +337,123 @@ public class MovingTileManager extends Observable {
         public void reset() {
             listColors.clear();
             index = 0;
+        }
+    }
+
+    /**
+     * XXX: Horrible implementation
+     */
+    private class ChanceColorPicker {
+        private ColorGroup[] colorGroups;
+        private ColorGroup cgDisabled;
+        private int disabledColor = -1;
+        private int totalAmount;
+        private Comparator sortColors = new Comparator<ColorGroup>() {
+            @Override
+            public int compare(ColorGroup o1, ColorGroup o2) {
+                return o1.groupColor > o2.groupColor ? 1 : -1;
+            }
+        };
+        private Comparator sortAmounts = new Comparator<ColorGroup>() {
+            @Override
+            public int compare(ColorGroup o1, ColorGroup o2) {
+                return o1.amount > o2.amount ? 1 : -1;
+            }
+        };
+
+        public ChanceColorPicker() {
+            colorGroups = new ColorGroup[10]; // XXX(22/4/2018): Magic Value 10
+            for (int i = 0; i < colorGroups.length; ++i) {
+                colorGroups[i] = new ColorGroup(i);
+            }
+            cgDisabled = new ColorGroup(999);
+        }
+
+        public int get() {
+            ColorGroup tmp = cgDisabled;
+            if (disabledColor != -1) {
+                for (int i = 0; i < colorGroups.length; ++i) {
+                    tmp = colorGroups[i];
+                    if (tmp.groupColor == disabledColor) {
+                        colorGroups[i] = cgDisabled;
+                        break;
+                    }
+                }
+            }
+
+            Arrays.sort(colorGroups, sortAmounts);
+
+            int maxIndex = totalAmount - tmp.amount;
+            int index = rand.nextInt(maxIndex)+1;
+            int sum = 0;
+
+            int i = 0;
+            do {
+                sum += colorGroups[i++].amount;
+            } while (sum < index);
+
+            int color = colorGroups[i - 1].groupColor;
+
+            if (disabledColor != -1) {
+                for (i = 0; i < colorGroups.length; ++i) {
+                    if (colorGroups[i].groupColor == cgDisabled.groupColor) {
+                        colorGroups[i] = tmp;
+                        break;
+                    }
+                }
+            }
+
+            return color;
+        }
+
+        public void load(int[] arrOfColorAmounts, int total) {
+            totalAmount = total;
+            disabledColor = -1;
+
+            for (int i = 0; i < colorGroups.length; ++i) {
+                colorGroups[i].reset();
+            }
+
+            Arrays.sort(colorGroups, sortColors);
+
+            for (int i = 0; i < colorCount; ++i) {
+                colorGroups[i].set(arrOfColorAmounts[i]);
+            }
+
+            // Remove the amounts on the launcher
+            for (MovingTile mt : launcher) {
+                int color = mt.getColor();
+                if (colorGroups[color].amount > 0) {
+                    --colorGroups[color].amount;
+                    --totalAmount;
+                }
+            }
+
+            for (MovingTile mt : activeList) {
+                int color = mt.getColor();
+                if (colorGroups[color].amount > 0) {
+                    --colorGroups[color].amount;
+                    --totalAmount;
+                }
+            }
+        }
+
+
+        private class ColorGroup {
+            private final int groupColor;
+            private int amount;
+
+            public ColorGroup(int color) {
+                groupColor = color;
+            }
+
+            public void set(int amount) {
+                this.amount = amount;
+            }
+
+            public void reset() {
+                amount = 0;
+            }
         }
     }
 }

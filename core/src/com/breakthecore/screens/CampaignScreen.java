@@ -21,15 +21,14 @@ import com.breakthecore.levels.Level1;
 import com.breakthecore.levels.Level2;
 
 public class CampaignScreen extends ScreenBase implements RoundEndListener {
-    GameScreen gameScreen;
-    GestureDetector gd;
-    Skin m_skin;
-    Stage stage;
-    Table tblCampaignMap;
-    ScrollPane scrollPane;
-    LevelButton[] levelButtons;
-    int currentLevel;
-    int activeLevel;
+    private GameScreen gameScreen;
+    private GestureDetector gd;
+    private Skin m_skin;
+    private Stage stage;
+    private Table tblCampaignMap;
+    private LevelButton[] levelButtons;
+    private int currentLevel;
+    private int activeLevel;
 
     public CampaignScreen(BreakTheCoreGame game) {
         super(game);
@@ -45,14 +44,13 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         levelButtons = new LevelButton[20];
 
         WidgetGroup buttonsGroup = createButtonGroup();
-        scrollPane = new ScrollPane(buttonsGroup);
+        ScrollPane scrollPane = new ScrollPane(buttonsGroup);
         scrollPane.setFillParent(true);
         scrollPane.setOverscroll(false, false);
         scrollPane.validate();
         scrollPane.setSmoothScrolling(false);
         scrollPane.setScrollPercentY(100);
 
-        //Enable levels that can be played
         currentLevel = Gdx.app.getPreferences("highscores").getInteger("campaign_level", 1);
         for (int i = 0; i < currentLevel; ++i) {
             levelButtons[i].enable();

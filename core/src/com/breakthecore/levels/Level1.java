@@ -32,6 +32,7 @@ public class Level1 extends CampaignLevel implements Level {
         movingTileManager.setAutoEject(false);
         movingTileManager.setDefaultBallSpeed(15);
         movingTileManager.setColorCount(5);
+        movingTileManager.enableControlledBallGeneration(tilemapManager);
         movingTileManager.initLauncher(3);
 
         statsManager.setGameMode(GameScreen.GameMode.CLASSIC);
