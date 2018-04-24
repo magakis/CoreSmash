@@ -1,5 +1,6 @@
 package com.breakthecore.managers;
 
+import com.badlogic.gdx.utils.Array;
 import com.breakthecore.Coords2D;
 import com.breakthecore.Match3;
 import com.breakthecore.NotificationType;
@@ -15,12 +16,15 @@ import com.breakthecore.tiles.TilemapTile;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Random;
 
 /**
  * The TilemapManager is responsible for every interaction with the Tilemaps and provides the
  * only interface for them.
+ * XXX: BAD IMPLEMENTATION!
  */
 
 public class TilemapManager extends Observable implements Observer {
@@ -55,10 +59,6 @@ public class TilemapManager extends Observable implements Observer {
             res += listTilemaps[i].getTileCount();
         }
         return res;
-    }
-
-    public int getTileDistance(int x1, int y1, int x2, int y2) {
-        return pathfinder.getTileDistance(x1, y1, x2, y2);
     }
 
     public Coords2D getTilemapPosition() {
@@ -253,6 +253,7 @@ public class TilemapManager extends Observable implements Observer {
         private int colorCount;
         private ColorGroupContainer[] colors;
         private Comparator<ColorGroupContainer> compSizes;
+        private Comparator<TilemapTile> compDistance;
 
         private TilemapGenerator(TilemapManager tilemapManager) {
             this.tilemapManager = tilemapManager;
@@ -269,6 +270,12 @@ public class TilemapManager extends Observable implements Observer {
                 }
             };
 
+            compDistance = new Comparator<TilemapTile>() {
+                @Override
+                public int compare(TilemapTile o1, TilemapTile o2) {
+                    return o1.getDistanceFromCenter() > o2.getDistanceFromCenter() ? 1 : -1;
+                }
+            };
         }
 
         public void setColorCount(int colorCount) {
@@ -282,7 +289,7 @@ public class TilemapManager extends Observable implements Observer {
         public void generateRadius(Tilemap tm, int radius) {
             for (int y = -radius - 1; y < radius + 1; ++y) {
                 for (int x = -radius - 1; x < radius + 1; ++x) {
-                    if (pathfinder.getTileDistance(x, y, 0, 0) <= radius) {
+                    if (tm.getTileDistance(x, y, 0, 0) <= radius) {
                         tm.setRelativeTile(x, y, createTilemapTile(new RegularTile(rand.nextInt(colorCount))));
                     }
                 }
@@ -402,10 +409,11 @@ public class TilemapManager extends Observable implements Observer {
         }
 
         public void balanceColorAmounts(Tilemap tm) {
+            resetColorGroupContainers();
             fillColorGroupContainers(tm);
             int aver = tm.getTileCount() / colorCount;
-            int minIndex = maxColorCount - colorCount;
-            int maxIndex = maxColorCount - 1;
+            int minIndex = 10 - colorCount;
+            int maxIndex = 9;
 
             Arrays.sort(colors, compSizes);
 
@@ -423,9 +431,91 @@ public class TilemapManager extends Observable implements Observer {
             }
         }
 
-        public void reduceCenterTileColorMatch(Tilemap tm, int max) {
-            reduceColorMatches(tm,max,false);
+        public void forceEachColorOnEveryRadius(Tilemap tm) {
+            resetColorGroupContainers();
+            fillColorGroupContainers(tm);
+
+            for (ColorGroupContainer cgc : colors) {
+                Collections.sort(cgc.list, compDistance);
+            }
+
+            int maxTileDistanceFromCenter = tm.getMaxTileDistanceFromCenter()+1;
+            int distanceToSearchFor;
+
+            startLoop:
+            for (ColorGroupContainer cgc : colors) {
+                distanceToSearchFor = 1;
+                while (distanceToSearchFor < maxTileDistanceFromCenter) {
+                    if (cgc.list.size() == 0) break;
+                    for (int listIndex = 0; listIndex < cgc.list.size(); ++listIndex) {
+                        TilemapTile tmTile = cgc.list.get(listIndex);
+                        int distance = tmTile.getDistanceFromCenter();
+
+                        if (distance > distanceToSearchFor || listIndex == cgc.list.size()-1 && distance < distanceToSearchFor) {
+                            TilemapTile tileToSwapA = null;
+                            int prevDistance = -1;
+
+                            for (int i = 0; i < cgc.list.size(); ++i) {
+                                int curDistance = cgc.list.get(i).getDistanceFromCenter();
+                                if (prevDistance == curDistance) {
+                                    tileToSwapA = cgc.list.get(i);
+                                    break;
+                                } else {
+                                    prevDistance = curDistance;
+                                }
+                            }
+
+                            if (tileToSwapA == null) break startLoop;
+
+                            ColorGroupContainer innerCgc = null;
+                            TilemapTile tileToSwapB = null;
+
+                            loopB:
+                            for (ColorGroupContainer color : colors) {
+                                innerCgc = color;
+                                if (cgc == innerCgc) continue;
+
+                                prevDistance = -1;
+                                for (int i = 0; i < innerCgc.list.size(); ++i) {
+                                    int curDistance = innerCgc.list.get(i).getDistanceFromCenter();
+                                    if (prevDistance == curDistance && curDistance == distanceToSearchFor) {
+                                        tileToSwapB = innerCgc.list.get(i);
+                                        break loopB;
+                                    } else {
+                                        prevDistance = curDistance;
+                                    }
+                                }
+                            }
+
+                            if (tileToSwapB == null) break startLoop;
+
+                            int tmpColor = tileToSwapB.getColor();
+                            tileToSwapB.getTile().setColor(tileToSwapA.getColor());
+                            tileToSwapA.getTile().setColor(tmpColor);
+
+                            cgc.list.remove(tileToSwapA);
+                            cgc.list.add(tileToSwapB);
+
+                            innerCgc.list.remove(tileToSwapB);
+                            innerCgc.list.add(tileToSwapA);
+
+                            Collections.sort(cgc.list, compDistance);
+                            Collections.sort(innerCgc.list, compDistance);
+
+                            ++distanceToSearchFor;
+                        } else if (distance == distanceToSearchFor){
+                            ++distanceToSearchFor;
+                            break;
+                        }
+                    }
+                }
+            }
         }
+
+        public void reduceCenterTileColorMatch(Tilemap tm, int max) {
+            reduceColorMatches(tm, max, false);
+        }
+
         public void reduceCenterTileColorMatch(Tilemap tm, int max, boolean strict) {
             TilemapTile centerTile = tm.getRelativeTile(0, 0);
             if (centerTile == null) return;
@@ -466,15 +556,9 @@ public class TilemapManager extends Observable implements Observer {
         }
 
         private void resetColorGroupContainers() {
-            for (int i = 0; i < colorCount; ++i) {
+            for (int i = 0; i < 10; ++i) {
                 colors[i].reset(i);
             }
-        }
-
-        private TilemapTile createTilemapTile(Tile tile) {
-            TilemapTile res = new TilemapTile(tile);
-            res.addObserver(tilemapManager);
-            return res;
         }
 
         private class ColorGroupContainer {

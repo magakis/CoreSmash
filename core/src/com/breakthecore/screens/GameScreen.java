@@ -165,7 +165,7 @@ public class GameScreen extends ScreenBase implements Observer {
         }
         gameUI.lblScore.setText(String.valueOf(statsManager.getScore()));
 
-        debugUI.dblb1.setText("FPS: "+ Gdx.graphics.getFramesPerSecond());
+        debugUI.dblb2.setText("FPS: "+ Gdx.graphics.getFramesPerSecond());
     }
 
     public void endGame() {
@@ -202,6 +202,12 @@ public class GameScreen extends ScreenBase implements Observer {
         rootUIStack.add(streakUI.getRoot());
         rootUIStack.add(debugUI.getRoot());
         stage.addActor(rootUIStack);
+
+//        debugUI.dblb1.setText("");
+//        int[] colors = tilemapManager.getTilemap(0).getColorAmountsAvailable();
+//        for (int i = 0; i < colors.length; ++i) {
+//            debugUI.dblb1.getText().append(i + ": " + colors[i]+ "\n");
+//        }
 
         isGameActive = true;
         gameInstance.setScreen(this);

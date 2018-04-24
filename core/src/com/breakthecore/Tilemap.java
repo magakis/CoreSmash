@@ -11,6 +11,7 @@ public class Tilemap {
     private int ID;
     private int tilesPerSide;
     private int tileSize;
+    private int maxTileDistanceFromCenter;
     private float tileSizeHalf;
     private int centerTile;
     private Coords2D screenPosition;
@@ -18,7 +19,7 @@ public class Tilemap {
     private int[] colorsAvailable;
 
     private boolean hadTilesDestroyed;
-    private boolean isInitilized;
+    private boolean isTilemapInitilized;
 
     private float rotation;
     private boolean autoRotationEnabled;
@@ -127,22 +128,39 @@ public class Tilemap {
         setRelativeTile(x - centerTile, y - centerTile, tile);
     }
 
+    public int getMaxTileDistanceFromCenter() {
+        return maxTileDistanceFromCenter;
+    }
+
     public void setRelativeTile(int x, int y, TilemapTile tile) {
         if (tile == null) return;
 
+        tile.setPositionInTilemap(x, y, centerTile);
+        tile.setTilemapId(ID);
+        tile.setDistanceFromCenter(this);
+        updateTilemapTile(tile);
+
         if (getRelativeTile(x, y) == null) {
-            if (!isInitilized){
+            if (!isTilemapInitilized){
                 ++initTileCount;
+                if (tile.getDistanceFromCenter() > maxTileDistanceFromCenter) {
+                    maxTileDistanceFromCenter = tile.getDistanceFromCenter();
+                }
             }
             ++tileCount;
         }
 
-        tile.setPositionInTilemap(x, y, centerTile);
-        tile.setTilemapId(ID);
-        updateTilemapTile(tile);
-
         listTilemapTiles[centerTile + y][centerTile + x] = tile;
         ++colorsAvailable[tile.getColor()];
+    }
+
+    public int getTileDistance(int aX1, int aY1, int aX2, int aY2) {
+        int dx = aX1 - aX2;     // signed deltas
+        int dy = aY1 - aY2;
+        int x = Math.abs(dx);  // absolute deltas
+        int y = Math.abs(dy);
+
+        return Math.max(x, Math.max(y, Math.abs(dx + dy)));
     }
 
     public void setRotation(float deg) {
@@ -161,7 +179,7 @@ public class Tilemap {
     }
 
     public void initialized() {
-        isInitilized = true;
+        isTilemapInitilized = true;
     }
 
     public void destroyAbsoluteTile(int absX, int absY) {
@@ -200,7 +218,7 @@ public class Tilemap {
 
         minRotationSpeed = 0;
         maxRotationSpeed = 0;
-        isInitilized = false;
+        isTilemapInitilized = false;
         speedDiff = 0;
         initTileCount = 0;
         tileCount = 0;

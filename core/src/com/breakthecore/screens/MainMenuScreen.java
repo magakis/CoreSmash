@@ -224,8 +224,8 @@ public class MainMenuScreen extends ScreenBase {
 
     private class UIGameSettings extends UIComponent {
         Slider radiusSlider, minRotSlider, maxRotSlider, sldrBallSpeed, sldrLauncherCooldown, sldrColorCount;
-        Label radiusLbl, minRotLbl, maxRotLbl, ballSpeedLbl, lblLauncherCooldown, lblColorount;
-        CheckBox cbUseMoves, cbUseLives, cbUseTime, cbSpinTheCoreMode;
+        Label radiusLbl, minRotLbl, maxRotLbl, lblBallSpeed, lblLauncherCooldown, lblColorount;
+        CheckBox cbUseMoves, cbUseLives, cbUseTime, cbSpinTheCoreMode;//, cbDrawCircle, cbDrawDiamond, cbDrawStar;
         TextField tfMoves, tfLives, tfTime;
         Table tblCheckboxesWithValues;
 
@@ -247,12 +247,12 @@ public class MainMenuScreen extends ScreenBase {
             final ScrollPane scrollPane = new ScrollPane(settingsTbl);
             scrollPane.setScrollingDisabled(true, false);
             scrollPane.setCancelTouchFocus(false);
-            scrollPane.setOverscroll(false,false);
+            scrollPane.setOverscroll(false, false);
             mainTable.add(scrollPane).colspan(2).expand().fill().row();
 
             Preferences prefs = Gdx.app.getPreferences("game_settings");
             InputListener stopTouchDown = new InputListener() {
-                public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                     event.stop();
                     return false;
                 }
@@ -311,24 +311,24 @@ public class MainMenuScreen extends ScreenBase {
 
             sldrBallSpeed = new Slider(5, 20, 1, false, skin);
             sldrBallSpeed.setValue(prefs.getFloat("ball_speed", 15));
-            ballSpeedLbl = new Label(String.valueOf((int) sldrBallSpeed.getValue()), skin, "comic_48");
+            lblBallSpeed = new Label(String.valueOf((int) sldrBallSpeed.getValue()), skin, "comic_48");
             sldrBallSpeed.addListener(stopTouchDown);
             sldrBallSpeed.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    ballSpeedLbl.setText(String.valueOf((int) sldrBallSpeed.getValue()));
+                    lblBallSpeed.setText(String.valueOf((int) sldrBallSpeed.getValue()));
                 }
             });
-            attachSliderToTable("Ball Speed", sldrBallSpeed, ballSpeedLbl, settingsTbl);
+            attachSliderToTable("Ball Speed", sldrBallSpeed, lblBallSpeed, settingsTbl);
 
             sldrLauncherCooldown = new Slider(0f, 4.8f, .16f, false, skin);
             sldrLauncherCooldown.setValue(prefs.getFloat("launcher_cooldown", 0.16f));
-            lblLauncherCooldown = new Label(String.format(Locale.ENGLISH,"%.2f",sldrLauncherCooldown.getValue()), skin, "comic_48");
+            lblLauncherCooldown = new Label(String.format(Locale.ENGLISH, "%.2f", sldrLauncherCooldown.getValue()), skin, "comic_48");
             sldrLauncherCooldown.addListener(stopTouchDown);
             sldrLauncherCooldown.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    lblLauncherCooldown.setText(String.format(Locale.ENGLISH,"%.2f",sldrLauncherCooldown.getValue()));
+                    lblLauncherCooldown.setText(String.format(Locale.ENGLISH, "%.2f", sldrLauncherCooldown.getValue()));
                 }
             });
             attachSliderToTable("Launcher Cooldown", sldrLauncherCooldown, lblLauncherCooldown, settingsTbl);
@@ -345,10 +345,6 @@ public class MainMenuScreen extends ScreenBase {
             });
             attachSliderToTable("Color Count", sldrColorCount, lblColorount, settingsTbl);
 
-
-            tblCheckboxesWithValues = new Table();
-            tblCheckboxesWithValues.defaults().padBottom(settingsPadding);
-
             TextField.TextFieldListener returnOnNewLineListener = new TextField.TextFieldListener() {
                 public void keyTyped(TextField textField, char key) {
                     if (key == '\n' || key == '\r') {
@@ -358,35 +354,17 @@ public class MainMenuScreen extends ScreenBase {
                 }
             };
 
-            cbUseLives = new CheckBox("Use Lives", skin);
-            cbUseLives.getImageCell().width(cbUseLives.getLabel().getPrefHeight()).height(cbUseLives.getLabel().getPrefHeight()).padRight(15);
-            cbUseLives.getImage().setScaling(Scaling.fill);
-            cbUseLives.setChecked(prefs.getBoolean("lives_enabled", true));
-
-            tfLives = new TextField("", skin);
-            tfLives.setAlignment(Align.center);
-            tfLives.setTextFieldFilter(new TextField.TextFieldFilter.DigitsOnlyFilter());
-            tfLives.setTextFieldListener(returnOnNewLineListener);
+            cbUseLives = createCheckBox("Use Lives", prefs, "lives_enabled", false);
+            tfLives = createTextField(returnOnNewLineListener, prefs, "lives_amount", 3);
             tfLives.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     tfLives.setCursorPosition(tfLives.getText().length());
                 }
             });
-            tfLives.setMaxLength(3);
-            tfLives.setText(String.valueOf(prefs.getInteger("lives_amount", 3)));
 
-            cbUseMoves = new CheckBox("Use Moves", skin);
-            cbUseMoves.getImageCell().width(cbUseMoves.getLabel().getPrefHeight()).height(cbUseMoves.getLabel().getPrefHeight()).padRight(15);
-            cbUseMoves.getImage().setScaling(Scaling.fill);
-            cbUseMoves.setChecked(prefs.getBoolean("moves_enabled", false));
-
-            tfMoves = new TextField("", skin);
-            tfMoves.setAlignment(Align.center);
-            tfMoves.setMaxLength(3);
-            tfMoves.setText(String.valueOf(prefs.getInteger("move_count", 40)));
-            tfMoves.setTextFieldFilter(new TextField.TextFieldFilter.DigitsOnlyFilter());
-            tfMoves.setTextFieldListener(returnOnNewLineListener);
+            cbUseMoves = createCheckBox("Use Moves", prefs, "moves_enabled", true);
+            tfMoves = createTextField(returnOnNewLineListener, prefs, "move_count", 36);
             tfMoves.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
@@ -394,17 +372,8 @@ public class MainMenuScreen extends ScreenBase {
                 }
             });
 
-            cbUseTime = new CheckBox("Use Time", skin);
-            cbUseTime.getImageCell().width(cbUseTime.getLabel().getPrefHeight()).height(cbUseTime.getLabel().getPrefHeight()).padRight(15);
-            cbUseTime.getImage().setScaling(Scaling.fill);
-            cbUseTime.setChecked(prefs.getBoolean("time_enabled", false));
-
-            tfTime = new TextField("", skin);
-            tfTime.setAlignment(Align.center);
-            tfTime.setMaxLength(3);
-            tfTime.setText(String.valueOf(prefs.getInteger("time_amount", 180)));
-            tfTime.setTextFieldFilter(new TextField.TextFieldFilter.DigitsOnlyFilter());
-            tfTime.setTextFieldListener(returnOnNewLineListener);
+            cbUseTime = createCheckBox("Use Time", prefs, "time_enabled", false);
+            tfTime = createTextField(returnOnNewLineListener, prefs, "time_amount", 180);
             tfTime.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
@@ -412,10 +381,10 @@ public class MainMenuScreen extends ScreenBase {
                 }
             });
 
-            cbSpinTheCoreMode = new CheckBox("Spin The Core Mode", skin);
-            cbSpinTheCoreMode.getImageCell().width(cbSpinTheCoreMode.getLabel().getPrefHeight()).height(cbSpinTheCoreMode.getLabel().getPrefHeight()).padRight(15);
-            cbSpinTheCoreMode.getImage().setScaling(Scaling.fill);
-            cbSpinTheCoreMode.setChecked(prefs.getBoolean("spinthecore_enabled", false));
+            cbSpinTheCoreMode = createCheckBox("Spin The Core Mode", prefs, "spinthecore_enabled", false);
+
+            tblCheckboxesWithValues = new Table();
+            tblCheckboxesWithValues.defaults().padBottom(settingsPadding);
 
             tblCheckboxesWithValues.add(cbUseLives).left().padRight(15);
             tblCheckboxesWithValues.add(tfLives).center().width(101).padRight(60);
@@ -427,12 +396,27 @@ public class MainMenuScreen extends ScreenBase {
             tblCheckboxesWithValues.add();
             tblCheckboxesWithValues.add().row();
 
-            tblCheckboxesWithValues.add(cbUseTime).left().padRight(15);
-            tblCheckboxesWithValues.add(tfTime).center().width(101).padRight(60);
-            tblCheckboxesWithValues.add();
-            tblCheckboxesWithValues.add().row();
+            tblCheckboxesWithValues.add(cbUseTime).left().padRight(15).padBottom(0);
+            tblCheckboxesWithValues.add(tfTime).center().width(101).padRight(60).padBottom(0);
+            tblCheckboxesWithValues.add().padBottom(0);
+            tblCheckboxesWithValues.add().padBottom(0).row();
 
-            settingsTbl.add(tblCheckboxesWithValues).colspan(settingsTbl.getColumns()).expandX().left();
+            settingsTbl.add(tblCheckboxesWithValues).colspan(settingsTbl.getColumns()).expandX().left().row();
+//
+//            cbDrawCircle = createCheckBox("Draw Circle", prefs, "draw_circle", true);
+//            cbDrawDiamond = createCheckBox("Draw Diamond", prefs, "draw_diamond", false);
+//            cbDrawStar = createCheckBox("Draw Star", prefs, "draw_star", false);
+//
+//            Table tmGeneration = new Table();
+//            tmGeneration.defaults().padBottom(50);
+//            tmGeneration.add(new Label("~: Map Generation :~",skin, "comic_32"))
+//                    .expandX().center().padBottom(25).row();
+//
+//            tmGeneration.add(cbDrawCircle).left().row();
+//            tmGeneration.add(cbDrawDiamond).left().row();
+//            tmGeneration.add(cbDrawStar).left().row();
+//
+//            settingsTbl.add(tmGeneration).growX().colspan(settingsTbl.getColumns()).left();
 
             //======= Play & Back Buttons =======
             TextButton tbtn = new TextButton("Back", skin);
@@ -454,7 +438,7 @@ public class MainMenuScreen extends ScreenBase {
                     if (tfLives.getText().isEmpty()) tfLives.setText("0");
                     if (tfTime.getText().isEmpty()) tfTime.setText("0");
 
-                    Level dbLevel = new CampaignLevel(999,null) {
+                    Level dbLevel = new CampaignLevel(999, null) {
                         @Override
                         public void initialize(StatsManager statsManager, TilemapManager tilemapManager, MovingTileManager movingTileManager) {
                             Preferences prefs = Gdx.app.getPreferences("game_settings");
@@ -463,7 +447,7 @@ public class MainMenuScreen extends ScreenBase {
                             int initRadius = (int) radiusSlider.getValue();
                             float minRotationSpeed = minRotSlider.getValue();
                             float maxRotationSpeed = maxRotSlider.getValue();
-                            int colorCount = (int)sldrColorCount.getValue();
+                            int colorCount = (int) sldrColorCount.getValue();
 
                             TilemapManager.TilemapGenerator tilemapGenerator = tilemapManager.getTilemapGenerator();
                             tilemapGenerator.setColorCount(colorCount);
@@ -471,8 +455,9 @@ public class MainMenuScreen extends ScreenBase {
                             tilemapManager.init(1);
                             Tilemap tm = tilemapManager.getTilemap(0);
                             tilemapGenerator.generateRadius(tm, initRadius);
-                            tilemapGenerator.reduceColorMatches(tm, 2, 3);
+                            tilemapGenerator.reduceColorMatches(tm, 2, 2);
                             tilemapGenerator.balanceColorAmounts(tm);
+                            tilemapGenerator.forceEachColorOnEveryRadius(tm);
                             tilemapGenerator.reduceCenterTileColorMatch(tm, 2);
 
                             tm.setMinMaxSpeed(minRotationSpeed, maxRotationSpeed);
@@ -503,7 +488,7 @@ public class MainMenuScreen extends ScreenBase {
                             prefs.putBoolean("moves_enabled", cbUseMoves.isChecked());
                             prefs.putInteger("move_count", Integer.parseInt(tfMoves.getText()));
                             prefs.putBoolean("time_enabled", cbUseTime.isChecked());
-                            prefs.putInteger("time_amount",Integer.parseInt(tfTime.getText()));
+                            prefs.putInteger("time_amount", Integer.parseInt(tfTime.getText()));
                             prefs.putBoolean("lives_enabled", cbUseLives.isChecked());
                             prefs.putInteger("lives_amount", Integer.parseInt(tfLives.getText()));
                             prefs.flush();
@@ -515,7 +500,8 @@ public class MainMenuScreen extends ScreenBase {
                         }
 
                         @Override
-                        public void end(boolean roundWon, StatsManager statsManager) {}
+                        public void end(boolean roundWon, StatsManager statsManager) {
+                        }
                     };
 
 
@@ -525,6 +511,24 @@ public class MainMenuScreen extends ScreenBase {
             mainTable.add(tbtn).width(250).height(200).padTop(50).align(Align.right);
 
             setRoot(mainTable);
+        }
+
+        private TextField createTextField(TextField.TextFieldListener backOnNewLineListener, Preferences prefs, String prefName, int defVal) {
+            TextField tf = new TextField("", skin);
+            tf.setAlignment(Align.center);
+            tf.setMaxLength(3);
+            tf.setText(String.valueOf(prefs.getInteger(prefName, defVal)));
+            tf.setTextFieldFilter(new TextField.TextFieldFilter.DigitsOnlyFilter());
+            tf.setTextFieldListener(backOnNewLineListener);
+            return tf;
+        }
+
+        private CheckBox createCheckBox(String name, Preferences prefs, String prefName, boolean defVal) {
+            CheckBox cb = new CheckBox(name, skin);
+            cb.getImageCell().width(cb.getLabel().getPrefHeight()).height(cb.getLabel().getPrefHeight()).padRight(15);
+            cb.getImage().setScaling(Scaling.fill);
+            cb.setChecked(prefs.getBoolean(prefName, defVal));
+            return cb;
         }
 
         private void attachSliderToTable(String name, Slider slider, Label amountLbl, Table tbl) {

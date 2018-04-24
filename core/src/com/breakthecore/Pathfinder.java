@@ -1,5 +1,6 @@
 package com.breakthecore;
 
+import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pool.Poolable;
 import com.breakthecore.tiles.TilemapTile;
 
@@ -8,27 +9,32 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 
+/**
+ * Pathfinder implements a tweaked version of AStar algorithm that doesn't take into account the
+ * G value (cost of path to reach tile) but only the H value (distance from target).
+ *
+ * I've commented out the fields that use the G value so that it can quickly be enabled if needed.
+ */
 public class Pathfinder {
     Node[][] nodeMap;
     ArrayList<Node> opened;
     ArrayList<Node> closed;
-    ArrayList<Node> invalid;
     ArrayList<TilemapTile> path;
+    Pool<Node> nodePool;
     Comparator<Node> compF;
 
     public Pathfinder(int tileMapSize) {
         path = new ArrayList<TilemapTile>();
         opened = new ArrayList<Node>();
         closed = new ArrayList<Node>();
-        invalid = new ArrayList<Node>();
-        int centerTile = tileMapSize/2;
+        nodePool = new Pool<Node>() {
+            @Override
+            protected Node newObject() {
+                return new Node();
+            }
+        };
 
         nodeMap = new Node[tileMapSize][tileMapSize];
-        for (int y = 0; y < tileMapSize; ++y) {
-            for (int x = 0; x < tileMapSize; ++x) {
-                nodeMap[y][x] = new Node(x - centerTile, y - centerTile);
-            }
-        }
 
         compF = new Comparator<Node>() {
             @Override
@@ -38,98 +44,36 @@ public class Pathfinder {
         };
     }
 
-/*
-    public boolean isConnectedToCenterTile(TilemapTile tt, Tilemap tm) {
-        opened.clear();
-        closed.clear();
-
-        opened.add();
-        while (true) {
-            if (curr.getDistanceFromCenter() == 0) return true;
-            getSurroundingTiles(curr, tm, opened, closed);
-            if (opened.size() == 0) return false;
-            Collections.sort(opened, tileValueComp);
-            curr = opened.getFirst();
-            closed.add(curr);
-            opened.remove(curr);
-        }
-    }
-*/
-    private void getSurroundingTiles(TilemapTile tmt, Tilemap tm, LinkedList<TilemapTile> active, ArrayList<TilemapTile> exclude) {
-        Coords2D tpos = tmt.getRelativePosition();
-        int tx =  tpos.x;
-        int ty =  tpos.y;
-
-        TilemapTile tt;
-
-        //top_left
-        tt = tm.getRelativeTile(tx - 1, ty + 1);
-        if (tt != null && !exclude.contains(tt) && !active.contains(tt)) {
-            active.add(tt);
-        }
-
-        //top_right
-        tt = tm.getRelativeTile(tx, ty + 1);
-        if (tt != null && !exclude.contains(tt) && !active.contains(tt)) {
-            active.add(tt);
-        }
-
-        //right
-        tt = tm.getRelativeTile(tx + 1, ty);
-        if (tt != null && !exclude.contains(tt) && !active.contains(tt)) {
-            active.add(tt);
-        }
-
-        //bottom_right
-        tt = tm.getRelativeTile(tx + 1, ty - 1);
-        if (tt != null && !exclude.contains(tt) && !active.contains(tt)) {
-            active.add(tt);
-        }
-
-
-        //bottom_left
-        tt = tm.getRelativeTile(tx, ty - 1);
-        if (tt != null && !exclude.contains(tt) && !active.contains(tt)) {
-            active.add(tt);
-        }
-
-        //left
-        tt = tm.getRelativeTile(tx - 1, ty);
-        if (tt != null && !exclude.contains(tt) && !active.contains(tt)) {
-            active.add(tt);
-        }
-
-    }
-
     public ArrayList<TilemapTile> getPathToCenter(TilemapTile tt, Tilemap tm) {
         Node endNode = getFastestPathForCenter(tt, tm);
 
-        if (endNode == null) return null;
+        if (endNode == null) {
+            reset();
+            return null;
+        }
 
         path.clear();
         do {
             path.add(endNode.tile);
             endNode = endNode.parentNode;
-        } while(endNode != null);
+        } while (endNode != null);
 
+        reset();
         return path;
     }
 
     private Node getFastestPathForCenter(TilemapTile startTile, Tilemap tm) {
-        Coords2D absolutePosition = startTile.getAbsolutePositionInTilemap();
-        int centerTilePos = tm.getCenterTilePos();
+        Coords2D absPos = startTile.getAbsolutePosition();
 
-        Node initNode = nodeMap[ absolutePosition.y][ absolutePosition.x];
+        Node initNode = nodePool.obtain();
+        initNode.init(startTile);
         initNode.parentNode = null;
-        initNode.tile = startTile;
         initNode.G = 0;
         initNode.F = initNode.H;
+        nodeMap[absPos.y][absPos.x] = initNode;
+        opened.add(initNode);
 
         if (initNode.H == 0) return initNode;
-
-        opened.clear();
-        closed.clear();
-        invalid.clear();
 
         evaluateSurroundingNodes(initNode, tm);
 
@@ -138,7 +82,6 @@ public class Pathfinder {
                 return opened.get(0);
             }
             evaluateSurroundingNodes(opened.get(0), tm);
-
             Collections.sort(opened, compF);
         }
 
@@ -146,11 +89,9 @@ public class Pathfinder {
     }
 
     private void evaluateSurroundingNodes(Node midNode, Tilemap tm) {
-        Coords2D posT = midNode.tile.getAbsolutePositionInTilemap();
         int tmSize = tm.getTilemapSize();
-
-        int curX =  posT.x;
-        int curY =  posT.y;
+        int curX = midNode.x;
+        int curY = midNode.y;
         int x, y;
 
         closed.add(midNode);
@@ -201,56 +142,72 @@ public class Pathfinder {
 
     private void evaluateNode(int x, int y, Node midNode, Tilemap tm) {
         Node node = nodeMap[y][x];
-        if (!closed.contains(node) && !invalid.contains(node)) {
-            if (opened.contains(node)) {
+
+        if (node == null) {
+            TilemapTile tmTile = tm.getAbsoluteTile(x, y);
+            if (tmTile == null) return;
+
+            node = nodePool.obtain();
+            node.init(tmTile);
+            node.G = midNode.G + 1;
+            node.F = node.H;//node.G + node.H;
+            node.parentNode = midNode;
+            nodeMap[y][x] = node;
+            opened.add(node);
+        } else {
+            if (!closed.contains(node)) {
                 if (midNode.G + 1 < node.G) {
                     node.parentNode = midNode;
                     node.G = midNode.G + 1;
-                    node.F = node.G + node.H;
-                }
-            } else {
-                node.tile = tm.getAbsoluteTile(x, y);
-                if (node.tile == null) {
-                    invalid.add(node);
-                } else {
-                    node.G = midNode.G + 1;
-                    node.F = node.G + node.H;
-                    node.parentNode = midNode;
-                    opened.add(node);
+                    node.F = node.H;//node.G + node.H;
                 }
             }
         }
     }
 
-    public int getTileDistance(int aX1, int aY1, int aX2, int aY2) {
-        int dx = aX1 - aX2;     // signed deltas
-        int dy = aY1 - aY2;
-        int x = Math.abs(dx);  // absolute deltas
-        int y = Math.abs(dy);
+    /**
+     * Has to be called <u>before</u> a result is returned because it uses an absolute position for
+     * cleanup that is taken from a TilemapTile and it might change if not reset immediately!
+     */
+    private void reset() {
+        for (Node n : opened) {
+            nodeMap[n.y][n.x] = null;
+            nodePool.free(n);
+        }
+        opened.clear();
 
-        return Math.max(x, Math.max(y, Math.abs(dx + dy)));
+        for (Node n : closed) {
+            nodeMap[n.y][n.x] = null;
+            nodePool.free(n);
+        }
+        closed.clear();
     }
 
     private class Node implements Poolable {
-        final Coords2D relativePosition;
-        final int H;
-
-        TilemapTile tile;
-
         Node parentNode;
+        int x, y;
+        TilemapTile tile;
+        int H;
         int G;
         int F;
 
-        private Node(int x, int y) {
-            relativePosition = new Coords2D(x,y);
-            H = getTileDistance(x, y,0,0);
+        void init(TilemapTile tmTile) {
+            tile = tmTile;
+            Coords2D absPos = tmTile.getAbsolutePosition();
+            x = absPos.x;
+            y = absPos.y;
+            H = tmTile.getDistanceFromCenter();
         }
-
 
         @Override
         public void reset() {
             tile = null;
             parentNode = null;
+            H = 0;
+            G = 0;
+            F = 0;
+            x = 0;
+            y = 0;
         }
     }
 }

@@ -20,7 +20,7 @@ public class BombTile extends Tile {
 
         for (int y = collidedTileY - 2; y < collidedTileY + 3; ++y) {
             for (int x = collidedTileX - 2; x < collidedTileX + 3; ++x) {
-                if (tmm.getTileDistance(x, y, collidedTileX, collidedTileY) < 2) {
+                if (tm.getTileDistance(x, y, collidedTileX, collidedTileY) < 2) {
                     tm.destroyRelativeTile(x, y);
                 }
             }

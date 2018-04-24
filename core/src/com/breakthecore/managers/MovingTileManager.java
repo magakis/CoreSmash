@@ -416,8 +416,15 @@ public class MovingTileManager extends Observable {
 
             Arrays.sort(colorGroups, sortColors);
 
+            // set amounts of 2 to 1 so that if any ball exists in launcher or is currently traveling,
+            // will nullify the chances of that color spawning again.
             for (int i = 0; i < colorCount; ++i) {
-                colorGroups[i].set(arrOfColorAmounts[i]);
+                int amount = arrOfColorAmounts[i];
+                if (amount == 2) {
+                    amount = 1;
+                    --totalAmount;
+                }
+                colorGroups[i].set(amount);
             }
 
             // Remove the amounts on the launcher
@@ -429,6 +436,7 @@ public class MovingTileManager extends Observable {
                 }
             }
 
+            // Remove the amounts currently traveling
             for (MovingTile mt : activeList) {
                 int color = mt.getColor();
                 if (colorGroups[color].amount > 0) {
