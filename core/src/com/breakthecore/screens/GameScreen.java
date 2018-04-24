@@ -52,8 +52,6 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private Level activeLevel;
 
-    private InputProcessor gameGestureDetector;
-
     private boolean isGameActive;
     private boolean roundWon;
 
@@ -80,7 +78,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
         tilemapManager = new TilemapManager();
 
-        gameGestureDetector = new CustomGestureDetector(new GameInputListener());
+        InputProcessor gameGestureDetector = new CustomGestureDetector(new GameInputListener());
 
         isGameActive = true;
 
@@ -135,7 +133,6 @@ public class GameScreen extends ScreenBase implements Observer {
         }
         renderManager.drawLauncher(movingTileManager.getLauncherQueue(), movingTileManager.getLauncherPos());
         renderManager.draw(movingTileManager.getActiveList());
-        renderManager.DBTileColor(tilemapManager.getTilemap(0));
         renderManager.end();
 
         renderManager.renderCenterDot(m_camera.combined);
