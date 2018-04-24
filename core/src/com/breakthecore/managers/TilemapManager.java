@@ -266,7 +266,17 @@ public class TilemapManager extends Observable implements Observer {
             compSizes = new Comparator<ColorGroupContainer>() {
                 @Override
                 public int compare(ColorGroupContainer o1, ColorGroupContainer o2) {
-                    return o1.list.size() > o2.list.size() ? 1 : -1;
+                    if (o1.groupColor < colorCount) {
+                        if (o2.groupColor < colorCount) {
+                            return o1.list.size() < o2.list.size() ? -1 : 1;
+                        } else {
+                            return -1;
+                        }
+                    } else if (o2.groupColor < colorCount) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
                 }
             };
 
@@ -412,13 +422,12 @@ public class TilemapManager extends Observable implements Observer {
             resetColorGroupContainers();
             fillColorGroupContainers(tm);
             int aver = tm.getTileCount() / colorCount;
-            int minIndex = 10 - colorCount;
-            int maxIndex = 9;
+            int maxIndex = colorCount-1;
 
             Arrays.sort(colors, compSizes);
 
-            while (colors[minIndex].list.size() < aver) {
-                ColorGroupContainer cgcLeastFilled = colors[minIndex];
+            while (colors[0].list.size() < aver) {
+                ColorGroupContainer cgcLeastFilled = colors[0];
                 ColorGroupContainer cgcMostFilled = colors[maxIndex];
 
                 TilemapTile tmTile = cgcMostFilled.list.get(rand.nextInt(cgcMostFilled.list.size()));

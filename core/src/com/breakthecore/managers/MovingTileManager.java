@@ -342,7 +342,6 @@ public class MovingTileManager extends Observable {
     }
 
     /**
-     * XXX: Horrible implementation
      * Color reloading in launcher can be done in a separate thread!
      */
     private class ChanceColorPicker {
@@ -380,25 +379,6 @@ public class MovingTileManager extends Observable {
                 } else {
                     if (o2.enabled) {
                         return 1;
-                    } else {
-                        return 0;
-                    }
-                }
-            }
-        };
-
-        private Comparator sortEnabled = new Comparator<ColorGroup>() {
-            @Override
-            public int compare(ColorGroup o1, ColorGroup o2) {
-                if (o1.enabled) {
-                    if (o2.enabled) {
-                        return o1.skip ? -1 : 1;
-                    } else {
-                        return 1;
-                    }
-                } else {
-                    if (o2.enabled) {
-                        return -1;
                     } else {
                         return 0;
                     }
@@ -469,17 +449,7 @@ public class MovingTileManager extends Observable {
                     }
                 }
 
-                int color = colorGroups[rand.nextInt(enabledCount)].groupColor;
-                String string = "\nColor: "+ color +"\n";
-                for (int i = 0; i < colorGroups.length; ++i) {
-                    ColorGroup cg = colorGroups[i];
-                    if (!cg.enabled) break;
-                    if (cg.skip) string += "SKIPPED:\n";
-                    string += cg.groupColor+":"+ cg.amount + "\n";
-                }
-                Gdx.app.log("ColorPicker", string);
-
-                return color;
+                return colorGroups[rand.nextInt(enabledCount)].groupColor;
             }
 
             int index = rand.nextInt(maxIndex);
@@ -490,18 +460,8 @@ public class MovingTileManager extends Observable {
             do {
                 sum += colorGroups[i++].amount;
             } while (sum < index);
-            int color = colorGroups[i - 1].groupColor;
 
-            String string = "\nColor: "+ color +"\n";
-            for (i = 0; i < colorGroups.length; ++i) {
-                ColorGroup cg = colorGroups[i];
-                if (!cg.enabled) break;
-                if (cg.skip) string += "SKIPPED:\n";
-                string += cg.groupColor+":"+ cg.amount + "\n";
-            }
-            Gdx.app.log("ColorPicker", string);
-
-            return color;
+            return colorGroups[i - 1].groupColor;
         }
 
         public void load(int[] arrOfColorAmounts, int total) {
@@ -523,7 +483,6 @@ public class MovingTileManager extends Observable {
                 }
             }
         }
-
 
         private class ColorGroup {
             private final int groupColor;
@@ -547,35 +506,3 @@ public class MovingTileManager extends Observable {
         }
     }
 }
-
-/*
-
-            // set amounts of 2 to 1 so that if any ball exists in launcher or is currently traveling,
-            // will nullify the chances of that color spawning again.
-            for (int i = 0; i < colorCount; ++i) {
-                int amount = arrOfColorAmounts[i];
-                if (amount == 2) {
-                    amount = 1;
-                    --totalAmount;
-                }
-                colorGroups[i].set(amount);
-            }
-
-            // Remove the amounts on the launcher
-            for (MovingTile mt : launcher) {
-                int color = mt.getColor();
-                if (colorGroups[color].amount > 0) {
-                    --colorGroups[color].amount;
-                    --totalAmount;
-                }
-            }
-
-            // Remove the amounts currently traveling
-            for (MovingTile mt : activeList) {
-                int color = mt.getColor();
-                if (colorGroups[color].amount > 0) {
-                    --colorGroups[color].amount;
-                    --totalAmount;
-                }
-            }
- */

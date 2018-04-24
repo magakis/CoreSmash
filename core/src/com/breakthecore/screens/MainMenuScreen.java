@@ -457,7 +457,7 @@ public class MainMenuScreen extends ScreenBase {
                             tilemapGenerator.generateRadius(tm, initRadius);
                             tilemapGenerator.reduceColorMatches(tm, 2, 2);
                             tilemapGenerator.balanceColorAmounts(tm);
-                            tilemapGenerator.forceEachColorOnEveryRadius(tm);
+//                            tilemapGenerator.forceEachColorOnEveryRadius(tm);
                             tilemapGenerator.reduceCenterTileColorMatch(tm, 2);
 
                             tm.setMinMaxSpeed(minRotationSpeed, maxRotationSpeed);
