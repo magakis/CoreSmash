@@ -1,5 +1,6 @@
 package com.breakthecore.managers;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Queue;
@@ -225,7 +226,7 @@ public class MovingTileManager extends Observable {
 
         chanceColorPicker.load(amountOfColor, totalTiles);
         if (launcher.size > 0) {
-            chanceColorPicker.disabledColor = launcher.last().getColor();
+            chanceColorPicker.colorGroups[launcher.last().getColor()].skip = true;
         }
         return chanceColorPicker.get();
     }
@@ -342,22 +343,66 @@ public class MovingTileManager extends Observable {
 
     /**
      * XXX: Horrible implementation
+     * Color reloading in launcher can be done in a separate thread!
      */
     private class ChanceColorPicker {
         private ColorGroup[] colorGroups;
-        private ColorGroup cgDisabled;
-        private int disabledColor = -1;
         private int totalAmount;
+
         private Comparator sortColors = new Comparator<ColorGroup>() {
             @Override
             public int compare(ColorGroup o1, ColorGroup o2) {
                 return o1.groupColor > o2.groupColor ? 1 : -1;
             }
         };
+
         private Comparator sortAmounts = new Comparator<ColorGroup>() {
             @Override
             public int compare(ColorGroup o1, ColorGroup o2) {
-                return o1.amount > o2.amount ? 1 : -1;
+                if (o1.enabled) {
+                    if (o2.enabled) {
+                        if (o1.skip) {
+                            if (o2.skip) {
+                                return o1.amount < o2.amount ? -1 : 1;
+                            } else {
+                                return 1;
+                            }
+                        } else {
+                            if (o2.skip) {
+                                return -1;
+                            } else {
+                                return o1.amount < o2.amount ? -1 : 1;
+                            }
+                        }
+                    } else {
+                        return -1;
+                    }
+                } else {
+                    if (o2.enabled) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+            }
+        };
+
+        private Comparator sortEnabled = new Comparator<ColorGroup>() {
+            @Override
+            public int compare(ColorGroup o1, ColorGroup o2) {
+                if (o1.enabled) {
+                    if (o2.enabled) {
+                        return o1.skip ? -1 : 1;
+                    } else {
+                        return 1;
+                    }
+                } else {
+                    if (o2.enabled) {
+                        return -1;
+                    } else {
+                        return 0;
+                    }
+                }
             }
         };
 
@@ -366,55 +411,144 @@ public class MovingTileManager extends Observable {
             for (int i = 0; i < colorGroups.length; ++i) {
                 colorGroups[i] = new ColorGroup(i);
             }
-            cgDisabled = new ColorGroup(999);
         }
 
         public int get() {
-            ColorGroup tmp = cgDisabled;
-            if (disabledColor != -1) {
-                for (int i = 0; i < colorGroups.length; ++i) {
-                    tmp = colorGroups[i];
-                    if (tmp.groupColor == disabledColor) {
-                        colorGroups[i] = cgDisabled;
-                        break;
-                    }
+            int maxIndex = totalAmount;
+
+            for (MovingTile mt : activeList) {
+                int color = mt.getColor();
+                int amount = colorGroups[color].amount;
+                if (amount == 2) {
+                    maxIndex -=2;
+                    colorGroups[color].amount = 0;
+                } else if (amount < 2) {
+                    ++colorGroups[color].amount;
+                    ++maxIndex;
+                }
+            }
+
+            for (MovingTile mt : launcher) {
+                int color = mt.getColor();
+                int amount = colorGroups[color].amount;
+                if (amount == 2) {
+                    maxIndex -=2;
+                    colorGroups[color].amount = 0;
+                } else if (amount < 2) {
+                    ++colorGroups[color].amount;
+                    ++maxIndex;
                 }
             }
 
             Arrays.sort(colorGroups, sortAmounts);
 
-            int maxIndex = totalAmount - tmp.amount;
-            int index = rand.nextInt(maxIndex)+1;
-            int sum = 0;
+            for (ColorGroup cg : colorGroups) {
+                if (cg.skip || !cg.enabled) {
+                    maxIndex -= cg.amount;
+                }
+            }
 
-            int i = 0;
-            do {
-                sum += colorGroups[i++].amount;
-            } while (sum < index);
+            if (maxIndex == 0) {
+                int enabledCount = 0;
 
-            int color = colorGroups[i - 1].groupColor;
-
-            if (disabledColor != -1) {
-                for (i = 0; i < colorGroups.length; ++i) {
-                    if (colorGroups[i].groupColor == cgDisabled.groupColor) {
-                        colorGroups[i] = tmp;
+                for (ColorGroup cg : colorGroups) {
+                    if (cg.enabled && !cg.skip) {
+                        ++enabledCount;
+                    } else {
                         break;
                     }
                 }
+
+                if (enabledCount == 0) {
+                    for (ColorGroup cg : colorGroups) {
+                        if (cg.enabled) {
+                            ++enabledCount;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+
+                int color = colorGroups[rand.nextInt(enabledCount)].groupColor;
+                String string = "\nColor: "+ color +"\n";
+                for (int i = 0; i < colorGroups.length; ++i) {
+                    ColorGroup cg = colorGroups[i];
+                    if (!cg.enabled) break;
+                    if (cg.skip) string += "SKIPPED:\n";
+                    string += cg.groupColor+":"+ cg.amount + "\n";
+                }
+                Gdx.app.log("ColorPicker", string);
+
+                return color;
             }
+
+            int index = rand.nextInt(maxIndex);
+            int sum = 0;
+            int i = 0;
+            while (colorGroups[i].amount == 0) ++i;
+
+            do {
+                sum += colorGroups[i++].amount;
+            } while (sum < index);
+            int color = colorGroups[i - 1].groupColor;
+
+            String string = "\nColor: "+ color +"\n";
+            for (i = 0; i < colorGroups.length; ++i) {
+                ColorGroup cg = colorGroups[i];
+                if (!cg.enabled) break;
+                if (cg.skip) string += "SKIPPED:\n";
+                string += cg.groupColor+":"+ cg.amount + "\n";
+            }
+            Gdx.app.log("ColorPicker", string);
 
             return color;
         }
 
         public void load(int[] arrOfColorAmounts, int total) {
             totalAmount = total;
-            disabledColor = -1;
 
-            for (int i = 0; i < colorGroups.length; ++i) {
-                colorGroups[i].reset();
+            for (ColorGroup colorGroup : colorGroups) {
+                colorGroup.reset();
             }
 
             Arrays.sort(colorGroups, sortColors);
+
+            for (int i = 0; i < arrOfColorAmounts.length; ++i) {
+                colorGroups[i].amount = arrOfColorAmounts[i];
+            }
+
+            for (ColorGroup colorGroup : colorGroups) {
+                if (colorGroup.groupColor < colorCount && colorGroup.amount > 0) {
+                    colorGroup.enabled = true;
+                }
+            }
+        }
+
+
+        private class ColorGroup {
+            private final int groupColor;
+            private int amount;
+            private boolean enabled;
+            private boolean skip;
+
+            public ColorGroup(int color) {
+                groupColor = color;
+            }
+
+            public void set(int amount) {
+                this.amount = amount;
+            }
+
+            public void reset() {
+                amount = 0;
+                enabled = false;
+                skip = false;
+            }
+        }
+    }
+}
+
+/*
 
             // set amounts of 2 to 1 so that if any ball exists in launcher or is currently traveling,
             // will nullify the chances of that color spawning again.
@@ -444,24 +578,4 @@ public class MovingTileManager extends Observable {
                     --totalAmount;
                 }
             }
-        }
-
-
-        private class ColorGroup {
-            private final int groupColor;
-            private int amount;
-
-            public ColorGroup(int color) {
-                groupColor = color;
-            }
-
-            public void set(int amount) {
-                this.amount = amount;
-            }
-
-            public void reset() {
-                amount = 0;
-            }
-        }
-    }
-}
+ */

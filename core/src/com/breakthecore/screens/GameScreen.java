@@ -135,6 +135,7 @@ public class GameScreen extends ScreenBase implements Observer {
         }
         renderManager.drawLauncher(movingTileManager.getLauncherQueue(), movingTileManager.getLauncherPos());
         renderManager.draw(movingTileManager.getActiveList());
+        renderManager.DBTileColor(tilemapManager.getTilemap(0));
         renderManager.end();
 
         renderManager.renderCenterDot(m_camera.combined);
