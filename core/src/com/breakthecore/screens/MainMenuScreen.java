@@ -224,15 +224,17 @@ public class MainMenuScreen extends ScreenBase {
 
     private class UIGameSettings extends UIComponent {
         Slider radiusSlider, minRotSlider, maxRotSlider, sldrBallSpeed, sldrLauncherCooldown, sldrColorCount;
-        Label radiusLbl, minRotLbl, maxRotLbl, lblBallSpeed, lblLauncherCooldown, lblColorount;
+        Label radiusLbl, minRotLbl, maxRotLbl, lblBallSpeed, lblLauncherCooldown, lblColorount, lblDifficulty;
         CheckBox cbUseMoves, cbUseLives, cbUseTime, cbSpinTheCoreMode;//, cbDrawCircle, cbDrawDiamond, cbDrawStar;
         TextField tfMoves, tfLives, tfTime;
         Table tblCheckboxesWithValues;
+        StatsManager.ScoreMultiplier scoreMultiplier;
 
         final int settingsPadding = 50;
 
         // XXX(14/4/2018): *TOO* many magic values
         public UIGameSettings() {
+            scoreMultiplier = new StatsManager.ScoreMultiplier();
             Table mainTable = new Table();
             mainTable.setFillParent(true);
 
@@ -248,13 +250,20 @@ public class MainMenuScreen extends ScreenBase {
             scrollPane.setScrollingDisabled(true, false);
             scrollPane.setCancelTouchFocus(false);
             scrollPane.setOverscroll(false, false);
-            mainTable.add(scrollPane).colspan(2).expand().fill().row();
+            mainTable.add(scrollPane).colspan(3).expand().fill().row();
 
             Preferences prefs = Gdx.app.getPreferences("game_settings");
             InputListener stopTouchDown = new InputListener() {
                 public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                     event.stop();
                     return false;
+                }
+            };
+
+            ChangeListener updateDifficultyListener = new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    updateDifficulty();
                 }
             };
 
@@ -340,6 +349,7 @@ public class MainMenuScreen extends ScreenBase {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     lblColorount.setText(String.valueOf((int) sldrColorCount.getValue()));
+                    updateDifficulty();
                 }
             });
             attachSliderToTable("Color Count", sldrColorCount, lblColorount, settingsTbl);
@@ -354,6 +364,7 @@ public class MainMenuScreen extends ScreenBase {
             };
 
             cbUseLives = createCheckBox("Use Lives", prefs, "lives_enabled", false);
+            cbUseLives.addListener(updateDifficultyListener);
             tfLives = createTextField(returnOnNewLineListener, prefs, "lives_amount", 3);
             tfLives.addListener(new ClickListener() {
                 @Override
@@ -361,9 +372,12 @@ public class MainMenuScreen extends ScreenBase {
                     tfLives.setCursorPosition(tfLives.getText().length());
                 }
             });
+            tfLives.addListener(updateDifficultyListener);
 
             cbUseMoves = createCheckBox("Use Moves", prefs, "moves_enabled", true);
+            cbUseMoves.addListener(updateDifficultyListener);
             tfMoves = createTextField(returnOnNewLineListener, prefs, "move_count", 36);
+            tfMoves.addListener(updateDifficultyListener);
             tfMoves.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
@@ -372,7 +386,9 @@ public class MainMenuScreen extends ScreenBase {
             });
 
             cbUseTime = createCheckBox("Use Time", prefs, "time_enabled", false);
+            cbUseTime.addListener(updateDifficultyListener);
             tfTime = createTextField(returnOnNewLineListener, prefs, "time_amount", 180);
+            tfTime.addListener(updateDifficultyListener);
             tfTime.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
@@ -429,6 +445,11 @@ public class MainMenuScreen extends ScreenBase {
             });
             mainTable.add(tbtn).width(250).height(200).padTop(50).align(Align.left);
 
+            lblDifficulty = new Label("null", skin, "comic_48b");
+            lblDifficulty.setAlignment(Align.center);
+            updateDifficulty();
+            mainTable.add(lblDifficulty).expandX();
+
             tbtn = new TextButton("Play", skin);
             tbtn.addListener(new ChangeListener() {
                 @Override
@@ -477,6 +498,11 @@ public class MainMenuScreen extends ScreenBase {
                             statsManager.setMoves(cbUseMoves.isChecked(), Integer.parseInt(tfMoves.getText()));
                             statsManager.setTime(cbUseTime.isChecked(), Integer.parseInt(tfTime.getText()));
                             statsManager.setSpecialBallCount(0);
+                            statsManager.getScoreMultiplier().setup(
+                                    colorCount,
+                                    cbUseLives.isChecked(), Integer.parseInt(tfLives.getText()),
+                                    cbUseMoves.isChecked(), Integer.parseInt(tfMoves.getText()),
+                                    cbUseTime.isChecked(), Integer.parseInt(tfTime.getText()));
 
                             prefs.putBoolean("spinthecore_enabled", spinTheCoreEnabled);
                             prefs.putInteger("init_radius", initRadius);
@@ -513,6 +539,19 @@ public class MainMenuScreen extends ScreenBase {
             setRoot(mainTable);
         }
 
+        private void updateDifficulty() {
+            int lives = tfLives.getText() != "" ?Integer.parseInt(tfLives.getText()) : 0;
+            int moves = tfMoves.getText() != "" ?Integer.parseInt(tfMoves.getText()) : 0;
+            int time = tfTime.getText() != "" ?Integer.parseInt(tfTime.getText()) : 0;
+
+            scoreMultiplier.setup(
+                    (int) sldrColorCount.getValue(),
+                    cbUseLives.isChecked(), lives,
+                    cbUseMoves.isChecked(), moves,
+                    cbUseTime.isChecked(), time);
+            lblDifficulty.setText(String.format(Locale.ENGLISH,"Difficulty:\n %.2f", scoreMultiplier.get()));
+        }
+
         private TextField createTextField(TextField.TextFieldListener backOnNewLineListener, Preferences prefs, String prefName, int defVal) {
             TextField tf = new TextField("", skin);
             tf.setAlignment(Align.center);
@@ -535,7 +574,7 @@ public class MainMenuScreen extends ScreenBase {
             Label dummy = new Label(name + ":", skin, "comic_48b");
             tbl.add(dummy).padRight(30).align(Align.right).padBottom(5);
             tbl.add(amountLbl).align(Align.left).padBottom(5).expandX().row();
-            tbl.add(slider).colspan(2).fill().expandX().row();
+            tbl.add(slider).colspan(tbl.getColumns()).fill().expandX().row();
         }
     }
 

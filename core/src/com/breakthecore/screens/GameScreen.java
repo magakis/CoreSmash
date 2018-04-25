@@ -36,6 +36,8 @@ import com.breakthecore.WorldSettings;
 import com.breakthecore.tiles.MovingTile;
 import com.breakthecore.ui.UIComponent;
 
+import java.util.Locale;
+
 /**
  * Created by Michail on 17/3/2018.
  */
@@ -54,7 +56,6 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private boolean isGameActive;
     private boolean roundWon;
-
 
     //===========
     private DebugUI debugUI;
@@ -207,6 +208,7 @@ public class GameScreen extends ScreenBase implements Observer {
 //            debugUI.dblb1.getText().append(i + ": " + colors[i]+ "\n");
 //        }
 
+        debugUI.dblb3.setText(String.format(Locale.ENGLISH,"Diff: %.2f",statsManager.getDifficultyMultiplier()));
         isGameActive = true;
         gameInstance.setScreen(this);
     }

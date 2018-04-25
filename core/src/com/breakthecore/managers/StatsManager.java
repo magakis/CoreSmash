@@ -10,6 +10,7 @@ import java.util.Random;
 
 public class StatsManager extends Observable implements Observer {
     private Random rand = new Random();
+    private ScoreMultiplier scoreMultiplier = new ScoreMultiplier();
     private int score;
 
     private int lives;
@@ -44,7 +45,7 @@ public class StatsManager extends Observable implements Observer {
                     multiplier = 15;
                     break;
             }
-            scoreGained = ballsDestroyedThisFrame * multiplier;
+            scoreGained = (int) (ballsDestroyedThisFrame * scoreMultiplier.get() * multiplier);
             score += scoreGained;
             notifyObservers(NotificationType.NOTIFICATION_TYPE_SCORE_INCREMENTED, scoreGained);
 
@@ -65,6 +66,7 @@ public class StatsManager extends Observable implements Observer {
     }
 
     public void reset() {
+        scoreMultiplier.reset();
         score = 0;
         gameMode = null;
         ballsDestroyedThisFrame = 0;
@@ -75,6 +77,14 @@ public class StatsManager extends Observable implements Observer {
         time = 0;
         isLivesEnabled = false;
         lives = 0;
+    }
+
+    public ScoreMultiplier getScoreMultiplier() {
+        return scoreMultiplier;
+    }
+
+    public float getDifficultyMultiplier() {
+        return scoreMultiplier.get();
     }
 
     public int getScore() {
@@ -167,6 +177,86 @@ public class StatsManager extends Observable implements Observer {
                     notifyObservers(NotificationType.MOVES_AMOUNT_CHANGED, moves);
                 }
                 break;
+        }
+    }
+
+    public static class ScoreMultiplier {
+        private float multiplier = 1;
+
+        public ScoreMultiplier() {}
+
+        public void setup(int colorCount,
+                           boolean livesEnabled, int lives,
+                           boolean movesEnabled, int moves,
+                           boolean timeEnabled, int timeAmount)
+        {
+            if (!livesEnabled) {
+                multiplier = 0;
+                return;
+            }
+
+            switch (colorCount) {
+                case 1:
+                    multiplier = 0.05f;
+                    break;
+                case 2:
+                    multiplier = 0.1f;
+                    break;
+                case 3:
+                    multiplier = 0.2f;
+                    break;
+                case 4:
+                    multiplier = 0.6f;
+                    break;
+                case 5:
+                    multiplier = 0.8f;
+                    break;
+                case 6:
+                    multiplier = 1f;
+                    break;
+                case 7:
+                    multiplier = 1.2f;
+                    break;
+                case 8:
+                    multiplier = 1.4f;
+                    break;
+            }
+
+            if (livesEnabled) {
+                float multiplierFromLives;
+                switch (lives) {
+                    case 1:
+                        multiplierFromLives = 2;
+                        break;
+                    case 2:
+                        multiplierFromLives = 1.5f;
+                        break;
+                    case 3:
+                        multiplierFromLives = 1;
+                        break;
+                    case 4:
+                        multiplierFromLives = .8f;
+                        break;
+                    case 5:
+                        multiplierFromLives = .6f;
+                        break;
+                    default:
+                        multiplierFromLives = .4f;
+                        break;
+                }
+
+
+
+                multiplier *= multiplierFromLives;
+            }
+        }
+
+        public float get() {
+            return multiplier;
+        }
+
+        public void reset() {
+            multiplier = 1;
         }
     }
 }
