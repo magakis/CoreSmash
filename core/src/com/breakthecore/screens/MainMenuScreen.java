@@ -258,7 +258,6 @@ public class MainMenuScreen extends ScreenBase {
                 }
             };
 
-
             radiusSlider = new Slider(1, 8, 1, false, skin);
             radiusSlider.setValue(prefs.getInteger("init_radius", 4));
             radiusLbl = new Label(String.valueOf((int) radiusSlider.getValue()), skin, "comic_48");
@@ -456,7 +455,9 @@ public class MainMenuScreen extends ScreenBase {
                             Tilemap tm = tilemapManager.getTilemap(0);
                             tilemapGenerator.generateRadius(tm, initRadius);
                             tilemapGenerator.reduceColorMatches(tm, 2, 2);
-                            tilemapGenerator.balanceColorAmounts(tm);
+                            if (colorCount > 1) {
+                                tilemapGenerator.balanceColorAmounts(tm);
+                            }
                             tilemapGenerator.forceEachColorOnEveryRadius(tm);
                             tilemapGenerator.reduceCenterTileColorMatch(tm, 2);
 
@@ -470,7 +471,6 @@ public class MainMenuScreen extends ScreenBase {
                             movingTileManager.setDefaultBallSpeed((int) sldrBallSpeed.getValue());
                             movingTileManager.enableControlledBallGeneration(tilemapManager);
                             movingTileManager.initLauncher(3);
-
 
                             statsManager.setGameMode(spinTheCoreEnabled ? GameMode.SPIN_THE_CORE : GameMode.CLASSIC);
                             statsManager.setLives(cbUseLives.isChecked(), Integer.parseInt(tfLives.getText()));

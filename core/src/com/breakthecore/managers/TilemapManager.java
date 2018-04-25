@@ -253,6 +253,7 @@ public class TilemapManager extends Observable implements Observer {
         private int colorCount;
         private ColorGroupContainer[] colors;
         private Comparator<ColorGroupContainer> compSizes;
+        private Comparator<ColorGroupContainer> compColors;
         private Comparator<TilemapTile> compDistance;
 
         private TilemapGenerator(TilemapManager tilemapManager) {
@@ -263,12 +264,21 @@ public class TilemapManager extends Observable implements Observer {
                 colors[i] = new ColorGroupContainer(i);
             }
 
+            compColors = new Comparator<ColorGroupContainer>() {
+                @Override
+                public int compare(ColorGroupContainer o1, ColorGroupContainer o2) {
+                    // Doesn't account equality cause it should never happen in the first place!
+                    return o1.groupColor < o2.groupColor ? -1 : 1;
+                }
+            };
+
             compSizes = new Comparator<ColorGroupContainer>() {
                 @Override
                 public int compare(ColorGroupContainer o1, ColorGroupContainer o2) {
                     if (o1.groupColor < colorCount) {
                         if (o2.groupColor < colorCount) {
-                            return o1.list.size() < o2.list.size() ? -1 : 1;
+                            return o1.list.size() < o2.list.size() ? -1 :
+                                    o1.list.size() > o2.list.size() ? 1 : 0;
                         } else {
                             return -1;
                         }
@@ -283,7 +293,8 @@ public class TilemapManager extends Observable implements Observer {
             compDistance = new Comparator<TilemapTile>() {
                 @Override
                 public int compare(TilemapTile o1, TilemapTile o2) {
-                    return o1.getDistanceFromCenter() > o2.getDistanceFromCenter() ? 1 : -1;
+                    return o1.getDistanceFromCenter() < o2.getDistanceFromCenter() ? -1 :
+                            o1.getDistanceFromCenter() > o2.getDistanceFromCenter() ? 1 : 0;
                 }
             };
         }
@@ -441,7 +452,6 @@ public class TilemapManager extends Observable implements Observer {
         }
 
         public void forceEachColorOnEveryRadius(Tilemap tm) {
-            resetColorGroupContainers();
             fillColorGroupContainers(tm);
 
             for (ColorGroupContainer cgc : colors) {
@@ -565,9 +575,10 @@ public class TilemapManager extends Observable implements Observer {
         }
 
         private void resetColorGroupContainers() {
-            for (int i = 0; i < 10; ++i) {
-                colors[i].reset(i);
+            for (ColorGroupContainer cgc : colors) {
+                cgc.reset();
             }
+            Arrays.sort(colors, compColors);
         }
 
         private class ColorGroupContainer {
@@ -579,8 +590,7 @@ public class TilemapManager extends Observable implements Observer {
                 list = new ArrayList<TilemapTile>();
             }
 
-            public void reset(int color) {
-                groupColor = color;
+            public void reset() {
                 list.clear();
             }
         }
