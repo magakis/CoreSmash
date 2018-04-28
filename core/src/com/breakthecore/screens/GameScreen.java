@@ -167,7 +167,7 @@ public class GameScreen extends ScreenBase implements Observer {
         debugUI.dblb2.setText("FPS: "+ Gdx.graphics.getFramesPerSecond());
     }
 
-    public void endGame() {
+    private void endGame() {
         isGameActive = false;
         m_resultUI.update();
         stage.clear();
@@ -175,13 +175,17 @@ public class GameScreen extends ScreenBase implements Observer {
         int score = statsManager.getScore();
 
         if (activeLevel != null) {
-            Preferences prefs = Gdx.app.getPreferences("highscores");
-            if (score > prefs.getInteger("level" + activeLevel.getLevelNumber(), 0)) {
-                prefs.putInteger("level" + activeLevel.getLevelNumber(), score);
-                prefs.flush();
+            if (roundWon) {
+                Preferences prefs = Gdx.app.getPreferences("account");
+                if (score > prefs.getInteger("level" + activeLevel.getLevelNumber(), 0)) {
+                    prefs.putInteger("level" + activeLevel.getLevelNumber(), score);
+                    prefs.flush();
+                }
+                gameInstance.getUserAccount().addScore(score, statsManager.getDifficultyMultiplier());
             }
             activeLevel.end(roundWon, statsManager);
         }
+
     }
 
     public void deployLevel(Level level) {
@@ -191,7 +195,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
         gameUI.setup();
         if (activeLevel != null) {
-            gameUI.lblHighscore.setText(String.valueOf(Gdx.app.getPreferences("highscores").getInteger("level" + activeLevel.getLevelNumber(), 0)));
+            gameUI.lblHighscore.setText(String.valueOf(Gdx.app.getPreferences("account").getInteger("level" + activeLevel.getLevelNumber(), 0)));
         }
         gameUI.lblLives.setText(String.valueOf(statsManager.getLives()));
         gameUI.tbPower1.setText(String.valueOf(statsManager.getSpecialBallCount()));
@@ -245,12 +249,11 @@ public class GameScreen extends ScreenBase implements Observer {
                 break;
 
             case MOVES_AMOUNT_CHANGED:
-                int moves = (Integer) ob;
+                int moves = statsManager.getMoves();
                 gameUI.lblMoves.setText(String.valueOf(moves));
-                if (moves < 0) {
-                    isGameActive = false;
-                    roundWon = false;
-                    endGame();
+                if (statsManager.isMovesEnabled() && moves == movingTileManager.getLauncherSize()) {
+                    movingTileManager.setLastTileColor(tilemapManager.getTilemap(0).getRelativeTile(0, 0).getColor());
+                    movingTileManager.setAutoReloadEnabled(false);
                 }
                 break;
         }
@@ -279,10 +282,6 @@ public class GameScreen extends ScreenBase implements Observer {
             switch (statsManager.getGameMode()) {
                 case CLASSIC:
                     movingTileManager.eject();
-                    if (statsManager.isMovesEnabled() && statsManager.getMoves() == movingTileManager.getLauncherSize()) {
-                        movingTileManager.setLastTileColor(tilemapManager.getTilemap(0).getRelativeTile(0, 0).getColor());
-                        movingTileManager.setAutoReloadEnabled(false);
-                    }
                     break;
             }
             return true;
@@ -370,7 +369,6 @@ public class GameScreen extends ScreenBase implements Observer {
         public boolean keyDown(int keycode) {
             if (keycode == Input.Keys.BACK) {
                 gameInstance.setPrevScreen();
-                return false;
             }
             return false;
         }

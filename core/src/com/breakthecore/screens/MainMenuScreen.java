@@ -30,6 +30,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.breakthecore.BreakTheCoreGame;
 import com.breakthecore.Tilemap;
+import com.breakthecore.UserAccount;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.levels.CampaignLevel;
 import com.breakthecore.levels.Level;
@@ -48,6 +49,7 @@ import java.util.Locale;
 public class MainMenuScreen extends ScreenBase {
     private GameScreen gameScreen;
     private CampaignScreen campaignScreen;
+    private ScoresScreen scoresScreen;
     private Stage stage;
     private Skin skin;
     private Stack rootStack;
@@ -59,7 +61,14 @@ public class MainMenuScreen extends ScreenBase {
         screenInputMultiplexer.addProcessor(new BackButtonInputHandler());
         screenInputMultiplexer.addProcessor(stage);
         setupMainMenuStage(stage);
+
+        gameScreen = new GameScreen(gameInstance);
+        campaignScreen = new CampaignScreen(gameInstance);
+        scoresScreen = new ScoresScreen(gameInstance);
     }
+
+    @Override
+    public void show() {}
 
     @Override
     public void render(float delta) {
@@ -75,9 +84,6 @@ public class MainMenuScreen extends ScreenBase {
     private void setupMainMenuStage(Stage stage) {
         skin = gameInstance.getSkin();
 
-        gameScreen = new GameScreen(gameInstance);
-        campaignScreen = new CampaignScreen(gameInstance);
-
         uiMainMenu = new UIMainMenu();
         uiMenuOverlay = new UIOverlay();
         uiGameSettings = new UIGameSettings();
@@ -90,33 +96,30 @@ public class MainMenuScreen extends ScreenBase {
         stage.addActor(rootStack);
     }
 
-    private boolean checkForLocalAccount() {
+    private void checkForLocalAccount() {
         Preferences prefs = Gdx.app.getPreferences("account");
 
         if (!prefs.getBoolean("valid", false)) {
             Gdx.input.getTextInput(new Input.TextInputListener() {
                 @Override
                 public void input(String text) {
-                    if (text.length() < 3) {
+                    if (text.length() < 3 || text.length() > 20) {
+                        checkForLocalAccount();// XXX(26/4/2018): Recursive...
                         return;
                     }
                     Preferences prefs = Gdx.app.getPreferences("account");
                     prefs.putString("username", text);
                     prefs.putBoolean("valid", true);
                     prefs.flush();
+                    gameInstance.getUserAccount().setUsername(text);
                 }
 
                 @Override
                 public void canceled() {
-                    return;
+                    checkForLocalAccount();
                 }
-            }, "Setup Username:", "", "Minimum 3 chars");
-
-        } else {
-            return true;
+            }, "Setup Username:", "", "Min 3 - Max 20 Characters");
         }
-
-        return prefs.getBoolean("valid");
     }
 
     private class BackButtonInputHandler extends InputAdapter {
@@ -143,16 +146,14 @@ public class MainMenuScreen extends ScreenBase {
             Container btnPlay = newMenuButton("Play", "btnPlay", new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    if (checkForLocalAccount()) {
                         gameInstance.setScreen(campaignScreen);
-                    }
                 }
             });
 
-            Container btnAccount = newMenuButton("Account", "btnAccount", new ChangeListener() {
+            Container btnAccount = newMenuButton("Scores", "btnAccount", new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-
+                    gameInstance.setScreen(scoresScreen);
                 }
             });
 
@@ -275,6 +276,7 @@ public class MainMenuScreen extends ScreenBase {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     radiusLbl.setText(String.valueOf((int) radiusSlider.getValue()));
+                    updateDifficulty();
                 }
             });
             attachSliderToTable("Circle Radius", radiusSlider, radiusLbl, settingsTbl);
@@ -464,10 +466,13 @@ public class MainMenuScreen extends ScreenBase {
                             Preferences prefs = Gdx.app.getPreferences("game_settings");
 
                             boolean spinTheCoreEnabled = cbSpinTheCoreMode.isChecked();
-                            int initRadius = (int) radiusSlider.getValue();
                             float minRotationSpeed = minRotSlider.getValue();
                             float maxRotationSpeed = maxRotSlider.getValue();
+                            int initRadius = (int) radiusSlider.getValue();
                             int colorCount = (int) sldrColorCount.getValue();
+                            int moves = Integer.parseInt(tfMoves.getText());
+                            int lives = Integer.parseInt(tfLives.getText());
+                            int time = Integer.parseInt(tfTime.getText());
 
                             TilemapManager.TilemapGenerator tilemapGenerator = tilemapManager.getTilemapGenerator();
                             tilemapGenerator.setColorCount(colorCount);
@@ -488,21 +493,23 @@ public class MainMenuScreen extends ScreenBase {
 
                             movingTileManager.setLauncherCooldown(sldrLauncherCooldown.getValue());
                             movingTileManager.setColorCount(colorCount);
-                            // movingTileManager.setAutoEject(spinTheCoreEnabled);
+//                            movingTileManager.setAutoEject(spinTheCoreEnabled);
+                            movingTileManager.setAutoReloadEnabled(moves > 3);
                             movingTileManager.setDefaultBallSpeed((int) sldrBallSpeed.getValue());
                             movingTileManager.enableControlledBallGeneration(tilemapManager);
                             movingTileManager.initLauncher(3);
 
                             statsManager.setGameMode(spinTheCoreEnabled ? GameMode.SPIN_THE_CORE : GameMode.CLASSIC);
-                            statsManager.setLives(cbUseLives.isChecked(), Integer.parseInt(tfLives.getText()));
-                            statsManager.setMoves(cbUseMoves.isChecked(), Integer.parseInt(tfMoves.getText()));
-                            statsManager.setTime(cbUseTime.isChecked(), Integer.parseInt(tfTime.getText()));
+                            statsManager.setLives(cbUseLives.isChecked(), lives);
+                            statsManager.setMoves(cbUseMoves.isChecked(), moves);
+                            statsManager.setTime(cbUseTime.isChecked(), time);
                             statsManager.setSpecialBallCount(0);
                             statsManager.getScoreMultiplier().setup(
                                     colorCount,
-                                    cbUseLives.isChecked(), Integer.parseInt(tfLives.getText()),
-                                    cbUseMoves.isChecked(), Integer.parseInt(tfMoves.getText()),
-                                    cbUseTime.isChecked(), Integer.parseInt(tfTime.getText()));
+                                    cbUseLives.isChecked(), lives,
+                                    cbUseMoves.isChecked(), moves,
+                                    cbUseTime.isChecked(), time,
+                                    tilemapManager.getTotalAmountOfTiles());
 
                             prefs.putBoolean("spinthecore_enabled", spinTheCoreEnabled);
                             prefs.putInteger("init_radius", initRadius);
@@ -512,11 +519,11 @@ public class MainMenuScreen extends ScreenBase {
                             prefs.putFloat("ball_speed", sldrBallSpeed.getValue());
                             prefs.putInteger("color_count", colorCount);
                             prefs.putBoolean("moves_enabled", cbUseMoves.isChecked());
-                            prefs.putInteger("move_count", Integer.parseInt(tfMoves.getText()));
+                            prefs.putInteger("move_count", moves);
                             prefs.putBoolean("time_enabled", cbUseTime.isChecked());
-                            prefs.putInteger("time_amount", Integer.parseInt(tfTime.getText()));
+                            prefs.putInteger("time_amount", time);
                             prefs.putBoolean("lives_enabled", cbUseLives.isChecked());
-                            prefs.putInteger("lives_amount", Integer.parseInt(tfLives.getText()));
+                            prefs.putInteger("lives_amount", lives);
                             prefs.flush();
                         }
 
@@ -548,7 +555,8 @@ public class MainMenuScreen extends ScreenBase {
                     (int) sldrColorCount.getValue(),
                     cbUseLives.isChecked(), lives,
                     cbUseMoves.isChecked(), moves,
-                    cbUseTime.isChecked(), time);
+                    cbUseTime.isChecked(), time,
+                    scoreMultiplier.getTotalTilesFromRadius((int) radiusSlider.getValue()));
             lblDifficulty.setText(String.format(Locale.ENGLISH,"Difficulty:\n %.2f", scoreMultiplier.get()));
         }
 

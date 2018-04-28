@@ -233,7 +233,7 @@ public class MovingTileManager extends Observable {
 
     public void initLauncher(int launcherSize) {
         this.launcherSize = launcherSize;
-        while (launcher.size < launcherSize && (isAutoReloadEnabled || colorSequenceList.hasNext())) {
+        while (launcher.size < launcherSize) {
             loadLauncher();
         }
     }
@@ -449,6 +449,7 @@ public class MovingTileManager extends Observable {
                     }
                 }
 
+                if (enabledCount == 0) return 9; // XXX(27/4/2018): Needs better implementation cause this is just for indication
                 return colorGroups[rand.nextInt(enabledCount)].groupColor;
             }
 

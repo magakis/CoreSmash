@@ -174,7 +174,7 @@ public class StatsManager extends Observable implements Observer {
             case BALL_LAUNCHED:
                 if (isMovesEnabled) {
                     --moves;
-                    notifyObservers(NotificationType.MOVES_AMOUNT_CHANGED, moves);
+                    notifyObservers(NotificationType.MOVES_AMOUNT_CHANGED, null);
                 }
                 break;
         }
@@ -183,14 +183,15 @@ public class StatsManager extends Observable implements Observer {
     public static class ScoreMultiplier {
         private float multiplier = 1;
 
-        public ScoreMultiplier() {}
+        public ScoreMultiplier() {
+        }
 
         public void setup(int colorCount,
-                           boolean livesEnabled, int lives,
-                           boolean movesEnabled, int moves,
-                           boolean timeEnabled, int timeAmount)
-        {
-            if (!livesEnabled) {
+                          boolean livesEnabled, int lives,
+                          boolean movesEnabled, int moves,
+                          boolean timeEnabled, int timeAmount,
+                          int amountOfTiles) {
+            if (!livesEnabled && !movesEnabled) {
                 multiplier = 0;
                 return;
             }
@@ -244,15 +245,40 @@ public class StatsManager extends Observable implements Observer {
                         multiplierFromLives = .4f;
                         break;
                 }
-
-
-
                 multiplier *= multiplierFromLives;
+            }
+
+            if (movesEnabled) {
+                float multiplierFromMoves;
+                float percentOfTotalTiles = (float)moves/amountOfTiles;
+                if (percentOfTotalTiles <= .2f) {
+                    multiplierFromMoves = 2;
+                }else if(percentOfTotalTiles <= .4f){
+                    multiplierFromMoves = 1.5f;
+                }else if(percentOfTotalTiles <= .6f){
+                    multiplierFromMoves = 1f;
+                }else if(percentOfTotalTiles <= .8f){
+                    multiplierFromMoves = .8f;
+                } else {
+                    multiplierFromMoves = .6f;
+                }
+                multiplier *= multiplierFromMoves;
             }
         }
 
         public float get() {
             return multiplier;
+        }
+
+
+        public int getTotalTilesFromRadius(int radius) {
+        /* Maybe this shouldn't be here..*/
+            int total = 1;
+
+            for (int i = 1; i <= radius; ++i) {
+                total += i*6;
+            }
+            return total;
         }
 
         public void reset() {

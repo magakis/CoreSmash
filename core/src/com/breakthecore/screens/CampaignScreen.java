@@ -160,6 +160,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         }
     }
 
+    /** Why do I have a GestureDetector in Campaign Screen?!? */
     private class CustomGestureDetector extends GestureDetector {
         public CustomGestureDetector(GestureListener listener) {
             super(listener);

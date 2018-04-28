@@ -21,7 +21,6 @@ public class LoadingScreen extends ScreenBase {
     AssetManager am;
     Stage stage;
     Skin skin;
-
     Label percent;
 
     public LoadingScreen(BreakTheCoreGame game) {

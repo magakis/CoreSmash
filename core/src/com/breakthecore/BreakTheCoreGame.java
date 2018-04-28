@@ -19,11 +19,12 @@ import java.util.Stack;
 import static com.badlogic.gdx.Gdx.gl;
 
 public class BreakTheCoreGame extends Game {
-	boolean isInitialized;
+	private boolean isInitialized;
 	private MainMenuScreen mainMenuScreen;
 	private ExtendViewport m_viewport;
 	private RenderManager m_renderManager;
 	private AssetManager m_assetManager;
+	private UserAccount userAccount;
 	private Skin m_skin;
 	private InputMultiplexer m_inputMultiplexer;
 
@@ -41,6 +42,7 @@ public class BreakTheCoreGame extends Game {
 
 		m_assetManager = new AssetManager();
 		m_skin = new Skin();
+		userAccount = new UserAccount();
 
 		setScreen(new LoadingScreen(this));
 	}
@@ -61,9 +63,14 @@ public class BreakTheCoreGame extends Game {
 
 	}
 
+	public UserAccount getUserAccount() {
+		return userAccount;
+	}
+
 	public void setPrevScreen() {
 		ScreenBase prev = m_screenStack.pop();
 		setInputProcessor(prev.getScreenInputProcessor());
+//        prev.show();
 		super.setScreen(prev);
 	}
 
