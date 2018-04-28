@@ -74,11 +74,11 @@ public class RenderManager {
         m_batch.end();
     }
 
-    public void renderCenterDot(Matrix4 combined) {
+    public void renderCenterDot(Coords2D pos, Matrix4 combined) {
         m_shapeRenderer.setProjectionMatrix(combined);
         m_shapeRenderer.setColor(Color.BLACK);
         m_shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        m_shapeRenderer.circle(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4, 15);
+        m_shapeRenderer.circle(pos.x, pos.y, 15);
         m_shapeRenderer.end();
     }
 

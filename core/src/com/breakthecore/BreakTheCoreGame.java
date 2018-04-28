@@ -108,6 +108,7 @@ public class BreakTheCoreGame extends Game {
 
 	@Override
 	public void resize(int width, int height) {
+		super.resize(width, height);
 		m_viewport.update(width, height, true);
 	}
 }

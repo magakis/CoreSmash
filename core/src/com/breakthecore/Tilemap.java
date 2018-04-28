@@ -1,6 +1,8 @@
 package com.breakthecore;
 
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector3;
+import com.breakthecore.tiles.RegularTile;
 import com.breakthecore.tiles.TilemapTile;
 
 /**
@@ -121,7 +123,7 @@ public class Tilemap {
     public void setMinMaxSpeed(float min, float max) {
         minRotationSpeed = min;
         maxRotationSpeed = max;
-        speedDiff = max-min;
+        speedDiff = max - min;
     }
 
     public void setAbsoluteTile(int x, int y, TilemapTile tile) {
@@ -141,7 +143,7 @@ public class Tilemap {
         updateTilemapTile(tile);
 
         if (getRelativeTile(x, y) == null) {
-            if (!isTilemapInitilized){
+            if (!isTilemapInitilized) {
                 ++initTileCount;
                 if (tile.getDistanceFromCenter() > maxTileDistanceFromCenter) {
                     maxTileDistanceFromCenter = tile.getDistanceFromCenter();
@@ -183,7 +185,7 @@ public class Tilemap {
     }
 
     public void destroyAbsoluteTile(int absX, int absY) {
-        destroyRelativeTile(absX-centerTile, absY-centerTile);
+        destroyRelativeTile(absX - centerTile, absY - centerTile);
     }
 
     public void destroyRelativeTile(int tileX, int tileY) {
@@ -230,12 +232,41 @@ public class Tilemap {
     public void update(float delta) {
         hadTilesDestroyed = false;
         if (autoRotationEnabled) {
-            rotate(MathUtils.clamp(maxRotationSpeed - speedDiff * ((float)tileCount / initTileCount), minRotationSpeed, maxRotationSpeed) * delta);
+            rotate(MathUtils.clamp(maxRotationSpeed - speedDiff * ((float) tileCount / initTileCount), minRotationSpeed, maxRotationSpeed) * delta);
         }
     }
 
     public boolean hadTilesDestroyed() {
-        return  hadTilesDestroyed;
+        return hadTilesDestroyed;
+    }
+
+    public Coords2D worldToTilemapCoords(Vector3 worldCoords) {
+        Coords2D result = new Coords2D();
+        result.x = (int) worldCoords.x;
+        result.y = (int) worldCoords.y;
+
+        result.x -= screenPosition.x;
+        result.y -= screenPosition.y;
+
+        float tileYDistance = tileSize * .8f;
+        float tileXDistance = tileSize * .95f;
+        float tileXDistanceHalf = tileXDistance / 2.f;
+
+        float revX = result.x * cos + result.y * -sin;
+        float revY = result.x * sin + result.y * cos;
+
+        int y = roundClosestInt(revY / tileYDistance);
+        int x = roundClosestInt((revX - y * tileXDistanceHalf) / tileXDistance);
+
+        result.y = y;
+        result.x = x;
+        return result;
+    }
+
+    private int roundClosestInt(float n) {
+        if (n > 0)
+            return (int) Math.floor(n + .5f);
+        return (int) Math.ceil(n - .5f);
     }
 
     private void updateTilemapTile(TilemapTile hex) {
@@ -244,15 +275,16 @@ public class Tilemap {
         float y = tilePos.y;
 
         float X_world, Y_world;
-        float tileXDistance = tileSize *.95f;
-        float tileYDistance = tileSize *.85f;
+        float tileXDistance = tileSize * .95f;
+        float tileXDistanceHalf = tileXDistance / 2;
+        float tileYDistance = tileSize * .80f;
 
         X_world = screenPosition.x +
-                (x * tileXDistance + y * tileSizeHalf) * cos +
-                (y * tileYDistance ) * sin;
+                (x * tileXDistance + y * tileXDistanceHalf) * cos +
+                (y * tileYDistance) * sin;
 
         Y_world = screenPosition.y +
-                (x * tileXDistance + y * tileSizeHalf) * -sin +
+                (x * tileXDistance + y * tileXDistanceHalf) * -sin +
                 (y * tileYDistance) * cos;
 
         hex.setPositionInWorld(X_world, Y_world);

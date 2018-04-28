@@ -136,7 +136,7 @@ public class GameScreen extends ScreenBase implements Observer {
         renderManager.draw(movingTileManager.getActiveList());
         renderManager.end();
 
-        renderManager.renderCenterDot(m_camera.combined);
+        renderManager.renderCenterDot(tilemapManager.getTilemapPosition(), m_camera.combined);
 //        }
         stage.draw();
     }

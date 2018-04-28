@@ -50,6 +50,7 @@ public class MainMenuScreen extends ScreenBase {
     private GameScreen gameScreen;
     private CampaignScreen campaignScreen;
     private ScoresScreen scoresScreen;
+    private LevelBuilderScreen levelBuilderScreen;
     private Stage stage;
     private Skin skin;
     private Stack rootStack;
@@ -65,6 +66,7 @@ public class MainMenuScreen extends ScreenBase {
         gameScreen = new GameScreen(gameInstance);
         campaignScreen = new CampaignScreen(gameInstance);
         scoresScreen = new ScoresScreen(gameInstance);
+        levelBuilderScreen = new LevelBuilderScreen(gameInstance);
     }
 
     @Override
@@ -204,6 +206,12 @@ public class MainMenuScreen extends ScreenBase {
             ImageButton imgbSound = new ImageButton(imgbsSound);
             imgbSound.getImageCell().width(70).height(70);
             tblSettings.add(imgbSound).height(80).width(80).padLeft(20);
+            imgbSound.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    gameInstance.setScreen(levelBuilderScreen);
+                }
+            });
 
             ImageButton.ImageButtonStyle imgbsCog = new ImageButton.ImageButtonStyle();
             imgbsCog.imageUp = skin.getDrawable("cog");
