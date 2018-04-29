@@ -15,7 +15,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.Align;
-import com.breakthecore.BreakTheCoreGame;
+import com.breakthecore.CoreSmash;
+import com.breakthecore.LevelFormatParser;
 
 public class LoadingScreen extends ScreenBase {
     AssetManager am;
@@ -23,7 +24,7 @@ public class LoadingScreen extends ScreenBase {
     Skin skin;
     Label percent;
 
-    public LoadingScreen(BreakTheCoreGame game) {
+    public LoadingScreen(CoreSmash game) {
         super(game);
         stage = new Stage(gameInstance.getWorldViewport());
         am = game.getAssetManager();
@@ -118,7 +119,7 @@ public class LoadingScreen extends ScreenBase {
 
         skin.add("cog", am.get("cog.png"));
         skin.add("ball", am.get("ball.png"));
-        skin.add("whiteFading", am.get("asteroid.png"));
+        skin.add("asteroid", am.get("asteroid.png"));
         skin.add("speaker", am.get("speaker.png"));
 
         // Fonts
@@ -156,15 +157,15 @@ public class LoadingScreen extends ScreenBase {
         skin.add("default", stb);
 
         stb = new TextButton.TextButtonStyle();
-        stb.up = skin.newDrawable("whiteFading", Color.WHITE);
-        stb.down = skin.newDrawable("whiteFading", Color.GRAY);
+        stb.up = skin.newDrawable("asteroid", Color.WHITE);
+        stb.down = skin.newDrawable("asteroid", Color.GRAY);
         stb.checked = stb.up;
         stb.font = skin.getFont("comic_72bo");
         skin.add("levelBtnEnabled", stb);
 
         stb = new TextButton.TextButtonStyle();
-        stb.up = skin.newDrawable("whiteFading", Color.DARK_GRAY);
-        stb.down = skin.newDrawable("whiteFading", Color.DARK_GRAY);
+        stb.up = skin.newDrawable("asteroid", Color.DARK_GRAY);
+        stb.down = skin.newDrawable("asteroid", Color.DARK_GRAY);
         stb.checked = stb.up;
         stb.font = skin.getFont("comic_72bo");
         skin.add("levelBtnDisabled", stb);

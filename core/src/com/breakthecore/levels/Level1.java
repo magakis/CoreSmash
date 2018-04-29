@@ -7,7 +7,7 @@ import com.breakthecore.managers.StatsManager;
 import com.breakthecore.managers.TilemapManager;
 import com.breakthecore.screens.GameScreen;
 
-public class Level1 extends CampaignLevel implements Level {
+public class Level1 extends CampaignLevel{
 
     public Level1(RoundEndListener roundEndListener) {
         super(1,roundEndListener);

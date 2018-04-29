@@ -28,9 +28,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
-import com.breakthecore.BreakTheCoreGame;
+import com.breakthecore.CoreSmash;
 import com.breakthecore.Tilemap;
-import com.breakthecore.UserAccount;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.levels.CampaignLevel;
 import com.breakthecore.levels.Level;
@@ -56,7 +55,7 @@ public class MainMenuScreen extends ScreenBase {
     private Stack rootStack;
     private UIComponent uiMainMenu, uiMenuOverlay, uiGameSettings;
 
-    public MainMenuScreen(BreakTheCoreGame game) {
+    public MainMenuScreen(CoreSmash game) {
         super(game);
         stage = new Stage(game.getWorldViewport());
         screenInputMultiplexer.addProcessor(new BackButtonInputHandler());
@@ -276,6 +275,70 @@ public class MainMenuScreen extends ScreenBase {
                 }
             };
 
+            TextField.TextFieldListener returnOnNewLineListener = new TextField.TextFieldListener() {
+                public void keyTyped(TextField textField, char key) {
+                    if (key == '\n' || key == '\r') {
+                        textField.getOnscreenKeyboard().show(false);
+                        stage.setKeyboardFocus(null);
+                    }
+                }
+            };
+
+            cbUseLives = createCheckBox("Use Lives", prefs, "lives_enabled", false);
+            cbUseLives.addListener(updateDifficultyListener);
+            tfLives = createTextField(returnOnNewLineListener, prefs, "lives_amount", 3);
+            tfLives.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    tfLives.setCursorPosition(tfLives.getText().length());
+                }
+            });
+            tfLives.addListener(updateDifficultyListener);
+
+            cbUseMoves = createCheckBox("Use Moves", prefs, "moves_enabled", true);
+            cbUseMoves.addListener(updateDifficultyListener);
+            tfMoves = createTextField(returnOnNewLineListener, prefs, "move_count", 36);
+            tfMoves.addListener(updateDifficultyListener);
+            tfMoves.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    tfMoves.setCursorPosition(tfMoves.getText().length());
+                }
+            });
+
+            cbUseTime = createCheckBox("Use Time", prefs, "time_enabled", false);
+            cbUseTime.addListener(updateDifficultyListener);
+            tfTime = createTextField(returnOnNewLineListener, prefs, "time_amount", 180);
+            tfTime.addListener(updateDifficultyListener);
+            tfTime.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    tfTime.setCursorPosition(tfTime.getText().length());
+                }
+            });
+
+            cbSpinTheCoreMode = createCheckBox("Spin The Core Mode", prefs, "spinthecore_enabled", false);
+
+            tblCheckboxesWithValues = new Table();
+            tblCheckboxesWithValues.defaults().padBottom(settingsPadding);
+
+            tblCheckboxesWithValues.add(cbUseLives).left().padRight(15);
+            tblCheckboxesWithValues.add(tfLives).center().width(101).padRight(60);
+            tblCheckboxesWithValues.add(cbSpinTheCoreMode);
+            tblCheckboxesWithValues.add().row();
+
+            tblCheckboxesWithValues.add(cbUseMoves).left().padRight(15);
+            tblCheckboxesWithValues.add(tfMoves).center().width(101).padRight(60);
+            tblCheckboxesWithValues.add();
+            tblCheckboxesWithValues.add().row();
+
+            tblCheckboxesWithValues.add(cbUseTime).left().padRight(15).padBottom(0);
+            tblCheckboxesWithValues.add(tfTime).center().width(101).padRight(60).padBottom(0);
+            tblCheckboxesWithValues.add().padBottom(0);
+            tblCheckboxesWithValues.add().padBottom(0).row();
+
+            settingsTbl.add(tblCheckboxesWithValues).colspan(3).expandX().left().row();
+
             radiusSlider = new Slider(1, 8, 1, false, skin);
             radiusSlider.setValue(prefs.getInteger("init_radius", 4));
             radiusLbl = new Label(String.valueOf((int) radiusSlider.getValue()), skin, "comic_48");
@@ -364,69 +427,6 @@ public class MainMenuScreen extends ScreenBase {
             });
             attachSliderToTable("Color Count", sldrColorCount, lblColorount, settingsTbl);
 
-            TextField.TextFieldListener returnOnNewLineListener = new TextField.TextFieldListener() {
-                public void keyTyped(TextField textField, char key) {
-                    if (key == '\n' || key == '\r') {
-                        textField.getOnscreenKeyboard().show(false);
-                        stage.setKeyboardFocus(null);
-                    }
-                }
-            };
-
-            cbUseLives = createCheckBox("Use Lives", prefs, "lives_enabled", false);
-            cbUseLives.addListener(updateDifficultyListener);
-            tfLives = createTextField(returnOnNewLineListener, prefs, "lives_amount", 3);
-            tfLives.addListener(new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    tfLives.setCursorPosition(tfLives.getText().length());
-                }
-            });
-            tfLives.addListener(updateDifficultyListener);
-
-            cbUseMoves = createCheckBox("Use Moves", prefs, "moves_enabled", true);
-            cbUseMoves.addListener(updateDifficultyListener);
-            tfMoves = createTextField(returnOnNewLineListener, prefs, "move_count", 36);
-            tfMoves.addListener(updateDifficultyListener);
-            tfMoves.addListener(new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    tfMoves.setCursorPosition(tfMoves.getText().length());
-                }
-            });
-
-            cbUseTime = createCheckBox("Use Time", prefs, "time_enabled", false);
-            cbUseTime.addListener(updateDifficultyListener);
-            tfTime = createTextField(returnOnNewLineListener, prefs, "time_amount", 180);
-            tfTime.addListener(updateDifficultyListener);
-            tfTime.addListener(new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    tfTime.setCursorPosition(tfTime.getText().length());
-                }
-            });
-
-            cbSpinTheCoreMode = createCheckBox("Spin The Core Mode", prefs, "spinthecore_enabled", false);
-
-            tblCheckboxesWithValues = new Table();
-            tblCheckboxesWithValues.defaults().padBottom(settingsPadding);
-
-            tblCheckboxesWithValues.add(cbUseLives).left().padRight(15);
-            tblCheckboxesWithValues.add(tfLives).center().width(101).padRight(60);
-            tblCheckboxesWithValues.add(cbSpinTheCoreMode);
-            tblCheckboxesWithValues.add().row();
-
-            tblCheckboxesWithValues.add(cbUseMoves).left().padRight(15);
-            tblCheckboxesWithValues.add(tfMoves).center().width(101).padRight(60);
-            tblCheckboxesWithValues.add();
-            tblCheckboxesWithValues.add().row();
-
-            tblCheckboxesWithValues.add(cbUseTime).left().padRight(15).padBottom(0);
-            tblCheckboxesWithValues.add(tfTime).center().width(101).padRight(60).padBottom(0);
-            tblCheckboxesWithValues.add().padBottom(0);
-            tblCheckboxesWithValues.add().padBottom(0).row();
-
-            settingsTbl.add(tblCheckboxesWithValues).colspan(settingsTbl.getColumns()).expandX().left().row();
 //
 //            cbDrawCircle = createCheckBox("Draw Circle", prefs, "draw_circle", true);
 //            cbDrawDiamond = createCheckBox("Draw Diamond", prefs, "draw_diamond", false);

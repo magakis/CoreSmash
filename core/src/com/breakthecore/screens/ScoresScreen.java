@@ -1,15 +1,13 @@
 package com.breakthecore.screens;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
-import com.breakthecore.BreakTheCoreGame;
+import com.breakthecore.CoreSmash;
 import com.breakthecore.UserAccount;
 import com.breakthecore.ui.UIComponent;
 
@@ -20,7 +18,7 @@ public class ScoresScreen extends ScreenBase {
     private Skin skin;
     private UIScoreTable uiScoreTable;
 
-    public ScoresScreen(BreakTheCoreGame game) {
+    public ScoresScreen(CoreSmash game) {
         super(game);
         setupStage();
 

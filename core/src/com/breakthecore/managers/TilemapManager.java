@@ -201,6 +201,15 @@ public class TilemapManager extends Observable implements Observer {
         }
     }
 
+    public Tilemap newTilemap() {
+        if (tilemapCount + 1 < maxTilemapCount) {
+            ++tilemapCount;
+            return listTilemaps[tilemapCount-1];
+        } else {
+            throw new RuntimeException("Cannot initialize more tilemaps");
+        }
+    }
+
     public void update(float delta) {
         for (int i = 0; i < tilemapCount; ++i) {
             listTilemaps[i].update(delta);
@@ -209,7 +218,9 @@ public class TilemapManager extends Observable implements Observer {
 
     public void reset() {
         tilemapCount = 0;
-        listTilemaps[0].reset();
+        for (int i = 0; i < maxTilemapCount; ++i) {
+            listTilemaps[i].reset();
+        }
     }
 
     @Override
@@ -433,7 +444,7 @@ public class TilemapManager extends Observable implements Observer {
             resetColorGroupContainers();
             fillColorGroupContainers(tm);
             int aver = tm.getTileCount() / colorCount;
-            int maxIndex = colorCount-1;
+            int maxIndex = colorCount - 1;
 
             Arrays.sort(colors, compSizes);
 
@@ -458,7 +469,7 @@ public class TilemapManager extends Observable implements Observer {
                 Collections.sort(cgc.list, compDistance);
             }
 
-            int maxTileDistanceFromCenter = tm.getMaxTileDistanceFromCenter()+1;
+            int maxTileDistanceFromCenter = tm.getMaxTileDistanceFromCenter() + 1;
             int distanceToSearchFor;
 
             startLoop:
@@ -470,7 +481,7 @@ public class TilemapManager extends Observable implements Observer {
                         TilemapTile tmTile = cgc.list.get(listIndex);
                         int distance = tmTile.getDistanceFromCenter();
 
-                        if (distance > distanceToSearchFor || listIndex == cgc.list.size()-1 && distance < distanceToSearchFor) {
+                        if (distance > distanceToSearchFor || listIndex == cgc.list.size() - 1 && distance < distanceToSearchFor) {
                             TilemapTile tileToSwapA = null;
                             int prevDistance = -1;
 
@@ -522,7 +533,7 @@ public class TilemapManager extends Observable implements Observer {
                             Collections.sort(innerCgc.list, compDistance);
 
                             ++distanceToSearchFor;
-                        } else if (distance == distanceToSearchFor){
+                        } else if (distance == distanceToSearchFor) {
                             ++distanceToSearchFor;
                             break;
                         }

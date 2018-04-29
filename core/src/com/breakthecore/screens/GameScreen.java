@@ -21,7 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
-import com.breakthecore.BreakTheCoreGame;
+import com.breakthecore.CoreSmash;
 import com.breakthecore.Coords2D;
 import com.breakthecore.levels.Level;
 import com.breakthecore.managers.StatsManager;
@@ -68,7 +68,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private int sideLength = WorldSettings.getTileSize();
 
-    public GameScreen(BreakTheCoreGame game) {
+    public GameScreen(CoreSmash game) {
         super(game);
         m_camera = (OrthographicCamera) gameInstance.getWorldViewport().getCamera();
         skin = gameInstance.getSkin();
@@ -205,12 +205,6 @@ public class GameScreen extends ScreenBase implements Observer {
         rootUIStack.add(streakUI.getRoot());
         rootUIStack.add(debugUI.getRoot());
         stage.addActor(rootUIStack);
-
-//        debugUI.dblb1.setText("");
-//        int[] colors = tilemapManager.getTilemap(0).getColorAmountsAvailable();
-//        for (int i = 0; i < colors.length; ++i) {
-//            debugUI.dblb1.getText().append(i + ": " + colors[i]+ "\n");
-//        }
 
         debugUI.dblb3.setText(String.format(Locale.ENGLISH,"Diff: %.2f",statsManager.getDifficultyMultiplier()));
         isGameActive = true;

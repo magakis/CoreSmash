@@ -18,12 +18,12 @@ import java.util.Stack;
 
 import static com.badlogic.gdx.Gdx.gl;
 
-public class BreakTheCoreGame extends Game {
+public class CoreSmash  extends Game {
 	private boolean isInitialized;
 	private MainMenuScreen mainMenuScreen;
-	private ExtendViewport m_viewport;
-	private RenderManager m_renderManager;
-	private AssetManager m_assetManager;
+	private ExtendViewport viewport;
+	private RenderManager renderManager;
+	private AssetManager assetManager;
 	private UserAccount userAccount;
 	private Skin m_skin;
 	private InputMultiplexer m_inputMultiplexer;
@@ -34,13 +34,13 @@ public class BreakTheCoreGame extends Game {
 	public void create () {
 		WorldSettings.init();
 		m_screenStack = new Stack<ScreenBase>();
-		m_viewport = new ExtendViewport(1080, 1920);
+		viewport = new ExtendViewport(1080, 1920);
 
 		m_inputMultiplexer = new InputMultiplexer();
 		Gdx.input.setInputProcessor(m_inputMultiplexer);
 		Gdx.input.setCatchBackKey(true);
 
-		m_assetManager = new AssetManager();
+		assetManager = new AssetManager();
 		m_skin = new Skin();
 		userAccount = new UserAccount();
 
@@ -70,7 +70,6 @@ public class BreakTheCoreGame extends Game {
 	public void setPrevScreen() {
 		ScreenBase prev = m_screenStack.pop();
 		setInputProcessor(prev.getScreenInputProcessor());
-//        prev.show();
 		super.setScreen(prev);
 	}
 
@@ -81,20 +80,20 @@ public class BreakTheCoreGame extends Game {
 	}
 
 	public Viewport getWorldViewport() {
-		return m_viewport;
+		return viewport;
 	}
 
 	public RenderManager getRenderManager() {
-		return m_renderManager;
+		return renderManager;
 	}
 
 	public AssetManager getAssetManager() {
-		return m_assetManager;
+		return assetManager;
 	}
 
 	public void initApp() {
 		if (!isInitialized) {
-			m_renderManager = new RenderManager(m_assetManager);
+			renderManager = new RenderManager(assetManager);
 			mainMenuScreen = new MainMenuScreen(this);
 			setInputProcessor(mainMenuScreen.getScreenInputProcessor());
 			super.setScreen(mainMenuScreen);
@@ -109,6 +108,6 @@ public class BreakTheCoreGame extends Game {
 	@Override
 	public void resize(int width, int height) {
 		super.resize(width, height);
-		m_viewport.update(width, height, true);
+		viewport.update(width, height, true);
 	}
 }

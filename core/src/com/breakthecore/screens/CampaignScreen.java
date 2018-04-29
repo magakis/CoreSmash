@@ -13,7 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
-import com.breakthecore.BreakTheCoreGame;
+import com.breakthecore.CoreSmash;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.breakthecore.RoundEndListener;
 import com.breakthecore.WorldSettings;
@@ -30,7 +30,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private int currentLevel;
     private int activeLevel;
 
-    public CampaignScreen(BreakTheCoreGame game) {
+    public CampaignScreen(CoreSmash game) {
         super(game);
         m_skin = game.getSkin();
         stage = new Stage(game.getWorldViewport());

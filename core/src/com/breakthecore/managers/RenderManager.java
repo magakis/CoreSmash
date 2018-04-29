@@ -33,7 +33,7 @@ public class RenderManager {
 
     private BitmapFont defaultFont;
     private Texture texture;
-    private Color[] colorList;
+    private final Color[] colorList;
 
     public RenderManager(AssetManager am) {
         m_batch = new SpriteBatch();
@@ -68,6 +68,10 @@ public class RenderManager {
     public void start(Matrix4 combined) {
         m_batch.setProjectionMatrix(combined);
         m_batch.begin();
+    }
+
+    public Color[] getColorList() {
+        return colorList;
     }
 
     public void end() {
