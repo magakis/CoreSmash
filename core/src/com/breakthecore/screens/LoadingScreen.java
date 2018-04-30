@@ -18,6 +18,8 @@ import com.badlogic.gdx.utils.Align;
 import com.breakthecore.CoreSmash;
 import com.breakthecore.LevelFormatParser;
 
+import java.util.Locale;
+
 public class LoadingScreen extends ScreenBase {
     AssetManager am;
     Stage stage;
@@ -45,7 +47,7 @@ public class LoadingScreen extends ScreenBase {
             setupSkin();
             gameInstance.initApp();
         }
-        percent.setText(String.format("%.0f %%", am.getProgress() * 100));
+        percent.setText(String.format(Locale.ENGLISH,"%.0f %%", am.getProgress() * 100));
 
         stage.act();
         stage.draw();
@@ -58,6 +60,9 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("cog.png");
         loadTexture("group.png");
         loadTexture("speaker.png");
+        loadTexture("NinePatches/toast1.png");
+        loadTexture("NinePatches/dialog1.png");
+
     }
 
     private void loadAllBitmapFonts() {
@@ -106,6 +111,9 @@ public class LoadingScreen extends ScreenBase {
         ninePatch = new NinePatch(tex, 10, 10, 10, 10);
         skin.add("box_white_10", ninePatch);
 
+        ninePatch = new NinePatch(am.get("NinePatches/toast1.png", Texture.class),15,15,15,15);
+        skin.add("toast1", ninePatch);
+
         // Textures
         pix = new Pixmap(41, 41, Pixmap.Format.RGBA8888);
         pix.setColor(Color.alpha(0));
@@ -119,6 +127,7 @@ public class LoadingScreen extends ScreenBase {
 
         skin.add("cog", am.get("cog.png"));
         skin.add("ball", am.get("ball.png"));
+
         skin.add("asteroid", am.get("asteroid.png"));
         skin.add("speaker", am.get("speaker.png"));
 

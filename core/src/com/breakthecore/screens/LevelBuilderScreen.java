@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.input.GestureDetector;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -156,8 +157,8 @@ public class LevelBuilderScreen extends ScreenBase {
 
 
     private class UIToolbarTop extends UIComponent {
-        private TextButton tbSave, tbLoad;
-        private Dialog dlgFileNotFound, dlgFileSaved;
+        private final TextButton tbSave, tbLoad;
+        private final Dialog dlgToast;
 
         UIToolbarTop() {
             TextButton.TextButtonStyle tbs = new TextButton.TextButtonStyle();
@@ -165,16 +166,12 @@ public class LevelBuilderScreen extends ScreenBase {
             tbs.font = skin.getFont("comic_24b");
 
             Window.WindowStyle ws = new Window.WindowStyle();
-            ws.background = skin.getDrawable("box_white_5");
+            ws.background = skin.getDrawable("toast1");
             ws.titleFont = skin.getFont("comic_24b");
-
-            dlgFileNotFound = new Dialog("", ws);
-            dlgFileNotFound.text(new Label("Error: File not found", skin, "comic_48"));
-            dlgFileNotFound.setTouchable(Touchable.disabled);
-
-            dlgFileSaved = new Dialog("", ws);
-            dlgFileSaved.text(new Label("File saved!", skin, "comic_48"));
-            dlgFileSaved.setTouchable(Touchable.disabled);
+            dlgToast = new Dialog("", ws);
+            dlgToast.text(new Label("", skin, "comic_48"));
+            dlgToast.getContentTable().pad(5);
+            dlgToast.setTouchable(Touchable.disabled);
 
             tbSave = new TextButton("Save", tbs);
             tbSave.addListener(new ChangeListener() {
@@ -186,11 +183,18 @@ public class LevelBuilderScreen extends ScreenBase {
                             int length = text.length();
                             if (length > 2 && length < 17) {
                                 LevelFormatParser.saveTo(text, tilemapManager);
-                                dlgFileSaved.show(stage, Actions.sequence(
-                                        Actions.fadeIn(1),
-                                        Actions.delay(3)));
-                                dlgFileSaved.setPosition(camera.viewportWidth/2 - dlgFileSaved.getWidth()/2, camera.viewportHeight*.90f);
-                                dlgFileSaved.hide(Actions.after(Actions.fadeOut(.4f)));
+                                ((Label) dlgToast.getContentTable().getCells().get(0).getActor()).setText("File Saved!");
+                                dlgToast.show(stage, Actions.sequence(
+                                        Actions.alpha(0),
+                                        Actions.fadeIn(.4f),
+                                        Actions.delay(2),
+                                        Actions.run(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                dlgToast.hide(Actions.fadeOut(.4f));
+                                            }
+                                        })));
+                                dlgToast.setPosition(camera.viewportWidth / 2 - dlgToast.getWidth() / 2, camera.viewportHeight * .90f);
                             }
                         }
 
@@ -210,11 +214,18 @@ public class LevelBuilderScreen extends ScreenBase {
                         public void input(String text) {
                             if (text.length() == 0) return;
                             if (!LevelFormatParser.fileExists(text)) {
-                                dlgFileNotFound.show(stage, Actions.sequence(
-                                        Actions.fadeIn(1),
-                                        Actions.delay(3)));
-                                dlgFileNotFound.setPosition(camera.viewportWidth/2 - dlgFileNotFound.getWidth()/2, camera.viewportHeight*.90f);
-                                dlgFileNotFound.hide(Actions.after(Actions.fadeOut(.4f)));
+                                ((Label) dlgToast.getContentTable().getCells().get(0).getActor()).setText("Error: File not found");
+                                dlgToast.show(stage, Actions.sequence(
+                                        Actions.alpha(0),
+                                        Actions.fadeIn(.4f, Interpolation.fade),
+                                        Actions.delay(2),
+                                        Actions.run(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                dlgToast.hide(Actions.fadeOut(.4f));
+                                            }
+                                        })));
+                                dlgToast.setPosition(camera.viewportWidth / 2 - dlgToast.getWidth() / 2, camera.viewportHeight * .90f);
                                 return;
                             }
                             tilemapManager.reset();
