@@ -126,7 +126,7 @@ public class MainMenuScreen extends ScreenBase {
     private class BackButtonInputHandler extends InputAdapter {
         @Override
         public boolean keyDown(int keycode) {
-            if (keycode == Input.Keys.BACK) {
+            if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
                 if (uiMainMenu.getRoot().getParent() == rootStack) {
                     Gdx.app.exit();
                     return true;

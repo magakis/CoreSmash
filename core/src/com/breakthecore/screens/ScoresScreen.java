@@ -55,7 +55,7 @@ public class ScoresScreen extends ScreenBase {
     private class BackButtonInputHandler extends InputAdapter {
         @Override
         public boolean keyDown(int keycode) {
-            if (keycode == Input.Keys.BACK) {
+            if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
                 gameInstance.setPrevScreen();
             }
             return false;

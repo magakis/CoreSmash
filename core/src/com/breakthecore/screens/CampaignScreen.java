@@ -168,7 +168,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
         @Override
         public boolean keyDown(int keycode) {
-            if (keycode == Input.Keys.BACK) {
+            if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
                 gameInstance.setPrevScreen();
                 return false;
             }
