@@ -72,7 +72,8 @@ public class MainMenuScreen extends ScreenBase {
     }
 
     @Override
-    public void show() {}
+    public void show() {
+    }
 
     @Override
     public void render(float delta) {
@@ -150,7 +151,7 @@ public class MainMenuScreen extends ScreenBase {
             Container btnPlay = newMenuButton("Play", "btnPlay", new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                        gameInstance.setScreen(campaignScreen);
+                    gameInstance.setScreen(campaignScreen);
                 }
             });
 
@@ -236,7 +237,7 @@ public class MainMenuScreen extends ScreenBase {
     private class UIGameSettings extends UIComponent {
         Slider radiusSlider, minRotSlider, maxRotSlider, sldrBallSpeed, sldrLauncherCooldown, sldrColorCount;
         Label radiusLbl, minRotLbl, maxRotLbl, lblBallSpeed, lblLauncherCooldown, lblColorount, lblDifficulty;
-        CheckBox cbUseMoves, cbUseLives, cbUseTime, cbSpinTheCoreMode;//, cbDrawCircle, cbDrawDiamond, cbDrawStar;
+        CheckBox cbUseMoves, cbUseLives, cbUseTime, cbSpinTheCoreMode, cbUseCustomMap;//, cbDrawCircle, cbDrawDiamond, cbDrawStar;
         TextField tfMoves, tfLives, tfTime;
         Table tblCheckboxesWithValues;
         StatsManager.ScoreMultiplier scoreMultiplier;
@@ -320,6 +321,7 @@ public class MainMenuScreen extends ScreenBase {
                 }
             });
 
+            cbUseCustomMap = createCheckBox("Use Custom Map", prefs, "custom_map_enabled", false);
             cbSpinTheCoreMode = createCheckBox("Spin The Core Mode", prefs, "spinthecore_enabled", false);
 
             tblCheckboxesWithValues = new Table();
@@ -327,12 +329,12 @@ public class MainMenuScreen extends ScreenBase {
 
             tblCheckboxesWithValues.add(cbUseLives).left().padRight(15);
             tblCheckboxesWithValues.add(tfLives).center().width(101).padRight(60);
-            tblCheckboxesWithValues.add(cbSpinTheCoreMode);
+            tblCheckboxesWithValues.add(cbSpinTheCoreMode).left();
             tblCheckboxesWithValues.add().row();
 
             tblCheckboxesWithValues.add(cbUseMoves).left().padRight(15);
             tblCheckboxesWithValues.add(tfMoves).center().width(101).padRight(60);
-            tblCheckboxesWithValues.add();
+            tblCheckboxesWithValues.add(cbUseCustomMap).left();
             tblCheckboxesWithValues.add().row();
 
             tblCheckboxesWithValues.add(cbUseTime).left().padRight(15).padBottom(0);
@@ -489,19 +491,23 @@ public class MainMenuScreen extends ScreenBase {
                             tilemapManager.setColorCount(colorCount);
 
                             Tilemap tm = tilemapManager.newTilemap();
-                            Array<LevelFormatParser.ParsedTile> parsedTiles = LevelFormatParser.load("mainmenumap");
-                            if (parsedTiles == null) {
-                                tilemapGenerator.generateRadius(tm, initRadius);
-                            } else {
+                            Array<LevelFormatParser.ParsedTile> parsedTiles = null;
+                            if (cbUseCustomMap.isChecked()) {
+                                parsedTiles = LevelFormatParser.load("mainmenumap");
+                            }
+                            if (parsedTiles != null) {
                                 for (LevelFormatParser.ParsedTile tile : parsedTiles) {
                                     int id = tile.getTileID();
-                                    if (id < 0 ) {
+                                    if (id < 0) {
                                         tm.setRelativeTile(tile.getRelativePosition(), new RegularTile(tilemapManager.getRandomColor()));
                                     } else {
                                         tm.setRelativeTile(tile.getRelativePosition(), new RegularTile(id));
                                     }
                                 }
+                            } else {
+                                tilemapGenerator.generateRadius(tm, initRadius);
                             }
+
 
                             tilemapGenerator.reduceColorMatches(tm, 2, 2);
                             if (colorCount > 1) {
@@ -580,7 +586,7 @@ public class MainMenuScreen extends ScreenBase {
                     cbUseMoves.isChecked(), moves,
                     cbUseTime.isChecked(), time,
                     scoreMultiplier.getTotalTilesFromRadius((int) radiusSlider.getValue()));
-            lblDifficulty.setText(String.format(Locale.ENGLISH,"Difficulty:\n %.2f", scoreMultiplier.get()));
+            lblDifficulty.setText(String.format(Locale.ENGLISH, "Difficulty:\n %.2f", scoreMultiplier.get()));
         }
 
         private TextField createTextField(TextField.TextFieldListener backOnNewLineListener, Preferences prefs, String prefName, int defVal) {

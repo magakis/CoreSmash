@@ -108,7 +108,6 @@ public class LevelBuilderScreen extends ScreenBase {
         stage.draw();
     }
 
-
     private Stage setupStage() {
         Stage stage = new Stage(gameInstance.getUIViewport());
         skin = gameInstance.getSkin();
@@ -143,7 +142,6 @@ public class LevelBuilderScreen extends ScreenBase {
         return stage;
     }
 
-
     private void drawTilemap() {
         int tilemapCount = tilemapManager.getTilemapCount();
 
@@ -154,7 +152,6 @@ public class LevelBuilderScreen extends ScreenBase {
         renderManager.end();
         renderManager.renderCenterDot(tilemapManager.getTilemapPosition(), camera.combined);
     }
-
 
     private class UIToolbarTop extends UIComponent {
         private final TextButton tbSave, tbLoad;
@@ -169,8 +166,7 @@ public class LevelBuilderScreen extends ScreenBase {
             ws.background = skin.getDrawable("toast1");
             ws.titleFont = skin.getFont("comic_24b");
             dlgToast = new Dialog("", ws);
-            dlgToast.text(new Label("", skin, "comic_48"));
-            dlgToast.getContentTable().pad(5);
+            dlgToast.text(new Label("", skin, "comic_24b"));
             dlgToast.setTouchable(Touchable.disabled);
 
             tbSave = new TextButton("Save", tbs);
@@ -181,20 +177,12 @@ public class LevelBuilderScreen extends ScreenBase {
                         @Override
                         public void input(String text) {
                             int length = text.length();
+                            if (length == 0) return;
                             if (length > 2 && length < 17) {
                                 LevelFormatParser.saveTo(text, tilemapManager);
-                                ((Label) dlgToast.getContentTable().getCells().get(0).getActor()).setText("File Saved!");
-                                dlgToast.show(stage, Actions.sequence(
-                                        Actions.alpha(0),
-                                        Actions.fadeIn(.4f),
-                                        Actions.delay(2),
-                                        Actions.run(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                dlgToast.hide(Actions.fadeOut(.4f));
-                                            }
-                                        })));
-                                dlgToast.setPosition(camera.viewportWidth / 2 - dlgToast.getWidth() / 2, camera.viewportHeight * .90f);
+                                showToast("File saved");
+                            } else {
+                                showToast("Error: Invalid name length");
                             }
                         }
 
@@ -202,7 +190,7 @@ public class LevelBuilderScreen extends ScreenBase {
                         public void canceled() {
 
                         }
-                    }, "File name:", "", "Chars Min 3 Max 16");
+                    }, "Save File:", "mainmenumap", "Chars Min 3 Max 16");
                 }
             });
             tbLoad = new TextButton("Load", tbs);
@@ -214,29 +202,18 @@ public class LevelBuilderScreen extends ScreenBase {
                         public void input(String text) {
                             if (text.length() == 0) return;
                             if (!LevelFormatParser.fileExists(text)) {
-                                ((Label) dlgToast.getContentTable().getCells().get(0).getActor()).setText("Error: File not found");
-                                dlgToast.show(stage, Actions.sequence(
-                                        Actions.alpha(0),
-                                        Actions.fadeIn(.4f, Interpolation.fade),
-                                        Actions.delay(2),
-                                        Actions.run(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                dlgToast.hide(Actions.fadeOut(.4f));
-                                            }
-                                        })));
-                                dlgToast.setPosition(camera.viewportWidth / 2 - dlgToast.getWidth() / 2, camera.viewportHeight * .90f);
-                                return;
+                                showToast("Error: File not found");
+                            } else {
+                                tilemapManager.reset();
+                                LevelFormatParser.load(text, tilemapManager);
                             }
-                            tilemapManager.reset();
-                            LevelFormatParser.load(text, tilemapManager);
                         }
 
                         @Override
                         public void canceled() {
 
                         }
-                    }, "File name:", "", "");
+                    }, "Load File:", "mainmenumap", "");
                 }
             });
 
@@ -259,6 +236,26 @@ public class LevelBuilderScreen extends ScreenBase {
             main.add(tbLoad).width(80).height(80);
 
             setRoot(container);
+        }
+
+        private void showToast(String text) {
+            showToast(text, 2.5f);
+        }
+
+        private void showToast(String text, float duration) {
+            ((Label) dlgToast.getContentTable().getCells().get(0).getActor()).setText(text);
+            dlgToast.show(stage, Actions.sequence(
+                    Actions.alpha(0),
+                    Actions.fadeIn(.4f),
+                    Actions.delay(duration),
+                    Actions.run(new Runnable() {
+                        @Override
+                        public void run() {
+                            dlgToast.hide(Actions.fadeOut(.4f));
+                        }
+                    })));
+            dlgToast.setPosition(camera.viewportWidth / 2 - dlgToast.getWidth() / 2, camera.viewportHeight * .90f);
+
         }
     }
 
