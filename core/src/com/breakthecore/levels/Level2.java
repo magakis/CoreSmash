@@ -16,7 +16,7 @@ public class Level2 extends CampaignLevel {
     public void initialize(StatsManager statsManager, TilemapManager tilemapManager, MovingTileManager movingTileManager) {
         Tilemap tm;
         TilemapManager.TilemapGenerator tilemapGenerator = tilemapManager.getTilemapGenerator();
-        tilemapGenerator.setColorCount(5);
+        tilemapManager.setColorCount(5);
         tilemapManager.init(1);
 
         tm = tilemapManager.getTilemap(0);

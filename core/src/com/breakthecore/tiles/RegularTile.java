@@ -2,14 +2,13 @@ package com.breakthecore.tiles;
 
 import com.badlogic.gdx.math.Vector2;
 import com.breakthecore.Tilemap;
-import com.breakthecore.WorldSettings;
 import com.breakthecore.managers.CollisionManager;
 import com.breakthecore.managers.TilemapManager;
 
 public class RegularTile extends Tile {
-    public RegularTile(int colorId) {
+    public RegularTile(int regularTileID) {
         super(TileType.REGULAR);
-        color = colorId;
+        setSubData(regularTileID);
     }
 
     @Override

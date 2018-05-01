@@ -1,6 +1,5 @@
 package com.breakthecore.managers;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Queue;
@@ -141,7 +140,7 @@ public class MovingTileManager extends Observable {
     }
 
     public void setLastTileColor(int colorId) {
-        launcher.last().getTile().setColor(colorId);
+        launcher.last().getTile().setSubData(colorId);
     }
 
     public boolean isLoadedWithSpecial() {
@@ -226,7 +225,7 @@ public class MovingTileManager extends Observable {
 
         chanceColorPicker.load(amountOfColor, totalTiles);
         if (launcher.size > 0) {
-            chanceColorPicker.colorGroups[launcher.last().getColor()].skip = true;
+            chanceColorPicker.colorGroups[launcher.last().getSubData()].skip = true;
         }
         return chanceColorPicker.get();
     }
@@ -303,8 +302,8 @@ public class MovingTileManager extends Observable {
 
         if (colorCount > 1) {
             if (launcher.size > 0) {
-                while (launcher.last().getColor() == t.getColor()) {
-                    t.setColor(getRandomColor());
+                while (launcher.last().getSubData() == t.getSubData()) {
+                    t.setSubData(getRandomColor());
                 }
             }
         }
@@ -314,7 +313,7 @@ public class MovingTileManager extends Observable {
 
     public class ColorSequenceList {
         private int index;
-        private ArrayList<Integer> listColors = new ArrayList<Integer>();
+        private ArrayList<Integer> listColors = new ArrayList<>();
 
         private ColorSequenceList() {
         }
@@ -327,7 +326,7 @@ public class MovingTileManager extends Observable {
             if (color < colorCount && color >= 0) {
                 listColors.add(color);
             } else {
-                listColors.add(7); // 7 is WHITE color. Signals problem.
+                throw new IllegalArgumentException();
             }
         }
 
@@ -397,7 +396,7 @@ public class MovingTileManager extends Observable {
             int maxIndex = totalAmount;
 
             for (MovingTile mt : activeList) {
-                int color = mt.getColor();
+                int color = mt.getSubData();
                 int amount = colorGroups[color].amount;
                 if (amount == 2) {
                     maxIndex -=2;
@@ -409,7 +408,7 @@ public class MovingTileManager extends Observable {
             }
 
             for (MovingTile mt : launcher) {
-                int color = mt.getColor();
+                int color = mt.getSubData();
                 int amount = colorGroups[color].amount;
                 if (amount == 2) {
                     maxIndex -=2;

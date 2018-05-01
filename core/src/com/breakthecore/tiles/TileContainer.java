@@ -7,10 +7,10 @@ import com.breakthecore.Observable;
  * Created by Michail on 18/3/2018.
  */
 
-public class TileContainer extends Observable {
+public class TileContainer {
     public static final float[] s_verticesOnMiddleEdges = generateVertices(0);
     public static final float[] s_vertices = generateVertices(30);
-    protected Tile m_tile;
+    private Tile tile;
 
     protected Vector2 positionInWorld;
 
@@ -39,8 +39,19 @@ public class TileContainer extends Observable {
         positionInWorld.set(x, y);
     }
 
+    public Tile getTile() {
+        return tile;
+    }
+
     public void setTile(Tile tile) {
-        m_tile = tile;
+        this.tile = tile;
+    }
+
+    public boolean hasTile() {return tile != null;}
+
+    public int getSubData() {
+        if (tile == null) throw new NullPointerException();
+        return tile.getSubData();
     }
 
     public enum Side {BOTTOM_RIGHT, BOTTOM_LEFT, LEFT, TOP_LEFT, TOP_RIGHT, RIGHT}

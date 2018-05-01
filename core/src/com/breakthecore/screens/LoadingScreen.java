@@ -127,7 +127,6 @@ public class LoadingScreen extends ScreenBase {
 
         skin.add("cog", am.get("cog.png"));
         skin.add("ball", am.get("ball.png"));
-
         skin.add("asteroid", am.get("asteroid.png"));
         skin.add("speaker", am.get("speaker.png"));
 

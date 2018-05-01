@@ -1,6 +1,5 @@
 package com.breakthecore.managers;
 
-import com.badlogic.gdx.utils.Array;
 import com.breakthecore.Coords2D;
 import com.breakthecore.Match3;
 import com.breakthecore.NotificationType;
@@ -16,7 +15,6 @@ import com.breakthecore.tiles.TilemapTile;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Random;
@@ -27,18 +25,33 @@ import java.util.Random;
  * XXX: BAD IMPLEMENTATION!
  */
 
+/* FIXME: 1/5/2018 TilemapManager should control _*EVERY*_ TilemapTile creation
+ * Every TilemapTile should be observed by the TilemapManager. If others create them, they have no
+ * obligation to setup the observers properly
+ *
+ * OOOOOOOOOOOOOOOOOOORRR
+ *
+ * Why the fuck does each TilemapTile being observed?? If every TilemapTile placement or removal is
+ * controlled by the Tilemap, why am I not just Observing the Tilemap for TilemapTile placement or
+ * deletion?!?!??!
+ *
+ * WHAT THE FUCK IS WRONG WITH ME?
+ */
 public class TilemapManager extends Observable implements Observer {
     /**
      * Holds the different independent layers(tilemaps). 0 is the main layer.
      */
     private final Tilemap[] listTilemaps;
     private final Coords2D tilemapPosition = new Coords2D(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
+    private final int maxColorCount = 10;
+    private int colorCount;
     private final int maxTilemapCount = 2;
     private int tilemapCount;
 
     private Pathfinder pathfinder = new Pathfinder(30);
-    private TilemapGenerator tilemapGenerator = new TilemapGenerator(this);
+    private TilemapGenerator tilemapGenerator = new TilemapGenerator();
     private Match3 match3 = new Match3();
+    private Random rand = new Random();
     private int[] colorsAvailable = new int[10]; // XXX(22/4/2018): MagicValue 10
 
     public TilemapManager() {
@@ -46,7 +59,17 @@ public class TilemapManager extends Observable implements Observer {
 
         for (int i = 0; i < maxTilemapCount; ++i) {
             listTilemaps[i] = new Tilemap(i, tilemapPosition);
+            listTilemaps[i].addObserver(this);
         }
+    }
+
+    public void setColorCount(int amount) {
+        colorCount = amount;
+    }
+
+    public int getRandomColor() {
+        if (colorCount == 0) throw new RuntimeException();
+        return rand.nextInt(colorCount);
     }
 
     public int getTilemapCount() {
@@ -87,6 +110,10 @@ public class TilemapManager extends Observable implements Observer {
         return colorsAvailable;
     }
 
+    public int getColorCount() {
+        return colorCount;
+    }
+
     public TilemapGenerator getTilemapGenerator() {
         return tilemapGenerator;
     }
@@ -94,7 +121,7 @@ public class TilemapManager extends Observable implements Observer {
     /**
      * Finds an empty side from the coordinates specified and attach the tile provided.
      *
-     * @return Returns whether it placed the tile.
+     * @returns Returns whether it placed the tile.
      */
     public void attachTile(int layer, Tile tile, TilemapTile tileHit, TileContainer.Side[] listSides) {
         for (int i = 0; i < 6; ++i) {
@@ -105,57 +132,50 @@ public class TilemapManager extends Observable implements Observer {
     }
 
     private boolean attachTile(int layer, Tile tile, TilemapTile tileHit, TileContainer.Side side) {
-        TilemapTile newTile = null;
-        boolean placedNewTile = false;
         Tilemap tm = listTilemaps[layer];
         Coords2D tileHitPos = tileHit.getRelativePosition();
+        TilemapTile createdTilemapTile = null;
 
         switch (side) {
             case TOP_RIGHT:
                 if (tm.getRelativeTile(tileHitPos.x, tileHitPos.y + 1) == null) {
-                    newTile = createTilemapTile(tile);
-                    tm.setRelativeTile(tileHitPos.x, tileHitPos.y + 1, newTile);
-                    placedNewTile = true;
+                    tm.setRelativeTile(tileHitPos.x, tileHitPos.y + 1, tile);
+                    createdTilemapTile = tm.getRelativeTile(tileHitPos.x, tileHitPos.y + 1);
                 }
                 break;
             case TOP_LEFT:
                 if (tm.getRelativeTile(tileHitPos.x - 1, tileHitPos.y + 1) == null) {
-                    newTile = createTilemapTile(tile);
-                    tm.setRelativeTile(tileHitPos.x - 1, tileHitPos.y + 1, newTile);
-                    placedNewTile = true;
+                    tm.setRelativeTile(tileHitPos.x - 1, tileHitPos.y + 1, tile);
+                    createdTilemapTile = tm.getRelativeTile(tileHitPos.x - 1, tileHitPos.y + 1);
                 }
                 break;
             case RIGHT:
                 if (tm.getRelativeTile(tileHitPos.x + 1, tileHitPos.y) == null) {
-                    newTile = createTilemapTile(tile);
-                    tm.setRelativeTile(tileHitPos.x + 1, tileHitPos.y, newTile);
-                    placedNewTile = true;
+                    tm.setRelativeTile(tileHitPos.x + 1, tileHitPos.y, tile);
+                    createdTilemapTile = tm.getRelativeTile(tileHitPos.x + 1, tileHitPos.y);
                 }
                 break;
             case LEFT:
                 if (tm.getRelativeTile(tileHitPos.x - 1, tileHitPos.y) == null) {
-                    newTile = createTilemapTile(tile);
-                    tm.setRelativeTile(tileHitPos.x - 1, tileHitPos.y, newTile);
-                    placedNewTile = true;
+                    tm.setRelativeTile(tileHitPos.x - 1, tileHitPos.y, tile);
+                    createdTilemapTile = tm.getRelativeTile(tileHitPos.x - 1, tileHitPos.y);
                 }
                 break;
             case BOTTOM_LEFT:
                 if (tm.getRelativeTile(tileHitPos.x, tileHitPos.y - 1) == null) {
-                    newTile = createTilemapTile(tile);
-                    tm.setRelativeTile(tileHitPos.x, tileHitPos.y - 1, newTile);
-                    placedNewTile = true;
+                    tm.setRelativeTile(tileHitPos.x, tileHitPos.y - 1, tile);
+                    createdTilemapTile = tm.getRelativeTile(tileHitPos.x, tileHitPos.y - 1);
                 }
                 break;
             case BOTTOM_RIGHT:
                 if (tm.getRelativeTile(tileHitPos.x + 1, tileHitPos.y - 1) == null) {
-                    newTile = createTilemapTile(tile);
-                    tm.setRelativeTile(tileHitPos.x + 1, tileHitPos.y - 1, newTile);
-                    placedNewTile = true;
+                    tm.setRelativeTile(tileHitPos.x + 1, tileHitPos.y - 1, tile);
+                    createdTilemapTile = tm.getRelativeTile(tileHitPos.x + 1, tileHitPos.y - 1);
                 }
                 break;
         }
-        if (placedNewTile) {
-            handleColorMatches(newTile, tm);
+        if (createdTilemapTile != null) {
+            handleColorMatches(createdTilemapTile, tm);
             return true;
         }
         return false;
@@ -175,7 +195,7 @@ public class TilemapManager extends Observable implements Observer {
         for (TilemapTile t : match) {
             Coords2D pos = t.getRelativePosition();
             if (pos.x == 0 && pos.y == 0) {
-                t.notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
+                notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
                 centerTileDestroyed = true;
             }
             tm.destroyRelativeTile(pos.x, pos.y);
@@ -204,7 +224,7 @@ public class TilemapManager extends Observable implements Observer {
     public Tilemap newTilemap() {
         if (tilemapCount + 1 < maxTilemapCount) {
             ++tilemapCount;
-            return listTilemaps[tilemapCount-1];
+            return listTilemaps[tilemapCount - 1];
         } else {
             throw new RuntimeException("Cannot initialize more tilemaps");
         }
@@ -218,6 +238,7 @@ public class TilemapManager extends Observable implements Observer {
 
     public void reset() {
         tilemapCount = 0;
+        colorCount = 0;
         for (int i = 0; i < maxTilemapCount; ++i) {
             listTilemaps[i].reset();
         }
@@ -226,13 +247,6 @@ public class TilemapManager extends Observable implements Observer {
     @Override
     public void onNotify(NotificationType type, Object ob) {
         notifyObservers(type, ob);
-    }
-
-    private TilemapTile createTilemapTile(Tile tile) {
-        TilemapTile res = new TilemapTile(tile);
-        res.addObserver(this);
-//        notifyObservers(NotificationType.NOTIFICATION_TYPE_NEW_TILE_CREATED, null);
-        return res;
     }
 
     /**
@@ -258,18 +272,12 @@ public class TilemapManager extends Observable implements Observer {
     public class TilemapGenerator {
         /* NOTE: All the shapes should use a relative coordinate system so that in the future they
          * can be used in arbitrary coordinates */
-        private final int maxColorCount = 10;
-        private TilemapManager tilemapManager;
-        private Random rand;
-        private int colorCount;
         private ColorGroupContainer[] colors;
         private Comparator<ColorGroupContainer> compSizes;
         private Comparator<ColorGroupContainer> compColors;
         private Comparator<TilemapTile> compDistance;
 
-        private TilemapGenerator(TilemapManager tilemapManager) {
-            this.tilemapManager = tilemapManager;
-            rand = new Random();
+        private TilemapGenerator() {
             colors = new ColorGroupContainer[maxColorCount];
             for (int i = 0; i < maxColorCount; ++i) {
                 colors[i] = new ColorGroupContainer(i);
@@ -310,10 +318,6 @@ public class TilemapManager extends Observable implements Observer {
             };
         }
 
-        public void setColorCount(int colorCount) {
-            this.colorCount = colorCount;
-        }
-
         public void setRandomSeed(long seed) {
             rand.setSeed(seed);
         }
@@ -322,7 +326,7 @@ public class TilemapManager extends Observable implements Observer {
             for (int y = -radius - 1; y < radius + 1; ++y) {
                 for (int x = -radius - 1; x < radius + 1; ++x) {
                     if (tm.getTileDistance(x, y, 0, 0) <= radius) {
-                        tm.setRelativeTile(x, y, createTilemapTile(new RegularTile(rand.nextInt(colorCount))));
+                        tm.setRelativeTile(x, y, new RegularTile(rand.nextInt(colorCount)));
                     }
                 }
             }
@@ -333,7 +337,7 @@ public class TilemapManager extends Observable implements Observer {
             for (int y = -size; y <= size; ++y) {
                 signFix = y > 0 ? 1 : 0;
                 for (int x = -size; x <= size; ++x) {
-                    tm.setRelativeTile(x - (y + signFix) / 2, y, createTilemapTile(new RegularTile(rand.nextInt(colorCount))));
+                    tm.setRelativeTile(x - (y + signFix) / 2, y, new RegularTile(rand.nextInt(colorCount)));
                 }
             }
         }
@@ -346,7 +350,7 @@ public class TilemapManager extends Observable implements Observer {
                 absY = Math.abs(y);
                 fixSign = y < 0 ? absY : 0;
                 for (int x = -size; x <= size - absY; ++x) {
-                    tm.setRelativeTile(x + fixSign, y, createTilemapTile(new RegularTile(rand.nextInt(colorCount))));
+                    tm.setRelativeTile(x + fixSign, y, new RegularTile(rand.nextInt(colorCount)));
                 }
             }
         }
@@ -355,13 +359,13 @@ public class TilemapManager extends Observable implements Observer {
             if (flipX) {
                 for (int y = -size; y <= size; ++y) {
                     for (int x = -size; x <= size; ++x) {
-                        tm.setRelativeTile(x - y, y, createTilemapTile(new RegularTile(rand.nextInt(colorCount))));
+                        tm.setRelativeTile(x - y, y, new RegularTile(rand.nextInt(colorCount)));
                     }
                 }
             } else {
                 for (int y = -size; y <= size; ++y) {
                     for (int x = -size; x <= size; ++x) {
-                        tm.setRelativeTile(x, y, createTilemapTile(new RegularTile(rand.nextInt(colorCount))));
+                        tm.setRelativeTile(x, y, new RegularTile(rand.nextInt(colorCount)));
                     }
                 }
             }
@@ -372,13 +376,13 @@ public class TilemapManager extends Observable implements Observer {
             if (flipY) {
                 for (int y = -sizeY; y <= size; ++y) {
                     for (int x = -size - y; x <= size; ++x) {
-                        tm.setRelativeTile(x, y, createTilemapTile(new RegularTile(rand.nextInt(colorCount))));
+                        tm.setRelativeTile(x, y, new RegularTile(rand.nextInt(colorCount)));
                     }
                 }
             } else {
                 for (int y = -size; y <= sizeY; ++y) {
                     for (int x = -size; x <= size - y; ++x) {
-                        tm.setRelativeTile(x, y, createTilemapTile(new RegularTile(rand.nextInt(colorCount))));
+                        tm.setRelativeTile(x, y, new RegularTile(rand.nextInt(colorCount)));
                     }
                 }
             }
@@ -401,17 +405,17 @@ public class TilemapManager extends Observable implements Observer {
                     matches = match3.getColorMatchesFromTile(tmTile, tm);
                     if (strict) {
                         while (matches.size() > max) {
-                            tmTile.getTile().setColor(rand.nextInt(colorCount));
+                            tmTile.getTile().setSubData(rand.nextInt(colorCount));
                             matches = match3.getColorMatchesFromTile(tmTile, tm);
                         }
                     } else {
                         if (matches.size() > max) {
-                            int color = tmTile.getColor();
+                            int color = tmTile.getSubData();
                             int newColor = rand.nextInt(colorCount);
                             while (newColor == color && colorCount != 1) {
                                 newColor = rand.nextInt(colorCount);
                             }
-                            tmTile.getTile().setColor(rand.nextInt(colorCount));
+                            tmTile.getTile().setSubData(rand.nextInt(colorCount));
                         }
                     }
                 }
@@ -432,7 +436,7 @@ public class TilemapManager extends Observable implements Observer {
                     passesLeft = numOfPasses;
                     matches = match3.getColorMatchesFromTile(tmTile, tm);
                     while (matches.size() > max && passesLeft > 0) {
-                        tmTile.getTile().setColor(rand.nextInt(colorCount));
+                        tmTile.getTile().setSubData(rand.nextInt(colorCount));
                         matches = match3.getColorMatchesFromTile(tmTile, tm);
                         --passesLeft;
                     }
@@ -455,7 +459,7 @@ public class TilemapManager extends Observable implements Observer {
                 TilemapTile tmTile = cgcMostFilled.list.get(rand.nextInt(cgcMostFilled.list.size()));
                 cgcMostFilled.list.remove(tmTile);
 
-                tmTile.getTile().setColor(cgcLeastFilled.groupColor);
+                tmTile.getTile().setSubData(cgcLeastFilled.groupColor);
                 cgcLeastFilled.list.add(tmTile);
 
                 Arrays.sort(colors, compSizes);
@@ -519,9 +523,9 @@ public class TilemapManager extends Observable implements Observer {
 
                             if (tileToSwapB == null) break startLoop;
 
-                            int tmpColor = tileToSwapB.getColor();
-                            tileToSwapB.getTile().setColor(tileToSwapA.getColor());
-                            tileToSwapA.getTile().setColor(tmpColor);
+                            int tmpColor = tileToSwapB.getSubData();
+                            tileToSwapB.getTile().setSubData(tileToSwapA.getSubData());
+                            tileToSwapA.getTile().setSubData(tmpColor);
 
                             cgc.list.remove(tileToSwapA);
                             cgc.list.add(tileToSwapB);
@@ -556,13 +560,13 @@ public class TilemapManager extends Observable implements Observer {
                 if (tries == colorCount) {
                     if (strict) {
                         TilemapTile rngTile = matches.get(rand.nextInt(matches.size()));
-                        rngTile.getTile().setColor(getNextColor(rngTile.getColor()));
+                        rngTile.getTile().setSubData(getNextColor(rngTile.getSubData()));
                         tries = 0;
                     } else {
                         return;
                     }
                 }
-                centerTile.getTile().setColor(getNextColor(centerTile.getColor()));
+                centerTile.getTile().setSubData(getNextColor(centerTile.getSubData()));
                 matches = match3.getColorMatchesFromTile(centerTile, tm);
                 ++tries;
             }
@@ -580,7 +584,7 @@ public class TilemapManager extends Observable implements Observer {
                     tmTile = tm.getAbsoluteTile(x, y);
                     if (tmTile == null) continue;
 
-                    colors[tmTile.getColor()].list.add(tmTile);
+                    colors[tmTile.getSubData()].list.add(tmTile);
                 }
             }
         }

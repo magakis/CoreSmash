@@ -27,8 +27,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
 import com.breakthecore.CoreSmash;
+import com.breakthecore.LevelFormatParser;
 import com.breakthecore.Tilemap;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.levels.CampaignLevel;
@@ -37,6 +39,8 @@ import com.breakthecore.managers.MovingTileManager;
 import com.breakthecore.managers.StatsManager;
 import com.breakthecore.managers.TilemapManager;
 import com.breakthecore.screens.GameScreen.GameMode;
+import com.breakthecore.tiles.RegularTile;
+import com.breakthecore.tiles.TilemapTile;
 import com.breakthecore.ui.UIComponent;
 
 import java.util.Locale;
@@ -483,11 +487,23 @@ public class MainMenuScreen extends ScreenBase {
                             int time = Integer.parseInt(tfTime.getText());
 
                             TilemapManager.TilemapGenerator tilemapGenerator = tilemapManager.getTilemapGenerator();
-                            tilemapGenerator.setColorCount(colorCount);
+                            tilemapManager.setColorCount(colorCount);
 
-                            tilemapManager.init(1);
-                            Tilemap tm = tilemapManager.getTilemap(0);
-                            tilemapGenerator.generateRadius(tm, initRadius);
+                            Tilemap tm = tilemapManager.newTilemap();
+                            Array<LevelFormatParser.ParsedTile> parsedTiles = LevelFormatParser.load("mainmenumap");
+                            if (parsedTiles == null) {
+                                tilemapGenerator.generateRadius(tm, initRadius);
+                            } else {
+                                for (LevelFormatParser.ParsedTile tile : parsedTiles) {
+                                    int id = tile.getTileID();
+                                    if (id < 0 ) {
+                                        tm.setRelativeTile(tile.getRelativePosition(), new RegularTile(tilemapManager.getRandomColor()));
+                                    } else {
+                                        tm.setRelativeTile(tile.getRelativePosition(), new RegularTile(id));
+                                    }
+                                }
+                            }
+
                             tilemapGenerator.reduceColorMatches(tm, 2, 2);
                             if (colorCount > 1) {
                                 tilemapGenerator.balanceColorAmounts(tm);
@@ -555,9 +571,9 @@ public class MainMenuScreen extends ScreenBase {
         }
 
         private void updateDifficulty() {
-            int lives = tfLives.getText() != "" ?Integer.parseInt(tfLives.getText()) : 0;
-            int moves = tfMoves.getText() != "" ?Integer.parseInt(tfMoves.getText()) : 0;
-            int time = tfTime.getText() != "" ?Integer.parseInt(tfTime.getText()) : 0;
+            int lives = !tfLives.getText().equals("") ? Integer.parseInt(tfLives.getText()) : 0;
+            int moves = !tfMoves.getText().equals("") ? Integer.parseInt(tfMoves.getText()) : 0;
+            int time = !tfTime.getText().equals("") ? Integer.parseInt(tfTime.getText()) : 0;
 
             scoreMultiplier.setup(
                     (int) sldrColorCount.getValue(),

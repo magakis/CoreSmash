@@ -2,19 +2,20 @@ package com.breakthecore;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
-import com.breakthecore.tiles.RegularTile;
+import com.breakthecore.tiles.Tile;
 import com.breakthecore.tiles.TilemapTile;
+
+import java.security.InvalidParameterException;
 
 /**
  * Created by Michail on 18/3/2018.
  */
 
-public class Tilemap {
+public class Tilemap extends Observable {
     private int ID;
     private int tilesPerSide;
     private int tileSize;
     private int maxTileDistanceFromCenter;
-    private float tileSizeHalf;
     private int centerTile;
     private Coords2D screenPosition;
     private TilemapTile[][] listTilemapTiles;
@@ -39,7 +40,6 @@ public class Tilemap {
         ID = id;
         tilesPerSide = 30; // NOTE: If this is changed, change it also in pathfinder!
         tileSize = WorldSettings.getTileSize();
-        tileSizeHalf = tileSize / 2.f;
         centerTile = tilesPerSide / 2;
         listTilemapTiles = new TilemapTile[tilesPerSide][tilesPerSide];
         colorsAvailable = new int[10]; // XXX(22/4/2018): Magic Value 10!
@@ -65,7 +65,7 @@ public class Tilemap {
         for (TilemapTile[] arr : listTilemapTiles) {
             for (TilemapTile t : arr) {
                 if (t == null) continue;
-                colorsAvailable[t.getColor()]++;
+                colorsAvailable[t.getSubData()]++;
             }
         }
 
@@ -126,7 +126,7 @@ public class Tilemap {
         speedDiff = max - min;
     }
 
-    public void setAbsoluteTile(int x, int y, TilemapTile tile) {
+    public void setAbsoluteTile(int x, int y, Tile tile) {
         setRelativeTile(x - centerTile, y - centerTile, tile);
     }
 
@@ -134,26 +134,34 @@ public class Tilemap {
         return maxTileDistanceFromCenter;
     }
 
-    public void setRelativeTile(int x, int y, TilemapTile tile) {
-        if (tile == null) return;
+    public void setRelativeTile(int x, int y, Tile tile) {
+        if (tile == null) throw new InvalidParameterException();
 
-        tile.setPositionInTilemap(x, y, centerTile);
-        tile.setTilemapId(ID);
-        tile.setDistanceFromCenter(this);
-        updateTilemapTile(tile);
+        TilemapTile tilemapTile = new TilemapTile(tile);
+        tilemapTile.setPositionInTilemap(ID, x, y, centerTile);
+        tilemapTile.setDistanceFromCenter(this);
+        updateTilemapTile(tilemapTile);
+
 
         if (getRelativeTile(x, y) == null) {
             if (!isTilemapInitilized) {
                 ++initTileCount;
-                if (tile.getDistanceFromCenter() > maxTileDistanceFromCenter) {
-                    maxTileDistanceFromCenter = tile.getDistanceFromCenter();
+                if (tilemapTile.getDistanceFromCenter() > maxTileDistanceFromCenter) {
+                    maxTileDistanceFromCenter = tilemapTile.getDistanceFromCenter();
                 }
             }
             ++tileCount;
         }
 
-        listTilemapTiles[centerTile + y][centerTile + x] = tile;
-        ++colorsAvailable[tile.getColor()];
+        listTilemapTiles[centerTile + y][centerTile + x] = tilemapTile;
+
+        if (tile.getType() == Tile.TileType.REGULAR && tile.getSubData() != -1) {
+            ++colorsAvailable[tile.getSubData()];
+        }
+    }
+
+    public void setRelativeTile(Coords2D position, Tile tile) {
+        setRelativeTile(position.x, position.y, tile);
     }
 
     public int getTileDistance(int aX1, int aY1, int aX2, int aY2) {
@@ -191,7 +199,7 @@ public class Tilemap {
     public void destroyRelativeTile(int tileX, int tileY) {
         TilemapTile t = getRelativeTile(tileX, tileY);
         if (t == null) return;
-        t.notifyObservers(NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED, t);
+        notifyObservers(NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED, t);
         t.clear();
         emptyRelativeTile(tileX, tileY);
         --tileCount;
@@ -297,5 +305,4 @@ public class Tilemap {
     private void emptyAbsoluteTile(int x, int y) {
         listTilemapTiles[y][x] = null;
     }
-
 }

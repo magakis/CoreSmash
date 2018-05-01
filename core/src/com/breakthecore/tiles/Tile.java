@@ -4,12 +4,11 @@ import com.breakthecore.managers.CollisionManager;
 import com.breakthecore.managers.TilemapManager;
 
 abstract public class Tile {
-    private TileType m_type;
-    protected int color;
+    private TileType tileType;
+    private int subData;
 
     public Tile(TileType tileType) {
-        m_type = tileType;
-        color = 7; // 7 is white defined by RenderManager
+        this.tileType = tileType;
     }
 
     /* It's questionable whether I should just pass the GameScreen */
@@ -23,16 +22,16 @@ abstract public class Tile {
 
     abstract public void update(float delta);
 
-    public int getColor() {
-        return color;
+    public int getSubData() {
+        return subData;
     }
 
-    public void setColor(int color) {
-        this.color = color;
+    public void setSubData(int data) {
+        subData = data;
     }
 
     public TileType getType() {
-        return m_type;
+        return tileType;
     }
 
     public enum TileType {

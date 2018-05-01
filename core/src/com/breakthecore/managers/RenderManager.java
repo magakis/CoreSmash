@@ -19,13 +19,11 @@ import com.breakthecore.tiles.TilemapTile;
 
 import java.util.List;
 
-
 /**
  * Created by Michail on 24/3/2018.
  */
-
 public class RenderManager {
-    private SpriteBatch m_batch;
+    private SpriteBatch batch;
     private AssetManager assetManager;
     private ShapeRenderer m_shapeRenderer;
     private float sideLength = WorldSettings.getTileSize();
@@ -33,16 +31,19 @@ public class RenderManager {
 
     private BitmapFont defaultFont;
     private Texture texture;
+    private Texture[] listTextures;
     private final Color[] colorList;
 
     public RenderManager(AssetManager am) {
-        m_batch = new SpriteBatch();
+        batch = new SpriteBatch();
         m_shapeRenderer = new ShapeRenderer();
         assetManager = am;
 
+        listTextures = getTextureList();
+
         texture = assetManager.get("asteroid.png");
 
-        defaultFont = assetManager.get("comic_48.fnt",BitmapFont.class);
+        defaultFont = assetManager.get("comic_48.fnt", BitmapFont.class);
         sideLengthHalf = sideLength / 2.f;
         colorList = new Color[10];
 
@@ -66,8 +67,17 @@ public class RenderManager {
     }
 
     public void start(Matrix4 combined) {
-        m_batch.setProjectionMatrix(combined);
-        m_batch.begin();
+        batch.setProjectionMatrix(combined);
+        batch.begin();
+    }
+
+    private Texture[] getTextureList() {
+        Texture[] textures = new Texture[3];
+
+        textures[0] = assetManager.get("asteroid.png", Texture.class);
+        textures[1] = assetManager.get("ball.png", Texture.class);
+
+        return textures;
     }
 
     public Color[] getColorList() {
@@ -75,7 +85,7 @@ public class RenderManager {
     }
 
     public void end() {
-        m_batch.end();
+        batch.end();
     }
 
     public void renderCenterDot(Coords2D pos, Matrix4 combined) {
@@ -90,15 +100,15 @@ public class RenderManager {
         Vector2 atPos = mt.getPositionInWorld();
         Tile tile = mt.getTile();
         float sideLen = sideLengthHalf * mt.getScale();
-        m_batch.setColor(colorList[mt.getColor()]);
+        batch.setColor(colorList[mt.getSubData()]);
 
         switch (tile.getType()) {
             case REGULAR:
-                m_batch.draw(texture, atPos.x - sideLen, atPos.y - sideLen, sideLen * 2, sideLen * 2);
+                batch.draw(texture, atPos.x - sideLen, atPos.y - sideLen, sideLen * 2, sideLen * 2);
                 break;
 
             case BOMB:
-                m_batch.draw(assetManager.get("balloon.png", Texture.class), atPos.x - sideLen, atPos.y - sideLen, sideLen * 2, sideLen * 2);
+                batch.draw(assetManager.get("balloon.png", Texture.class), atPos.x - sideLen, atPos.y - sideLen, sideLen * 2, sideLen * 2);
                 break;
         }
     }
@@ -112,29 +122,34 @@ public class RenderManager {
     public void drawOnLeftSide(Queue<MovingTile> list) {
         int i = 0;
         for (MovingTile mt : list) {
-            m_batch.setColor(colorList[mt.getColor()]);
-            m_batch.draw(texture, 20, WorldSettings.getWorldHeight() / 2 - 10 * i, 80, 80);
+            batch.setColor(colorList[mt.getSubData()]);
+            batch.draw(texture, 20, WorldSettings.getWorldHeight() / 2 - 10 * i, 80, 80);
             ++i;
         }
     }
 
     public void draw(Tilemap tm) {
-        Vector2 pos;
         int tilesPerSide = tm.getTilemapSize();
-        float rotation = tm.getRotation();
-        int texWidth = texture.getWidth();
-        int texHeight = texture.getHeight();
 
-        TilemapTile tile;
         for (int y = 0; y < tilesPerSide; ++y) {
             for (int x = 0; x < tilesPerSide; ++x) {
-                tile = tm.getAbsoluteTile(x, y);
+                TilemapTile tile = tm.getAbsoluteTile(x, y);
                 if (tile != null) {
-                    pos = tile.getPositionInWorld();
-                    m_batch.setColor(colorList[tile.getColor()]);
-                    m_batch.draw(texture, pos.x - sideLengthHalf, pos.y - sideLengthHalf,
+                    Vector2 pos = tile.getPositionInWorld();
+
+                    int tileID = tile.getSubData();
+                    if (tileID >= 0 && tileID < 16) {
+                        batch.setColor(colorList[tile.getSubData()]);
+                        texture = listTextures[0];
+                    } else {
+                        batch.setColor(Color.WHITE);
+                        texture = listTextures[1];
+                    }
+
+                    batch.draw(texture, pos.x - sideLengthHalf, pos.y - sideLengthHalf,
                             sideLengthHalf, sideLengthHalf, sideLength, sideLength,
-                            1, 1, -rotation, 0, 0, texWidth, texHeight, false, false);
+                            1, 1, -tm.getRotation(), 0, 0, texture.getWidth(), texture.getHeight(), false, false);
+
                 }
             }
         }
@@ -174,23 +189,24 @@ public class RenderManager {
                 tile = tm.getAbsoluteTile(x, y);
                 if (tile != null) {
                     Vector2 pos = tile.getPositionInWorld();
-                    m_batch.setColor(Color.BLACK);
-                    defaultFont.draw(m_batch, String.valueOf(tile.getColor()), pos.x -sideLengthHalf/2, pos.y);
+                    batch.setColor(Color.BLACK);
+                    defaultFont.draw(batch, String.valueOf(tile.getSubData()), pos.x - sideLengthHalf / 2, pos.y);
                 }
             }
         }
     }
 
-    public void DBTileDistances(TilemapTile[][] map) {
+    public void DBTileDistances(Tilemap map) {
         Vector2 pos;
         Coords2D post;
-        for (TilemapTile[] arr : map) {
-            for (TilemapTile tile : arr) {
+        for (int y = 0; y < map.getTilemapSize(); ++y) {
+            for (int x = 0; x < map.getTilemapSize(); ++x) {
+                TilemapTile tile = map.getAbsoluteTile(x, y);
                 if (tile != null) {
                     pos = tile.getPositionInWorld();
                     post = tile.getRelativePosition();
-                    m_batch.setColor(Color.BLACK);
-                    defaultFont.draw(m_batch,String.format("%.0f,%.0f", post.x, post.y) , pos.x -sideLengthHalf/2, pos.y);
+                    batch.setColor(Color.BLACK);
+                    defaultFont.draw(batch, String.format("%d,%d", post.x, post.y), pos.x - sideLengthHalf / 2, pos.y);
                 }
             }
         }
@@ -204,10 +220,10 @@ public class RenderManager {
         for (int i = 0; i < launcher.size; ++i) {
             mt = launcher.get(i);
             draw(mt);
-            //            scale = mt.getScale();
+//            scale = mt.getScale();
 //            sideLength = sideLengthHalf * scale;
-//            m_batch.setColor(colorList[mt.getColor()]);
-//            m_batch.draw(texture, atPos.x - sideLength, atPos.y - sideLength - i * this.sideLength, sideLength * 2, sideLength * 2);
+//            batch.setColor(colorList[mt.getSubData()]);
+//            batch.draw(texture, atPos.x - sideLength, atPos.y - sideLength - i * this.sideLength, sideLength * 2, sideLength * 2);
         }
     }
 }

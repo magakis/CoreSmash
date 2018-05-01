@@ -21,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -75,7 +76,7 @@ public class LevelBuilderScreen extends ScreenBase {
         tilemapManager = new TilemapManager();
 
         Tilemap tm = tilemapManager.newTilemap();
-        tm.setRelativeTile(0, 0, new TilemapTile(new RegularTile(0)));
+        tm.setRelativeTile(0, 0, new RegularTile(0));
 
         stage = setupStage();
 
@@ -356,50 +357,82 @@ public class LevelBuilderScreen extends ScreenBase {
 
     private class DrawMode extends Mode {
         private int tileId;
-        private ImageButton colorButtons[];
+        private ImageButton materialButtons[];
 
         DrawMode() {
             Table main = new Table(skin);
             main.setBackground("box_white_5");
-            main.defaults().padTop(15).padBottom(15).padLeft(10).padRight(10);
 
-            Color[] colors = gameInstance.getRenderManager().getColorList();
+            HorizontalGroup materialGroup = new HorizontalGroup();
+            main.add(materialGroup).grow();
+            materialGroup.space(10);
+            materialGroup.pad(10);
+            materialGroup.wrap(true);
+            materialGroup.wrapSpace(10);
+
+
             Drawable checked = skin.newDrawable("box_white_5", Color.GREEN);
             Drawable unchecked = skin.newDrawable("box_white_5", Color.GRAY);
             ButtonGroup<ImageButton> imgbGroup = new ButtonGroup<ImageButton>();
             imgbGroup.setMinCheckCount(1);
             imgbGroup.setMaxCheckCount(1);
 
-            colorButtons = new ImageButton[colors.length];
+            ImageButton.ImageButtonStyle imgbs;
 
+            final Color[] colors = gameInstance.getRenderManager().getColorList();
+            materialButtons = new ImageButton[colors.length + 1];
+            int buttonIndex = 0;
             for (int i = 0; i < colors.length; ++i) {
-                ImageButton.ImageButtonStyle imgbs = new ImageButton.ImageButtonStyle();
-                imgbs.imageUp = skin.newDrawable("asteroid", colors[i]);
+                imgbs = new ImageButton.ImageButtonStyle();
+                imgbs.imageUp = skin.newDrawable("asteroid", colors[buttonIndex]);
                 imgbs.checked = checked;
                 imgbs.up = unchecked;
 
-                colorButtons[i] = new ImageButton(imgbs);
-                ImageButton imgb = colorButtons[i];
+                ImageButton imgb = new ImageButton(imgbs);
+                imgbGroup.add(imgb);
+                materialButtons[buttonIndex] = imgb;
+                materialGroup.addActor(imgb);
                 imgb.getImage().setScaling(Scaling.fill);
+                imgb.getImageCell().height(100).width(100);
 
-                final int finalI = i;
+                final int finalI = buttonIndex;
                 imgb.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        if (colorButtons[finalI].isChecked()) {
+                        if (materialButtons[finalI].isChecked()) {
                             tileId = finalI;
                             uiDebug.lblDebug[2].setText("TileActive| " + tileId);
                         }
                     }
                 });
+                if (buttonIndex == 8) main.row();
 
-                imgbGroup.add(imgb);
-                main.add(imgb).width(100).height(100);
-                if (i == 7) main.row();
+                ++buttonIndex;
             }
+
+            imgbs = new ImageButton.ImageButtonStyle();
+            imgbs.imageUp = skin.newDrawable("ball");
+            imgbs.checked = checked;
+            imgbs.up = unchecked;
+
+            ImageButton imgb = new ImageButton(imgbs);
+            imgb.getImageCell().height(100).width(100);
+            imgb.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    if (materialButtons[colors.length].isChecked()) {
+                        tileId = -1;
+                        uiDebug.lblDebug[2].setText("TileActive| " + tileId);
+                    }
+                }
+            });
+            imgbGroup.add(imgb);
+            materialButtons[buttonIndex++] = imgb;
+            materialGroup.addActor(imgb);
 
             setPreferencesRoot(main);
         }
+
 
         @Override
         public boolean tap(float x, float y, int count, int button) {
@@ -408,7 +441,7 @@ public class LevelBuilderScreen extends ScreenBase {
             Coords2D res = tm.worldToTilemapCoords(screenToWorld.get());
 
             if (tm.getRelativeTile(res.x, res.y) == null) {
-                tm.setRelativeTile(res.x, res.y, new TilemapTile(new RegularTile(tileId)));
+                tm.setRelativeTile(res.x, res.y, new RegularTile(tileId));
             }
 
             return true;

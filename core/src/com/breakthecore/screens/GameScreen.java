@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -127,7 +128,6 @@ public class GameScreen extends ScreenBase implements Observer {
     public void render(float delta) {
         update(delta);
 
-//        if (isGameActive) {
         renderManager.start(m_camera.combined);
         for (int i = 0; i < tilemapManager.getTilemapCount(); ++i) {
             renderManager.draw(tilemapManager.getTilemap(i));
@@ -137,7 +137,6 @@ public class GameScreen extends ScreenBase implements Observer {
         renderManager.end();
 
         renderManager.renderCenterDot(tilemapManager.getTilemapPosition(), m_camera.combined);
-//        }
         stage.draw();
     }
 
@@ -232,21 +231,14 @@ public class GameScreen extends ScreenBase implements Observer {
                 break;
 
             case NOTIFICATION_TYPE_LIVES_CHANGED:
-                int lives = statsManager.getLives();
-                if (lives == 0) {
-                    isGameActive = false;
-                    roundWon = false;
-                    endGame();
-                } else {
-                    gameUI.lblLives.setText(String.valueOf(lives));
-                }
+                    gameUI.lblLives.setText(String.valueOf(statsManager.getLives()));
                 break;
 
             case MOVES_AMOUNT_CHANGED:
                 int moves = statsManager.getMoves();
                 gameUI.lblMoves.setText(String.valueOf(moves));
                 if (statsManager.isMovesEnabled() && moves == movingTileManager.getLauncherSize()) {
-                    movingTileManager.setLastTileColor(tilemapManager.getTilemap(0).getRelativeTile(0, 0).getColor());
+                    movingTileManager.setLastTileColor(tilemapManager.getTilemap(0).getRelativeTile(0, 0).getSubData());
                     movingTileManager.setAutoReloadEnabled(false);
                 }
                 break;
@@ -497,11 +489,14 @@ public class GameScreen extends ScreenBase implements Observer {
         Label resultTextLbl, timeLbl, scoreLbl;
 
         public ResultUI() {
-            Table tbl = new Table();
-            tbl.setFillParent(true);
+            Container<Table> root;
+            Table main = new Table(skin);
+            main.background("toast1");
+            main.pad(40);
+            root = new Container<>(main);
+            root.setFillParent(true);
+            setRoot(root);
 
-            Label staticTime = new Label("Time:", skin, "comic_48b");
-            Label staticScore = new Label("Score:", skin, "comic_48b");
             resultTextLbl = new Label("null", skin, "comic_96b");
             timeLbl = new Label("null", skin, "comic_48");
             scoreLbl = new Label("null", skin, "comic_48");
@@ -513,23 +508,23 @@ public class GameScreen extends ScreenBase implements Observer {
                     gameInstance.setPrevScreen();
                 }
             });
-
             tbMenu.getLabelCell().width(200).height(150);
 
-            HorizontalGroup hg = new HorizontalGroup();
-            hg.align(Align.center);
-            hg.addActor(tbMenu);
+            HorizontalGroup buttonGroup = new HorizontalGroup();
+            buttonGroup.align(Align.center);
+            buttonGroup.addActor(tbMenu);
 
+            Label staticTime = new Label("Time:", skin, "comic_48b");
+            Label staticScore = new Label("Score:", skin, "comic_48b");
 
-            tbl.center();
-            tbl.add(resultTextLbl).colspan(2).padBottom(50).row();
-            tbl.add(staticTime);
-            tbl.add(staticScore).row();
-            tbl.add(timeLbl);
-            tbl.add(scoreLbl).row();
-            tbl.add(hg).colspan(2).padTop(100);
+            main.center();
+            main.add(resultTextLbl).colspan(2).padBottom(50).row();
+            main.add(staticTime);
+            main.add(staticScore).row();
+            main.add(timeLbl);
+            main.add(scoreLbl).row();
+            main.add(buttonGroup).colspan(2).padTop(100);
 
-            setRoot(tbl);
         }
 
         public void update() {

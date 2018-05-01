@@ -23,20 +23,16 @@ public class MovingTile extends TileContainer {
 
     public MovingTile(Vector2 pos, int speed, Tile tile) {
         this(pos, speed);
-        m_tile = tile;
+        setTile(tile);
     }
 
     public MovingTile(float x, float y, int speed, Tile tile) {
         this(x, y, speed);
-        m_tile = tile;
+        setTile(tile);
     }
 
     public void setScale(float scale) {
         this.scale = scale;
-    }
-
-    public Tile getTile() {
-        return m_tile;
     }
 
     public float getSpeed() {
@@ -72,17 +68,8 @@ public class MovingTile extends TileContainer {
     }
 
     public Tile extractTile() {
-        Tile res = m_tile;
-        m_tile = null;
+        Tile res = getTile();
+        setTile(null);
         return res;
     }
-
-    public boolean hasTile() {
-        return m_tile != null;
-    }
-
-    public int getColor() {
-        return m_tile.getColor();
-    }
-
 }

@@ -10,13 +10,9 @@ public class TilemapTile extends TileContainer {
     private int idTilemap;
 
     public TilemapTile(Tile tile) {
-        m_tile = tile;
+        setTile(tile);
         relativePositionInTilemap = new Coords2D();
         absolutePositionInTilemap = new Coords2D();
-    }
-
-    public Tile getTile() {
-        return m_tile;
     }
 
     public Coords2D getAbsolutePosition() {
@@ -25,10 +21,6 @@ public class TilemapTile extends TileContainer {
 
     public Coords2D getRelativePosition() {
         return relativePositionInTilemap;
-    }
-
-    public int getColor() {
-        return m_tile.getColor();
     }
 
     public int getTilemapId() {
@@ -43,17 +35,13 @@ public class TilemapTile extends TileContainer {
         this.distanceFromCenter = tm.getTileDistance(relativePositionInTilemap.x,relativePositionInTilemap.y, 0,0);
     }
 
-    public void setPositionInTilemap(int relativeX, int relativeY, int centerTile) {
+    public void setPositionInTilemap(int tilemapID, int relativeX, int relativeY, int centerTile) {
         relativePositionInTilemap.set(relativeX, relativeY);
         absolutePositionInTilemap.set(relativeX+centerTile, relativeY+centerTile);
-    }
-
-    public void setTilemapId(int id) {
-        idTilemap = id;
+        idTilemap = tilemapID;
     }
 
     public void clear() {
-        clearObserverList();
         relativePositionInTilemap.set(999,999);
         absolutePositionInTilemap.set(999,999);
     }
