@@ -33,7 +33,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     public CampaignScreen(CoreSmash game) {
         super(game);
         m_skin = game.getSkin();
-        stage = new Stage(game.getWorldViewport());
+        stage = new Stage(game.getUIViewport());
         gd = new CustomGestureDetector(new InputListener());
 
         screenInputMultiplexer.addProcessor(stage);

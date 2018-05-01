@@ -37,7 +37,6 @@ import com.breakthecore.CoreSmash;
 import com.breakthecore.Coords2D;
 import com.breakthecore.LevelFormatParser;
 import com.breakthecore.Tilemap;
-import com.breakthecore.WorldSettings;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.managers.TilemapManager;
 import com.breakthecore.tiles.RegularTile;
@@ -70,13 +69,13 @@ public class LevelBuilderScreen extends ScreenBase {
         renderManager = game.getRenderManager();
         camera = new OrthographicCamera();
         viewport = new ExtendViewport(1080, 1920, camera);
-        camera.position.set(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() / 2, 0);
+        camera.position.set(viewport.getMinWorldWidth()/2,viewport.getMinWorldHeight()/2,0);
         camera.update();
 
         tilemapManager = new TilemapManager();
 
         Tilemap tm = tilemapManager.newTilemap();
-        tm.setRelativeTile(0, 0, new RegularTile(0));
+        tm.setRelativeTile(0, 0, new RegularTile(-1));
 
         stage = setupStage();
 
@@ -111,7 +110,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
 
     private Stage setupStage() {
-        Stage stage = new Stage(gameInstance.getWorldViewport());
+        Stage stage = new Stage(gameInstance.getUIViewport());
         skin = gameInstance.getSkin();
         uiTools = new UITools();
         uiDebug = new UIDebug();

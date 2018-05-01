@@ -79,7 +79,7 @@ public class CoreSmash  extends Game {
 		super.setScreen(newScreen);
 	}
 
-	public Viewport getWorldViewport() {
+	public Viewport getUIViewport() {
 		return viewport;
 	}
 

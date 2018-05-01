@@ -16,7 +16,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.Align;
 import com.breakthecore.CoreSmash;
-import com.breakthecore.LevelFormatParser;
 
 import java.util.Locale;
 
@@ -28,7 +27,7 @@ public class LoadingScreen extends ScreenBase {
 
     public LoadingScreen(CoreSmash game) {
         super(game);
-        stage = new Stage(gameInstance.getWorldViewport());
+        stage = new Stage(gameInstance.getUIViewport());
         am = game.getAssetManager();
         skin = game.getSkin();
         percent = new Label("null", new Label.LabelStyle(new BitmapFont(Gdx.files.internal("comic_96b.fnt"), false), Color.WHITE));

@@ -22,6 +22,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.breakthecore.CoreSmash;
 import com.breakthecore.Coords2D;
 import com.breakthecore.levels.Level;
@@ -44,7 +45,8 @@ import java.util.Locale;
  */
 
 public class GameScreen extends ScreenBase implements Observer {
-    private OrthographicCamera m_camera;
+    private ExtendViewport viewport;
+    private OrthographicCamera camera;
 
     private TilemapManager tilemapManager;
     private MovingTileManager movingTileManager;
@@ -71,7 +73,11 @@ public class GameScreen extends ScreenBase implements Observer {
 
     public GameScreen(CoreSmash game) {
         super(game);
-        m_camera = (OrthographicCamera) gameInstance.getWorldViewport().getCamera();
+        viewport = new ExtendViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight());
+        camera = (OrthographicCamera) viewport.getCamera();
+        camera.position.set(viewport.getMinWorldWidth()/2,viewport.getMinWorldHeight()/2,0);
+        camera.update();
+
         skin = gameInstance.getSkin();
 
         renderManager = gameInstance.getRenderManager();
@@ -95,7 +101,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
         movingTileManager.addObserver(statsManager);
 
-        stage = new Stage(game.getWorldViewport());
+        stage = new Stage(game.getUIViewport());
 
         gameUI = new GameUI();
         m_resultUI = new ResultUI();
@@ -125,10 +131,15 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     @Override
+    public void resize(int width, int height) {
+        viewport.update(width, height);
+    }
+
+    @Override
     public void render(float delta) {
         update(delta);
 
-        renderManager.start(m_camera.combined);
+        renderManager.start(camera.combined);
         for (int i = 0; i < tilemapManager.getTilemapCount(); ++i) {
             renderManager.draw(tilemapManager.getTilemap(i));
         }
@@ -136,7 +147,7 @@ public class GameScreen extends ScreenBase implements Observer {
         renderManager.draw(movingTileManager.getActiveList());
         renderManager.end();
 
-        renderManager.renderCenterDot(tilemapManager.getTilemapPosition(), m_camera.combined);
+        renderManager.renderCenterDot(tilemapManager.getTilemapPosition(), camera.combined);
         stage.draw();
     }
 
@@ -292,7 +303,7 @@ public class GameScreen extends ScreenBase implements Observer {
                         if (isPanning) {
                             float currAngle;
                             scrPos.set(x, y, 0);
-                            scrPos = m_camera.unproject(scrPos);
+                            scrPos = camera.unproject(scrPos);
                             currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
                             currAngle = currPoint.angle();
                             tilemapManager.getTilemap(0).rotate((initAngle - currAngle) * 2.5f);
@@ -300,7 +311,7 @@ public class GameScreen extends ScreenBase implements Observer {
                         } else {
                             isPanning = true;
                             scrPos.set(x, y, 0);
-                            scrPos = m_camera.unproject(scrPos);
+                            scrPos = camera.unproject(scrPos);
                             currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
                             initAngle = currPoint.angle();
                         }

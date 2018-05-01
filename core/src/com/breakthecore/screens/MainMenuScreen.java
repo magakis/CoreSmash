@@ -40,7 +40,6 @@ import com.breakthecore.managers.StatsManager;
 import com.breakthecore.managers.TilemapManager;
 import com.breakthecore.screens.GameScreen.GameMode;
 import com.breakthecore.tiles.RegularTile;
-import com.breakthecore.tiles.TilemapTile;
 import com.breakthecore.ui.UIComponent;
 
 import java.util.Locale;
@@ -61,7 +60,7 @@ public class MainMenuScreen extends ScreenBase {
 
     public MainMenuScreen(CoreSmash game) {
         super(game);
-        stage = new Stage(game.getWorldViewport());
+        stage = new Stage(game.getUIViewport());
         screenInputMultiplexer.addProcessor(new BackButtonInputHandler());
         screenInputMultiplexer.addProcessor(stage);
         setupMainMenuStage(stage);

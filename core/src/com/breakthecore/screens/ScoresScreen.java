@@ -38,7 +38,7 @@ public class ScoresScreen extends ScreenBase {
     }
 
     private void setupStage() {
-        stage = new Stage();
+        stage = new Stage(gameInstance.getUIViewport());
         skin = gameInstance.getSkin();
         uiScoreTable = new UIScoreTable();
 
