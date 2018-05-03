@@ -478,7 +478,7 @@ public class MovingTileManager extends Observable {
             }
 
             for (ColorGroup colorGroup : colorGroups) {
-                if (colorGroup.groupColor < colorCount && colorGroup.amount > 0) {
+                if (colorGroup.amount > 0) {
                     colorGroup.enabled = true;
                 }
             }

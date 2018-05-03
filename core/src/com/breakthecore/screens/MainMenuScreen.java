@@ -204,8 +204,8 @@ public class MainMenuScreen extends ScreenBase {
             tblRoot.add(tblSettings).padBottom(80).padLeft(-10);
 
             ImageButton.ImageButtonStyle imgbsSound = new ImageButton.ImageButtonStyle();
-            imgbsSound.imageUp = skin.getDrawable("speaker");
-            imgbsSound.imageDown = skin.newDrawable("speaker", Color.RED);
+            imgbsSound.imageUp = skin.getDrawable("map");
+            imgbsSound.imageDown = skin.newDrawable("map", Color.RED);
             ImageButton imgbSound = new ImageButton(imgbsSound);
             imgbSound.getImageCell().width(70).height(70);
             tblSettings.add(imgbSound).height(80).width(80).padLeft(20);
@@ -279,7 +279,7 @@ public class MainMenuScreen extends ScreenBase {
                 }
             };
 
-            TextField.TextFieldListener returnOnNewLineListener = new TextField.TextFieldListener() {
+            final TextField.TextFieldListener returnOnNewLineListener = new TextField.TextFieldListener() {
                 public void keyTyped(TextField textField, char key) {
                     if (key == '\n' || key == '\r') {
                         textField.getOnscreenKeyboard().show(false);
@@ -473,7 +473,7 @@ public class MainMenuScreen extends ScreenBase {
                     if (tfLives.getText().isEmpty()) tfLives.setText("0");
                     if (tfTime.getText().isEmpty()) tfTime.setText("0");
 
-                    Level dbLevel = new CampaignLevel(999, null) {
+                    Level dbLevel = new CampaignLevel(999, gameInstance.getUserAccount(), null) {
                         @Override
                         public void initialize(StatsManager statsManager, TilemapManager tilemapManager, MovingTileManager movingTileManager) {
                             Preferences prefs = Gdx.app.getPreferences("game_settings");
@@ -508,13 +508,12 @@ public class MainMenuScreen extends ScreenBase {
                                 tilemapGenerator.generateRadius(tm, initRadius);
                             }
 
-
                             tilemapGenerator.reduceColorMatches(tm, 2, 2);
                             if (colorCount > 1) {
                                 tilemapGenerator.balanceColorAmounts(tm);
                             }
                             tilemapGenerator.forceEachColorOnEveryRadius(tm);
-                            tilemapGenerator.reduceCenterTileColorMatch(tm, 2);
+                                tilemapGenerator.reduceCenterTileColorMatch(tm, 2);
 
                             tm.setMinMaxSpeed(minRotationSpeed, maxRotationSpeed);
                             tm.setAutoRotation(!spinTheCoreEnabled);
@@ -528,6 +527,7 @@ public class MainMenuScreen extends ScreenBase {
                             movingTileManager.enableControlledBallGeneration(tilemapManager);
                             movingTileManager.initLauncher(3);
 
+                            statsManager.setUserAccount(getUser());
                             statsManager.setGameMode(spinTheCoreEnabled ? GameMode.SPIN_THE_CORE : GameMode.CLASSIC);
                             statsManager.setLives(cbUseLives.isChecked(), lives);
                             statsManager.setMoves(cbUseMoves.isChecked(), moves);
@@ -563,6 +563,9 @@ public class MainMenuScreen extends ScreenBase {
 
                         @Override
                         public void end(boolean roundWon, StatsManager statsManager) {
+                            if (roundWon) {
+                                statsManager.getUser().saveScore(statsManager.getScore(),statsManager.getDifficultyMultiplier());
+                            }
                         }
                     };
 

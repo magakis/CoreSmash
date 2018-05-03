@@ -3,14 +3,17 @@ package com.breakthecore.managers;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observable;
 import com.breakthecore.Observer;
+import com.breakthecore.UserAccount;
 import com.breakthecore.screens.GameScreen;
 import com.breakthecore.tiles.Tile;
 
 import java.util.Random;
 
 public class StatsManager extends Observable implements Observer {
-    private Random rand = new Random();
     private ScoreMultiplier scoreMultiplier = new ScoreMultiplier();
+    private Random rand = new Random();
+    private UserAccount user;
+
     private int score;
 
     private int lives;
@@ -65,10 +68,15 @@ public class StatsManager extends Observable implements Observer {
         }
     }
 
+    /* Q: Should reset be private and provide only a function that resets but requires a user? */
     public void reset() {
         scoreMultiplier.reset();
         score = 0;
         gameMode = null;
+        // If UserAccount listens to StatManager in the future,
+        // make sure I remove the current user from the StatManager observer list.
+        user = null;
+
         ballsDestroyedThisFrame = 0;
         specialBallCount = 0;
         isMovesEnabled = false;
@@ -77,6 +85,14 @@ public class StatsManager extends Observable implements Observer {
         time = 0;
         isLivesEnabled = false;
         lives = 0;
+    }
+
+    public UserAccount getUser() {
+        return user;
+    }
+
+    public void setUserAccount(UserAccount user) {
+        this.user = user;
     }
 
     public ScoreMultiplier getScoreMultiplier() {
@@ -250,14 +266,14 @@ public class StatsManager extends Observable implements Observer {
 
             if (movesEnabled) {
                 float multiplierFromMoves;
-                float percentOfTotalTiles = (float)moves/amountOfTiles;
+                float percentOfTotalTiles = (float) moves / amountOfTiles;
                 if (percentOfTotalTiles <= .2f) {
                     multiplierFromMoves = 2;
-                }else if(percentOfTotalTiles <= .4f){
+                } else if (percentOfTotalTiles <= .4f) {
                     multiplierFromMoves = 1.5f;
-                }else if(percentOfTotalTiles <= .6f){
+                } else if (percentOfTotalTiles <= .6f) {
                     multiplierFromMoves = 1f;
-                }else if(percentOfTotalTiles <= .8f){
+                } else if (percentOfTotalTiles <= .8f) {
                     multiplierFromMoves = .8f;
                 } else {
                     multiplierFromMoves = .6f;
@@ -272,11 +288,11 @@ public class StatsManager extends Observable implements Observer {
 
 
         public int getTotalTilesFromRadius(int radius) {
-        /* Maybe this shouldn't be here..*/
+            /* Maybe this shouldn't be here..*/
             int total = 1;
 
             for (int i = 1; i <= radius; ++i) {
-                total += i*6;
+                total += i * 6;
             }
             return total;
         }

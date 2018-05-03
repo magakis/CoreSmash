@@ -19,13 +19,13 @@ import com.breakthecore.RoundEndListener;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.levels.Level1;
 import com.breakthecore.levels.Level2;
+import com.breakthecore.managers.StatsManager;
 
 public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private GameScreen gameScreen;
     private GestureDetector gd;
     private Skin m_skin;
     private Stage stage;
-    private Table tblCampaignMap;
     private LevelButton[] levelButtons;
     private int currentLevel;
     private int activeLevel;
@@ -38,7 +38,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
         screenInputMultiplexer.addProcessor(stage);
         screenInputMultiplexer.addProcessor(gd);
-        tblCampaignMap = new Table();
         gameScreen = new GameScreen(gameInstance);
 
         levelButtons = new LevelButton[20];
@@ -87,10 +86,10 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         activeLevel = lvl;
         switch (lvl) {
             case 1:
-                gameScreen.deployLevel(new Level1(this));
+                gameScreen.deployLevel(new Level1(gameInstance.getUserAccount(), this));
                 break;
             case 2:
-                gameScreen.deployLevel(new Level2(this));
+                gameScreen.deployLevel(new Level2(gameInstance.getUserAccount(), this));
             default:
                 return;
         }
@@ -98,16 +97,17 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     }
 
     @Override
-    public void onRoundEnded(boolean result) {
+    public void onRoundEnded(boolean result, StatsManager statsManager) {
         // Round WON
         if (result) {
-            Preferences prefs = Gdx.app.getPreferences("highscores");
+            Preferences prefs = Gdx.app.getPreferences("account");
             if (currentLevel == activeLevel) {
                 prefs.putInteger("campaign_level", currentLevel+1);
                 prefs.flush();
                 levelButtons[currentLevel].enable();
                 ++currentLevel;
             }
+            statsManager.getUser().saveScore(statsManager.getScore(), statsManager.getDifficultyMultiplier());
         }
         //Round LOST
     }

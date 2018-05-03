@@ -2,14 +2,15 @@ package com.breakthecore.levels;
 
 import com.breakthecore.RoundEndListener;
 import com.breakthecore.Tilemap;
+import com.breakthecore.UserAccount;
 import com.breakthecore.managers.MovingTileManager;
 import com.breakthecore.managers.StatsManager;
 import com.breakthecore.managers.TilemapManager;
 import com.breakthecore.screens.GameScreen;
 
 public class Level2 extends CampaignLevel {
-    public Level2(RoundEndListener roundEndListener) {
-        super(2, roundEndListener);
+    public Level2(UserAccount user, RoundEndListener roundEndListener) {
+        super(2, user, roundEndListener);
     }
 
     @Override
@@ -32,6 +33,7 @@ public class Level2 extends CampaignLevel {
         movingTileManager.setDefaultBallSpeed(15);
         movingTileManager.initLauncher(3);
 
+        statsManager.setUserAccount(getUser());
         statsManager.setGameMode(GameScreen.GameMode.CLASSIC);
         statsManager.setMoves(true,  tm.getTileCount()/3);
         statsManager.setSpecialBallCount(0);

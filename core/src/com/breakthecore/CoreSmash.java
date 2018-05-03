@@ -20,7 +20,6 @@ import static com.badlogic.gdx.Gdx.gl;
 
 public class CoreSmash  extends Game {
 	private boolean isInitialized;
-	private MainMenuScreen mainMenuScreen;
 	private ExtendViewport viewport;
 	private RenderManager renderManager;
 	private AssetManager assetManager;
@@ -41,6 +40,8 @@ public class CoreSmash  extends Game {
 		Gdx.input.setCatchBackKey(true);
 
 		assetManager = new AssetManager();
+		renderManager = new RenderManager(assetManager);
+
 		m_skin = new Skin();
 		userAccount = new UserAccount();
 
@@ -93,10 +94,7 @@ public class CoreSmash  extends Game {
 
 	public void initApp() {
 		if (!isInitialized) {
-			renderManager = new RenderManager(assetManager);
-			mainMenuScreen = new MainMenuScreen(this);
-			setInputProcessor(mainMenuScreen.getScreenInputProcessor());
-			super.setScreen(mainMenuScreen);
+			setScreen(new MainMenuScreen(this));
 			isInitialized = true;
 		}
 	}

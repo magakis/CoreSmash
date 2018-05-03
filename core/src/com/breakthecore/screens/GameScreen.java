@@ -69,8 +69,6 @@ public class GameScreen extends ScreenBase implements Observer {
     private Stack rootUIStack;
     //===========
 
-    private int sideLength = WorldSettings.getTileSize();
-
     public GameScreen(CoreSmash game) {
         super(game);
         viewport = new ExtendViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight());
@@ -81,7 +79,8 @@ public class GameScreen extends ScreenBase implements Observer {
         skin = gameInstance.getSkin();
 
         renderManager = gameInstance.getRenderManager();
-        movingTileManager = new MovingTileManager(sideLength);
+
+        movingTileManager = new MovingTileManager(WorldSettings.getTileSize());
         collisionManager = new CollisionManager();
 
         tilemapManager = new TilemapManager();
@@ -182,17 +181,8 @@ public class GameScreen extends ScreenBase implements Observer {
         m_resultUI.update();
         stage.clear();
         stage.addActor(m_resultUI.getRoot());
-        int score = statsManager.getScore();
 
         if (activeLevel != null) {
-            if (roundWon) {
-                Preferences prefs = Gdx.app.getPreferences("account");
-                if (score > prefs.getInteger("level" + activeLevel.getLevelNumber(), 0)) {
-                    prefs.putInteger("level" + activeLevel.getLevelNumber(), score);
-                    prefs.flush();
-                }
-                gameInstance.getUserAccount().addScore(score, statsManager.getDifficultyMultiplier());
-            }
             activeLevel.end(roundWon, statsManager);
         }
 
@@ -502,7 +492,7 @@ public class GameScreen extends ScreenBase implements Observer {
         public ResultUI() {
             Container<Table> root;
             Table main = new Table(skin);
-            main.background("toast1");
+            main.background("box_white_5");
             main.pad(40);
             root = new Container<>(main);
             root.setFillParent(true);

@@ -75,7 +75,7 @@ public class LevelBuilderScreen extends ScreenBase {
         tilemapManager = new TilemapManager();
 
         Tilemap tm = tilemapManager.newTilemap();
-        tm.setRelativeTile(0, 0, new RegularTile(-1));
+        tm.setRelativeTile(0, 0, new RegularTile(8));
 
         stage = setupStage();
 
@@ -375,9 +375,10 @@ public class LevelBuilderScreen extends ScreenBase {
 
             ImageButton.ImageButtonStyle imgbs;
 
-            final Color[] colors = gameInstance.getRenderManager().getColorList();
-            materialButtons = new ImageButton[colors.length + 1];
+//            final Color[] colors = gameInstance.getRenderManager().getColorList();
+            materialButtons = new ImageButton[1];
             int buttonIndex = 0;
+            /*
             for (int i = 0; i < colors.length; ++i) {
                 imgbs = new ImageButton.ImageButtonStyle();
                 imgbs.imageUp = skin.newDrawable("asteroid", colors[buttonIndex]);
@@ -401,11 +402,9 @@ public class LevelBuilderScreen extends ScreenBase {
                         }
                     }
                 });
-                if (buttonIndex == 8) main.row();
-
                 ++buttonIndex;
             }
-
+*/
             imgbs = new ImageButton.ImageButtonStyle();
             imgbs.imageUp = skin.newDrawable("ball");
             imgbs.checked = checked;
@@ -413,17 +412,18 @@ public class LevelBuilderScreen extends ScreenBase {
 
             ImageButton imgb = new ImageButton(imgbs);
             imgb.getImageCell().height(100).width(100);
+            materialButtons[0] = imgb;
             imgb.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    if (materialButtons[colors.length].isChecked()) {
-                        tileId = -1;
+                    if (materialButtons[0].isChecked()) {
+                        tileId = 8;
                         uiDebug.lblDebug[2].setText("TileActive| " + tileId);
                     }
                 }
             });
+
             imgbGroup.add(imgb);
-            materialButtons[buttonIndex++] = imgb;
             materialGroup.addActor(imgb);
 
             setPreferencesRoot(main);

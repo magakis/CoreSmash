@@ -16,14 +16,17 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.Align;
 import com.breakthecore.CoreSmash;
+import com.breakthecore.themes.AbstractTheme;
+import com.breakthecore.themes.BaseTheme;
 
 import java.util.Locale;
 
 public class LoadingScreen extends ScreenBase {
-    AssetManager am;
-    Stage stage;
-    Skin skin;
-    Label percent;
+    private AssetManager am;
+    private Stage stage;
+    private Skin skin;
+    private Label percent;
+    private AbstractTheme baseTheme;
 
     public LoadingScreen(CoreSmash game) {
         super(game);
@@ -38,11 +41,16 @@ public class LoadingScreen extends ScreenBase {
         screenInputMultiplexer.addProcessor(stage);
         loadAllTextures();
         loadAllBitmapFonts();
+
+        baseTheme = new BaseTheme();
+        baseTheme.queueForLoad(am);
+        gameInstance.getRenderManager().setTheme(baseTheme);
     }
 
     @Override
     public void render(float delta) {
         if (am.update()) {
+            baseTheme.finishLoading();
             setupSkin();
             gameInstance.initApp();
         }
@@ -61,7 +69,7 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("speaker.png");
         loadTexture("NinePatches/toast1.png");
         loadTexture("NinePatches/dialog1.png");
-
+        loadTexture("map.png");
     }
 
     private void loadAllBitmapFonts() {
@@ -127,6 +135,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("cog", am.get("cog.png"));
         skin.add("ball", am.get("ball.png"));
         skin.add("asteroid", am.get("asteroid.png"));
+        skin.add("map", am.get("map.png"));
         skin.add("speaker", am.get("speaker.png"));
 
         // Fonts

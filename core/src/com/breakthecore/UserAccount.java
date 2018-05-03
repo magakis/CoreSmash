@@ -38,36 +38,41 @@ public class UserAccount {
     }
 
     public int getScore(int i) {
-        if (i < 0 || i > 4) throw new ArrayIndexOutOfBoundsException("i is out of bounds. !(1-5)");
+        if (i < 0 || i > 4) throw new ArrayIndexOutOfBoundsException("i = " + i);
         return scores[i];
     }
 
     public float getScoreDificulty(int i) {
-        if (i < 0 || i > 4) throw new ArrayIndexOutOfBoundsException("i is out of bounds. !(1-5)");
+        if (i < 0 || i > 4) throw new ArrayIndexOutOfBoundsException("i = " + i);
         return dfcltys[i];
     }
 
-    public void addScore(int score, float dfclty) {
+    public void saveScore(int score, float dfclty) {
         Preferences prefs = Gdx.app.getPreferences("account");
 
         int scoreIndex = 0;
-        while (score < scores[scoreIndex]) {
+        while (score < scores[scoreIndex] && scoreIndex < 4) {
             ++scoreIndex;
         }
 
-        for (int i = 4; i > scoreIndex; --i) {
-            scores[i] = scores[i - 1];
-            dfcltys[i] = dfcltys[i - 1];
-            prefs.putInteger("score" + i, scores[i - 1]);
-            prefs.putFloat("dfclty" + i, dfcltys[i - 1]);
+        // Don't save equal scores
+        if (score != scores[scoreIndex]) {
+            for (int i = 4; i > scoreIndex; --i) {
+                scores[i] = scores[i - 1];
+                dfcltys[i] = dfcltys[i - 1];
+                prefs.putInteger("score" + i, scores[i - 1]);
+                prefs.putFloat("dfclty" + i, dfcltys[i - 1]);
+            }
+
+            scores[scoreIndex] = score;
+            dfcltys[scoreIndex] = dfclty;
+            prefs.putInteger("score" + scoreIndex, score);
+            prefs.putFloat("dfclty" + scoreIndex, dfclty);
         }
 
-        scores[scoreIndex] = score;
-        dfcltys[scoreIndex] = dfclty;
         totalScore += score;
-        prefs.putInteger("score" + scoreIndex, score);
         prefs.putInteger("total_score", totalScore);
-        prefs.putFloat("dfclty" + scoreIndex, dfclty);
+
         prefs.flush();
     }
 }
