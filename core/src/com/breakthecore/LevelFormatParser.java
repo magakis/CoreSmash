@@ -127,7 +127,7 @@ public class LevelFormatParser {
                         TilemapTile tile = tm.getAbsoluteTile(x, y);
                         if (tile == null) continue;
 
-                        writer.println(String.format(Locale.ENGLISH, "%d:%d:%d", tile.getSubData(), x - centerTile, y - centerTile));
+                        writer.println(String.format(Locale.ENGLISH, "%d:%d:%d", tile.getTileID(), x - centerTile, y - centerTile));
                     }
                 }
             }

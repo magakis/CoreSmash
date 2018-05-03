@@ -65,7 +65,7 @@ public class Tilemap extends Observable {
         for (TilemapTile[] arr : listTilemapTiles) {
             for (TilemapTile t : arr) {
                 if (t == null) continue;
-                colorsAvailable[t.getSubData()]++;
+                colorsAvailable[t.getTileID()]++;
             }
         }
 
@@ -155,8 +155,8 @@ public class Tilemap extends Observable {
 
         listTilemapTiles[centerTile + y][centerTile + x] = tilemapTile;
 
-        if (tile.getType() == Tile.TileType.REGULAR && tile.getSubData() != -1) {
-            ++colorsAvailable[tile.getSubData()];
+        if (tile.getID() < 8) {
+            ++colorsAvailable[tile.getID()];
         }
     }
 

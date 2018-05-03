@@ -3,7 +3,6 @@ package com.breakthecore.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
@@ -239,7 +238,7 @@ public class GameScreen extends ScreenBase implements Observer {
                 int moves = statsManager.getMoves();
                 gameUI.lblMoves.setText(String.valueOf(moves));
                 if (statsManager.isMovesEnabled() && moves == movingTileManager.getLauncherSize()) {
-                    movingTileManager.setLastTileColor(tilemapManager.getTilemap(0).getRelativeTile(0, 0).getSubData());
+                    movingTileManager.setLastTileColor(tilemapManager.getTilemap(0).getRelativeTile(0, 0).getTileID());
                     movingTileManager.setAutoReloadEnabled(false);
                 }
                 break;

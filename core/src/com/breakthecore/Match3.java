@@ -30,7 +30,7 @@ public class Match3 {
         //top_left
         tt = tm.getRelativeTile(tx - 1, ty + 1);
         if (tt != null && !exclude.contains(tt)) {
-            if (tt.getSubData() == tile.getSubData()) {
+            if (tt.getTileID() == tile.getTileID()) {
                 addSurroundingColorMatches(tm, tt, match, exclude);
             }
         }
@@ -38,7 +38,7 @@ public class Match3 {
         //top_right
         tt = tm.getRelativeTile(tx, ty + 1);
         if (tt != null && !exclude.contains(tt)) {
-            if (tt.getSubData() == tile.getSubData()) {
+            if (tt.getTileID() == tile.getTileID()) {
                 addSurroundingColorMatches(tm, tt, match, exclude);
             }
         }
@@ -46,7 +46,7 @@ public class Match3 {
         //right
         tt = tm.getRelativeTile(tx + 1, ty);
         if (tt != null && !exclude.contains(tt)) {
-            if (tt.getSubData() == tile.getSubData()) {
+            if (tt.getTileID() == tile.getTileID()) {
                 addSurroundingColorMatches(tm, tt, match, exclude);
             }
         }
@@ -54,7 +54,7 @@ public class Match3 {
         //bottom_right
         tt = tm.getRelativeTile(tx + 1, ty - 1);
         if (tt != null && !exclude.contains(tt)) {
-            if (tt.getSubData() == tile.getSubData()) {
+            if (tt.getTileID() == tile.getTileID()) {
                 addSurroundingColorMatches(tm, tt, match, exclude);
             }
         }
@@ -62,7 +62,7 @@ public class Match3 {
         //bottom_left
         tt = tm.getRelativeTile(tx, ty - 1);
         if (tt != null && !exclude.contains(tt)) {
-            if (tt.getSubData() == tile.getSubData()) {
+            if (tt.getTileID() == tile.getTileID()) {
                 addSurroundingColorMatches(tm, tt, match, exclude);
             }
         }
@@ -70,7 +70,7 @@ public class Match3 {
         //left
         tt = tm.getRelativeTile(tx - 1, ty);
         if (tt != null && !exclude.contains(tt)) {
-            if (tt.getSubData() == tile.getSubData()) {
+            if (tt.getTileID() == tile.getTileID()) {
                 addSurroundingColorMatches(tm, tt, match, exclude);
             }
         }

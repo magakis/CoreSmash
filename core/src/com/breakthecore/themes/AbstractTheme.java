@@ -7,7 +7,8 @@ import com.badlogic.gdx.graphics.Texture;
 import java.util.HashMap;
 import java.util.Map;
 
-/* Do _NOT_ call clear in the AbstractTheme class cause it doesn't contain every Resource */
+/* Do _NOT_ call AssetManager#clear in the AbstractTheme class cause it doesn't contain every Resource.
+ * Q: Implement a manager? */
 public abstract class AbstractTheme {
     private AssetManager assetManager;
     private HashMap<Integer, ResourceData> resourceList = new HashMap<>();

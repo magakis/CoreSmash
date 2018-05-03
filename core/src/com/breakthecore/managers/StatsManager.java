@@ -168,7 +168,7 @@ public class StatsManager extends Observable implements Observer {
 
     public void consumeSpecialBall(MovingTileManager movingTileManager) {
         if (!movingTileManager.isLoadedWithSpecial()) {
-            movingTileManager.insertSpecialTile(Tile.TileType.BOMB);
+            movingTileManager.insertSpecialTile(10);
             --specialBallCount;
         }
     }

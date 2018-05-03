@@ -405,17 +405,17 @@ public class TilemapManager extends Observable implements Observer {
                     matches = match3.getColorMatchesFromTile(tmTile, tm);
                     if (strict) {
                         while (matches.size() > max) {
-                            tmTile.getTile().setSubData(rand.nextInt(colorCount));
+                            tmTile.getTile().setID(rand.nextInt(colorCount));
                             matches = match3.getColorMatchesFromTile(tmTile, tm);
                         }
                     } else {
                         if (matches.size() > max) {
-                            int color = tmTile.getSubData();
+                            int color = tmTile.getTileID();
                             int newColor = rand.nextInt(colorCount);
                             while (newColor == color && colorCount != 1) {
                                 newColor = rand.nextInt(colorCount);
                             }
-                            tmTile.getTile().setSubData(rand.nextInt(colorCount));
+                            tmTile.getTile().setID(rand.nextInt(colorCount));
                         }
                     }
                 }
@@ -436,7 +436,7 @@ public class TilemapManager extends Observable implements Observer {
                     passesLeft = numOfPasses;
                     matches = match3.getColorMatchesFromTile(tmTile, tm);
                     while (matches.size() > max && passesLeft > 0) {
-                        tmTile.getTile().setSubData(rand.nextInt(colorCount));
+                        tmTile.getTile().setID(rand.nextInt(colorCount));
                         matches = match3.getColorMatchesFromTile(tmTile, tm);
                         --passesLeft;
                     }
@@ -459,7 +459,7 @@ public class TilemapManager extends Observable implements Observer {
                 TilemapTile tmTile = cgcMostFilled.list.get(rand.nextInt(cgcMostFilled.list.size()));
                 cgcMostFilled.list.remove(tmTile);
 
-                tmTile.getTile().setSubData(cgcLeastFilled.groupColor);
+                tmTile.getTile().setID(cgcLeastFilled.groupColor);
                 cgcLeastFilled.list.add(tmTile);
 
                 Arrays.sort(colors, compSizes);
@@ -523,9 +523,9 @@ public class TilemapManager extends Observable implements Observer {
 
                             if (tileToSwapB == null) break startLoop;
 
-                            int tmpColor = tileToSwapB.getSubData();
-                            tileToSwapB.getTile().setSubData(tileToSwapA.getSubData());
-                            tileToSwapA.getTile().setSubData(tmpColor);
+                            int tmpColor = tileToSwapB.getTileID();
+                            tileToSwapB.getTile().setID(tileToSwapA.getTileID());
+                            tileToSwapA.getTile().setID(tmpColor);
 
                             cgc.list.remove(tileToSwapA);
                             cgc.list.add(tileToSwapB);
@@ -560,13 +560,13 @@ public class TilemapManager extends Observable implements Observer {
                 if (tries == colorCount) {
                     if (strict) {
                         TilemapTile rngTile = matches.get(rand.nextInt(matches.size()));
-                        rngTile.getTile().setSubData(getNextColor(rngTile.getSubData()));
+                        rngTile.getTile().setID(getNextColor(rngTile.getTileID()));
                         tries = 0;
                     } else {
                         return;
                     }
                 }
-                centerTile.getTile().setSubData(getNextColor(centerTile.getSubData()));
+                centerTile.getTile().setID(getNextColor(centerTile.getTileID()));
                 matches = match3.getColorMatchesFromTile(centerTile, tm);
                 ++tries;
             }
@@ -584,7 +584,7 @@ public class TilemapManager extends Observable implements Observer {
                     tmTile = tm.getAbsoluteTile(x, y);
                     if (tmTile == null) continue;
 
-                    colors[tmTile.getSubData()].list.add(tmTile);
+                    colors[tmTile.getTileID()].list.add(tmTile);
                 }
             }
         }

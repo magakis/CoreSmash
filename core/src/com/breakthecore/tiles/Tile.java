@@ -4,11 +4,11 @@ import com.breakthecore.managers.CollisionManager;
 import com.breakthecore.managers.TilemapManager;
 
 abstract public class Tile {
-    private TileType tileType;
+    private int ID;
     private int subData;
 
-    public Tile(TileType tileType) {
-        this.tileType = tileType;
+    public Tile(int id) {
+        ID = id;
     }
 
     /* It's questionable whether I should just pass the GameScreen */
@@ -26,16 +26,13 @@ abstract public class Tile {
         return subData;
     }
 
-    public void setSubData(int data) {
-        subData = data;
+    public void setID(int id) {
+        ID = id;
     }
 
-    public TileType getType() {
-        return tileType;
+    public int getID() {
+        return ID;
     }
 
-    public enum TileType {
-        REGULAR,
-        BOMB
-    }
+    public void setSubData(int data) { subData = data;}
 }

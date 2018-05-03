@@ -74,7 +74,7 @@ public class RenderManager {
         Tile tile = mt.getTile();
         float sideLen = sideLengthHalf * mt.getScale();
 
-        Texture texture = theme.getTexture(tile.getSubData());
+        Texture texture = theme.getTexture(tile.getID());
 
         batch.draw(texture, atPos.x - sideLen, atPos.y - sideLen, sideLen * 2, sideLen * 2);
     }
@@ -93,7 +93,7 @@ public class RenderManager {
                 TilemapTile tile = tm.getAbsoluteTile(x, y);
                 if (tile != null) {
                     Vector2 pos = tile.getPositionInWorld();
-                    Texture texture = theme.getTexture(tile.getSubData());
+                    Texture texture = theme.getTexture(tile.getTileID());
 
                     batch.draw(texture, pos.x - sideLengthHalf, pos.y - sideLengthHalf,
                             sideLengthHalf, sideLengthHalf, sideLength, sideLength,
@@ -139,7 +139,7 @@ public class RenderManager {
                 if (tile != null) {
                     Vector2 pos = tile.getPositionInWorld();
                     batch.setColor(Color.BLACK);
-                    defaultFont.draw(batch, String.valueOf(tile.getSubData()), pos.x - sideLengthHalf / 2, pos.y);
+                    defaultFont.draw(batch, String.valueOf(tile.getTileID()), pos.x - sideLengthHalf / 2, pos.y);
                 }
             }
         }
@@ -171,7 +171,7 @@ public class RenderManager {
             draw(mt);
 //            scale = mt.getScale();
 //            sideLength = sideLengthHalf * scale;
-//            batch.setColor(colorList[mt.getSubData()]);
+//            batch.setColor(colorList[mt.getTileID()]);
 //            batch.draw(texture, atPos.x - sideLength, atPos.y - sideLength - i * this.sideLength, sideLength * 2, sideLength * 2);
         }
     }

@@ -6,9 +6,8 @@ import com.breakthecore.managers.CollisionManager;
 import com.breakthecore.managers.TilemapManager;
 
 public class RegularTile extends Tile {
-    public RegularTile(int regularTileID) {
-        super(TileType.REGULAR);
-        setSubData(regularTileID);
+    public RegularTile(int id) {
+        super(id);
     }
 
     @Override

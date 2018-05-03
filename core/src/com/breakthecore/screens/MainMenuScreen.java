@@ -498,7 +498,7 @@ public class MainMenuScreen extends ScreenBase {
                             if (parsedTiles != null) {
                                 for (LevelFormatParser.ParsedTile tile : parsedTiles) {
                                     int id = tile.getTileID();
-                                    if (id < 0) {
+                                    if (id == 8) { // XXX(3/5/2018): MAGIC VALUE 8 THAT COULD CHANGE (ID OF RANDOM BALL)
                                         tm.setRelativeTile(tile.getRelativePosition(), new RegularTile(tilemapManager.getRandomColor()));
                                     } else {
                                         tm.setRelativeTile(tile.getRelativePosition(), new RegularTile(id));

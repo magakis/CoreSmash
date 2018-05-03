@@ -6,8 +6,8 @@ import com.breakthecore.managers.CollisionManager;
 import com.breakthecore.managers.TilemapManager;
 
 public class BombTile extends Tile {
-    public BombTile() {
-        super(TileType.BOMB);
+    public BombTile(int id) {
+        super(id);
     }
 
     @Override

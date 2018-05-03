@@ -140,20 +140,20 @@ public class MovingTileManager extends Observable {
     }
 
     public void setLastTileColor(int colorId) {
-        launcher.last().getTile().setSubData(colorId);
+        launcher.last().getTile().setID(colorId);
     }
 
     public boolean isLoadedWithSpecial() {
         return isLoadedWithSpecial;
     }
 
-    public void insertSpecialTile(Tile.TileType tileType) {
+    public void insertSpecialTile(int id) {
         // TODO(21/4/2018): This function should know anything about the specialTile...
         if (!isLoadedWithSpecial) {
-            switch (tileType) {
-                case BOMB:
+            switch (id) {
+                case 10:
                     //TODO: WORK ON THIS
-                    launcher.addFirst(createMovingTile(launcherPos.x, launcherPos.y + tileSize, new BombTile()));
+                    launcher.addFirst(createMovingTile(launcherPos.x, launcherPos.y + tileSize, new BombTile(10)));
                     launcher.first().setScale(1);
                     isLoadedWithSpecial = true;
                     break;
@@ -225,7 +225,7 @@ public class MovingTileManager extends Observable {
 
         chanceColorPicker.load(amountOfColor, totalTiles);
         if (launcher.size > 0) {
-            chanceColorPicker.colorGroups[launcher.last().getSubData()].skip = true;
+            chanceColorPicker.colorGroups[launcher.last().getTileID()].skip = true;
         }
         return chanceColorPicker.get();
     }
@@ -302,8 +302,8 @@ public class MovingTileManager extends Observable {
 
         if (colorCount > 1) {
             if (launcher.size > 0) {
-                while (launcher.last().getSubData() == t.getSubData()) {
-                    t.setSubData(getRandomColor());
+                while (launcher.last().getTileID() == t.getID()) {
+                    t.setID(getRandomColor());
                 }
             }
         }
@@ -396,7 +396,7 @@ public class MovingTileManager extends Observable {
             int maxIndex = totalAmount;
 
             for (MovingTile mt : activeList) {
-                int color = mt.getSubData();
+                int color = mt.getTileID();
                 int amount = colorGroups[color].amount;
                 if (amount == 2) {
                     maxIndex -=2;
@@ -408,7 +408,7 @@ public class MovingTileManager extends Observable {
             }
 
             for (MovingTile mt : launcher) {
-                int color = mt.getSubData();
+                int color = mt.getTileID();
                 int amount = colorGroups[color].amount;
                 if (amount == 2) {
                     maxIndex -=2;

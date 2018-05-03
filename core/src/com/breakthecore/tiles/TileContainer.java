@@ -7,7 +7,7 @@ import com.breakthecore.Observable;
  * Created by Michail on 18/3/2018.
  */
 
-public class TileContainer {
+public abstract class TileContainer {
     public static final float[] s_verticesOnMiddleEdges = generateVertices(0);
     public static final float[] s_vertices = generateVertices(30);
     private Tile tile;
@@ -49,9 +49,9 @@ public class TileContainer {
 
     public boolean hasTile() {return tile != null;}
 
-    public int getSubData() {
+    public int getTileID() {
         if (tile == null) throw new NullPointerException();
-        return tile.getSubData();
+        return tile.getID();
     }
 
     public enum Side {BOTTOM_RIGHT, BOTTOM_LEFT, LEFT, TOP_LEFT, TOP_RIGHT, RIGHT}
