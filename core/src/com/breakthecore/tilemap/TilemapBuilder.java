@@ -223,8 +223,11 @@ public class TilemapBuilder {
         return this;
     }
 
+    /** TODO: Currently it looks on the external drive while it should look in the game files */
     public TilemapBuilder loadMapFromFile(String name) {
         Array<LevelFormatParser.ParsedTile> parsedTiles = LevelFormatParser.load(name);
+
+        if (parsedTiles == null) throw new RuntimeException("Map '"+name+"' doesn't exist!");
 
         for (LevelFormatParser.ParsedTile parsedTile : parsedTiles) {
             Coords2D pos = parsedTile.getRelativePosition();

@@ -37,9 +37,9 @@ import com.breakthecore.levels.CampaignLevel;
 import com.breakthecore.levels.Level;
 import com.breakthecore.managers.MovingTileManager;
 import com.breakthecore.managers.StatsManager;
+import com.breakthecore.tilemap.TilemapBuilder;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.screens.GameScreen.GameMode;
-import com.breakthecore.tiles.RegularTile;
 import com.breakthecore.ui.UIComponent;
 
 import java.util.Locale;
@@ -479,8 +479,8 @@ public class MainMenuScreen extends ScreenBase {
                             Preferences prefs = Gdx.app.getPreferences("game_settings");
 
                             boolean spinTheCoreEnabled = cbSpinTheCoreMode.isChecked();
-                            float minRotationSpeed = minRotSlider.getValue();
-                            float maxRotationSpeed = maxRotSlider.getValue();
+                            int minRotationSpeed = (int)minRotSlider.getValue();
+                            int maxRotationSpeed = (int)maxRotSlider.getValue();
                             int initRadius = (int) radiusSlider.getValue();
                             int colorCount = (int) sldrColorCount.getValue();
                             int moves = Integer.parseInt(tfMoves.getText());
@@ -490,34 +490,31 @@ public class MainMenuScreen extends ScreenBase {
                             TilemapManager.TilemapGenerator tilemapGenerator = tilemapManager.getTilemapGenerator();
                             tilemapManager.setColorCount(colorCount);
 
-                            Tilemap tm = tilemapManager.newTilemap();
                             Array<LevelFormatParser.ParsedTile> parsedTiles = null;
                             if (cbUseCustomMap.isChecked()) {
-                                parsedTiles = LevelFormatParser.load("mainmenumap");
-                            }
-                            if (parsedTiles != null) {
-                                for (LevelFormatParser.ParsedTile tile : parsedTiles) {
-                                    int id = tile.getTileID();
-                                    if (id == 8) { // XXX(3/5/2018): MAGIC VALUE 8 THAT COULD CHANGE (ID OF RANDOM BALL)
-                                        tm.setRelativeTile(tile.getRelativePosition(), new RegularTile(tilemapManager.getRandomColor()));
-                                    } else {
-                                        tm.setRelativeTile(tile.getRelativePosition(), new RegularTile(id));
-                                    }
-                                }
-                            } else {
-                                tilemapGenerator.generateRadius(tm, initRadius);
-                            }
+                                TilemapBuilder builder = tilemapManager.newMap();
+                                builder.setColorCount(colorCount)
+                                        .loadMapFromFile("mainmenumap")
+                                        .balanceColorAmounts()
+                                        .forceEachColorOnEveryRadius()
+                                        .setMinMaxRotationSpeed(minRotationSpeed, maxRotationSpeed)
+                                        .build();
 
-                            tilemapGenerator.reduceColorMatches(tm, 2, 2);
-                            if (colorCount > 1) {
-                                tilemapGenerator.balanceColorAmounts(tm);
-                            }
-                            tilemapGenerator.forceEachColorOnEveryRadius(tm);
+                            } else {
+                                Tilemap tm = tilemapManager.newTilemap();
+                                tilemapGenerator.generateRadius(tm, initRadius);
+
+                                tilemapGenerator.reduceColorMatches(tm, 2, 2);
+                                if (colorCount > 1) {
+                                    tilemapGenerator.balanceColorAmounts(tm);
+                                }
+                                tilemapGenerator.forceEachColorOnEveryRadius(tm);
                                 tilemapGenerator.reduceCenterTileColorMatch(tm, 2);
 
-                            tm.setMinMaxSpeed(minRotationSpeed, maxRotationSpeed);
-                            tm.setAutoRotation(!spinTheCoreEnabled);
-                            tm.initialized();
+                                tm.setMinMaxSpeed(minRotationSpeed, maxRotationSpeed);
+                                tm.setAutoRotation(!spinTheCoreEnabled);
+                                tm.initialized();
+                            }
 
                             movingTileManager.setLauncherCooldown(sldrLauncherCooldown.getValue());
                             movingTileManager.setColorCount(colorCount);
@@ -564,7 +561,7 @@ public class MainMenuScreen extends ScreenBase {
                         @Override
                         public void end(boolean roundWon, StatsManager statsManager) {
                             if (roundWon) {
-                                statsManager.getUser().saveScore(statsManager.getScore(),statsManager.getDifficultyMultiplier());
+                                statsManager.getUser().saveScore(statsManager.getScore(), statsManager.getDifficultyMultiplier());
                             }
                         }
                     };
