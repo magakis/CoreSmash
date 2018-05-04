@@ -26,16 +26,12 @@ import java.util.Random;
  */
 
 /* FIXME: 1/5/2018 TilemapManager should control _*EVERY*_ TilemapTile creation
- * Every TilemapTile should be observed by the TilemapManager. If others create them, they have no
- * obligation to setup the observers properly
+ * TODO: Implement a better way of setting up Tilemaps and balancing them.
  *
- * OOOOOOOOOOOOOOOOOOORRR
- *
- * Why the fuck does each TilemapTile being observed?? If every TilemapTile placement or removal is
- * controlled by the Tilemap, why am I not just Observing the Tilemap for TilemapTile placement or
- * deletion?!?!??!
- *
- * WHAT THE FUCK IS WRONG WITH ME?
+ * One possible solution would be to have the TilemapManager return a Tilemap Builder when a new
+ * Tilemap is requested which will contain an array similar to the Tilemap in which I can simply place
+ * the IDs and balance the map based on them. After I have applied the filter I want, I will instantiate
+ * the Tilemap with that builder and create the tiles
  */
 public class TilemapManager extends Observable implements Observer {
     /**
@@ -405,7 +401,7 @@ public class TilemapManager extends Observable implements Observer {
                     matches = match3.getColorMatchesFromTile(tmTile, tm);
                     if (strict) {
                         while (matches.size() > max) {
-                            tmTile.getTile().setID(rand.nextInt(colorCount));
+                            tmTile.setTile(new RegularTile(rand.nextInt(colorCount)));
                             matches = match3.getColorMatchesFromTile(tmTile, tm);
                         }
                     } else {
@@ -415,7 +411,7 @@ public class TilemapManager extends Observable implements Observer {
                             while (newColor == color && colorCount != 1) {
                                 newColor = rand.nextInt(colorCount);
                             }
-                            tmTile.getTile().setID(rand.nextInt(colorCount));
+                            tmTile.setTile(new RegularTile(rand.nextInt(colorCount)));
                         }
                     }
                 }
@@ -436,7 +432,7 @@ public class TilemapManager extends Observable implements Observer {
                     passesLeft = numOfPasses;
                     matches = match3.getColorMatchesFromTile(tmTile, tm);
                     while (matches.size() > max && passesLeft > 0) {
-                        tmTile.getTile().setID(rand.nextInt(colorCount));
+                        tmTile.setTile(new RegularTile(rand.nextInt(colorCount)));
                         matches = match3.getColorMatchesFromTile(tmTile, tm);
                         --passesLeft;
                     }
@@ -459,7 +455,7 @@ public class TilemapManager extends Observable implements Observer {
                 TilemapTile tmTile = cgcMostFilled.list.get(rand.nextInt(cgcMostFilled.list.size()));
                 cgcMostFilled.list.remove(tmTile);
 
-                tmTile.getTile().setID(cgcLeastFilled.groupColor);
+                tmTile.setTile(new RegularTile(cgcLeastFilled.groupColor));
                 cgcLeastFilled.list.add(tmTile);
 
                 Arrays.sort(colors, compSizes);
@@ -523,9 +519,9 @@ public class TilemapManager extends Observable implements Observer {
 
                             if (tileToSwapB == null) break startLoop;
 
-                            int tmpColor = tileToSwapB.getTileID();
-                            tileToSwapB.getTile().setID(tileToSwapA.getTileID());
-                            tileToSwapA.getTile().setID(tmpColor);
+                            Tile tmpTile = tileToSwapB.getTile();
+                            tileToSwapB.setTile(tileToSwapA.getTile());
+                            tileToSwapA.setTile(tmpTile);
 
                             cgc.list.remove(tileToSwapA);
                             cgc.list.add(tileToSwapB);
@@ -560,13 +556,13 @@ public class TilemapManager extends Observable implements Observer {
                 if (tries == colorCount) {
                     if (strict) {
                         TilemapTile rngTile = matches.get(rand.nextInt(matches.size()));
-                        rngTile.getTile().setID(getNextColor(rngTile.getTileID()));
+                        rngTile.setTile(new RegularTile(getNextColor(rngTile.getTileID())));
                         tries = 0;
                     } else {
                         return;
                     }
                 }
-                centerTile.getTile().setID(getNextColor(centerTile.getTileID()));
+                centerTile.setTile(new RegularTile(getNextColor(centerTile.getTileID())));
                 matches = match3.getColorMatchesFromTile(centerTile, tm);
                 ++tries;
             }

@@ -35,6 +35,7 @@ import com.breakthecore.managers.MovingTileManager;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.tiles.MovingTile;
+import com.breakthecore.tiles.RegularTile;
 import com.breakthecore.ui.UIComponent;
 
 import java.util.Locale;
@@ -72,7 +73,7 @@ public class GameScreen extends ScreenBase implements Observer {
         super(game);
         viewport = new ExtendViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight());
         camera = (OrthographicCamera) viewport.getCamera();
-        camera.position.set(viewport.getMinWorldWidth()/2,viewport.getMinWorldHeight()/2,0);
+        camera.position.set(viewport.getMinWorldWidth() / 2, viewport.getMinWorldHeight() / 2, 0);
         camera.update();
 
         skin = gameInstance.getSkin();
@@ -172,7 +173,7 @@ public class GameScreen extends ScreenBase implements Observer {
         }
         gameUI.lblScore.setText(String.valueOf(statsManager.getScore()));
 
-        debugUI.dblb2.setText("FPS: "+ Gdx.graphics.getFramesPerSecond());
+        debugUI.dblb2.setText("FPS: " + Gdx.graphics.getFramesPerSecond());
     }
 
     private void endGame() {
@@ -205,7 +206,7 @@ public class GameScreen extends ScreenBase implements Observer {
         rootUIStack.add(debugUI.getRoot());
         stage.addActor(rootUIStack);
 
-        debugUI.dblb3.setText(String.format(Locale.ENGLISH,"Diff: %.2f",statsManager.getDifficultyMultiplier()));
+        debugUI.dblb3.setText(String.format(Locale.ENGLISH, "Diff: %.2f", statsManager.getDifficultyMultiplier()));
         isGameActive = true;
         gameInstance.setScreen(this);
     }
@@ -231,15 +232,21 @@ public class GameScreen extends ScreenBase implements Observer {
                 break;
 
             case NOTIFICATION_TYPE_LIVES_CHANGED:
-                    gameUI.lblLives.setText(String.valueOf(statsManager.getLives()));
+                gameUI.lblLives.setText(String.valueOf(statsManager.getLives()));
                 break;
 
-            case MOVES_AMOUNT_CHANGED:
-                int moves = statsManager.getMoves();
-                gameUI.lblMoves.setText(String.valueOf(moves));
-                if (statsManager.isMovesEnabled() && moves == movingTileManager.getLauncherSize()) {
-                    movingTileManager.setLastTileColor(tilemapManager.getTilemap(0).getRelativeTile(0, 0).getTileID());
-                    movingTileManager.setAutoReloadEnabled(false);
+            case BALL_LAUNCHED:
+                if (statsManager.isMovesEnabled()) {
+                    int moves = statsManager.getMoves();
+                    gameUI.lblMoves.setText(String.valueOf(moves));
+
+                    if (moves > movingTileManager.getLauncherSize()) {
+                        movingTileManager.loadLauncher();
+                    } else if (moves == movingTileManager.getLauncherSize()) {
+                        movingTileManager.loadLauncher(new RegularTile(tilemapManager.getTilemap(0).getRelativeTile(0, 0).getTileID()));
+                    }
+                } else {
+                    movingTileManager.loadLauncher();
                 }
                 break;
         }
@@ -353,7 +360,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
         @Override
         public boolean keyDown(int keycode) {
-            if (keycode == Input.Keys.BACK  || keycode == Input.Keys.ESCAPE) {
+            if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
                 gameInstance.setPrevScreen();
             }
             return false;

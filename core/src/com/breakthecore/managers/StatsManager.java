@@ -190,8 +190,8 @@ public class StatsManager extends Observable implements Observer {
             case BALL_LAUNCHED:
                 if (isMovesEnabled) {
                     --moves;
-                    notifyObservers(NotificationType.MOVES_AMOUNT_CHANGED, null);
                 }
+                notifyObservers(NotificationType.BALL_LAUNCHED, null);
                 break;
         }
     }

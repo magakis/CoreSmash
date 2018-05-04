@@ -139,10 +139,6 @@ public class MovingTileManager extends Observable {
         launcherCooldownTimer = delay;
     }
 
-    public void setLastTileColor(int colorId) {
-        launcher.last().getTile().setID(colorId);
-    }
-
     public boolean isLoadedWithSpecial() {
         return isLoadedWithSpecial;
     }
@@ -191,11 +187,6 @@ public class MovingTileManager extends Observable {
                             launcher.get(i).setPositionInWorld(launcherPos.x, launcherPos.y - i * tileSize);
                         }
                     }
-
-                    if (isAutoReloadEnabled) {
-                        loadLauncher();
-                    }
-
                     notifyObservers(NotificationType.BALL_LAUNCHED, null);
                 } else {
                     isLoadedWithSpecial = false;
@@ -206,8 +197,14 @@ public class MovingTileManager extends Observable {
         }
     }
 
-    private void loadLauncher() {
-        if (colorSequenceList.hasNext()) {
+    public void loadLauncher() {
+        loadLauncher(null);
+    }
+
+    public void loadLauncher(Tile tileToLoad) {
+        if (tileToLoad != null) {
+            launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * tileSize, tileToLoad));
+        } else if (colorSequenceList.hasNext()) {
             launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * tileSize, new RegularTile(colorSequenceList.getNext())));
         } else if (isControlledBallGenerationEnabled) {
             launcher.addLast(createMovingTile(launcherPos.x, launcherPos.y - launcher.size * tileSize, new RegularTile(getColorBasedOnTilemap())));
@@ -298,17 +295,17 @@ public class MovingTileManager extends Observable {
 
     private RegularTile createRegularTile() {
         // TODO(20/4/2018): Change the name and take the following logic elsewhere
-        RegularTile t = new RegularTile(getRandomColor());
+        int regularTileID = getRandomColor();
 
         if (colorCount > 1) {
             if (launcher.size > 0) {
-                while (launcher.last().getTileID() == t.getID()) {
-                    t.setID(getRandomColor());
+                while (launcher.last().getTileID() == regularTileID) {
+                    regularTileID = getRandomColor();
                 }
             }
         }
 
-        return t;
+        return new RegularTile(regularTileID);
     }
 
     public class ColorSequenceList {

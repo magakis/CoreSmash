@@ -5,7 +5,6 @@ import com.breakthecore.managers.TilemapManager;
 
 abstract public class Tile {
     private int ID;
-    private int subData;
 
     public Tile(int id) {
         ID = id;
@@ -22,17 +21,7 @@ abstract public class Tile {
 
     abstract public void update(float delta);
 
-    public int getSubData() {
-        return subData;
-    }
-
-    public void setID(int id) {
-        ID = id;
-    }
-
     public int getID() {
         return ID;
     }
-
-    public void setSubData(int data) { subData = data;}
 }

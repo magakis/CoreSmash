@@ -8,6 +8,7 @@ import com.breakthecore.managers.TilemapManager;
 public class RegularTile extends Tile {
     public RegularTile(int id) {
         super(id);
+        if (id < 0 || id > 16) throw new IllegalArgumentException("Not a Regular Tile ID: " + id);
     }
 
     @Override

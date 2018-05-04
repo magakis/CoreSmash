@@ -1,2 +1,0 @@
-TODO(8/4/2018): Color matching should happen in a separate class to contain the lists in TilemapManager
-TODO(8/4/2018):
