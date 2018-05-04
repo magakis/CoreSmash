@@ -2,12 +2,12 @@ package com.breakthecore;
 
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pool.Poolable;
-import com.breakthecore.tiles.TilemapTile;
+import com.breakthecore.tilemap.Tilemap;
+import com.breakthecore.tilemap.TilemapTile;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedList;
 
 /**
  * Pathfinder implements a tweaked version of AStar algorithm that doesn't take into account the

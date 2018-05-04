@@ -19,6 +19,7 @@ import com.breakthecore.RoundEndListener;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.levels.Level1;
 import com.breakthecore.levels.Level2;
+import com.breakthecore.levels.Level3;
 import com.breakthecore.managers.StatsManager;
 
 public class CampaignScreen extends ScreenBase implements RoundEndListener {
@@ -50,7 +51,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         scrollPane.setSmoothScrolling(false);
         scrollPane.setScrollPercentY(100);
 
-        currentLevel = Gdx.app.getPreferences("highscores").getInteger("campaign_level", 1);
+        currentLevel = Gdx.app.getPreferences("account").getInteger("campaign_level", 1);
         for (int i = 0; i < currentLevel; ++i) {
             levelButtons[i].enable();
         }
@@ -90,6 +91,10 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 break;
             case 2:
                 gameScreen.deployLevel(new Level2(gameInstance.getUserAccount(), this));
+                break;
+            case 3:
+                gameScreen.deployLevel(new Level3(gameInstance.getUserAccount(), this));
+                break;
             default:
                 return;
         }
@@ -102,6 +107,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         if (result) {
             Preferences prefs = Gdx.app.getPreferences("account");
             if (currentLevel == activeLevel) {
+                if (prefs.getInteger("level"+activeLevel,0) < statsManager.getScore()) {
+                    prefs.putInteger("level"+activeLevel, statsManager.getScore());
+                }
                 prefs.putInteger("campaign_level", currentLevel+1);
                 prefs.flush();
                 levelButtons[currentLevel].enable();

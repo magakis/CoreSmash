@@ -6,8 +6,8 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.input.GestureDetector;
-import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -31,16 +31,18 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.breakthecore.CoreSmash;
 import com.breakthecore.Coords2D;
 import com.breakthecore.LevelFormatParser;
-import com.breakthecore.Tilemap;
+import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.managers.RenderManager;
-import com.breakthecore.managers.TilemapManager;
+import com.breakthecore.tilemap.TilemapManager;
+import com.breakthecore.tiles.RandomTile;
 import com.breakthecore.tiles.RegularTile;
-import com.breakthecore.tiles.TilemapTile;
+import com.breakthecore.tilemap.TilemapTile;
 import com.breakthecore.ui.UIComponent;
 
 import java.util.Locale;
@@ -75,7 +77,7 @@ public class LevelBuilderScreen extends ScreenBase {
         tilemapManager = new TilemapManager();
 
         Tilemap tm = tilemapManager.newTilemap();
-        tm.setRelativeTile(0, 0, new RegularTile(8));
+        tm.setRelativeTile(0, 0, new RandomTile());
 
         stage = setupStage();
 
@@ -375,13 +377,11 @@ public class LevelBuilderScreen extends ScreenBase {
 
             ImageButton.ImageButtonStyle imgbs;
 
-//            final Color[] colors = gameInstance.getRenderManager().getColorList();
-            materialButtons = new ImageButton[1];
+            materialButtons = new ImageButton[9];
             int buttonIndex = 0;
-            /*
-            for (int i = 0; i < colors.length; ++i) {
+            for (int i = 0; i < 8; ++i) { // XXX(4/5/2018): MAGIC VALUE 8
                 imgbs = new ImageButton.ImageButtonStyle();
-                imgbs.imageUp = skin.newDrawable("asteroid", colors[buttonIndex]);
+                imgbs.imageUp = new TextureRegionDrawable(new TextureRegion(renderManager.getTextureFor(i)));
                 imgbs.checked = checked;
                 imgbs.up = unchecked;
 
@@ -404,7 +404,6 @@ public class LevelBuilderScreen extends ScreenBase {
                 });
                 ++buttonIndex;
             }
-*/
             imgbs = new ImageButton.ImageButtonStyle();
             imgbs.imageUp = skin.newDrawable("ball");
             imgbs.checked = checked;
@@ -412,16 +411,18 @@ public class LevelBuilderScreen extends ScreenBase {
 
             ImageButton imgb = new ImageButton(imgbs);
             imgb.getImageCell().height(100).width(100);
-            materialButtons[0] = imgb;
+            final int finalButtonIndex = buttonIndex;
+            materialButtons[buttonIndex++] = imgb;
             imgb.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    if (materialButtons[0].isChecked()) {
-                        tileId = 8;
+                    if (materialButtons[finalButtonIndex].isChecked()) {
+                        tileId = 17;
                         uiDebug.lblDebug[2].setText("TileActive| " + tileId);
                     }
                 }
             });
+
 
             imgbGroup.add(imgb);
             materialGroup.addActor(imgb);
@@ -437,7 +438,11 @@ public class LevelBuilderScreen extends ScreenBase {
             Coords2D res = tm.worldToTilemapCoords(screenToWorld.get());
 
             if (tm.getRelativeTile(res.x, res.y) == null) {
-                tm.setRelativeTile(res.x, res.y, new RegularTile(tileId));
+                if (tileId == 17) {
+                    tm.setRelativeTile(res.x, res.y, new RandomTile());
+                }else {
+                    tm.setRelativeTile(res.x, res.y, new RegularTile(tileId));
+                }
             }
 
             return true;

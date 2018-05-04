@@ -1,4 +1,4 @@
-package com.breakthecore.managers;
+package com.breakthecore.tilemap;
 
 import com.breakthecore.Coords2D;
 import com.breakthecore.Match3;
@@ -6,12 +6,10 @@ import com.breakthecore.NotificationType;
 import com.breakthecore.Observable;
 import com.breakthecore.Observer;
 import com.breakthecore.Pathfinder;
-import com.breakthecore.Tilemap;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.tiles.RegularTile;
 import com.breakthecore.tiles.Tile;
 import com.breakthecore.tiles.TileContainer;
-import com.breakthecore.tiles.TilemapTile;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +44,7 @@ public class TilemapManager extends Observable implements Observer {
 
     private Pathfinder pathfinder = new Pathfinder(30);
     private TilemapGenerator tilemapGenerator = new TilemapGenerator();
+    private TilemapBuilder tilemapBuilder = new TilemapBuilder();
     private Match3 match3 = new Match3();
     private Random rand = new Random();
     private int[] colorsAvailable = new int[10]; // XXX(22/4/2018): MagicValue 10
@@ -221,6 +220,15 @@ public class TilemapManager extends Observable implements Observer {
         if (tilemapCount + 1 < maxTilemapCount) {
             ++tilemapCount;
             return listTilemaps[tilemapCount - 1];
+        } else {
+            throw new RuntimeException("Cannot initialize more tilemaps");
+        }
+    }
+
+    public TilemapBuilder newMap() {
+        if (tilemapCount + 1 < maxTilemapCount) {
+            ++tilemapCount;
+            return tilemapBuilder.startNewTilemap(listTilemaps[tilemapCount - 1]);
         } else {
             throw new RuntimeException("Cannot initialize more tilemaps");
         }

@@ -30,7 +30,7 @@ import com.breakthecore.StreakUI;
 import com.breakthecore.managers.CollisionManager;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observer;
-import com.breakthecore.managers.TilemapManager;
+import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.managers.MovingTileManager;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.WorldSettings;

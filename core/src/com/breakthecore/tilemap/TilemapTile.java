@@ -1,7 +1,9 @@
-package com.breakthecore.tiles;
+package com.breakthecore.tilemap;
 
 import com.breakthecore.Coords2D;
-import com.breakthecore.Tilemap;
+import com.breakthecore.tilemap.Tilemap;
+import com.breakthecore.tiles.Tile;
+import com.breakthecore.tiles.TileContainer;
 
 public class TilemapTile extends TileContainer {
     private Coords2D relativePositionInTilemap;

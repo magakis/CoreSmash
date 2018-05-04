@@ -1,10 +1,11 @@
 package com.breakthecore.managers;
 
 import com.badlogic.gdx.math.Vector2;
-import com.breakthecore.Tilemap;
+import com.breakthecore.tilemap.Tilemap;
+import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tiles.MovingTile;
 import com.breakthecore.tiles.TileContainer;
-import com.breakthecore.tiles.TilemapTile;
+import com.breakthecore.tilemap.TilemapTile;
 
 import java.util.ArrayList;
 import java.util.Collections;

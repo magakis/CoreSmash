@@ -1,11 +1,11 @@
 package com.breakthecore.levels;
 
 import com.breakthecore.RoundEndListener;
-import com.breakthecore.Tilemap;
+import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.UserAccount;
 import com.breakthecore.managers.MovingTileManager;
 import com.breakthecore.managers.StatsManager;
-import com.breakthecore.managers.TilemapManager;
+import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.screens.GameScreen;
 
 public class Level1 extends CampaignLevel{

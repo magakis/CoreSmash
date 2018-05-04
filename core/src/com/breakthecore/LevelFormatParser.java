@@ -4,9 +4,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
-import com.breakthecore.managers.TilemapManager;
+import com.breakthecore.tilemap.TilemapManager;
+import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.tiles.RegularTile;
-import com.breakthecore.tiles.TilemapTile;
+import com.breakthecore.tilemap.TilemapTile;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

@@ -1,9 +1,10 @@
 package com.breakthecore.tiles;
 
 import com.breakthecore.Coords2D;
-import com.breakthecore.Tilemap;
+import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.managers.CollisionManager;
-import com.breakthecore.managers.TilemapManager;
+import com.breakthecore.tilemap.TilemapManager;
+import com.breakthecore.tilemap.TilemapTile;
 
 public class BombTile extends Tile {
     public BombTile(int id) {

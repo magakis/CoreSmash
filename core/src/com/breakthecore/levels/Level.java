@@ -2,7 +2,7 @@ package com.breakthecore.levels;
 
 import com.breakthecore.managers.MovingTileManager;
 import com.breakthecore.managers.StatsManager;
-import com.breakthecore.managers.TilemapManager;
+import com.breakthecore.tilemap.TilemapManager;
 
 /**
  * Level is the interface used to manipulate the GameScreen for the needs of the different game levels.

@@ -1,7 +1,8 @@
 package com.breakthecore.tiles;
 
 import com.breakthecore.managers.CollisionManager;
-import com.breakthecore.managers.TilemapManager;
+import com.breakthecore.tilemap.TilemapManager;
+import com.breakthecore.tilemap.TilemapTile;
 
 abstract public class Tile {
     private int ID;

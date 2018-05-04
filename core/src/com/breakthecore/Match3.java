@@ -1,6 +1,7 @@
 package com.breakthecore;
 
-import com.breakthecore.tiles.TilemapTile;
+import com.breakthecore.tilemap.Tilemap;
+import com.breakthecore.tilemap.TilemapTile;
 
 import java.util.ArrayList;
 import java.util.List;

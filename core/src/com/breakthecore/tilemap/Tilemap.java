@@ -1,9 +1,12 @@
-package com.breakthecore;
+package com.breakthecore.tilemap;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
+import com.breakthecore.Coords2D;
+import com.breakthecore.NotificationType;
+import com.breakthecore.Observable;
+import com.breakthecore.WorldSettings;
 import com.breakthecore.tiles.Tile;
-import com.breakthecore.tiles.TilemapTile;
 
 import java.security.InvalidParameterException;
 

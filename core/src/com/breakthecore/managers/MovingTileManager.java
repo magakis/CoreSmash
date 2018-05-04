@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.Queue;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observable;
 import com.breakthecore.WorldSettings;
+import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tiles.BombTile;
 import com.breakthecore.tiles.MovingTile;
 import com.breakthecore.tiles.RegularTile;

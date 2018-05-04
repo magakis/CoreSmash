@@ -11,12 +11,12 @@ import com.badlogic.gdx.math.Vector2;
 
 import com.badlogic.gdx.utils.Queue;
 import com.breakthecore.Coords2D;
-import com.breakthecore.Tilemap;
+import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.themes.AbstractTheme;
 import com.breakthecore.tiles.MovingTile;
 import com.breakthecore.tiles.Tile;
-import com.breakthecore.tiles.TilemapTile;
+import com.breakthecore.tilemap.TilemapTile;
 
 import java.util.List;
 import java.util.Locale;
@@ -83,6 +83,10 @@ public class RenderManager {
         for (MovingTile tile : mt) {
             draw(tile);
         }
+    }
+
+    public Texture getTextureFor(int id) {
+        return new Texture(theme.getTexture(id).getTextureData());
     }
 
     public void draw(Tilemap tm) {
