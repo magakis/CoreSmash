@@ -22,10 +22,14 @@ public class TileDictionary {
     /* I make use of an initialize() function instead of a static{} block for initialization because
      * later on I will probably have to read from a file and so I want this operation to happen at
      * known time instead of whenever this class gets first used.
+     *
+     * NOTE: Calling initialize() a second time is clearly a programmer error but I can't throw
+     * in case the TileDictionary has already been initialized because when I "close" the app, it doesn't
+     * necessarily get killed by the system and static values might remain in memory in which case
+     * the isInitialized flag will already be set when the normal initialize() call happens.
      */
     public static void initialilze() {
-        if (isInitialized)
-            throw new RuntimeException("TileDictionary has already been initialized!");
+        if (isInitialized) return;
 
         TileAttributes.Builder builder = new TileAttributes.Builder();
 

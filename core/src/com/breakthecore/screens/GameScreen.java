@@ -88,7 +88,6 @@ public class GameScreen extends ScreenBase implements Observer {
         InputProcessor gameGestureDetector = new CustomGestureDetector(new GameInputListener());
 
         isGameActive = true;
-
         statsManager = new StatsManager();
 
         streakUI = new StreakUI(skin);

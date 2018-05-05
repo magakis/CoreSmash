@@ -335,9 +335,9 @@ public class TilemapBuilder {
         return rand.nextInt(colorCount);
     }
 
-    private int getTileDistance(int aX1, int aY1, int aX2, int aY2) {
-        int dx = aX1 - aX2;     // signed deltas
-        int dy = aY1 - aY2;
+    private int getTileDistance(int x1, int y1, int x2, int y2) {
+        int dx = x1 - x2;     // signed deltas
+        int dy = y1 - y2;
         int x = Math.abs(dx);  // absolute deltas
         int y = Math.abs(dy);
 
@@ -369,96 +369,6 @@ public class TilemapBuilder {
         if (colorCount == 0) throw new RuntimeException("ColorCount must be set first");
     }
 
-//    public void generateSquare(Tilemap tm, int size) {
-//        int signFix;
-//        for (int y = -size; y <= size; ++y) {
-//            signFix = y > 0 ? 1 : 0;
-//            for (int x = -size; x <= size; ++x) {
-//                tm.setRelativeTile(x - (y + signFix) / 2, y, new RegularTile(rand.nextInt(colorCount)));
-//            }
-//        }
-//    }
-
-//    public void generateDiamond(Tilemap tm, int size) {
-//        int fixSign;
-//        int absY;
-//        int sizeY = size * 2;
-//        for (int y = -sizeY; y <= sizeY; ++y) {
-//            absY = Math.abs(y);
-//            fixSign = y < 0 ? absY : 0;
-//            for (int x = -size; x <= size - absY; ++x) {
-//                tm.setRelativeTile(x + fixSign, y, new RegularTile(rand.nextInt(colorCount)));
-//            }
-//        }
-//    }
-
-//    public void generateSquareSkewed(Tilemap tm, int size, boolean flipX) {
-//        if (flipX) {
-//            for (int y = -size; y <= size; ++y) {
-//                for (int x = -size; x <= size; ++x) {
-//                    tm.setRelativeTile(x - y, y, new RegularTile(rand.nextInt(colorCount)));
-//                }
-//            }
-//        } else {
-//            for (int y = -size; y <= size; ++y) {
-//                for (int x = -size; x <= size; ++x) {
-//                    tm.setRelativeTile(x, y, new RegularTile(rand.nextInt(colorCount)));
-//                }
-//            }
-//        }
-//    }
-
-//    public void generateTriangle(Tilemap tm, int size, boolean flipY) {
-//        int sizeY = size * 2;
-//        if (flipY) {
-//            for (int y = -sizeY; y <= size; ++y) {
-//                for (int x = -size - y; x <= size; ++x) {
-//                    tm.setRelativeTile(x, y, new RegularTile(rand.nextInt(colorCount)));
-//                }
-//            }
-//        } else {
-//            for (int y = -size; y <= sizeY; ++y) {
-//                for (int x = -size; x <= size - y; ++x) {
-//                    tm.setRelativeTile(x, y, new RegularTile(rand.nextInt(colorCount)));
-//                }
-//            }
-//        }
-//    }
-
-//    public void generateStar(Tilemap tm, int size) {
-//        generateTriangle(tm, size, false);
-//        generateTriangle(tm, size, true);
-//    }
-
-//    public void reduceColorMatches(Tilemap tm, int max, boolean strict) {
-//        int tilemapSize = tm.getTilemapSize();
-//        BlueprintTile tmTile;
-//        ArrayList<BlueprintTile> matches;
-//        for (int y = 0; y < tilemapSize; ++y) {
-//            for (int x = 0; x < tilemapSize; ++x) {
-//                tmTile = tm.getAbsoluteTile(x, y);
-//                if (tmTile == null) continue;
-//
-//                matches = match3.getColorMatchesFromTile(tmTile, tm);
-//                if (strict) {
-//                    while (matches.size() > max) {
-//                        tmTile.setTile(new RegularTile(rand.nextInt(colorCount)));
-//                        matches = match3.getColorMatchesFromTile(tmTile, tm);
-//                    }
-//                } else {
-//                    if (matches.size() > max) {
-//                        int color = tmTile.ID;
-//                        int newColor = rand.nextInt(colorCount);
-//                        while (newColor == color && colorCount != 1) {
-//                            newColor = rand.nextInt(colorCount);
-//                        }
-//                        tmTile.setTile(new RegularTile(rand.nextInt(colorCount)));
-//                    }
-//                }
-//            }
-//        }
-//    }
-
     public TilemapBuilder reduceColorMatches(int max, int numOfPasses) {
         for (int y = 0; y < blueprintSize; ++y) {
             for (int x = 0; x < blueprintSize; ++x) {
@@ -468,7 +378,7 @@ public class TilemapBuilder {
                 int passesLeft = numOfPasses;
                 ArrayList<BlueprintTile> matches = matcher.getColorMatchesFromTile(tile);
                 while (matches.size() > max && passesLeft > 0) {
-                    tile.ID = rand.nextInt(colorCount);
+                    tile.ID = getNextColor(tile.ID);
                     matches = matcher.getColorMatchesFromTile(tile);
                     --passesLeft;
                 }
@@ -477,35 +387,31 @@ public class TilemapBuilder {
         return this;
     }
 
-//    public void reduceCenterTileColorMatch(Tilemap tm, int max) {
-//        reduceColorMatches(tm, max, false);
-//    }
+    public void reduceCenterTileColorMatch(int max, boolean strict) {
+        BlueprintTile centerTile = getTile(0, 0);
+        if (centerTile == null) return;
 
-//    public void reduceCenterTileColorMatch(Tilemap tm, int max, boolean strict) {
-//        BlueprintTile centerTile = tm.getRelativeTile(0, 0);
-//        if (centerTile == null) return;
-//
-//        ArrayList<BlueprintTile> matches = match3.getColorMatchesFromTile(centerTile, tm);
-//        int tries = 0;
-//        while (matches.size() > max) {
-//            if (tries == colorCount) {
-//                if (strict) {
-//                    BlueprintTile rngTile = matches.get(rand.nextInt(matches.size()));
-//                    rngTile.setTile(new RegularTile(getNextColor(rngTile.getTileID())));
-//                    tries = 0;
-//                } else {
-//                    return;
-//                }
-//            }
-//            centerTile.setTile(new RegularTile(getNextColor(centerTile.getTileID())));
-//            matches = match3.getColorMatchesFromTile(centerTile, tm);
-//            ++tries;
-//        }
-//    }
+        ArrayList<BlueprintTile> matches = matcher.getColorMatchesFromTile(centerTile);
+        int tries = 0;
+        while (matches.size() > max) {
+            if (tries == colorCount) {
+                if (strict) {
+                    BlueprintTile rngTile = matches.get(rand.nextInt(matches.size()-1)+1);
+                    rngTile.ID = getNextColor(rngTile.ID);
+                    tries = 0;
+                } else {
+                    return;
+                }
+            }
+            centerTile.ID = getNextColor(centerTile.ID);
+            matches = matcher.getColorMatchesFromTile(centerTile);
+            ++tries;
+        }
+    }
 
-//    private int getNextColor(int currentColor) {
-//        return currentColor + 1 == colorCount ? 0 : currentColor + 1;
-//    }
+    private int getNextColor(int currentColor) {
+        return currentColor + 1 == colorCount ? 0 : currentColor + 1;
+    }
 
     private void reset() {
         for (int y = 0; y < blueprintSize; ++y) {
@@ -634,3 +540,89 @@ public class TilemapBuilder {
 
     }
 }
+
+// NOTE: Procedural shape creation will probably not be needed in the future because of hand-made maps
+//    public void generateSquare(Tilemap tm, int size) {
+//        int signFix;
+//        for (int y = -size; y <= size; ++y) {
+//            signFix = y > 0 ? 1 : 0;
+//            for (int x = -size; x <= size; ++x) {
+//                tm.setRelativeTile(x - (y + signFix) / 2, y, new RegularTile(rand.nextInt(colorCount)));
+//            }
+//        }
+//    }
+//    public void generateDiamond(Tilemap tm, int size) {
+//        int fixSign;
+//        int absY;
+//        int sizeY = size * 2;
+//        for (int y = -sizeY; y <= sizeY; ++y) {
+//            absY = Math.abs(y);
+//            fixSign = y < 0 ? absY : 0;
+//            for (int x = -size; x <= size - absY; ++x) {
+//                tm.setRelativeTile(x + fixSign, y, new RegularTile(rand.nextInt(colorCount)));
+//            }
+//        }
+//    }
+//    public void generateSquareSkewed(Tilemap tm, int size, boolean flipX) {
+//        if (flipX) {
+//            for (int y = -size; y <= size; ++y) {
+//                for (int x = -size; x <= size; ++x) {
+//                    tm.setRelativeTile(x - y, y, new RegularTile(rand.nextInt(colorCount)));
+//                }
+//            }
+//        } else {
+//            for (int y = -size; y <= size; ++y) {
+//                for (int x = -size; x <= size; ++x) {
+//                    tm.setRelativeTile(x, y, new RegularTile(rand.nextInt(colorCount)));
+//                }
+//            }
+//        }
+//    }
+//    public void generateTriangle(Tilemap tm, int size, boolean flipY) {
+//        int sizeY = size * 2;
+//        if (flipY) {
+//            for (int y = -sizeY; y <= size; ++y) {
+//                for (int x = -size - y; x <= size; ++x) {
+//                    tm.setRelativeTile(x, y, new RegularTile(rand.nextInt(colorCount)));
+//                }
+//            }
+//        } else {
+//            for (int y = -size; y <= sizeY; ++y) {
+//                for (int x = -size; x <= size - y; ++x) {
+//                    tm.setRelativeTile(x, y, new RegularTile(rand.nextInt(colorCount)));
+//                }
+//            }
+//        }
+//    }
+//    public void generateStar(Tilemap tm, int size) {
+//        generateTriangle(tm, size, false);
+//        generateTriangle(tm, size, true);
+//    }
+//    public void reduceColorMatches(Tilemap tm, int max, boolean strict) {
+//        int tilemapSize = tm.getTilemapSize();
+//        BlueprintTile tmTile;
+//        ArrayList<BlueprintTile> matches;
+//        for (int y = 0; y < tilemapSize; ++y) {
+//            for (int x = 0; x < tilemapSize; ++x) {
+//                tmTile = tm.getAbsoluteTile(x, y);
+//                if (tmTile == null) continue;
+//
+//                matches = match3.getColorMatchesFromTile(tmTile, tm);
+//                if (strict) {
+//                    while (matches.size() > max) {
+//                        tmTile.setTile(new RegularTile(rand.nextInt(colorCount)));
+//                        matches = match3.getColorMatchesFromTile(tmTile, tm);
+//                    }
+//                } else {
+//                    if (matches.size() > max) {
+//                        int color = tmTile.ID;
+//                        int newColor = rand.nextInt(colorCount);
+//                        while (newColor == color && colorCount != 1) {
+//                            newColor = rand.nextInt(colorCount);
+//                        }
+//                        tmTile.setTile(new RegularTile(rand.nextInt(colorCount)));
+//                    }
+//                }
+//            }
+//        }
+//    }
