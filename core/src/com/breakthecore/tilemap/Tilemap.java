@@ -231,6 +231,7 @@ public class Tilemap extends Observable {
 
         minRotationSpeed = 0;
         maxRotationSpeed = 0;
+        maxTileDistanceFromCenter = 0;
         isTilemapInitilized = false;
         speedDiff = 0;
         initTileCount = 0;

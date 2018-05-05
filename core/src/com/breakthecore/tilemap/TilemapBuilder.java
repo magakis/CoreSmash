@@ -6,6 +6,9 @@ import com.breakthecore.Coords2D;
 import com.breakthecore.LevelFormatParser;
 import com.breakthecore.tiles.RandomTile;
 import com.breakthecore.tiles.RegularTile;
+import com.breakthecore.tiles.TileDictionary;
+import com.breakthecore.tiles.TileFactory;
+import com.breakthecore.tiles.TileType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,10 +31,11 @@ public class TilemapBuilder {
     private Random rand;
     private Pool<BlueprintTile> blueprintTilePool;
     private ColorGroupContainer[] colorGroupList;
-    private Array<BlueprintTile> fixedTilesArrays;
+    private Array<BlueprintTile> fixedTilesArray;
     private Comparator<ColorGroupContainer> compSizes, compColors;
     private Comparator<BlueprintTile> compDistance;
     private BlueprintTile[][] blueprintMap;
+    private Matcher matcher;
 
     private int minRotSpeed;
     private int maxRotSpeed;
@@ -41,7 +45,8 @@ public class TilemapBuilder {
         rand = new Random();
         colorGroupList = new ColorGroupContainer[maxColorCount];
         blueprintMap = new BlueprintTile[blueprintSize][blueprintSize];
-        fixedTilesArrays = new Array<>();
+        fixedTilesArray = new Array<>();
+        matcher = new Matcher();
         blueprintTilePool = new Pool<BlueprintTile>() {
             @Override
             protected BlueprintTile newObject() {
@@ -244,33 +249,30 @@ public class TilemapBuilder {
 
         if (parsedTiles == null) throw new RuntimeException("Map '" + name + "' doesn't exist!");
 
+        int randomTileID = TileDictionary.getIdOf(TileType.RANDOM_REGULAR);
+
         for (LevelFormatParser.ParsedTile parsedTile : parsedTiles) {
             Coords2D pos = parsedTile.getRelativePosition();
-            if (parsedTile.getTileID() == 17) {
+            if (parsedTile.getTileID() == randomTileID) {
 
                 if (debugEnabled) {
                     BlueprintTile tile = getTile(pos.x, pos.y);
                     if (tile == null) {
                         tile = blueprintTilePool.obtain();
                     }
-                    tile.set(pos.x, pos.y);
-                    tile.ID = 17;
-                    uncheckedPutTile(pos.x, pos.y, tile);
+                    setTile(pos.x, pos.y, randomTileID);
                 } else {
                     checkIfCanBuild();
                     BlueprintTile tile = getTile(pos.x, pos.y);
                     if (tile == null) {
-                        tile = blueprintTilePool.obtain();
-                        tile.set(pos.x, pos.y);
-                        tile.ID = getRandomColorID();
-                        uncheckedPutTile(pos.x, pos.y, tile);
+                        setTile(pos.x, pos.y, getRandomColorID());
                     }
                 }
             } else {
                 BlueprintTile tile = blueprintTilePool.obtain();
                 tile.set(pos.x, pos.y);
                 tile.ID = parsedTile.getTileID();
-                fixedTilesArrays.add(tile);
+                fixedTilesArray.add(tile);
             }
         }
         return this;
@@ -280,17 +282,14 @@ public class TilemapBuilder {
         putFixedTilesInBlueprint();
         // TODO(4/5/2018): this function needs to know what each id represents...
 
+        int randomTileID = TileDictionary.getIdOf(TileType.RANDOM_REGULAR);
         for (BlueprintTile[] arr : blueprintMap) {
             for (BlueprintTile tile : arr) {
                 if (tile == null) continue;
-                if (debugEnabled) {
-                    if (tile.ID == 17)
-                        tilemap.setRelativeTile(tile.x, tile.y, new RandomTile());
-                    else
-                        tilemap.setRelativeTile(tile.x, tile.y, new RegularTile(tile.ID));
-                } else {
-                    tilemap.setRelativeTile(tile.x, tile.y, new RegularTile(tile.ID));
-                }
+                if (debugEnabled && tile.ID == randomTileID)
+                    tilemap.setRelativeTile(tile.x, tile.y, new RandomTile());
+                else
+                    tilemap.setRelativeTile(tile.x, tile.y, TileFactory.getTileFromID(tile.ID));
             }
         }
 
@@ -317,7 +316,7 @@ public class TilemapBuilder {
             }
 
             ++blueprintTileCount;
-            uncheckedPutTile(x, y, tile);
+            blueprintMap[y + centerTile][x + centerTile] = tile;
         }
 
         tile.ID = ID;
@@ -326,15 +325,10 @@ public class TilemapBuilder {
     }
 
     private void putFixedTilesInBlueprint() {
-        for (BlueprintTile tile : fixedTilesArrays) {
-            BlueprintTile currentTile = getTile(tile.x, tile.y);
-            if (currentTile != null) {
-                blueprintTilePool.free(currentTile);
-            }
-
-            uncheckedPutTile(tile.x, tile.y, tile);
+        for (BlueprintTile tile : fixedTilesArray) {
+            setTile(tile.x, tile.y, tile.ID);
         }
-        fixedTilesArrays.clear();
+        fixedTilesArray.clear();
     }
 
     private int getRandomColorID() {
@@ -368,10 +362,6 @@ public class TilemapBuilder {
             cgc.reset();
         }
         Arrays.sort(colorGroupList, compColors);
-    }
-
-    private void uncheckedPutTile(int x, int y, BlueprintTile tile) {
-        blueprintMap[y + centerTile][x + centerTile] = tile;
     }
 
     private void checkIfCanBuild() {
@@ -457,7 +447,7 @@ public class TilemapBuilder {
 //                    }
 //                } else {
 //                    if (matches.size() > max) {
-//                        int color = tmTile.getTileID();
+//                        int color = tmTile.ID;
 //                        int newColor = rand.nextInt(colorCount);
 //                        while (newColor == color && colorCount != 1) {
 //                            newColor = rand.nextInt(colorCount);
@@ -469,27 +459,23 @@ public class TilemapBuilder {
 //        }
 //    }
 
-//    public void reduceColorMatches(Tilemap tm, int max, int numOfPasses) {
-//        int tilemapSize = tm.getTilemapSize();
-//        BlueprintTile tmTile;
-//        ArrayList<BlueprintTile> matches;
-//        int passesLeft;
-//
-//        for (int y = 0; y < tilemapSize; ++y) {
-//            for (int x = 0; x < tilemapSize; ++x) {
-//                tmTile = tm.getAbsoluteTile(x, y);
-//                if (tmTile == null) continue;
-//
-//                passesLeft = numOfPasses;
-//                matches = match3.getColorMatchesFromTile(tmTile, tm);
-//                while (matches.size() > max && passesLeft > 0) {
-//                    tmTile.setTile(new RegularTile(rand.nextInt(colorCount)));
-//                    matches = match3.getColorMatchesFromTile(tmTile, tm);
-//                    --passesLeft;
-//                }
-//            }
-//        }
-//    }
+    public TilemapBuilder reduceColorMatches(int max, int numOfPasses) {
+        for (int y = 0; y < blueprintSize; ++y) {
+            for (int x = 0; x < blueprintSize; ++x) {
+                BlueprintTile tile = blueprintMap[y][x];
+                if (tile == null) continue;
+
+                int passesLeft = numOfPasses;
+                ArrayList<BlueprintTile> matches = matcher.getColorMatchesFromTile(tile);
+                while (matches.size() > max && passesLeft > 0) {
+                    tile.ID = rand.nextInt(colorCount);
+                    matches = matcher.getColorMatchesFromTile(tile);
+                    --passesLeft;
+                }
+            }
+        }
+        return this;
+    }
 
 //    public void reduceCenterTileColorMatch(Tilemap tm, int max) {
 //        reduceColorMatches(tm, max, false);
@@ -532,12 +518,12 @@ public class TilemapBuilder {
             }
         }
 
-        fixedTilesArrays.clear();
+        fixedTilesArray.clear();
         tilemap = null;
         isBuilt = false;
         colorCount = 0;
         maxDistance = 0;
-
+        blueprintTileCount = 0;
         debugEnabled = false;
         minRotSpeed = 0;
         maxRotSpeed = 0;
@@ -575,5 +561,76 @@ public class TilemapBuilder {
             x = 0;
             y = 0;
         }
+    }
+
+    private class Matcher {
+        private ArrayList<BlueprintTile> match = new ArrayList<>();
+        private ArrayList<BlueprintTile> exclude = new ArrayList<>();
+
+        public ArrayList<BlueprintTile> getColorMatchesFromTile(BlueprintTile tile) {
+            match.clear();
+            exclude.clear();
+            addSurroundingColorMatches(tile);
+            return match;
+        }
+
+        private void addSurroundingColorMatches(BlueprintTile tile) {
+            int tx = tile.x;
+            int ty = tile.y;
+
+            BlueprintTile tt;
+
+            match.add(tile);
+            exclude.add(tile);
+
+            //top_left
+            tt = getTile(tx - 1, ty + 1);
+            if (tt != null && !exclude.contains(tt)) {
+                if (tt.ID == tile.ID) {
+                    addSurroundingColorMatches(tt);
+                }
+            }
+
+            //top_right
+            tt = getTile(tx, ty + 1);
+            if (tt != null && !exclude.contains(tt)) {
+                if (tt.ID == tile.ID) {
+                    addSurroundingColorMatches(tt);
+                }
+            }
+
+            //right
+            tt = getTile(tx + 1, ty);
+            if (tt != null && !exclude.contains(tt)) {
+                if (tt.ID == tile.ID) {
+                    addSurroundingColorMatches(tt);
+                }
+            }
+
+            //bottom_right
+            tt = getTile(tx + 1, ty - 1);
+            if (tt != null && !exclude.contains(tt)) {
+                if (tt.ID == tile.ID) {
+                    addSurroundingColorMatches(tt);
+                }
+            }
+
+            //bottom_left
+            tt = getTile(tx, ty - 1);
+            if (tt != null && !exclude.contains(tt)) {
+                if (tt.ID == tile.ID) {
+                    addSurroundingColorMatches(tt);
+                }
+            }
+
+            //left
+            tt = getTile(tx - 1, ty);
+            if (tt != null && !exclude.contains(tt)) {
+                if (tt.ID == tile.ID) {
+                    addSurroundingColorMatches(tt);
+                }
+            }
+        }
+
     }
 }

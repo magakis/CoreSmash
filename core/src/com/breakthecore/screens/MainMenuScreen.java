@@ -479,8 +479,8 @@ public class MainMenuScreen extends ScreenBase {
                             Preferences prefs = Gdx.app.getPreferences("game_settings");
 
                             boolean spinTheCoreEnabled = cbSpinTheCoreMode.isChecked();
-                            int minRotationSpeed = (int)minRotSlider.getValue();
-                            int maxRotationSpeed = (int)maxRotSlider.getValue();
+                            int minRotationSpeed = (int) minRotSlider.getValue();
+                            int maxRotationSpeed = (int) maxRotSlider.getValue();
                             int initRadius = (int) radiusSlider.getValue();
                             int colorCount = (int) sldrColorCount.getValue();
                             int moves = Integer.parseInt(tfMoves.getText());
@@ -490,20 +490,19 @@ public class MainMenuScreen extends ScreenBase {
                             TilemapManager.TilemapGenerator tilemapGenerator = tilemapManager.getTilemapGenerator();
                             tilemapManager.setColorCount(colorCount);
 
-                            Array<LevelFormatParser.ParsedTile> parsedTiles = null;
                             if (cbUseCustomMap.isChecked()) {
                                 TilemapBuilder builder = tilemapManager.newMap();
                                 builder.setColorCount(colorCount)
                                         .loadMapFromFile("mainmenumap")
                                         .balanceColorAmounts()
+                                        .reduceColorMatches(2, 1)
                                         .forceEachColorOnEveryRadius();
 
                                 if (spinTheCoreEnabled) {
-                                    builder.build();
-                                } else {
-                                    builder.setMinMaxRotationSpeed(minRotationSpeed, maxRotationSpeed)
-                                            .build();
+                                    builder.setMinMaxRotationSpeed(minRotationSpeed, maxRotationSpeed);
                                 }
+
+                                builder.build();
                             } else {
                                 Tilemap tm = tilemapManager.newTilemap();
                                 tilemapGenerator.generateRadius(tm, initRadius);
@@ -542,6 +541,7 @@ public class MainMenuScreen extends ScreenBase {
                                     tilemapManager.getTotalAmountOfTiles());
 
                             prefs.putBoolean("spinthecore_enabled", spinTheCoreEnabled);
+                            prefs.putBoolean("custom_map_enabled", cbUseCustomMap.isChecked());
                             prefs.putInteger("init_radius", initRadius);
                             prefs.putFloat("min_rotation_speed", minRotationSpeed);
                             prefs.putFloat("max_rotation_speed", maxRotationSpeed);
