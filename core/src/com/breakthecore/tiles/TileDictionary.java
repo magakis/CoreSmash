@@ -1,12 +1,20 @@
 package com.breakthecore.tiles;
 
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntArray;
+import com.badlogic.gdx.utils.IntMap;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class TileDictionary {
     private static boolean isInitialized;
-    private static final HashMap<Integer, TileAttributes> tileAttributesMap = new HashMap<>();
+    private static final IntMap<TileAttributes> tileAttributesMap = new IntMap<>();
 
     private TileDictionary() {
     }
@@ -21,28 +29,36 @@ public class TileDictionary {
 
         TileAttributes.Builder builder = new TileAttributes.Builder();
 
-        TileAttributes attributeRegularTile = builder
+        TileAttributes attrRegularTile = builder
                 .setTileType(TileType.REGULAR)
                 .setMatchable(true)
+                .setPlaceable(true)
                 .build();
 
-        registerTile(0, attributeRegularTile);
-        registerTile(1, attributeRegularTile);
-        registerTile(2, attributeRegularTile);
-        registerTile(3, attributeRegularTile);
-        registerTile(4, attributeRegularTile);
-        registerTile(5, attributeRegularTile);
-        registerTile(6, attributeRegularTile);
-        registerTile(7, attributeRegularTile);
-        registerTile(8, attributeRegularTile);
+        registerTile(0, attrRegularTile);
+        registerTile(1, attrRegularTile);
+        registerTile(2, attrRegularTile);
+        registerTile(3, attrRegularTile);
+        registerTile(4, attrRegularTile);
+        registerTile(5, attrRegularTile);
+        registerTile(6, attrRegularTile);
+        registerTile(7, attrRegularTile);
 
         builder.reset();
-        TileAttributes attributeRandomTile = builder
+        TileAttributes attrRandomTile = builder
                 .setTileType(TileType.RANDOM_REGULAR)
+                .setPlaceable(true)
                 .setMatchable(false)
                 .build();
 
-        registerTile(17, attributeRandomTile);
+        registerTile(17, attrRandomTile);
+
+        builder.reset();
+        TileAttributes attrBomb = builder
+                .setTileType(TileType.BOMB)
+                .build();
+
+        registerTile(18, attrBomb);
 
         isInitialized = true;
     }
@@ -55,15 +71,31 @@ public class TileDictionary {
     }
 
     public static int getIdOf(TileType type) {
-        Set<Map.Entry<Integer, TileAttributes>> entries = tileAttributesMap.entrySet();
-
-        for (Map.Entry<Integer, TileAttributes> entry : entries) {
-            if (entry.getValue().getTileType() == type) {
-                return entry.getKey();
+        for (IntMap.Entry<TileAttributes> entry : tileAttributesMap.entries()) {
+            if (entry.value.getTileType() == type) {
+                return entry.key;
             }
         }
-
         throw new RuntimeException("No entry found with type: " + type);
+    }
+
+    public static List<Integer> getAllPlaceableIDs() {
+        List<Integer> result = new ArrayList<>();
+        for (IntMap.Entry<TileAttributes> entry : tileAttributesMap.entries()) {
+            if (entry.value.isPlaceable()) {
+                result.add(entry.key);
+            }
+        }
+        return result;
+    }
+
+    public static List<Integer> getAllRegisteredIDs() {
+        List<Integer> result = new ArrayList<>();
+        IntMap.Keys keys = tileAttributesMap.keys();
+        while(keys.hasNext) {
+            result.add(keys.next());
+        }
+        return result;
     }
 
     private static void registerTile(int id, TileAttributes attributes) {

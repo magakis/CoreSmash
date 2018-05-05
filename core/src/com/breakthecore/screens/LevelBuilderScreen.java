@@ -45,8 +45,11 @@ import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tiles.RandomTile;
 import com.breakthecore.tiles.RegularTile;
 import com.breakthecore.tilemap.TilemapTile;
+import com.breakthecore.tiles.TileDictionary;
+import com.breakthecore.tiles.TileFactory;
 import com.breakthecore.ui.UIComponent;
 
+import java.util.List;
 import java.util.Locale;
 
 public class LevelBuilderScreen extends ScreenBase {
@@ -380,57 +383,57 @@ public class LevelBuilderScreen extends ScreenBase {
             imgbGroup.setMinCheckCount(1);
             imgbGroup.setMaxCheckCount(1);
 
-            ImageButton.ImageButtonStyle imgbs;
+            final List<Integer> knownIds = TileDictionary.getAllPlaceableIDs();
 
-            materialButtons = new ImageButton[9];
+            materialButtons = new ImageButton[knownIds.size()];
             int buttonIndex = 0;
-            for (int i = 0; i < 8; ++i) { // XXX(4/5/2018): MAGIC VALUE 8
+            for (int i = 0; i < knownIds.size(); ++i) {
+                ImageButton.ImageButtonStyle imgbs;
                 imgbs = new ImageButton.ImageButtonStyle();
-                imgbs.imageUp = new TextureRegionDrawable(new TextureRegion(renderManager.getTextureFor(i)));
+                imgbs.imageUp = new TextureRegionDrawable(new TextureRegion(renderManager.getTextureFor(knownIds.get(i))));
                 imgbs.checked = checked;
                 imgbs.up = unchecked;
 
                 ImageButton imgb = new ImageButton(imgbs);
-                imgbGroup.add(imgb);
-                materialButtons[buttonIndex] = imgb;
                 materialGroup.addActor(imgb);
                 imgb.getImage().setScaling(Scaling.fill);
                 imgb.getImageCell().height(100).width(100);
-
-                final int finalI = buttonIndex;
+                final int finalButtonIndex = buttonIndex;
                 imgb.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        if (materialButtons[finalI].isChecked()) {
-                            tileId = finalI;
+                        if (materialButtons[finalButtonIndex].isChecked()) {
+                            tileId = knownIds.get(finalButtonIndex);
                             uiDebug.lblDebug[2].setText("TileActive| " + tileId);
                         }
                     }
                 });
+
+                materialButtons[buttonIndex] = imgb;
+                imgbGroup.add(imgb);
+
                 ++buttonIndex;
             }
-            imgbs = new ImageButton.ImageButtonStyle();
-            imgbs.imageUp = skin.newDrawable("ball");
-            imgbs.checked = checked;
-            imgbs.up = unchecked;
+//            imgbs = new ImageButton.ImageButtonStyle();
+//            imgbs.imageUp = skin.newDrawable("ball");
+//            imgbs.checked = checked;
+//            imgbs.up = unchecked;
+//
+//            ImageButton imgb = new ImageButton(imgbs);
+//            imgb.getImageCell().height(100).width(100);
+//            final int finalButtonIndex = buttonIndex;
+//            materialButtons[buttonIndex++] = imgb;
+//            imgb.addListener(new ChangeListener() {
+//                @Override
+//                public void changed(ChangeEvent event, Actor actor) {
+//                    if (materialButtons[finalButtonIndex].isChecked()) {
+//                        tileId = 17;
+//                        uiDebug.lblDebug[2].setText("TileActive| " + tileId);
+//                    }
+//                }
+//            });
 
-            ImageButton imgb = new ImageButton(imgbs);
-            imgb.getImageCell().height(100).width(100);
-            final int finalButtonIndex = buttonIndex;
-            materialButtons[buttonIndex++] = imgb;
-            imgb.addListener(new ChangeListener() {
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-                    if (materialButtons[finalButtonIndex].isChecked()) {
-                        tileId = 17;
-                        uiDebug.lblDebug[2].setText("TileActive| " + tileId);
-                    }
-                }
-            });
 
-
-            imgbGroup.add(imgb);
-            materialGroup.addActor(imgb);
 
             setPreferencesRoot(main);
         }
@@ -443,11 +446,7 @@ public class LevelBuilderScreen extends ScreenBase {
             Coords2D res = tm.worldToTilemapCoords(screenToWorld.get());
 
             if (tm.getRelativeTile(res.x, res.y) == null) {
-                if (tileId == 17) {
-                    tm.setRelativeTile(res.x, res.y, new RandomTile());
-                }else {
-                    tm.setRelativeTile(res.x, res.y, new RegularTile(tileId));
-                }
+                    tm.setRelativeTile(res.x, res.y, TileFactory.getTileFromID(tileId));
             }
 
             return true;
