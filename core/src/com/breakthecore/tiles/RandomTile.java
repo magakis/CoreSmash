@@ -5,8 +5,10 @@ import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
 
 public class RandomTile extends Tile {
+    public static final int RandomTileID = TileDictionary.getIdOf(TileType.RANDOM_REGULAR);
+
     public RandomTile() {
-        super(17);
+        super(RandomTileID);
     }
 
     @Override

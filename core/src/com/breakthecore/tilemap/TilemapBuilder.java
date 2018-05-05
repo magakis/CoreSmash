@@ -4,6 +4,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.breakthecore.Coords2D;
 import com.breakthecore.LevelFormatParser;
+import com.breakthecore.tiles.RandomTile;
 import com.breakthecore.tiles.RegularTile;
 
 import java.util.ArrayList;
@@ -15,8 +16,9 @@ import java.util.Random;
 public class TilemapBuilder {
     private final int maxColorCount = 16;// XXX(4/5/2018): MAGIC VALUE 16
     private final int blueprintSize = 30;// XXX(4/5/2018): MAGIC VALUE 30
-    private final int centerTile = blueprintSize/2;
+    private final int centerTile = blueprintSize / 2;
 
+    private boolean debugEnabled;
     private boolean isBuilt;
     private Tilemap tilemap;
     private int colorCount;
@@ -101,10 +103,15 @@ public class TilemapBuilder {
 
     public TilemapBuilder generateRadius(int radius) {
         checkIfCanBuild();
+
         for (int y = -radius - 1; y < radius + 1; ++y) {
             for (int x = -radius - 1; x < radius + 1; ++x) {
                 if (getTileDistance(x, y, 0, 0) <= radius) {
-                    setTile(x, y, getRandomColorID());
+                    if (debugEnabled) {
+                        setTile(x, y, 17); // XXX(5/5/2018): MAGIC VALUE 17
+                    } else {
+                        setTile(x, y, getRandomColorID());
+                    }
                 }
             }
         }
@@ -113,6 +120,7 @@ public class TilemapBuilder {
 
     public TilemapBuilder balanceColorAmounts() {
         checkIfCanBuild();
+
         fillColorGroupContainers();
         int aver = blueprintTileCount / colorCount;
         int maxIndex = colorCount - 1;
@@ -137,8 +145,8 @@ public class TilemapBuilder {
 
     public TilemapBuilder forceEachColorOnEveryRadius() {
         checkIfCanBuild();
-        fillColorGroupContainers();
 
+        fillColorGroupContainers();
         for (ColorGroupContainer cgc : colorGroupList) {
             Collections.sort(cgc.list, compDistance);
         }
@@ -223,22 +231,40 @@ public class TilemapBuilder {
         return this;
     }
 
-    /** TODO: Currently it looks on the external drive while it should look in the game files */
+    public TilemapBuilder debug() {
+        debugEnabled = true;
+        return this;
+    }
+
+    /**
+     * TODO: Currently it looks on the external drive while it should look in the game files
+     */
     public TilemapBuilder loadMapFromFile(String name) {
         Array<LevelFormatParser.ParsedTile> parsedTiles = LevelFormatParser.load(name);
 
-        if (parsedTiles == null) throw new RuntimeException("Map '"+name+"' doesn't exist!");
+        if (parsedTiles == null) throw new RuntimeException("Map '" + name + "' doesn't exist!");
 
         for (LevelFormatParser.ParsedTile parsedTile : parsedTiles) {
             Coords2D pos = parsedTile.getRelativePosition();
             if (parsedTile.getTileID() == 17) {
 
-                BlueprintTile tile = getTile(pos.x, pos.y);
-                if (tile == null) {
-                    tile = blueprintTilePool.obtain();
+                if (debugEnabled) {
+                    BlueprintTile tile = getTile(pos.x, pos.y);
+                    if (tile == null) {
+                        tile = blueprintTilePool.obtain();
+                    }
                     tile.set(pos.x, pos.y);
-                    tile.ID = getRandomColorID();
+                    tile.ID = 17;
                     uncheckedPutTile(pos.x, pos.y, tile);
+                } else {
+                    checkIfCanBuild();
+                    BlueprintTile tile = getTile(pos.x, pos.y);
+                    if (tile == null) {
+                        tile = blueprintTilePool.obtain();
+                        tile.set(pos.x, pos.y);
+                        tile.ID = getRandomColorID();
+                        uncheckedPutTile(pos.x, pos.y, tile);
+                    }
                 }
             } else {
                 BlueprintTile tile = blueprintTilePool.obtain();
@@ -257,7 +283,14 @@ public class TilemapBuilder {
         for (BlueprintTile[] arr : blueprintMap) {
             for (BlueprintTile tile : arr) {
                 if (tile == null) continue;
-                tilemap.setRelativeTile(tile.x, tile.y, new RegularTile(tile.ID));
+                if (debugEnabled) {
+                    if (tile.ID == 17)
+                        tilemap.setRelativeTile(tile.x, tile.y, new RandomTile());
+                    else
+                        tilemap.setRelativeTile(tile.x, tile.y, new RegularTile(tile.ID));
+                } else {
+                    tilemap.setRelativeTile(tile.x, tile.y, new RegularTile(tile.ID));
+                }
             }
         }
 
@@ -269,7 +302,7 @@ public class TilemapBuilder {
     }
 
     private BlueprintTile getTile(int x, int y) {
-        return blueprintMap[y+centerTile][x+centerTile];
+        return blueprintMap[y + centerTile][x + centerTile];
     }
 
     private void setTile(int x, int y, int ID) {
@@ -338,7 +371,7 @@ public class TilemapBuilder {
     }
 
     private void uncheckedPutTile(int x, int y, BlueprintTile tile) {
-        blueprintMap[y+centerTile][x+centerTile] = tile;
+        blueprintMap[y + centerTile][x + centerTile] = tile;
     }
 
     private void checkIfCanBuild() {
@@ -505,6 +538,7 @@ public class TilemapBuilder {
         colorCount = 0;
         maxDistance = 0;
 
+        debugEnabled = false;
         minRotSpeed = 0;
         maxRotSpeed = 0;
         isRotating = false;
@@ -532,7 +566,7 @@ public class TilemapBuilder {
         public void set(int x, int y) {
             this.x = x;
             this.y = y;
-            distance = getTileDistance(x, y, 0,0);
+            distance = getTileDistance(x, y, 0, 0);
         }
 
         @Override

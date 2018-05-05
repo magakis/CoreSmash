@@ -18,6 +18,7 @@ import com.badlogic.gdx.utils.Align;
 import com.breakthecore.CoreSmash;
 import com.breakthecore.themes.AbstractTheme;
 import com.breakthecore.themes.BaseTheme;
+import com.breakthecore.tiles.TileDictionary;
 
 import java.util.Locale;
 
@@ -52,6 +53,7 @@ public class LoadingScreen extends ScreenBase {
         if (am.update()) {
             baseTheme.finishLoading();
             setupSkin();
+            TileDictionary.initialilze();
             gameInstance.initApp();
         }
         percent.setText(String.format(Locale.ENGLISH,"%.0f %%", am.getProgress() * 100));

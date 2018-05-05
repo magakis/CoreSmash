@@ -32,6 +32,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.breakthecore.CoreSmash;
@@ -39,6 +40,7 @@ import com.breakthecore.Coords2D;
 import com.breakthecore.LevelFormatParser;
 import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.managers.RenderManager;
+import com.breakthecore.tilemap.TilemapBuilder;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tiles.RandomTile;
 import com.breakthecore.tiles.RegularTile;
@@ -207,7 +209,10 @@ public class LevelBuilderScreen extends ScreenBase {
                                 showToast("Error: File not found");
                             } else {
                                 tilemapManager.reset();
-                                LevelFormatParser.load(text, tilemapManager);
+                                TilemapBuilder builder = tilemapManager.newMap();
+                                builder.debug()
+                                        .loadMapFromFile(text)
+                                        .build();
                             }
                         }
 

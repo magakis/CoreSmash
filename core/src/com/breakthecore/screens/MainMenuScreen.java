@@ -496,10 +496,14 @@ public class MainMenuScreen extends ScreenBase {
                                 builder.setColorCount(colorCount)
                                         .loadMapFromFile("mainmenumap")
                                         .balanceColorAmounts()
-                                        .forceEachColorOnEveryRadius()
-                                        .setMinMaxRotationSpeed(minRotationSpeed, maxRotationSpeed)
-                                        .build();
+                                        .forceEachColorOnEveryRadius();
 
+                                if (spinTheCoreEnabled) {
+                                    builder.build();
+                                } else {
+                                    builder.setMinMaxRotationSpeed(minRotationSpeed, maxRotationSpeed)
+                                            .build();
+                                }
                             } else {
                                 Tilemap tm = tilemapManager.newTilemap();
                                 tilemapGenerator.generateRadius(tm, initRadius);
