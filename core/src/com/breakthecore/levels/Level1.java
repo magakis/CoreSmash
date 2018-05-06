@@ -1,8 +1,9 @@
 package com.breakthecore.levels;
 
+import com.breakthecore.Launcher;
 import com.breakthecore.RoundEndListener;
 import com.breakthecore.UserAccount;
-import com.breakthecore.managers.MovingTileManager;
+import com.breakthecore.managers.MovingBallManager;
 import com.breakthecore.managers.StatsManager;
 import com.breakthecore.tilemap.TilemapBuilder;
 import com.breakthecore.tilemap.TilemapManager;
@@ -14,7 +15,11 @@ public class Level1 extends CampaignLevel {
     }
 
     @Override
-    public void initialize(StatsManager statsManager, TilemapManager tilemapManager, MovingTileManager movingTileManager) {
+    public void initialize(GameScreen.LevelTools levelTools) {
+        TilemapManager tilemapManager = levelTools.tilemapManager;
+        MovingBallManager movingBallManager = levelTools.movingBallManager;
+        StatsManager statsManager = levelTools.statsManager;
+        Launcher launcher = levelTools.launcher;
 
         TilemapBuilder builder = tilemapManager.newMap();
         builder.setMinMaxRotationSpeed(40, 70)
@@ -25,11 +30,9 @@ public class Level1 extends CampaignLevel {
                 .reduceCenterTileColorMatch(2, false)
                 .build();
 
-        movingTileManager.setAutoEject(false);
-        movingTileManager.setDefaultBallSpeed(15);
-        movingTileManager.setColorCount(5);
-        movingTileManager.enableControlledBallGeneration(tilemapManager);
-        movingTileManager.initLauncher(3);
+        movingBallManager.setDefaultBallSpeed(15);
+        launcher.setAutoEject(false);
+        launcher.setLauncherSize(3);
 
         statsManager.setUserAccount(getUser());
         statsManager.setGameMode(GameScreen.GameMode.CLASSIC);

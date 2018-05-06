@@ -2,7 +2,7 @@ package com.breakthecore.tiles;
 
 import com.badlogic.gdx.math.Vector2;
 import com.breakthecore.tilemap.Tilemap;
-import com.breakthecore.managers.CollisionManager;
+import com.breakthecore.managers.CollisionDetector;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
 
@@ -13,18 +13,18 @@ public class RegularTile extends Tile {
     }
 
     @Override
-    public void onCollide(MovingTile movingTile, TilemapTile tileHit, int layer, TilemapManager tilemapManager, CollisionManager collisionManager) {
+    public void onCollide(MovingBall movingBall, TilemapTile tileHit, int layer, TilemapManager tilemapManager, CollisionDetector collisionDetector) {
         Tilemap tm = tilemapManager.getTilemap(layer);
-        Vector2 direction = collisionManager.getDirection(movingTile.positionInWorld, tileHit.positionInWorld);
+        Vector2 direction = collisionDetector.getDirection(movingBall.positionInWorld, tileHit.positionInWorld);
 
         tilemapManager.attachTile(
                 layer,
-                movingTile.extractTile(),
+                movingBall.extractTile(),
                 tileHit,
-                collisionManager.getClosestSides(tm.getCos(), tm.getSin(), direction)
+                collisionDetector.getClosestSides(tm.getCos(), tm.getSin(), direction)
         );
 
-        movingTile.dispose();
+        movingBall.dispose();
     }
 
     @Override

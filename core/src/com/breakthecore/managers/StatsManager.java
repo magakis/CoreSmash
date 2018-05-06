@@ -1,11 +1,11 @@
 package com.breakthecore.managers;
 
+import com.breakthecore.Launcher;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observable;
 import com.breakthecore.Observer;
 import com.breakthecore.UserAccount;
 import com.breakthecore.screens.GameScreen;
-import com.breakthecore.tiles.Tile;
 
 import java.util.Random;
 
@@ -166,9 +166,9 @@ public class StatsManager extends Observable implements Observer {
         rand.setSeed(seed);
     }
 
-    public void consumeSpecialBall(MovingTileManager movingTileManager) {
-        if (!movingTileManager.isLoadedWithSpecial()) {
-            movingTileManager.insertSpecialTile(10);
+    public void consumeSpecialBall(Launcher launcher) {
+        if (!launcher.isLoadedWithSpecial()) {
+            launcher.insertSpecialTile(17);
             --specialBallCount;
         }
     }
@@ -191,7 +191,6 @@ public class StatsManager extends Observable implements Observer {
                 if (isMovesEnabled) {
                     --moves;
                 }
-                notifyObservers(NotificationType.BALL_LAUNCHED, null);
                 break;
         }
     }

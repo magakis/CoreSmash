@@ -29,10 +29,11 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.breakthecore.CoreSmash;
+import com.breakthecore.Launcher;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.levels.CampaignLevel;
 import com.breakthecore.levels.Level;
-import com.breakthecore.managers.MovingTileManager;
+import com.breakthecore.managers.MovingBallManager;
 import com.breakthecore.managers.StatsManager;
 import com.breakthecore.tilemap.TilemapBuilder;
 import com.breakthecore.tilemap.TilemapManager;
@@ -472,8 +473,14 @@ public class MainMenuScreen extends ScreenBase {
 
                     Level dbLevel = new CampaignLevel(999, gameInstance.getUserAccount(), null) {
                         @Override
-                        public void initialize(StatsManager statsManager, TilemapManager tilemapManager, MovingTileManager movingTileManager) {
+                        public void initialize(GameScreen.LevelTools levelTools) {
                             Preferences prefs = Gdx.app.getPreferences("game_settings");
+
+                            TilemapManager tilemapManager = levelTools.tilemapManager;
+                            MovingBallManager movingBallManager = levelTools.movingBallManager;
+                            StatsManager statsManager = levelTools.statsManager;
+                            Launcher launcher = levelTools.launcher;
+
 
                             boolean spinTheCoreEnabled = cbSpinTheCoreMode.isChecked();
                             int minRotationSpeed = (int) minRotSlider.getValue();
@@ -502,12 +509,10 @@ public class MainMenuScreen extends ScreenBase {
                             }
                             builder.build();
 
-                            movingTileManager.setLauncherCooldown(sldrLauncherCooldown.getValue());
-                            movingTileManager.setColorCount(colorCount);
-//                            movingTileManager.setAutoEject(spinTheCoreEnabled);
-                            movingTileManager.setDefaultBallSpeed((int) sldrBallSpeed.getValue());
-                            movingTileManager.enableControlledBallGeneration(tilemapManager);
-                            movingTileManager.initLauncher(3);
+                            launcher.setLauncherCooldown(sldrLauncherCooldown.getValue());
+//                            launcher.setAutoEject(spinTheCoreEnabled);
+                            movingBallManager.setDefaultBallSpeed((int) sldrBallSpeed.getValue());
+                            launcher.setLauncherSize(3);
 
                             statsManager.setUserAccount(getUser());
                             statsManager.setGameMode(spinTheCoreEnabled ? GameMode.SPIN_THE_CORE : GameMode.CLASSIC);

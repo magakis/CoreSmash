@@ -24,18 +24,18 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.breakthecore.CoreSmash;
 import com.breakthecore.Coords2D;
+import com.breakthecore.Launcher;
 import com.breakthecore.levels.Level;
 import com.breakthecore.managers.StatsManager;
 import com.breakthecore.StreakUI;
-import com.breakthecore.managers.CollisionManager;
+import com.breakthecore.managers.CollisionDetector;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observer;
 import com.breakthecore.tilemap.TilemapManager;
-import com.breakthecore.managers.MovingTileManager;
+import com.breakthecore.managers.MovingBallManager;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.WorldSettings;
-import com.breakthecore.tiles.MovingTile;
-import com.breakthecore.tiles.RegularTile;
+import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.ui.UIComponent;
 
 import java.util.Locale;
@@ -47,13 +47,16 @@ import java.util.Locale;
 public class GameScreen extends ScreenBase implements Observer {
     private ExtendViewport viewport;
     private OrthographicCamera camera;
+    private RenderManager renderManager;
 
     private TilemapManager tilemapManager;
-    private MovingTileManager movingTileManager;
-    private RenderManager renderManager;
-    private CollisionManager collisionManager;
+    private MovingBallManager movingBallManager;
+    private Launcher launcher;
+    private CollisionDetector collisionDetector;
     private StatsManager statsManager;
+
     private StreakUI streakUI;
+    private LevelTools levelTools;
 
     private Level activeLevel;
 
@@ -80,8 +83,9 @@ public class GameScreen extends ScreenBase implements Observer {
 
         renderManager = gameInstance.getRenderManager();
 
-        movingTileManager = new MovingTileManager(WorldSettings.getTileSize());
-        collisionManager = new CollisionManager();
+        movingBallManager = new MovingBallManager();
+        launcher = new Launcher(movingBallManager);
+        collisionDetector = new CollisionDetector();
 
         tilemapManager = new TilemapManager();
 
@@ -94,10 +98,14 @@ public class GameScreen extends ScreenBase implements Observer {
         statsManager.addObserver(this);
         statsManager.addObserver(streakUI);
 
+        launcher.addObserver(statsManager);
+        launcher.addObserver(this);
+
         tilemapManager.addObserver(this);
         tilemapManager.addObserver(statsManager);
 
-        movingTileManager.addObserver(statsManager);
+        movingBallManager.addObserver(statsManager);
+        levelTools = new LevelTools(tilemapManager, movingBallManager, statsManager, launcher);
 
         stage = new Stage(game.getUIViewport());
 
@@ -123,7 +131,7 @@ public class GameScreen extends ScreenBase implements Observer {
         if (statsManager.isLivesEnabled() && statsManager.getLives() == 0) {
             endGame();
         }
-        if (statsManager.isMovesEnabled() && statsManager.getMoves() == 0 && movingTileManager.getActiveList().size() == 0) {
+        if (statsManager.isMovesEnabled() && statsManager.getMoves() == 0 && movingBallManager.getActiveList().size() == 0) {
             endGame();
         }
     }
@@ -141,8 +149,9 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private void draw() {
         renderManager.start(camera.combined);
+        launcher.draw(renderManager);
         tilemapManager.draw(renderManager);
-        movingTileManager.draw(renderManager);
+        movingBallManager.draw(renderManager);
         renderManager.end();
 
         renderManager.renderCenterDot(tilemapManager.getTilemapPosition(), camera.combined);
@@ -154,9 +163,10 @@ public class GameScreen extends ScreenBase implements Observer {
             if (activeLevel != null) {
                 activeLevel.update(delta, tilemapManager);
             }
-            movingTileManager.update(delta);
+            launcher.update(delta);
             tilemapManager.update(delta);
-            collisionManager.checkForCollision(movingTileManager, tilemapManager);
+            movingBallManager.update(delta);
+            collisionDetector.checkForCollision(movingBallManager, tilemapManager);
 
             statsManager.update(delta);
             updateStage();
@@ -184,13 +194,27 @@ public class GameScreen extends ScreenBase implements Observer {
         if (activeLevel != null) {
             activeLevel.end(roundWon, statsManager);
         }
+    }
 
+    private void reset() {
+        tilemapManager.reset();
+        movingBallManager.reset();
+        launcher.reset();
+        statsManager.reset();
+        streakUI.reset();
+
+        isGameActive = false;
+        roundWon = false;
+        activeLevel = null;
+        stage.clear();
+        rootUIStack.clear();
     }
 
     public void deployLevel(Level level) {
         reset();
         activeLevel = level;
-        level.initialize(statsManager, tilemapManager, movingTileManager);
+        level.initialize(levelTools);
+        launcher.fillLauncher(tilemapManager);
 
         gameUI.setup();
         if (activeLevel != null) {
@@ -210,19 +234,6 @@ public class GameScreen extends ScreenBase implements Observer {
         gameInstance.setScreen(this);
     }
 
-    private void reset() {
-        tilemapManager.reset();
-        movingTileManager.reset();
-        statsManager.reset();
-        streakUI.reset();
-
-        isGameActive = false;
-        roundWon = false;
-        activeLevel = null;
-        stage.clear();
-        rootUIStack.clear();
-    }
-
     @Override
     public void onNotify(NotificationType type, Object ob) {
         switch (type) {
@@ -239,13 +250,13 @@ public class GameScreen extends ScreenBase implements Observer {
                     int moves = statsManager.getMoves();
                     gameUI.lblMoves.setText(String.valueOf(moves));
 
-                    if (moves > movingTileManager.getLauncherSize()) {
-                        movingTileManager.loadLauncher();
-                    } else if (moves == movingTileManager.getLauncherSize()) {
-                        movingTileManager.loadLauncher(new RegularTile(tilemapManager.getTilemap(0).getRelativeTile(0, 0).getTileID()));
+                    if (moves > launcher.getLauncherSize()) {
+                        launcher.loadLauncher(tilemapManager);
+                    } else if (moves == launcher.getLauncherSize()) {
+                        launcher.loadLauncher(tilemapManager.getTilemap(0).getRelativeTile(0, 0).getTileID());
                     }
                 } else {
-                    movingTileManager.loadLauncher();
+                    launcher.loadLauncher(tilemapManager);
                 }
                 break;
         }
@@ -273,7 +284,7 @@ public class GameScreen extends ScreenBase implements Observer {
         public boolean tap(float x, float y, int count, int button) {
             switch (statsManager.getGameMode()) {
                 case CLASSIC:
-                    movingTileManager.eject();
+                    launcher.eject();
                     break;
             }
             return true;
@@ -314,10 +325,10 @@ public class GameScreen extends ScreenBase implements Observer {
                     break;
 
                 case SHOOT_EM_UP:
-                    MovingTile mt = movingTileManager.getFirstActiveTile();
+                    MovingBall mt = movingBallManager.getFirstActiveTile();
                     if (mt == null) {
-                        movingTileManager.eject();
-                        mt = movingTileManager.getFirstActiveTile();
+                        launcher.eject();
+                        mt = movingBallManager.getFirstActiveTile();
                     }
                     mt.moveBy(deltaX, -deltaY);
                     break;
@@ -431,7 +442,7 @@ public class GameScreen extends ScreenBase implements Observer {
             tbPower1.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    statsManager.consumeSpecialBall(movingTileManager);
+                    statsManager.consumeSpecialBall(launcher);
                     if (statsManager.getSpecialBallCount() == 0) {
                         tbPower1.setDisabled(true);
                     }
@@ -565,6 +576,20 @@ public class GameScreen extends ScreenBase implements Observer {
             dbtb.add(dblb5).fillX();
 
             setRoot(dbtb);
+        }
+    }
+
+    public static class LevelTools {
+        public final TilemapManager tilemapManager;
+        public final MovingBallManager movingBallManager;
+        public final StatsManager statsManager;
+        public final Launcher launcher;
+
+        public LevelTools(TilemapManager manager, MovingBallManager ballManager, StatsManager statsManager, Launcher launcher) {
+            tilemapManager = manager;
+            movingBallManager = ballManager;
+            this.statsManager = statsManager;
+            this.launcher = launcher;
         }
     }
 }

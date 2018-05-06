@@ -14,7 +14,7 @@ import com.breakthecore.Coords2D;
 import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.themes.AbstractTheme;
-import com.breakthecore.tiles.MovingTile;
+import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.tiles.Tile;
 import com.breakthecore.tilemap.TilemapTile;
 
@@ -69,7 +69,7 @@ public class RenderManager {
         shapeRenderer.end();
     }
 
-    public void draw(MovingTile mt) {
+    public void draw(MovingBall mt) {
         Vector2 atPos = mt.getPositionInWorld();
         Tile tile = mt.getTile();
         float sideLen = sideLengthHalf * mt.getScale();
@@ -79,8 +79,8 @@ public class RenderManager {
         batch.draw(texture, atPos.x - sideLen, atPos.y - sideLen, sideLen * 2, sideLen * 2);
     }
 
-    public void draw(List<MovingTile> mt) {
-        for (MovingTile tile : mt) {
+    public void draw(List<MovingBall> mt) {
+        for (MovingBall tile : mt) {
             draw(tile);
         }
     }
@@ -108,7 +108,7 @@ public class RenderManager {
         }
     }
 
-    public void DBdraw(CollisionManager cm, Tilemap tm) {
+    public void DBdraw(CollisionDetector cm, Tilemap tm) {
         Vector2 pos;
         int tilesPerSide = tm.getTilemapSize();
         int sideLen = tm.getTileSize() / 2;
@@ -165,10 +165,10 @@ public class RenderManager {
         }
     }
 
-    public void drawLauncher(Queue<MovingTile> launcher, Vector2 atPos) {
+    public void drawLauncher(Queue<MovingBall> launcher, Vector2 atPos) {
 //        float scale;
 //        float sideLength;
-        MovingTile mt;
+        MovingBall mt;
 
         for (int i = 0; i < launcher.size; ++i) {
             mt = launcher.get(i);

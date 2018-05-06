@@ -3,7 +3,7 @@ package com.breakthecore.managers;
 import com.badlogic.gdx.math.Vector2;
 import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.tilemap.TilemapManager;
-import com.breakthecore.tiles.MovingTile;
+import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.tiles.TileContainer;
 import com.breakthecore.tilemap.TilemapTile;
 
@@ -12,13 +12,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class CollisionManager {
+public class CollisionDetector {
     private ArrayList<DistanceSideStruct> m_collisionDisSide;
     private TileContainer.Side[] m_closestSidesOutput;
     private Comparator<DistanceSideStruct> m_disSideComp;
     private Vector2 direction;
 
-    public CollisionManager() {
+    public CollisionDetector() {
         direction = new Vector2();
         m_collisionDisSide = new ArrayList<DistanceSideStruct>(6);
         for (int i = 0; i < 6; ++i) {
@@ -35,7 +35,7 @@ public class CollisionManager {
         m_closestSidesOutput = new TileContainer.Side[6];
     }
 
-    public TilemapTile findCollision(Tilemap tm, MovingTile moveTile) {
+    public TilemapTile findCollision(Tilemap tm, MovingBall moveTile) {
         float minDist;
         int sideHalf = tm.getTileSize() / 2;
         int tilesPerSide = tm.getTilemapSize();
@@ -112,22 +112,22 @@ public class CollisionManager {
         return result;
     }
 
-    public void checkForCollision(MovingTileManager movingTileManager, TilemapManager tilemapManager) {
+    public void checkForCollision(MovingBallManager movingBallManager, TilemapManager tilemapManager) {
         TilemapTile solidTile;
         Tilemap tm;
 
         for (int i = 0; i < tilemapManager.getTilemapCount(); ++i) {
             tm = tilemapManager.getTilemap(i);
-            List<MovingTile> list = movingTileManager.getActiveList();
+            List<MovingBall> list = movingBallManager.getActiveList();
 
-            for (MovingTile mt : list) {
+            for (MovingBall mt : list) {
                 solidTile = findCollision(tm, mt);
                 if (solidTile == null) continue;
 
                 mt.getTile().onCollide(mt, solidTile, i, tilemapManager, this);
             }
 
-            movingTileManager.disposeInactive();
+            movingBallManager.disposeInactive();
         }
     }
 

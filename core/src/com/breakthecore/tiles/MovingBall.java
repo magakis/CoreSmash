@@ -6,37 +6,17 @@ import com.badlogic.gdx.math.Vector2;
  * Created by Michail on 19/3/2018.
  */
 
-public class MovingTile extends TileContainer {
+public class MovingBall extends TileContainer {
     private float m_speed;
     private float scale;
     private boolean flag;
 
-    public MovingTile(float x, float y, int speed) {
-        this(new Vector2(x, y), speed);
-    }
+    public MovingBall() {
 
-    public MovingTile(Vector2 pos, int speed) {
-        scale = 1/2f;
-        m_speed = speed * 100;
-        positionInWorld.set(pos);
-    }
-
-    public MovingTile(Vector2 pos, int speed, Tile tile) {
-        this(pos, speed);
-        setTile(tile);
-    }
-
-    public MovingTile(float x, float y, int speed, Tile tile) {
-        this(x, y, speed);
-        setTile(tile);
     }
 
     public void setScale(float scale) {
         this.scale = scale;
-    }
-
-    public float getSpeed() {
-        return m_speed;
     }
 
     public void setSpeed(float speed) {

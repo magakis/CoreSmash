@@ -2,7 +2,7 @@ package com.breakthecore.tiles;
 
 import com.breakthecore.Coords2D;
 import com.breakthecore.tilemap.Tilemap;
-import com.breakthecore.managers.CollisionManager;
+import com.breakthecore.managers.CollisionDetector;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
 
@@ -12,7 +12,7 @@ public class BombTile extends Tile {
     }
 
     @Override
-    public void onCollide(MovingTile mt, TilemapTile tt, int layer, TilemapManager tmm, CollisionManager cm) {
+    public void onCollide(MovingBall mt, TilemapTile tt, int layer, TilemapManager tmm, CollisionDetector cm) {
         Coords2D posT = tt.getRelativePosition();
         Tilemap tm = tmm.getTilemap(layer);
 

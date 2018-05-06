@@ -1,7 +1,8 @@
 package com.breakthecore.levels;
 
-import com.breakthecore.managers.MovingTileManager;
+import com.breakthecore.managers.MovingBallManager;
 import com.breakthecore.managers.StatsManager;
+import com.breakthecore.screens.GameScreen;
 import com.breakthecore.tilemap.TilemapManager;
 
 /**
@@ -10,7 +11,7 @@ import com.breakthecore.tilemap.TilemapManager;
 
 /* If StatManager forces a UserAccount in the future, the Level interface should probably force that too? */
 public interface Level {
-    void initialize(StatsManager statsManager, TilemapManager tilemapManager, MovingTileManager movingTileManager);
+    void initialize(GameScreen.LevelTools levelTools);
 
     void update(float delta, TilemapManager tilemapManager);
 
