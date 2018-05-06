@@ -2,6 +2,7 @@ package com.breakthecore.screens;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -61,18 +62,18 @@ public class ScoresScreen extends ScreenBase {
             return false;
         }
     }
-    private class UIScoreTable extends UIComponent {
+    private class UIScoreTable implements UIComponent {
+        Table root;
         Label lblScore[], lblDfclty[], lblTotalScore;
 
-
          UIScoreTable(){
-             Table main = new Table();
-             main.defaults().padRight(30).padBottom(20);
-             main.pad(50);
+             root = new Table();
+             root.defaults().padRight(30).padBottom(20);
+             root.pad(50);
 
-             main.add(new Label("A/A",skin, "comic_48"));
-             main.add(new Label("Difficulty",skin, "comic_48"));
-             main.add(new Label("Score",skin, "comic_48")).row();
+             root.add(new Label("A/A",skin, "comic_48"));
+             root.add(new Label("Difficulty",skin, "comic_48"));
+             root.add(new Label("Score",skin, "comic_48")).row();
 
              lblScore = new Label[5];
              lblDfclty = new Label[5];
@@ -87,14 +88,12 @@ public class ScoresScreen extends ScreenBase {
                  lblScore[i] = new Label("", skin, style);
                  lblDfclty[i] = new Label("", skin, style);
 
-                 main.add(new Label("#"+(i+1), skin, style));
-                 main.add(lblDfclty[i]);
-                 main.add(lblScore[i]).row();
+                 root.add(new Label("#"+(i+1), skin, style));
+                 root.add(lblDfclty[i]);
+                 root.add(lblScore[i]).row();
              }
 
-             main.add(lblTotalScore).colspan(main.getColumns()).center().padTop(100).row();
-
-             setRoot(main);
+             root.add(lblTotalScore).colspan(root.getColumns()).center().padTop(100).row();
          }
 
          void updateTable() {
@@ -107,5 +106,9 @@ public class ScoresScreen extends ScreenBase {
              }
          }
 
+        @Override
+        public Group getRoot() {
+            return root;
+        }
     }
 }

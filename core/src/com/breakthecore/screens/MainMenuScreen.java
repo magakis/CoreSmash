@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -142,9 +143,11 @@ public class MainMenuScreen extends ScreenBase {
         }
     }
 
-    private class UIMainMenu extends UIComponent {
+    private class UIMainMenu implements UIComponent {
+        Table root;
+
         public UIMainMenu() {
-            Table tblMain = new Table();
+            root = new Table();
 
             Container btnPlay = newMenuButton("Play", "btnPlay", new ChangeListener() {
                 @Override
@@ -160,7 +163,7 @@ public class MainMenuScreen extends ScreenBase {
                 }
             });
 
-            tblMain.defaults()
+            root.defaults()
                     .width(WorldSettings.getWorldWidth() * 3 / 5)
                     .height(WorldSettings.getWorldHeight() * 2 / 16)
                     .fill();
@@ -168,12 +171,10 @@ public class MainMenuScreen extends ScreenBase {
             Label versInfo = new Label("v.1.0.0 - Michail Angelos Gakis", skin, "comic_24b", Color.DARK_GRAY);
             versInfo.setAlignment(Align.bottom);
 
-            tblMain.bottom();
-            tblMain.add(btnPlay).padBottom(Value.percentHeight(1 / 16f, tblMain)).row();
-            tblMain.add(btnAccount).padBottom(Value.percentHeight(3 / 16f, tblMain)).row();
-            tblMain.add(versInfo).align(Align.center).height(versInfo.getPrefHeight());
-
-            setRoot(tblMain);
+            root.bottom();
+            root.add(btnPlay).padBottom(Value.percentHeight(1 / 16f, root)).row();
+            root.add(btnAccount).padBottom(Value.percentHeight(3 / 16f, root)).row();
+            root.add(versInfo).align(Align.center).height(versInfo.getPrefHeight());
         }
 
         private Container newMenuButton(String text, String name, EventListener el) {
@@ -190,16 +191,22 @@ public class MainMenuScreen extends ScreenBase {
             result.addAction(Actions.forever(Actions.sequence(Actions.scaleBy(.02f, .02f, 0.75f), Actions.scaleBy(-.02f, -.02f, 0.75f))));
             return result;
         }
+
+        @Override
+        public Group getRoot() {
+            return root;
+        }
     }
 
-    private class UIOverlay extends UIComponent {
+    private class UIOverlay implements UIComponent {
+        Table root;
         public UIOverlay() {
-            Table tblRoot = new Table();
+            root = new Table();
             Table tblSettings = new Table();
 
             tblSettings.setBackground(skin.getDrawable("box_white_5"));
-            tblRoot.bottom().left();
-            tblRoot.add(tblSettings).padBottom(80).padLeft(-10);
+            root.bottom().left();
+            root.add(tblSettings).padBottom(80).padLeft(-10);
 
             ImageButton.ImageButtonStyle imgbsSound = new ImageButton.ImageButtonStyle();
             imgbsSound.imageUp = skin.getDrawable("map");
@@ -227,12 +234,16 @@ public class MainMenuScreen extends ScreenBase {
                     rootStack.addActor(uiGameSettings.getRoot());
                 }
             });
+        }
 
-            setRoot(tblRoot);
+        @Override
+        public Group getRoot() {
+            return root;
         }
     }
 
-    private class UIGameSettings extends UIComponent {
+    private class UIGameSettings implements UIComponent {
+        Table root;
         Slider radiusSlider, minRotSlider, maxRotSlider, sldrBallSpeed, sldrLauncherCooldown, sldrColorCount;
         Label radiusLbl, minRotLbl, maxRotLbl, lblBallSpeed, lblLauncherCooldown, lblColorount, lblDifficulty;
         CheckBox cbUseMoves, cbUseLives, cbUseTime, cbSpinTheCoreMode, cbUseCustomMap;//, cbDrawCircle, cbDrawDiamond, cbDrawStar;
@@ -245,13 +256,13 @@ public class MainMenuScreen extends ScreenBase {
         // XXX(14/4/2018): *TOO* many magic values
         public UIGameSettings() {
             scoreMultiplier = new StatsManager.ScoreMultiplier();
-            Table mainTable = new Table();
-            mainTable.setFillParent(true);
+            root = new Table();
+            root.setFillParent(true);
 
             Label dummy = new Label
                     ("Game Setup", skin, "comic_96b");
-            mainTable.top().pad(50);
-            mainTable.add(dummy).padBottom(50).colspan(2).row();
+            root.top().pad(50);
+            root.add(dummy).padBottom(50).colspan(2).row();
 
             Table settingsTbl = new Table();
             settingsTbl.defaults().padBottom(settingsPadding);
@@ -260,7 +271,7 @@ public class MainMenuScreen extends ScreenBase {
             scrollPane.setScrollingDisabled(true, false);
             scrollPane.setCancelTouchFocus(false);
             scrollPane.setOverscroll(false, false);
-            mainTable.add(scrollPane).colspan(3).expand().fill().row();
+            root.add(scrollPane).colspan(3).expand().fill().row();
 
             Preferences prefs = Gdx.app.getPreferences("game_settings");
             InputListener stopTouchDown = new InputListener() {
@@ -456,12 +467,12 @@ public class MainMenuScreen extends ScreenBase {
                     rootStack.addActor(uiMenuOverlay.getRoot());
                 }
             });
-            mainTable.add(tbtn).width(250).height(200).padTop(50).align(Align.left);
+            root.add(tbtn).width(250).height(200).padTop(50).align(Align.left);
 
             lblDifficulty = new Label("null", skin, "comic_48b");
             lblDifficulty.setAlignment(Align.center);
             updateDifficulty();
-            mainTable.add(lblDifficulty).expandX();
+            root.add(lblDifficulty).expandX();
 
             tbtn = new TextButton("Play", skin);
             tbtn.addListener(new ChangeListener() {
@@ -550,8 +561,8 @@ public class MainMenuScreen extends ScreenBase {
                         }
 
                         @Override
-                        public void end(boolean roundWon, StatsManager statsManager) {
-                            if (roundWon) {
+                        public void end(StatsManager statsManager) {
+                            if (statsManager.getRoundOutcome()) {
                                 statsManager.getUser().saveScore(statsManager.getScore(), statsManager.getDifficultyMultiplier());
                             }
                         }
@@ -561,7 +572,7 @@ public class MainMenuScreen extends ScreenBase {
                     gameScreen.deployLevel(dbLevel);
                 }
             });
-            mainTable.add(tbtn).
+            root.add(tbtn).
 
                     width(250).
 
@@ -571,7 +582,6 @@ public class MainMenuScreen extends ScreenBase {
 
                     align(Align.right);
 
-            setRoot(mainTable);
         }
 
         private void updateDifficulty() {
@@ -611,6 +621,11 @@ public class MainMenuScreen extends ScreenBase {
             tbl.add(dummy).padRight(30).align(Align.right).padBottom(5);
             tbl.add(amountLbl).align(Align.left).padBottom(5).expandX().row();
             tbl.add(slider).colspan(tbl.getColumns()).fill().expandX().row();
+        }
+
+        @Override
+        public Group getRoot() {
+            return root;
         }
     }
 

@@ -14,6 +14,9 @@ public class StatsManager extends Observable implements Observer {
     private Random rand = new Random();
     private UserAccount user;
 
+    private boolean isGameActive;
+    private boolean isRoundWon;
+
     private int score;
 
     private int lives;
@@ -30,6 +33,10 @@ public class StatsManager extends Observable implements Observer {
 
 
     public void update(float delta) {
+        if (isTimeEnabled) {
+            time -= delta;
+        }
+
         if (ballsDestroyedThisFrame != 0) {
             int scoreGained;
             int multiplier = 5;
@@ -52,10 +59,6 @@ public class StatsManager extends Observable implements Observer {
             score += scoreGained;
             notifyObservers(NotificationType.NOTIFICATION_TYPE_SCORE_INCREMENTED, scoreGained);
 
-            if (isTimeEnabled) {
-                time -= delta;
-            }
-
             if (isLivesEnabled) {
                 float chanceToGainLife = ((ballsDestroyedThisFrame * ballsDestroyedThisFrame) / 9.f) / 100.f; // random algorithm I came up with
                 if (rand.nextFloat() < chanceToGainLife) {
@@ -77,6 +80,9 @@ public class StatsManager extends Observable implements Observer {
         // make sure I remove the current user from the StatManager observer list.
         user = null;
 
+        isGameActive = true;
+        isRoundWon = false;
+
         ballsDestroyedThisFrame = 0;
         specialBallCount = 0;
         isMovesEnabled = false;
@@ -97,6 +103,19 @@ public class StatsManager extends Observable implements Observer {
 
     public ScoreMultiplier getScoreMultiplier() {
         return scoreMultiplier;
+    }
+
+    public boolean getRoundOutcome() {
+        if (isGameActive) throw new IllegalStateException("The game is still running?!");
+        return isRoundWon;
+    }
+
+    public boolean isGameActive() {
+        return isGameActive;
+    }
+
+    public void stopGame() {
+        isGameActive = false;
     }
 
     public float getDifficultyMultiplier() {
@@ -176,6 +195,11 @@ public class StatsManager extends Observable implements Observer {
     @Override
     public void onNotify(NotificationType type, Object ob) {
         switch (type) {
+            case NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED:
+                isRoundWon = true;
+                isGameActive = false;
+                break;
+
             case NOTIFICATION_TYPE_TILE_DESTROYED:
                 ++ballsDestroyedThisFrame;
                 break;
@@ -190,6 +214,7 @@ public class StatsManager extends Observable implements Observer {
             case BALL_LAUNCHED:
                 if (isMovesEnabled) {
                     --moves;
+                    notifyObservers(NotificationType.MOVES_AMOUNT_CHANGED, null);
                 }
                 break;
         }

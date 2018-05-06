@@ -15,7 +15,7 @@ public interface Level {
 
     void update(float delta, TilemapManager tilemapManager);
 
-    void end(boolean roundWon, StatsManager statsManager);
+    void end(StatsManager statsManager);
 
     int getLevelNumber();
 }

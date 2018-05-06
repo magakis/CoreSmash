@@ -32,7 +32,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.breakthecore.CoreSmash;
@@ -42,8 +41,6 @@ import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.tilemap.TilemapBuilder;
 import com.breakthecore.tilemap.TilemapManager;
-import com.breakthecore.tiles.RandomTile;
-import com.breakthecore.tiles.RegularTile;
 import com.breakthecore.tilemap.TilemapTile;
 import com.breakthecore.tiles.TileDictionary;
 import com.breakthecore.tiles.TileFactory;
@@ -159,7 +156,8 @@ public class LevelBuilderScreen extends ScreenBase {
         renderManager.renderCenterDot(tilemapManager.getTilemapPosition(), camera.combined);
     }
 
-    private class UIToolbarTop extends UIComponent {
+    private class UIToolbarTop implements UIComponent {
+        private Container<Table> root;
         private final TextButton tbSave, tbLoad;
         private final Dialog dlgToast;
 
@@ -226,10 +224,10 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
             });
 
-            Container<Table> container = new Container<>();
+            root = new Container<>();
 
             Table main = new Table(skin);
-            container.top().right().setActor(main);
+            root.top().right().setActor(main);
             main.setBackground("box_white_5");
             main.defaults().pad(20);
             main.setTouchable(Touchable.enabled);
@@ -244,7 +242,6 @@ public class LevelBuilderScreen extends ScreenBase {
             main.add(tbSave).width(80).height(80);
             main.add(tbLoad).width(80).height(80);
 
-            setRoot(container);
         }
 
         private void showToast(String text) {
@@ -266,14 +263,20 @@ public class LevelBuilderScreen extends ScreenBase {
             dlgToast.setPosition(camera.viewportWidth / 2 - dlgToast.getWidth() / 2, camera.viewportHeight * .90f);
 
         }
+
+        @Override
+        public Group getRoot() {
+            return root;
+        }
     }
 
 
-    private class UITools extends UIComponent {
+    private class UITools implements UIComponent {
         private TextButton tbDraw, tbErase, tbRotate;
+        private Container<Table> root;
 
         UITools() {
-            Container<Table> container = new Container<>();
+            root = new Container<>();
 
             TextButton.TextButtonStyle tbs = new TextButton.TextButtonStyle();
             tbs.checked = skin.newDrawable("box_white_5", Color.GREEN);
@@ -281,7 +284,7 @@ public class LevelBuilderScreen extends ScreenBase {
             tbs.font = skin.getFont("comic_24b");
 
             Table main = new Table(skin);
-            container.center().right().setActor(main);
+            root.center().right().setActor(main);
 
             main.setBackground("box_white_5");
             main.defaults().pad(20);
@@ -337,25 +340,33 @@ public class LevelBuilderScreen extends ScreenBase {
             main.add(tbErase).width(80).height(80).row();
             main.add(tbRotate).width(80).height(80).row();
 
-            setRoot(container);
         }
 
+        @Override
+        public Group getRoot() {
+            return root;
+        }
     }
 
 
-    private class UIDebug extends UIComponent {
+    private class UIDebug implements UIComponent {
         Label lblDebug[];
+        Table root;
 
         UIDebug() {
-            Table main = new Table();
+            root = new Table();
             lblDebug = new Label[4];
 
             for (int i = 0; i < lblDebug.length; ++i) {
                 lblDebug[i] = new Label("", skin, "comic_24b");
-                main.left().top().add(lblDebug[i]).left().row();
+                root.left().top().add(lblDebug[i]).left().row();
             }
 
-            setRoot(main);
+        }
+
+        @Override
+        public Group getRoot() {
+            return root;
         }
     }
 

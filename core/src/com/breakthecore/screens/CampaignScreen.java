@@ -102,9 +102,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     }
 
     @Override
-    public void onRoundEnded(boolean result, StatsManager statsManager) {
+    public void onRoundEnded(StatsManager statsManager) {
         // Round WON
-        if (result) {
+        if (statsManager.getRoundOutcome()) {
             Preferences prefs = Gdx.app.getPreferences("account");
             if (currentLevel == activeLevel) {
                 if (prefs.getInteger("level"+activeLevel,0) < statsManager.getScore()) {

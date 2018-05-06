@@ -24,8 +24,8 @@ public abstract class CampaignLevel implements Level {
     }
 
     @Override
-    public void end(boolean roundWon, StatsManager statsManager) {
-        roundEndListener.onRoundEnded(roundWon, statsManager);
+    public void end(StatsManager statsManager) {
+        roundEndListener.onRoundEnded(statsManager);
     }
 
     @Override
