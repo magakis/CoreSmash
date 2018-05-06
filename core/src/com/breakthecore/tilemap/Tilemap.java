@@ -27,8 +27,9 @@ public class Tilemap extends Observable {
     private boolean hadTilesDestroyed;
     private boolean isTilemapInitilized;
 
-    private float rotation;
+    private boolean rotateCounterClockwise;
     private boolean autoRotationEnabled;
+    private float rotation;
     private float minRotationSpeed;
     private float maxRotationSpeed;
     private float speedDiff;
@@ -117,6 +118,10 @@ public class Tilemap extends Observable {
 
     public TilemapTile getRelativeTile(int x, int y) {
         return listTilemapTiles[centerTile + y][centerTile + x];
+    }
+
+    public void setCounterClockwiseRotation(boolean counterClockwise) {
+        rotateCounterClockwise = counterClockwise;
     }
 
     public void setAutoRotation(boolean autoRotate) {
@@ -210,7 +215,10 @@ public class Tilemap extends Observable {
     }
 
     public void rotate(float deg) {
-        rotation += deg;
+        if (rotateCounterClockwise)
+            rotation -= deg;
+        else
+            rotation += deg;
         setRotation(rotation);
     }
 

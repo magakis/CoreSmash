@@ -7,6 +7,7 @@ import com.breakthecore.Observable;
 import com.breakthecore.Observer;
 import com.breakthecore.Pathfinder;
 import com.breakthecore.WorldSettings;
+import com.breakthecore.managers.RenderManager;
 import com.breakthecore.tiles.RegularTile;
 import com.breakthecore.tiles.Tile;
 import com.breakthecore.tiles.TileContainer;
@@ -43,7 +44,6 @@ public class TilemapManager extends Observable implements Observer {
     private int tilemapCount;
 
     private Pathfinder pathfinder = new Pathfinder(30);
-    private TilemapGenerator tilemapGenerator = new TilemapGenerator();
     private TilemapBuilder tilemapBuilder = new TilemapBuilder();
     private Match3 match3 = new Match3();
     private Random rand = new Random();
@@ -58,25 +58,21 @@ public class TilemapManager extends Observable implements Observer {
         }
     }
 
-    public void setColorCount(int amount) {
-        colorCount = amount;
-    }
-
-    public int getRandomColor() {
-        if (colorCount == 0) throw new RuntimeException();
-        return rand.nextInt(colorCount);
-    }
-
     public int getTilemapCount() {
         return tilemapCount;
     }
 
-    public int getTotalAmountOfTiles() {
+    public int getTotalTileCount() {
         int res = 0;
         for (int i = 0; i < tilemapCount; ++i) {
             res += listTilemaps[i].getTileCount();
         }
         return res;
+    }
+
+    public int getTileCountFrom(int layer) {
+        if (layer < 0 || layer >= maxTilemapCount) throw new IndexOutOfBoundsException("Layer '"+layer+"' doesn't exist");
+        return listTilemaps[layer].getTileCount();
     }
 
     public Coords2D getTilemapPosition() {
@@ -105,13 +101,7 @@ public class TilemapManager extends Observable implements Observer {
         return colorsAvailable;
     }
 
-    public int getColorCount() {
-        return colorCount;
-    }
-
-    public TilemapGenerator getTilemapGenerator() {
-        return tilemapGenerator;
-    }
+    //////////////////| GET RID OF |//////////////////
 
     /**
      * Finds an empty side from the coordinates specified and attach the tile provided.
@@ -203,27 +193,7 @@ public class TilemapManager extends Observable implements Observer {
         notifyObservers(NotificationType.SAME_COLOR_MATCH, match.size());
     }
 
-    /**
-     * Sets the number of Tilemaps that will be used for this game and resets them.
-     */
-    public void init(int tilemapCount) {
-        if (tilemapCount > maxTilemapCount && tilemapCount < 1)
-            throw new RuntimeException("tilemapCount out of bounds: " + tilemapCount);
-        this.tilemapCount = tilemapCount;
-
-        for (int i = 0; i < maxTilemapCount; ++i) {
-            listTilemaps[i].reset();
-        }
-    }
-
-    public Tilemap newTilemap() {
-        if (tilemapCount + 1 < maxTilemapCount) {
-            ++tilemapCount;
-            return listTilemaps[tilemapCount - 1];
-        } else {
-            throw new RuntimeException("Cannot initialize more tilemaps");
-        }
-    }
+    //////////////////|            |//////////////////
 
     public TilemapBuilder newMap() {
         if (tilemapCount + 1 < maxTilemapCount) {
@@ -248,6 +218,12 @@ public class TilemapManager extends Observable implements Observer {
         }
     }
 
+    public void draw(RenderManager renderManager) {
+        for (int i = 0; i < tilemapCount; ++i) {
+            renderManager.draw(listTilemaps[i]);
+        }
+    }
+
     @Override
     public void onNotify(NotificationType type, Object ob) {
         notifyObservers(type, ob);
@@ -269,348 +245,6 @@ public class TilemapManager extends Observable implements Observer {
                         tm.destroyAbsoluteTile(x, y);
                     }
                 }
-            }
-        }
-    }
-
-    public class TilemapGenerator {
-        /* NOTE: All the shapes should use a relative coordinate system so that in the future they
-         * can be used in arbitrary coordinates */
-        private ColorGroupContainer[] colors;
-        private Comparator<ColorGroupContainer> compSizes;
-        private Comparator<ColorGroupContainer> compColors;
-        private Comparator<TilemapTile> compDistance;
-
-        private TilemapGenerator() {
-            colors = new ColorGroupContainer[maxColorCount];
-            for (int i = 0; i < maxColorCount; ++i) {
-                colors[i] = new ColorGroupContainer(i);
-            }
-
-            compColors = new Comparator<ColorGroupContainer>() {
-                @Override
-                public int compare(ColorGroupContainer o1, ColorGroupContainer o2) {
-                    // Doesn't account equality cause it should never happen in the first place!
-                    return o1.groupColor < o2.groupColor ? -1 : 1;
-                }
-            };
-
-            compSizes = new Comparator<ColorGroupContainer>() {
-                @Override
-                public int compare(ColorGroupContainer o1, ColorGroupContainer o2) {
-                    if (o1.groupColor < colorCount) {
-                        if (o2.groupColor < colorCount) {
-                            return o1.list.size() < o2.list.size() ? -1 :
-                                    o1.list.size() > o2.list.size() ? 1 : 0;
-                        } else {
-                            return -1;
-                        }
-                    } else if (o2.groupColor < colorCount) {
-                        return 1;
-                    } else {
-                        return 0;
-                    }
-                }
-            };
-
-            compDistance = new Comparator<TilemapTile>() {
-                @Override
-                public int compare(TilemapTile o1, TilemapTile o2) {
-                    return o1.getDistanceFromCenter() < o2.getDistanceFromCenter() ? -1 :
-                            o1.getDistanceFromCenter() > o2.getDistanceFromCenter() ? 1 : 0;
-                }
-            };
-        }
-
-        public void setRandomSeed(long seed) {
-            rand.setSeed(seed);
-        }
-
-        public void generateRadius(Tilemap tm, int radius) {
-            for (int y = -radius - 1; y < radius + 1; ++y) {
-                for (int x = -radius - 1; x < radius + 1; ++x) {
-                    if (tm.getTileDistance(x, y, 0, 0) <= radius) {
-                        tm.setRelativeTile(x, y, new RegularTile(rand.nextInt(colorCount)));
-                    }
-                }
-            }
-        }
-
-        public void generateSquare(Tilemap tm, int size) {
-            int signFix;
-            for (int y = -size; y <= size; ++y) {
-                signFix = y > 0 ? 1 : 0;
-                for (int x = -size; x <= size; ++x) {
-                    tm.setRelativeTile(x - (y + signFix) / 2, y, new RegularTile(rand.nextInt(colorCount)));
-                }
-            }
-        }
-
-        public void generateDiamond(Tilemap tm, int size) {
-            int fixSign;
-            int absY;
-            int sizeY = size * 2;
-            for (int y = -sizeY; y <= sizeY; ++y) {
-                absY = Math.abs(y);
-                fixSign = y < 0 ? absY : 0;
-                for (int x = -size; x <= size - absY; ++x) {
-                    tm.setRelativeTile(x + fixSign, y, new RegularTile(rand.nextInt(colorCount)));
-                }
-            }
-        }
-
-        public void generateSquareSkewed(Tilemap tm, int size, boolean flipX) {
-            if (flipX) {
-                for (int y = -size; y <= size; ++y) {
-                    for (int x = -size; x <= size; ++x) {
-                        tm.setRelativeTile(x - y, y, new RegularTile(rand.nextInt(colorCount)));
-                    }
-                }
-            } else {
-                for (int y = -size; y <= size; ++y) {
-                    for (int x = -size; x <= size; ++x) {
-                        tm.setRelativeTile(x, y, new RegularTile(rand.nextInt(colorCount)));
-                    }
-                }
-            }
-        }
-
-        public void generateTriangle(Tilemap tm, int size, boolean flipY) {
-            int sizeY = size * 2;
-            if (flipY) {
-                for (int y = -sizeY; y <= size; ++y) {
-                    for (int x = -size - y; x <= size; ++x) {
-                        tm.setRelativeTile(x, y, new RegularTile(rand.nextInt(colorCount)));
-                    }
-                }
-            } else {
-                for (int y = -size; y <= sizeY; ++y) {
-                    for (int x = -size; x <= size - y; ++x) {
-                        tm.setRelativeTile(x, y, new RegularTile(rand.nextInt(colorCount)));
-                    }
-                }
-            }
-        }
-
-        public void generateStar(Tilemap tm, int size) {
-            tilemapGenerator.generateTriangle(tm, size, false);
-            tilemapGenerator.generateTriangle(tm, size, true);
-        }
-
-        public void reduceColorMatches(Tilemap tm, int max, boolean strict) {
-            int tilemapSize = tm.getTilemapSize();
-            TilemapTile tmTile;
-            ArrayList<TilemapTile> matches;
-            for (int y = 0; y < tilemapSize; ++y) {
-                for (int x = 0; x < tilemapSize; ++x) {
-                    tmTile = tm.getAbsoluteTile(x, y);
-                    if (tmTile == null) continue;
-
-                    matches = match3.getColorMatchesFromTile(tmTile, tm);
-                    if (strict) {
-                        while (matches.size() > max) {
-                            tmTile.setTile(new RegularTile(rand.nextInt(colorCount)));
-                            matches = match3.getColorMatchesFromTile(tmTile, tm);
-                        }
-                    } else {
-                        if (matches.size() > max) {
-                            int color = tmTile.getTileID();
-                            int newColor = rand.nextInt(colorCount);
-                            while (newColor == color && colorCount != 1) {
-                                newColor = rand.nextInt(colorCount);
-                            }
-                            tmTile.setTile(new RegularTile(rand.nextInt(colorCount)));
-                        }
-                    }
-                }
-            }
-        }
-
-        public void reduceColorMatches(Tilemap tm, int max, int numOfPasses) {
-            int tilemapSize = tm.getTilemapSize();
-            TilemapTile tmTile;
-            ArrayList<TilemapTile> matches;
-            int passesLeft;
-
-            for (int y = 0; y < tilemapSize; ++y) {
-                for (int x = 0; x < tilemapSize; ++x) {
-                    tmTile = tm.getAbsoluteTile(x, y);
-                    if (tmTile == null) continue;
-
-                    passesLeft = numOfPasses;
-                    matches = match3.getColorMatchesFromTile(tmTile, tm);
-                    while (matches.size() > max && passesLeft > 0) {
-                        tmTile.setTile(new RegularTile(rand.nextInt(colorCount)));
-                        matches = match3.getColorMatchesFromTile(tmTile, tm);
-                        --passesLeft;
-                    }
-                }
-            }
-        }
-
-        public void balanceColorAmounts(Tilemap tm) {
-            resetColorGroupContainers();
-            fillColorGroupContainers(tm);
-            int aver = tm.getTileCount() / colorCount;
-            int maxIndex = colorCount - 1;
-
-            Arrays.sort(colors, compSizes);
-
-            while (colors[0].list.size() < aver) {
-                ColorGroupContainer cgcLeastFilled = colors[0];
-                ColorGroupContainer cgcMostFilled = colors[maxIndex];
-
-                TilemapTile tmTile = cgcMostFilled.list.get(rand.nextInt(cgcMostFilled.list.size()));
-                cgcMostFilled.list.remove(tmTile);
-
-                tmTile.setTile(new RegularTile(cgcLeastFilled.groupColor));
-                cgcLeastFilled.list.add(tmTile);
-
-                Arrays.sort(colors, compSizes);
-            }
-        }
-
-        public void forceEachColorOnEveryRadius(Tilemap tm) {
-            fillColorGroupContainers(tm);
-
-            for (ColorGroupContainer cgc : colors) {
-                Collections.sort(cgc.list, compDistance);
-            }
-
-            int maxTileDistanceFromCenter = tm.getMaxTileDistanceFromCenter() + 1;
-            int distanceToSearchFor;
-
-            startLoop:
-            for (ColorGroupContainer cgc : colors) {
-                distanceToSearchFor = 1;
-                while (distanceToSearchFor < maxTileDistanceFromCenter) {
-                    if (cgc.list.size() == 0) break;
-                    for (int listIndex = 0; listIndex < cgc.list.size(); ++listIndex) {
-                        TilemapTile tmTile = cgc.list.get(listIndex);
-                        int distance = tmTile.getDistanceFromCenter();
-
-                        if (distance > distanceToSearchFor || listIndex == cgc.list.size() - 1 && distance < distanceToSearchFor) {
-                            TilemapTile tileToSwapA = null;
-                            int prevDistance = -1;
-
-                            for (int i = 0; i < cgc.list.size(); ++i) {
-                                int curDistance = cgc.list.get(i).getDistanceFromCenter();
-                                if (prevDistance == curDistance) {
-                                    tileToSwapA = cgc.list.get(i);
-                                    break;
-                                } else {
-                                    prevDistance = curDistance;
-                                }
-                            }
-
-                            if (tileToSwapA == null) break startLoop;
-
-                            ColorGroupContainer innerCgc = null;
-                            TilemapTile tileToSwapB = null;
-
-                            loopB:
-                            for (ColorGroupContainer color : colors) {
-                                innerCgc = color;
-                                if (cgc == innerCgc) continue;
-
-                                prevDistance = -1;
-                                for (int i = 0; i < innerCgc.list.size(); ++i) {
-                                    int curDistance = innerCgc.list.get(i).getDistanceFromCenter();
-                                    if (prevDistance == curDistance && curDistance == distanceToSearchFor) {
-                                        tileToSwapB = innerCgc.list.get(i);
-                                        break loopB;
-                                    } else {
-                                        prevDistance = curDistance;
-                                    }
-                                }
-                            }
-
-                            if (tileToSwapB == null) break startLoop;
-
-                            Tile tmpTile = tileToSwapB.getTile();
-                            tileToSwapB.setTile(tileToSwapA.getTile());
-                            tileToSwapA.setTile(tmpTile);
-
-                            cgc.list.remove(tileToSwapA);
-                            cgc.list.add(tileToSwapB);
-
-                            innerCgc.list.remove(tileToSwapB);
-                            innerCgc.list.add(tileToSwapA);
-
-                            Collections.sort(cgc.list, compDistance);
-                            Collections.sort(innerCgc.list, compDistance);
-
-                            ++distanceToSearchFor;
-                        } else if (distance == distanceToSearchFor) {
-                            ++distanceToSearchFor;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        public void reduceCenterTileColorMatch(Tilemap tm, int max) {
-            reduceColorMatches(tm, max, false);
-        }
-
-        public void reduceCenterTileColorMatch(Tilemap tm, int max, boolean strict) {
-            TilemapTile centerTile = tm.getRelativeTile(0, 0);
-            if (centerTile == null) return;
-
-            ArrayList<TilemapTile> matches = match3.getColorMatchesFromTile(centerTile, tm);
-            int tries = 0;
-            while (matches.size() > max) {
-                if (tries == colorCount) {
-                    if (strict) {
-                        TilemapTile rngTile = matches.get(rand.nextInt(matches.size()));
-                        rngTile.setTile(new RegularTile(getNextColor(rngTile.getTileID())));
-                        tries = 0;
-                    } else {
-                        return;
-                    }
-                }
-                centerTile.setTile(new RegularTile(getNextColor(centerTile.getTileID())));
-                matches = match3.getColorMatchesFromTile(centerTile, tm);
-                ++tries;
-            }
-        }
-
-        private int getNextColor(int currentColor) {
-            return currentColor + 1 == colorCount ? 0 : currentColor + 1;
-        }
-
-        private void fillColorGroupContainers(Tilemap tm) {
-            resetColorGroupContainers();
-            TilemapTile tmTile;
-            for (int y = 0; y < tm.getTilemapSize(); ++y) {
-                for (int x = 0; x < tm.getTilemapSize(); ++x) {
-                    tmTile = tm.getAbsoluteTile(x, y);
-                    if (tmTile == null) continue;
-
-                    colors[tmTile.getTileID()].list.add(tmTile);
-                }
-            }
-        }
-
-        private void resetColorGroupContainers() {
-            for (ColorGroupContainer cgc : colors) {
-                cgc.reset();
-            }
-            Arrays.sort(colors, compColors);
-        }
-
-        private class ColorGroupContainer {
-            int groupColor;
-            ArrayList<TilemapTile> list;
-
-            public ColorGroupContainer(int colorId) {
-                groupColor = colorId;
-                list = new ArrayList<TilemapTile>();
-            }
-
-            public void reset() {
-                list.clear();
             }
         }
     }

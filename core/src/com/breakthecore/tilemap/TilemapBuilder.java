@@ -39,7 +39,8 @@ public class TilemapBuilder {
 
     private int minRotSpeed;
     private int maxRotSpeed;
-    private Boolean isRotating;
+    private boolean isRotating;
+    private boolean rotateCounterClockwise;
 
     public TilemapBuilder() {
         rand = new Random();
@@ -100,6 +101,11 @@ public class TilemapBuilder {
         return this;
     }
 
+    public TilemapBuilder placeMiddleTile() {
+        setTile(0,0, 17);
+        return this;
+    }
+
     public TilemapBuilder setColorCount(int colorCount) {
         this.colorCount = colorCount;
         checkIfCanBuild();
@@ -120,6 +126,30 @@ public class TilemapBuilder {
                 }
             }
         }
+        return this;
+    }
+
+    public TilemapBuilder generateTriangle(int size, boolean flipY) {
+        int sizeY = size * 2;
+        if (flipY) {
+            for (int y = -sizeY; y <= size; ++y) {
+                for (int x = -size - y; x <= size; ++x) {
+                    setTile(x, y, getRandomColorID());
+                }
+            }
+        } else {
+            for (int y = -size; y <= sizeY; ++y) {
+                for (int x = -size; x <= size - y; ++x) {
+                    setTile(x, y, getRandomColorID());
+                }
+            }
+        }
+        return this;
+    }
+
+    public TilemapBuilder generateStar(int size) {
+        generateTriangle(size, false);
+        generateTriangle(size, true);
         return this;
     }
 
@@ -229,10 +259,81 @@ public class TilemapBuilder {
         return this;
     }
 
-    public TilemapBuilder setMinMaxRotationSpeed(int min, int max) {
+    public TilemapBuilder setMinMaxRotationSpeed(int min, int max, boolean counterClockwise) {
         maxRotSpeed = max;
         minRotSpeed = min;
         isRotating = true;
+        rotateCounterClockwise = counterClockwise;
+        return this;
+    }
+
+    public TilemapBuilder setMinMaxRotationSpeed(int min, int max) {
+        return setMinMaxRotationSpeed(min, max, false);
+    }
+
+    public TilemapBuilder reduceCenterTileColorMatch(int max, boolean strict) {
+        BlueprintTile centerTile = getTile(0, 0);
+        if (centerTile == null) return this;
+
+        ArrayList<BlueprintTile> matches = matcher.getColorMatchesFromTile(centerTile);
+        int tries = 0;
+        while (matches.size() > max) {
+            if (tries == colorCount) {
+                if (strict) {
+                    BlueprintTile rngTile = matches.get(rand.nextInt(matches.size() - 1) + 1);
+                    rngTile.ID = getNextColor(rngTile.ID);
+                    tries = 0;
+                } else {
+                    return this;
+                }
+            }
+            centerTile.ID = getNextColor(centerTile.ID);
+            matches = matcher.getColorMatchesFromTile(centerTile);
+            ++tries;
+        }
+        return this;
+    }
+
+    public TilemapBuilder reduceColorMatches(int maxAllowed) {
+        int max = maxAllowed;
+
+        for (int y = 0; y < blueprintSize; ++y) {
+            for (int x = 0; x < blueprintSize; ++x) {
+                BlueprintTile tile = blueprintMap[y][x];
+                if (tile == null) continue;
+
+                ArrayList<BlueprintTile> matches = matcher.getColorMatchesFromTile(tile);
+                int tries = 0;
+                while (matches.size() > max) {
+                    tile.ID = getNextColor(tile.ID);
+                    matches = matcher.getColorMatchesFromTile(tile);
+                    ++tries;
+                    if (tries == colorCount) {
+                        ++max;
+                        tries = 0;
+                    }
+                }
+            }
+        }
+        return this;
+    }
+
+    public TilemapBuilder reduceColorMatches(int maxAllowed, int numOfPasses) {
+        int passesLeft = numOfPasses;
+        while (passesLeft > 0) {
+            for (int y = 0; y < blueprintSize; ++y) {
+                for (int x = 0; x < blueprintSize; ++x) {
+                    BlueprintTile tile = blueprintMap[y][x];
+                    if (tile == null) continue;
+
+                    ArrayList<BlueprintTile> matches = matcher.getColorMatchesFromTile(tile);
+                    if (matches.size() > maxAllowed) {
+                        tile.ID = getNextColor(tile.ID);
+                    }
+                }
+            }
+            --passesLeft;
+        }
         return this;
     }
 
@@ -295,6 +396,7 @@ public class TilemapBuilder {
 
         tilemap.setMinMaxSpeed(minRotSpeed, maxRotSpeed);
         tilemap.setAutoRotation(isRotating);
+        tilemap.setCounterClockwiseRotation(rotateCounterClockwise);
 
         tilemap.initialized();
         isBuilt = true;
@@ -369,46 +471,6 @@ public class TilemapBuilder {
         if (colorCount == 0) throw new RuntimeException("ColorCount must be set first");
     }
 
-    public TilemapBuilder reduceColorMatches(int max, int numOfPasses) {
-        for (int y = 0; y < blueprintSize; ++y) {
-            for (int x = 0; x < blueprintSize; ++x) {
-                BlueprintTile tile = blueprintMap[y][x];
-                if (tile == null) continue;
-
-                int passesLeft = numOfPasses;
-                ArrayList<BlueprintTile> matches = matcher.getColorMatchesFromTile(tile);
-                while (matches.size() > max && passesLeft > 0) {
-                    tile.ID = getNextColor(tile.ID);
-                    matches = matcher.getColorMatchesFromTile(tile);
-                    --passesLeft;
-                }
-            }
-        }
-        return this;
-    }
-
-    public void reduceCenterTileColorMatch(int max, boolean strict) {
-        BlueprintTile centerTile = getTile(0, 0);
-        if (centerTile == null) return;
-
-        ArrayList<BlueprintTile> matches = matcher.getColorMatchesFromTile(centerTile);
-        int tries = 0;
-        while (matches.size() > max) {
-            if (tries == colorCount) {
-                if (strict) {
-                    BlueprintTile rngTile = matches.get(rand.nextInt(matches.size()-1)+1);
-                    rngTile.ID = getNextColor(rngTile.ID);
-                    tries = 0;
-                } else {
-                    return;
-                }
-            }
-            centerTile.ID = getNextColor(centerTile.ID);
-            matches = matcher.getColorMatchesFromTile(centerTile);
-            ++tries;
-        }
-    }
-
     private int getNextColor(int currentColor) {
         return currentColor + 1 == colorCount ? 0 : currentColor + 1;
     }
@@ -434,6 +496,7 @@ public class TilemapBuilder {
         minRotSpeed = 0;
         maxRotSpeed = 0;
         isRotating = false;
+        rotateCounterClockwise = false;
     }
 
     private class ColorGroupContainer {
@@ -578,26 +641,7 @@ public class TilemapBuilder {
 //            }
 //        }
 //    }
-//    public void generateTriangle(Tilemap tm, int size, boolean flipY) {
-//        int sizeY = size * 2;
-//        if (flipY) {
-//            for (int y = -sizeY; y <= size; ++y) {
-//                for (int x = -size - y; x <= size; ++x) {
-//                    tm.setRelativeTile(x, y, new RegularTile(rand.nextInt(colorCount)));
-//                }
-//            }
-//        } else {
-//            for (int y = -size; y <= sizeY; ++y) {
-//                for (int x = -size; x <= size - y; ++x) {
-//                    tm.setRelativeTile(x, y, new RegularTile(rand.nextInt(colorCount)));
-//                }
-//            }
-//        }
-//    }
-//    public void generateStar(Tilemap tm, int size) {
-//        generateTriangle(tm, size, false);
-//        generateTriangle(tm, size, true);
-//    }
+//
 //    public void reduceColorMatches(Tilemap tm, int max, boolean strict) {
 //        int tilemapSize = tm.getTilemapSize();
 //        BlueprintTile tmTile;

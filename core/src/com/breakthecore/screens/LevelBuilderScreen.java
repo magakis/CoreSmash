@@ -81,8 +81,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
         tilemapManager = new TilemapManager();
 
-        Tilemap tm = tilemapManager.newTilemap();
-        tm.setRelativeTile(0, 0, new RandomTile());
+        tilemapManager.newMap().debug().placeMiddleTile().build();
 
         stage = setupStage();
 

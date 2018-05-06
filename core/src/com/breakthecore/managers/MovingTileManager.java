@@ -49,7 +49,6 @@ public class MovingTileManager extends Observable {
     private boolean isLoadedWithSpecial;
     private boolean isAutoEjectEnabled;
     private boolean isControlledBallGenerationEnabled;
-    private boolean isAutoReloadEnabled;
     private boolean isActive;
 
     public MovingTileManager(int tileSize) {
@@ -82,10 +81,6 @@ public class MovingTileManager extends Observable {
         return launcherSize;
     }
 
-    public Vector2 getLauncherPos() {
-        return launcherPos;
-    }
-
     public MovingTile getFirstActiveTile() {
         if (activeList.size() > 0) {
             return activeList.getFirst();
@@ -93,27 +88,8 @@ public class MovingTileManager extends Observable {
         return null;
     }
 
-    /**
-     * A list of predefined colors that will be used to load the Launcher insead of random ones.
-     */
-    public ColorSequenceList getColorSequenceList() {
-        return colorSequenceList;
-    }
-
     public LinkedList<MovingTile> getActiveList() {
         return activeList;
-    }
-
-    public Queue<MovingTile> getLauncherQueue() {
-        return launcher;
-    }
-
-    public void setActiveState(boolean active) {
-        isActive = active;
-    }
-
-    public void setRandomSeed(long seed) {
-        rand.setSeed(seed);
     }
 
     public void setColorCount(int colorCount) {
@@ -131,10 +107,6 @@ public class MovingTileManager extends Observable {
         isAutoEjectEnabled = autoEject;
     }
 
-    public void setAutoReloadEnabled(boolean autoReload) {
-        isAutoReloadEnabled = autoReload;
-    }
-
     public void setLauncherCooldown(float delay) {
         launcherCooldown = delay;
         launcherCooldownTimer = delay;
@@ -144,6 +116,9 @@ public class MovingTileManager extends Observable {
         return isLoadedWithSpecial;
     }
 
+    /* Function insertSpecialTile should be removed and a better way of handling special tiles
+     * should be implemented
+     */
     public void insertSpecialTile(int id) {
         // TODO(21/4/2018): This function should know anything about the specialTile...
         if (!isLoadedWithSpecial) {
@@ -154,25 +129,6 @@ public class MovingTileManager extends Observable {
                     launcher.first().setScale(1);
                     isLoadedWithSpecial = true;
                     break;
-            }
-        }
-    }
-
-    public void update(float delta) {
-        if (isActive) {
-            for (MovingTile mt : activeList) {
-                mt.update(delta);
-            }
-
-            if (launcherCooldownTimer > 0) {
-                if (launcherCooldownTimer - delta < 0)
-                    launcherCooldownTimer = 0;
-                else
-                    launcherCooldownTimer -= delta;
-            }
-
-            if (isAutoEjectEnabled && launcherCooldownTimer == 0) {
-                eject();
             }
         }
     }
@@ -219,7 +175,7 @@ public class MovingTileManager extends Observable {
             throw new RuntimeException("ControlledBallGeneration is disabled..?!");
 
         int[] amountOfColor = tilemapManager.getColorAmountsAvailable();
-        int totalTiles = tilemapManager.getTotalAmountOfTiles();
+        int totalTiles = tilemapManager.getTotalTileCount();
 
         chanceColorPicker.load(amountOfColor, totalTiles);
         if (launcher.size > 0) {
@@ -240,12 +196,35 @@ public class MovingTileManager extends Observable {
         isControlledBallGenerationEnabled = true;
     }
 
+    public void update(float delta) {
+        if (isActive) {
+            for (MovingTile mt : activeList) {
+                mt.update(delta);
+            }
+
+            if (launcherCooldownTimer > 0) {
+                if (launcherCooldownTimer - delta < 0)
+                    launcherCooldownTimer = 0;
+                else
+                    launcherCooldownTimer -= delta;
+            }
+
+            if (isAutoEjectEnabled && launcherCooldownTimer == 0) {
+                eject();
+            }
+        }
+    }
+
+    public void draw(RenderManager renderManager) {
+        renderManager.drawLauncher(launcher, launcherPos);
+        renderManager.draw(activeList);
+    }
+
     public void reset() {
         isActive = true;
         defaultSpeed = 0;
         launcherCooldown = 0;
         isControlledBallGenerationEnabled = false;
-        isAutoReloadEnabled = true;
         tilemapManager = null;
 
         Iterator<MovingTile> iter = activeList.iterator();
@@ -316,7 +295,7 @@ public class MovingTileManager extends Observable {
         private ColorSequenceList() {
         }
 
-        public int getNext() {
+        int getNext() {
             return listColors.get(index++);
         }
 
@@ -328,7 +307,7 @@ public class MovingTileManager extends Observable {
             }
         }
 
-        public boolean hasNext() {
+        boolean hasNext() {
             return index < listColors.size();
         }
 
@@ -397,7 +376,7 @@ public class MovingTileManager extends Observable {
                 int color = mt.getTileID();
                 int amount = colorGroups[color].amount;
                 if (amount == 2) {
-                    maxIndex -=2;
+                    maxIndex -= 2;
                     colorGroups[color].amount = 0;
                 } else if (amount < 2) {
                     ++colorGroups[color].amount;
@@ -409,7 +388,7 @@ public class MovingTileManager extends Observable {
                 int color = mt.getTileID();
                 int amount = colorGroups[color].amount;
                 if (amount == 2) {
-                    maxIndex -=2;
+                    maxIndex -= 2;
                     colorGroups[color].amount = 0;
                 } else if (amount < 2) {
                     ++colorGroups[color].amount;
@@ -446,7 +425,8 @@ public class MovingTileManager extends Observable {
                     }
                 }
 
-                if (enabledCount == 0) return 9; // XXX(27/4/2018): Needs better implementation cause this is just for indication
+                if (enabledCount == 0)
+                    return 9; // XXX(27/4/2018): Needs better implementation cause this is just for indication
                 return colorGroups[rand.nextInt(enabledCount)].groupColor;
             }
 

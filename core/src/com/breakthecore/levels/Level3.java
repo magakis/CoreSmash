@@ -5,7 +5,6 @@ import com.breakthecore.UserAccount;
 import com.breakthecore.managers.MovingTileManager;
 import com.breakthecore.managers.StatsManager;
 import com.breakthecore.screens.GameScreen;
-import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.tilemap.TilemapBuilder;
 import com.breakthecore.tilemap.TilemapManager;
 
@@ -18,10 +17,12 @@ public class Level3 extends CampaignLevel {
     public void initialize(StatsManager statsManager, TilemapManager tilemapManager, MovingTileManager movingTileManager) {
         TilemapBuilder builder = tilemapManager.newMap();
 
-        builder.setColorCount(1)
+        builder.setColorCount(5)
                 .loadMapFromFile("level3")
+                .reduceColorMatches(2, 2)
                 .balanceColorAmounts()
                 .forceEachColorOnEveryRadius()
+                .reduceCenterTileColorMatch(2, false)
                 .setMinMaxRotationSpeed(40,70)
                 .build();
 
@@ -32,7 +33,7 @@ public class Level3 extends CampaignLevel {
 
         statsManager.setUserAccount(getUser());
         statsManager.setGameMode(GameScreen.GameMode.CLASSIC);
-        statsManager.setMoves(true,  20);
+        statsManager.setMoves(true,  tilemapManager.getTotalTileCount()/4+4);
         statsManager.setSpecialBallCount(0);
 
     }

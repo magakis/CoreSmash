@@ -79,37 +79,37 @@ public class LevelFormatParser {
     }
 
 
-    public static boolean load(String name, TilemapManager tilemapManager) {
-        FileHandle file = Gdx.files.external("/CoreSmash/maps/" + name + ".map");
-        if (!file.exists()) return false;
-
-        BufferedReader reader = file.reader(1024);
-        String line;
-        try {
-            while (true) {
-                line = reader.readLine();
-                if (line == null) break;
-                Tilemap tm = tilemapManager.newTilemap();
-
-                int tileCount = Integer.parseInt(line);
-                for (int i = 0; i < tileCount; ++i) {
-                    line = reader.readLine();
-                    String[] tokens = line.split(":");
-
-                    int id = Integer.parseInt(tokens[0]);
-                    int x = Integer.parseInt(tokens[1]);
-                    int y = Integer.parseInt(tokens[2]);
-
-                    tm.setRelativeTile(x, y, new RegularTile(id));
-                }
-            }
-
-            return true;
-        } catch (IOException ex) {
-
-        }
-        return false;
-    }
+//    public static boolean load(String name, TilemapManager tilemapManager) {
+//        FileHandle file = Gdx.files.external("/CoreSmash/maps/" + name + ".map");
+//        if (!file.exists()) return false;
+//
+//        BufferedReader reader = file.reader(1024);
+//        String line;
+//        try {
+//            while (true) {
+//                line = reader.readLine();
+//                if (line == null) break;
+//                Tilemap tm = tilemapManager.newTilemap();
+//
+//                int tileCount = Integer.parseInt(line);
+//                for (int i = 0; i < tileCount; ++i) {
+//                    line = reader.readLine();
+//                    String[] tokens = line.split(":");
+//
+//                    int id = Integer.parseInt(tokens[0]);
+//                    int x = Integer.parseInt(tokens[1]);
+//                    int y = Integer.parseInt(tokens[2]);
+//
+//                    tm.setRelativeTile(x, y, new RegularTile(id));
+//                }
+//            }
+//
+//            return true;
+//        } catch (IOException ex) {
+//
+//        }
+//        return false;
+//    }
 
     public static void saveTo(String name, TilemapManager tilemapManager) {
         FileHandle file = Gdx.files.external("/CoreSmash/maps/" + name + ".map");

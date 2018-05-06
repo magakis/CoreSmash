@@ -27,11 +27,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
 import com.breakthecore.CoreSmash;
-import com.breakthecore.LevelFormatParser;
-import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.levels.CampaignLevel;
 import com.breakthecore.levels.Level;
@@ -487,42 +484,27 @@ public class MainMenuScreen extends ScreenBase {
                             int lives = Integer.parseInt(tfLives.getText());
                             int time = Integer.parseInt(tfTime.getText());
 
-                            TilemapManager.TilemapGenerator tilemapGenerator = tilemapManager.getTilemapGenerator();
-                            tilemapManager.setColorCount(colorCount);
-
+                            TilemapBuilder builder = tilemapManager.newMap();
+                            builder.setColorCount(colorCount);
                             if (cbUseCustomMap.isChecked()) {
-                                TilemapBuilder builder = tilemapManager.newMap();
-                                builder.setColorCount(colorCount)
-                                        .loadMapFromFile("mainmenumap")
-                                        .reduceColorMatches(2, 1)
-                                        .balanceColorAmounts()
-                                        .forceEachColorOnEveryRadius();
-
-                                if (!spinTheCoreEnabled) {
-                                    builder.setMinMaxRotationSpeed(minRotationSpeed, maxRotationSpeed);
-                                }
-
-                                builder.build();
+                                builder.loadMapFromFile("mainmenumap");
                             } else {
-                                Tilemap tm = tilemapManager.newTilemap();
-                                tilemapGenerator.generateRadius(tm, initRadius);
-
-                                tilemapGenerator.reduceColorMatches(tm, 2, 2);
-                                if (colorCount > 1) {
-                                    tilemapGenerator.balanceColorAmounts(tm);
-                                }
-                                tilemapGenerator.forceEachColorOnEveryRadius(tm);
-                                tilemapGenerator.reduceCenterTileColorMatch(tm, 2);
-
-                                tm.setMinMaxSpeed(minRotationSpeed, maxRotationSpeed);
-                                tm.setAutoRotation(!spinTheCoreEnabled);
-                                tm.initialized();
+                                builder.generateRadius(initRadius);
                             }
+                            if (colorCount > 1) {
+                                builder.reduceColorMatches(2)
+                                        .balanceColorAmounts()
+                                        .forceEachColorOnEveryRadius()
+                                        .reduceCenterTileColorMatch(2, false);
+                            }
+                            if (!spinTheCoreEnabled) {
+                                builder.setMinMaxRotationSpeed(minRotationSpeed, maxRotationSpeed);
+                            }
+                            builder.build();
 
                             movingTileManager.setLauncherCooldown(sldrLauncherCooldown.getValue());
                             movingTileManager.setColorCount(colorCount);
 //                            movingTileManager.setAutoEject(spinTheCoreEnabled);
-                            movingTileManager.setAutoReloadEnabled(moves > 3);
                             movingTileManager.setDefaultBallSpeed((int) sldrBallSpeed.getValue());
                             movingTileManager.enableControlledBallGeneration(tilemapManager);
                             movingTileManager.initLauncher(3);
@@ -538,7 +520,7 @@ public class MainMenuScreen extends ScreenBase {
                                     cbUseLives.isChecked(), lives,
                                     cbUseMoves.isChecked(), moves,
                                     cbUseTime.isChecked(), time,
-                                    tilemapManager.getTotalAmountOfTiles());
+                                    tilemapManager.getTotalTileCount());
 
                             prefs.putBoolean("spinthecore_enabled", spinTheCoreEnabled);
                             prefs.putBoolean("custom_map_enabled", cbUseCustomMap.isChecked());
@@ -574,7 +556,15 @@ public class MainMenuScreen extends ScreenBase {
                     gameScreen.deployLevel(dbLevel);
                 }
             });
-            mainTable.add(tbtn).width(250).height(200).padTop(50).align(Align.right);
+            mainTable.add(tbtn).
+
+                    width(250).
+
+                    height(200).
+
+                    padTop(50).
+
+                    align(Align.right);
 
             setRoot(mainTable);
         }
