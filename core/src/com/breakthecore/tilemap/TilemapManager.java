@@ -7,15 +7,14 @@ import com.breakthecore.Observable;
 import com.breakthecore.Observer;
 import com.breakthecore.Pathfinder;
 import com.breakthecore.WorldSettings;
+import com.breakthecore.managers.CollisionDetector;
 import com.breakthecore.managers.RenderManager;
-import com.breakthecore.tiles.RegularTile;
+import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.tiles.Tile;
 import com.breakthecore.tiles.TileContainer;
+import com.breakthecore.tiles.TileDictionary;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Random;
 
 /**
@@ -27,6 +26,7 @@ import java.util.Random;
 /* FIXME: 1/5/2018 TilemapManager should control _*EVERY*_ TilemapTile creation
  * TODO: Implement a better way of setting up Tilemaps and balancing them.
  *
+ * The following has been implemented:
  * One possible solution would be to have the TilemapManager return a Tilemap Builder when a new
  * Tilemap is requested which will contain an array similar to the Tilemap in which I can simply place
  * the IDs and balance the map based on them. After I have applied the filter I want, I will instantiate
@@ -38,8 +38,6 @@ public class TilemapManager extends Observable implements Observer {
      */
     private final Tilemap[] listTilemaps;
     private final Coords2D tilemapPosition = new Coords2D(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
-    private final int maxColorCount = 10;
-    private int colorCount;
     private final int maxTilemapCount = 2;
     private int tilemapCount;
 
@@ -71,7 +69,8 @@ public class TilemapManager extends Observable implements Observer {
     }
 
     public int getTileCountFrom(int layer) {
-        if (layer < 0 || layer >= maxTilemapCount) throw new IndexOutOfBoundsException("Layer '"+layer+"' doesn't exist");
+        if (layer < 0 || layer >= maxTilemapCount)
+            throw new IndexOutOfBoundsException("Layer '" + layer + "' doesn't exist");
         return listTilemaps[layer].getTileCount();
     }
 
@@ -101,6 +100,13 @@ public class TilemapManager extends Observable implements Observer {
         return colorsAvailable;
     }
 
+    public TilemapTile attachBall(MovingBall ball, TilemapTile tileHit, CollisionDetector collisionDetector) {
+        Tilemap layer = listTilemaps[tileHit.getTilemapId()];
+        TileContainer.Side[] sides = collisionDetector.getClosestSides(layer.getCos(), layer.getSin(), collisionDetector.getDirection(ball.getPositionInWorld(), tileHit.getPositionInWorld()));
+
+        return attachTile(tileHit.getTilemapId(), ball.extractTile(), tileHit, sides);
+    }
+
     //////////////////| GET RID OF |//////////////////
 
     /**
@@ -108,15 +114,17 @@ public class TilemapManager extends Observable implements Observer {
      *
      * @returns Returns whether it placed the tile.
      */
-    public void attachTile(int layer, Tile tile, TilemapTile tileHit, TileContainer.Side[] listSides) {
+    private TilemapTile attachTile(int layer, Tile tile, TilemapTile tileHit, TileContainer.Side[] listSides) {
+        TilemapTile placedTile = null;
         for (int i = 0; i < 6; ++i) {
-            if (attachTile(layer, tile, tileHit, listSides[i])) {
-                return;
-            }
+            placedTile = attachTile(layer, tile, tileHit, listSides[i]);
+            if (placedTile == null) continue;
+            break;
         }
+        return placedTile;
     }
 
-    private boolean attachTile(int layer, Tile tile, TilemapTile tileHit, TileContainer.Side side) {
+    private TilemapTile attachTile(int layer, Tile tile, TilemapTile tileHit, TileContainer.Side side) {
         Tilemap tm = listTilemaps[layer];
         Coords2D tileHitPos = tileHit.getRelativePosition();
         TilemapTile createdTilemapTile = null;
@@ -159,14 +167,12 @@ public class TilemapManager extends Observable implements Observer {
                 }
                 break;
         }
-        if (createdTilemapTile != null) {
-            handleColorMatches(createdTilemapTile, tm);
-            return true;
-        }
-        return false;
+
+        return createdTilemapTile;
     }
 
-    private void handleColorMatches(TilemapTile newTile, Tilemap tm) {
+    public void handleColorMatchesFor(TilemapTile newTile) {
+        Tilemap tm = listTilemaps[newTile.getTilemapId()];
         ArrayList<TilemapTile> match = match3.getColorMatchesFromTile(newTile, tm);
 
         if (match.size() < 3) {
@@ -195,13 +201,12 @@ public class TilemapManager extends Observable implements Observer {
 
     //////////////////|            |//////////////////
 
-    public TilemapBuilder newMap() {
-        if (tilemapCount + 1 < maxTilemapCount) {
-            ++tilemapCount;
-            return tilemapBuilder.startNewTilemap(listTilemaps[tilemapCount - 1]);
-        } else {
+    public TilemapBuilder newLayer() {
+        if (tilemapCount + 1 > maxTilemapCount) {
             throw new RuntimeException("Cannot initialize more tilemaps");
         }
+        ++tilemapCount;
+        return tilemapBuilder.startNewTilemap(listTilemaps[tilemapCount - 1]);
     }
 
     public void update(float delta) {
@@ -212,7 +217,6 @@ public class TilemapManager extends Observable implements Observer {
 
     public void reset() {
         tilemapCount = 0;
-        colorCount = 0;
         for (int i = 0; i < maxTilemapCount; ++i) {
             listTilemaps[i].reset();
         }
@@ -240,6 +244,7 @@ public class TilemapManager extends Observable implements Observer {
             for (int x = 0; x < tm.getTilemapSize(); ++x) {
                 tile = tm.getAbsoluteTile(x, y);
                 if (tile != null) {
+                    if (!TileDictionary.isBreakable(tile.getTileID())) continue; //skip unbreakables
                     if (pathfinder.getPathToCenter(tile, tm) == null) {
                         // TODO(13/4/2018): I should put TilemapTiles in an Object pool
                         tm.destroyAbsoluteTile(x, y);

@@ -1,5 +1,6 @@
 package com.breakthecore.tiles;
 
+import com.breakthecore.GameController;
 import com.breakthecore.managers.CollisionDetector;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
@@ -12,7 +13,7 @@ public class RandomTile extends Tile {
     }
 
     @Override
-    public void onCollide(MovingBall movingBall, TilemapTile tilemapTile, int index, TilemapManager tilemapManager, CollisionDetector collisionDetector) {
+    public void onCollide(MovingBall movingBall, TilemapTile tileHit, GameController.BehaviourPowerPack pack) {
 
     }
 

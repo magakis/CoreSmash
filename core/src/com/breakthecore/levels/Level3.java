@@ -22,7 +22,7 @@ public class Level3 extends CampaignLevel {
         Launcher launcher = levelTools.launcher;
 
 
-        TilemapBuilder builder = tilemapManager.newMap();
+        TilemapBuilder builder = tilemapManager.newLayer();
 
         builder.setColorCount(5)
                 .loadMapFromFile("level3")

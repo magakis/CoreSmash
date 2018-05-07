@@ -25,6 +25,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.breakthecore.CoreSmash;
 import com.breakthecore.Coords2D;
+import com.breakthecore.GameController;
 import com.breakthecore.Launcher;
 import com.breakthecore.levels.Level;
 import com.breakthecore.managers.StatsManager;
@@ -50,9 +51,9 @@ public class GameScreen extends ScreenBase implements Observer {
     private OrthographicCamera camera;
     private RenderManager renderManager;
 
+    private GameController gameController;
     private TilemapManager tilemapManager;
     private MovingBallManager movingBallManager;
-    private CollisionDetector collisionDetector; //This shouldn't be here
     private StatsManager statsManager;
     private Launcher launcher;
 
@@ -79,9 +80,9 @@ public class GameScreen extends ScreenBase implements Observer {
         renderManager = gameInstance.getRenderManager();
         movingBallManager = new MovingBallManager();
         launcher = new Launcher(movingBallManager);
-        collisionDetector = new CollisionDetector();
         tilemapManager = new TilemapManager();
         statsManager = new StatsManager();
+        gameController = new GameController(tilemapManager, movingBallManager);
         levelTools = new LevelTools(tilemapManager, movingBallManager, statsManager, launcher);
 
         skin = gameInstance.getSkin();
@@ -96,10 +97,8 @@ public class GameScreen extends ScreenBase implements Observer {
         statsManager.addObserver(streakUI);
         statsManager.addObserver(gameUI);
 
-        launcher.addObserver(this);
         launcher.addObserver(statsManager);
 
-        tilemapManager.addObserver(this);
         tilemapManager.addObserver(statsManager);
 
         movingBallManager.addObserver(statsManager);
@@ -159,7 +158,7 @@ public class GameScreen extends ScreenBase implements Observer {
             launcher.update(delta);
             tilemapManager.update(delta);
             movingBallManager.update(delta);
-            collisionDetector.checkForCollision(movingBallManager, tilemapManager);
+            gameController.update(delta);
 
             statsManager.update(delta);
             updateStage();

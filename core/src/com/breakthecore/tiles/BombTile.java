@@ -1,20 +1,21 @@
 package com.breakthecore.tiles;
 
 import com.breakthecore.Coords2D;
+import com.breakthecore.GameController;
 import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.managers.CollisionDetector;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
 
 public class BombTile extends Tile {
-    public BombTile(int id) {
-        super(id);
+    public BombTile() {
+        super(TileDictionary.getIdOf(TileType.BOMB));
     }
 
     @Override
-    public void onCollide(MovingBall mt, TilemapTile tt, int layer, TilemapManager tmm, CollisionDetector cm) {
-        Coords2D posT = tt.getRelativePosition();
-        Tilemap tm = tmm.getTilemap(layer);
+    public void onCollide(MovingBall movingBall, TilemapTile tileHit, GameController.BehaviourPowerPack pack) {
+        Coords2D posT = tileHit.getRelativePosition();
+        Tilemap tm = pack.tilemapManager.getTilemap(tileHit.getTilemapId());
 
         int collidedTileX = posT.x;
         int collidedTileY = posT.y;
@@ -26,7 +27,6 @@ public class BombTile extends Tile {
                 }
             }
         }
-        mt.dispose();
     }
 
     @Override

@@ -14,6 +14,10 @@ public class TileFactory {
                 return new RegularTile(id);
             case RANDOM_REGULAR:
                 return new RandomTile();
+            case WALL:
+                return new WallBall();
+            case BOMB:
+                return new BombTile();
             default:
                 return null;
         }

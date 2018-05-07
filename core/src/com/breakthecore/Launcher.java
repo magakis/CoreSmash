@@ -82,7 +82,10 @@ public class Launcher extends Observable {
 
     private int getColorBasedOnTilemap(TilemapManager tilemapManager) {
         int[] amountOfColor = tilemapManager.getColorAmountsAvailable();
-        int totalTiles = tilemapManager.getTotalTileCount();
+        int totalTiles = 0;
+        for (int amount : amountOfColor) {
+            totalTiles += amount;
+        }
 
         chanceColorPicker.load(amountOfColor, totalTiles);
         if (launcher.size > 0) {
@@ -143,9 +146,9 @@ public class Launcher extends Observable {
         // TODO(21/4/2018): This function should know anything about the specialTile...
         if (!isLoadedWithSpecial) {
             switch (id) {
-                case 17:
+                case 18:
                     //TODO: WORK ON THIS
-                    launcher.addFirst(movingBallManager.create(launcherPos.x, launcherPos.y + ballSize, 17));
+                    launcher.addFirst(movingBallManager.create(launcherPos.x, launcherPos.y + ballSize, 18));
                     launcher.first().setScale(1);
                     isLoadedWithSpecial = true;
                     break;

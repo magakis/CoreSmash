@@ -78,7 +78,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
         tilemapManager = new TilemapManager();
 
-        tilemapManager.newMap().debug().placeMiddleTile().build();
+        tilemapManager.newLayer().debug().placeMiddleTile().build();
 
         stage = setupStage();
 
@@ -209,7 +209,7 @@ public class LevelBuilderScreen extends ScreenBase {
                                 showToast("Error: File not found");
                             } else {
                                 tilemapManager.reset();
-                                TilemapBuilder builder = tilemapManager.newMap();
+                                TilemapBuilder builder = tilemapManager.newLayer();
                                 builder.debug()
                                         .loadMapFromFile(text)
                                         .build();
@@ -474,9 +474,9 @@ public class LevelBuilderScreen extends ScreenBase {
             TilemapTile tile = tm.getRelativeTile(res.x, res.y);
             if (tile != null) {
                 Coords2D pos = tile.getRelativePosition();
-                if (pos.x != 0 || pos.y != 0) {
+//                if (pos.x != 0 || pos.y != 0) {
                     tm.destroyRelativeTile(res.x, res.y);
-                }
+//                }
             }
 
             return true;

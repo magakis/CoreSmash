@@ -65,6 +65,7 @@ public class MovingBallManager extends Observable {
     }
 
     public void dispose(MovingBall ball) {
+        activeList.remove(ball);
         movingTilePool.free(ball);
     }
 

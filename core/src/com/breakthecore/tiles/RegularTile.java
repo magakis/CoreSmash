@@ -1,6 +1,7 @@
 package com.breakthecore.tiles;
 
 import com.badlogic.gdx.math.Vector2;
+import com.breakthecore.GameController;
 import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.managers.CollisionDetector;
 import com.breakthecore.tilemap.TilemapManager;
@@ -13,18 +14,9 @@ public class RegularTile extends Tile {
     }
 
     @Override
-    public void onCollide(MovingBall movingBall, TilemapTile tileHit, int layer, TilemapManager tilemapManager, CollisionDetector collisionDetector) {
-        Tilemap tm = tilemapManager.getTilemap(layer);
-        Vector2 direction = collisionDetector.getDirection(movingBall.positionInWorld, tileHit.positionInWorld);
-
-        tilemapManager.attachTile(
-                layer,
-                movingBall.extractTile(),
-                tileHit,
-                collisionDetector.getClosestSides(tm.getCos(), tm.getSin(), direction)
-        );
-
-        movingBall.dispose();
+    public void onCollide(MovingBall movingBall, TilemapTile tileHit, GameController.BehaviourPowerPack pack) {
+        TilemapTile tile = pack.tilemapManager.attachBall(movingBall,tileHit,pack.collisionDetector);
+        pack.tilemapManager.handleColorMatchesFor(tile);
     }
 
     @Override

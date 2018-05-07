@@ -502,7 +502,7 @@ public class MainMenuScreen extends ScreenBase {
                             int lives = Integer.parseInt(tfLives.getText());
                             int time = Integer.parseInt(tfTime.getText());
 
-                            TilemapBuilder builder = tilemapManager.newMap();
+                            TilemapBuilder builder = tilemapManager.newLayer();
                             builder.setColorCount(colorCount);
                             if (cbUseCustomMap.isChecked()) {
                                 builder.loadMapFromFile("mainmenumap");
@@ -530,7 +530,7 @@ public class MainMenuScreen extends ScreenBase {
                             statsManager.setLives(cbUseLives.isChecked(), lives);
                             statsManager.setMoves(cbUseMoves.isChecked(), moves);
                             statsManager.setTime(cbUseTime.isChecked(), time);
-                            statsManager.setSpecialBallCount(0);
+                            statsManager.setSpecialBallCount(2);
                             statsManager.getScoreMultiplier().setup(
                                     colorCount,
                                     cbUseLives.isChecked(), lives,

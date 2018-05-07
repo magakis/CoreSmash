@@ -7,6 +7,7 @@ import com.breakthecore.Observer;
 import com.breakthecore.UserAccount;
 import com.breakthecore.screens.GameScreen;
 
+import java.util.Date;
 import java.util.Random;
 
 public class StatsManager extends Observable implements Observer {
@@ -187,7 +188,7 @@ public class StatsManager extends Observable implements Observer {
 
     public void consumeSpecialBall(Launcher launcher) {
         if (!launcher.isLoadedWithSpecial()) {
-            launcher.insertSpecialTile(17);
+            launcher.insertSpecialTile(18);
             --specialBallCount;
         }
     }
@@ -216,6 +217,7 @@ public class StatsManager extends Observable implements Observer {
                     --moves;
                     notifyObservers(NotificationType.MOVES_AMOUNT_CHANGED, null);
                 }
+                notifyObservers(NotificationType.BALL_LAUNCHED, null);
                 break;
         }
     }

@@ -22,13 +22,20 @@ public class Level2 extends CampaignLevel {
         Launcher launcher = levelTools.launcher;
 
 
-        TilemapBuilder builder = tilemapManager.newMap();
+        TilemapBuilder builder = tilemapManager.newLayer();
         builder.setMinMaxRotationSpeed(40, 70)
                 .setColorCount(5)
                 .generateStar(2)
                 .reduceColorMatches(3, 2)
                 .balanceColorAmounts()
                 .reduceCenterTileColorMatch(2, false)
+                .build();
+
+        builder = tilemapManager.newLayer();
+        builder.setColorCount(5)
+                .loadMapFromFile("level2test")
+                .balanceColorAmounts()
+                .setMinMaxRotationSpeed(20,40, true)
                 .build();
 
         movingBallManager.setDefaultBallSpeed(15);

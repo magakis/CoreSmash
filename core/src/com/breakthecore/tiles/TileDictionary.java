@@ -49,13 +49,16 @@ public class TileDictionary {
         registerTile(7, attrRegularTile);
 
         builder.reset();
-        TileAttributes attrRandomTile = builder
+        TileAttributes attrNotMatchable = builder
                 .setTileType(TileType.RANDOM_REGULAR)
                 .setPlaceable(true)
                 .setMatchable(false)
                 .build();
 
-        registerTile(17, attrRandomTile);
+        registerTile(17, attrNotMatchable);
+
+
+        registerTile(19, builder.setTileType(TileType.WALL).setBreakable(false).build());
 
         builder.reset();
         TileAttributes attrBomb = builder
@@ -71,7 +74,14 @@ public class TileDictionary {
         TileAttributes attr = tileAttributesMap.get(id);
         if (attr == null) throw new IllegalArgumentException("Error: Unknown ID(" + id + ")");
 
-        return tileAttributesMap.get(id).getTileType();
+        return attr.getTileType();
+    }
+
+    public static boolean isBreakable(int id) {
+        TileAttributes attr = tileAttributesMap.get(id);
+        if (attr == null) throw new IllegalArgumentException("Error: Unknown ID(" + id + ")");
+
+        return attr.isBreakable();
     }
 
     public static int getIdOf(TileType type) {

@@ -112,23 +112,14 @@ public class CollisionDetector {
         return result;
     }
 
-    public void checkForCollision(MovingBallManager movingBallManager, TilemapManager tilemapManager) {
-        TilemapTile solidTile;
-        Tilemap tm;
+    public TilemapTile checkIfBallCollides(MovingBall mb, TilemapManager tmm) {
+        TilemapTile result = null;
+        for (int i = 0; i < tmm.getTilemapCount(); ++i) {
+            result = findCollision(tmm.getTilemap(i), mb);
 
-        for (int i = 0; i < tilemapManager.getTilemapCount(); ++i) {
-            tm = tilemapManager.getTilemap(i);
-            List<MovingBall> list = movingBallManager.getActiveList();
-
-            for (MovingBall mt : list) {
-                solidTile = findCollision(tm, mt);
-                if (solidTile == null) continue;
-
-                mt.getTile().onCollide(mt, solidTile, i, tilemapManager, this);
-            }
-
-            movingBallManager.disposeInactive();
+            if (result != null) break;
         }
+        return result;
     }
 
     public Vector2 getDirection(Vector2 pos, Vector2 origin) {

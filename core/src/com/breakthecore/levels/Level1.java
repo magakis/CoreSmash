@@ -21,7 +21,7 @@ public class Level1 extends CampaignLevel {
         StatsManager statsManager = levelTools.statsManager;
         Launcher launcher = levelTools.launcher;
 
-        TilemapBuilder builder = tilemapManager.newMap();
+        TilemapBuilder builder = tilemapManager.newLayer();
         builder.setMinMaxRotationSpeed(40, 70)
                 .setColorCount(5)
                 .generateRadius(3)

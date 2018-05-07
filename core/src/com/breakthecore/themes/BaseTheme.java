@@ -11,6 +11,7 @@ public class BaseTheme extends AbstractTheme {
         setResourcesFor(6, "ballOlive.png", null);
         setResourcesFor(7, "ballGrey.png", null);
         setResourcesFor(17, "ball.png", null);
-        setResourcesFor(18, "balloon.png", null);
+        setResourcesFor(18, "ballFlaming.png", null);
+        setResourcesFor(19, "ballWall.png", null);
     }
 }
