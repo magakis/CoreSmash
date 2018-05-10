@@ -16,6 +16,7 @@ public class RegularTile extends Tile {
     @Override
     public void onCollide(MovingBall movingBall, TilemapTile tileHit, GameController.BehaviourPowerPack pack) {
         TilemapTile tile = pack.tilemapManager.attachBall(movingBall,tileHit,pack.collisionDetector);
+        assert (tile != null);
         pack.tilemapManager.handleColorMatchesFor(tile);
     }
 

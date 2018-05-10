@@ -32,6 +32,7 @@ import com.badlogic.gdx.utils.Scaling;
 import com.breakthecore.CoreSmash;
 import com.breakthecore.Launcher;
 import com.breakthecore.WorldSettings;
+import com.breakthecore.levelbuilder.LevelBuilderScreen;
 import com.breakthecore.levels.CampaignLevel;
 import com.breakthecore.levels.Level;
 import com.breakthecore.managers.MovingBallManager;
@@ -628,60 +629,5 @@ public class MainMenuScreen extends ScreenBase {
             return root;
         }
     }
-
-//    private class PickGameModeUI extends UIComponent {
-//        int gameModeCount = 3;
-//        Value blockHeight;
-//        Value blockPad;
-//
-//        public PickGameModeUI() {
-//            Table tbl = new Table();
-//            Label dummy;
-//            tbl.setFillParent(true);
-//            tbl.padLeft(Value.percentWidth(.05f));
-//            tbl.padRight(Value.percentWidth(.05f));
-//
-//            blockHeight = Value.percentHeight(.6f / (gameModeCount + 1), tbl);
-//            blockPad = Value.percentHeight(.3f / (gameModeCount + 2), tbl);
-//
-//            dummy = new Label("Game Mode", skin, "comic_96b");
-//            tbl.add(dummy).padTop(blockPad).padBottom(blockPad).row();
-//
-//            String txt = "The core is spinning and your goal is to match balls of the same color " +
-//                    "in order to beat it.";
-//            dummy = new Label(":Classic Mode:", skin, "comic_48b");
-//            TextButton tb = new TextButton(txt, skin, "modeButton");
-//            tb.getLabel().setWrap(true);
-//            tb.getLabelCell().pad(10);
-//            tb.addListener(new ChangeListener() {
-//                @Override
-//                public void changed(ChangeEvent event, Actor actor) {
-//                    stage.clear();
-//                    stage.addActor(m_classicSettingsUI.getRoot());
-//                    roundSettings.gameMode = CLASSIC;
-//                }
-//            });
-//
-//            tbl.add(dummy).row();
-//            tbl.add(tb).expandX().height(blockHeight).fill().padBottom(blockPad).row();
-//
-//            txt = "Expiremental campaign mode..";
-//            dummy = new Label(":Campaign:", skin, "comic_48b");
-//            tb = new TextButton(txt, skin, "modeButton");
-//            tb.getLabel().setWrap(true);
-//            tb.getLabelCell().pad(10);
-//            tb.addListener(new ChangeListener() {
-//                @Override
-//                public void changed(ChangeEvent event, Actor actor) {
-//                    gameInstance.setScreen(m_campaignScreen);
-//                }
-//            });
-//
-//            tbl.add(dummy).row();
-//            tbl.add(tb).expandX().height(blockHeight).fill().padBottom(blockPad).row();
-//
-//            root = tbl;
-//        }
-//    }
 
 }

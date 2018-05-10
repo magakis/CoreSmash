@@ -56,11 +56,12 @@ public class LoadingScreen extends ScreenBase {
             TileDictionary.initialilze();
             gameInstance.initApp();
         }
-        percent.setText(String.format(Locale.ENGLISH,"%.0f %%", am.getProgress() * 100));
+        percent.setText(String.format(Locale.ENGLISH, "%.0f %%", am.getProgress() * 100));
 
         stage.act();
         stage.draw();
     }
+
 
     private void loadAllTextures() {
         loadTexture("asteroid.png");
@@ -120,7 +121,7 @@ public class LoadingScreen extends ScreenBase {
         ninePatch = new NinePatch(tex, 10, 10, 10, 10);
         skin.add("box_white_10", ninePatch);
 
-        ninePatch = new NinePatch(am.get("NinePatches/toast1.png", Texture.class),15,15,15,15);
+        ninePatch = new NinePatch(am.get("NinePatches/toast1.png", Texture.class), 15, 15, 15, 15);
         skin.add("toast1", ninePatch);
 
         // Textures
@@ -209,14 +210,14 @@ public class LoadingScreen extends ScreenBase {
         cbs.checkboxOn = skin.newDrawable("box_white_10", Color.GREEN);
         cbs.font = skin.getFont("comic_48b");
         cbs.disabledFontColor = Color.DARK_GRAY;
-        skin.add("default",cbs);
+        skin.add("default", cbs);
 
         // Textfield
         TextField.TextFieldStyle tfs = new TextField.TextFieldStyle();
         tfs.background = skin.getDrawable("box_white_5");
         tfs.font = skin.getFont("comic_48");
         tfs.fontColor = Color.WHITE;
-        skin.add("default",tfs);
+        skin.add("default", tfs);
 
     }
 

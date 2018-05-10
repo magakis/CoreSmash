@@ -13,6 +13,7 @@ import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.tiles.Tile;
 import com.breakthecore.tiles.TileContainer;
 import com.breakthecore.tiles.TileDictionary;
+import com.breakthecore.tiles.TileFactory;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -36,34 +37,36 @@ public class TilemapManager extends Observable implements Observer {
     /**
      * Holds the different independent layers(tilemaps). 0 is the main layer.
      */
-    private final Tilemap[] listTilemaps;
+    private final Tilemap[] tilemap;
     private final Coords2D tilemapPosition = new Coords2D(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
     private final int maxTilemapCount = 2;
+
+    /** This is only used by the TilemapBuilder which will become obsolete after level builder is setup. */
+    @Deprecated
     private int tilemapCount;
 
     private Pathfinder pathfinder = new Pathfinder(30);
     private TilemapBuilder tilemapBuilder = new TilemapBuilder();
     private Match3 match3 = new Match3();
-    private Random rand = new Random();
     private int[] colorsAvailable = new int[10]; // XXX(22/4/2018): MagicValue 10
 
     public TilemapManager() {
-        listTilemaps = new Tilemap[maxTilemapCount];
+        tilemap = new Tilemap[maxTilemapCount];
 
         for (int i = 0; i < maxTilemapCount; ++i) {
-            listTilemaps[i] = new Tilemap(i, tilemapPosition);
-            listTilemaps[i].addObserver(this);
+            tilemap[i] = new Tilemap(i, tilemapPosition);
+            tilemap[i].addObserver(this);
         }
     }
 
-    public int getTilemapCount() {
-        return tilemapCount;
+    public int getMaxTilemapCount() {
+        return maxTilemapCount;
     }
 
     public int getTotalTileCount() {
         int res = 0;
-        for (int i = 0; i < tilemapCount; ++i) {
-            res += listTilemaps[i].getTileCount();
+        for (int i = 0; i < maxTilemapCount; ++i) {
+            res += tilemap[i].getTileCount();
         }
         return res;
     }
@@ -71,7 +74,7 @@ public class TilemapManager extends Observable implements Observer {
     public int getTileCountFrom(int layer) {
         if (layer < 0 || layer >= maxTilemapCount)
             throw new IndexOutOfBoundsException("Layer '" + layer + "' doesn't exist");
-        return listTilemaps[layer].getTileCount();
+        return tilemap[layer].getTileCount();
     }
 
     public Coords2D getTilemapPosition() {
@@ -79,10 +82,10 @@ public class TilemapManager extends Observable implements Observer {
     }
 
     public Tilemap getTilemap(int layer) {
-        if (layer >= tilemapCount && layer < 0) {
+        if (layer >= maxTilemapCount && layer < 0) {
             throw new IndexOutOfBoundsException("Wrong layer index!");
         }
-        return listTilemaps[layer];
+        return tilemap[layer];
     }
 
     public int[] getColorAmountsAvailable() {
@@ -90,8 +93,10 @@ public class TilemapManager extends Observable implements Observer {
             colorsAvailable[i] = 0;
         }
 
-        for (int tmIndex = 0; tmIndex < tilemapCount; ++tmIndex) {
-            int[] listOfColorAmounts = listTilemaps[tmIndex].getColorAmountsAvailable();
+        for (int tmIndex = 0; tmIndex < maxTilemapCount; ++tmIndex) {
+            if (tilemap[tmIndex].getTileCount() == 0) continue;
+
+            int[] listOfColorAmounts = tilemap[tmIndex].getColorAmountsAvailable();
             for (int i = 0; i < listOfColorAmounts.length; ++i) {
                 colorsAvailable[i] += listOfColorAmounts[i];
             }
@@ -100,15 +105,21 @@ public class TilemapManager extends Observable implements Observer {
         return colorsAvailable;
     }
 
+    public void placeTile(int layer, int x, int y, int tileID) {
+        if (layer >= maxTilemapCount && layer < 0) {
+            throw new IndexOutOfBoundsException("Wrong layer index!");
+        }
+        tilemap[layer].setRelativeTile(x,y, TileFactory.getTileFromID(tileID));
+    }
+
     public TilemapTile attachBall(MovingBall ball, TilemapTile tileHit, CollisionDetector collisionDetector) {
-        Tilemap layer = listTilemaps[tileHit.getTilemapId()];
+        Tilemap layer = tilemap[tileHit.getTilemapId()];
         TileContainer.Side[] sides = collisionDetector.getClosestSides(layer.getCos(), layer.getSin(), collisionDetector.getDirection(ball.getPositionInWorld(), tileHit.getPositionInWorld()));
 
         return attachTile(tileHit.getTilemapId(), ball.extractTile(), tileHit, sides);
     }
 
     //////////////////| GET RID OF |//////////////////
-
     /**
      * Finds an empty side from the coordinates specified and attach the tile provided.
      *
@@ -125,7 +136,7 @@ public class TilemapManager extends Observable implements Observer {
     }
 
     private TilemapTile attachTile(int layer, Tile tile, TilemapTile tileHit, TileContainer.Side side) {
-        Tilemap tm = listTilemaps[layer];
+        Tilemap tm = tilemap[layer];
         Coords2D tileHitPos = tileHit.getRelativePosition();
         TilemapTile createdTilemapTile = null;
 
@@ -172,7 +183,7 @@ public class TilemapManager extends Observable implements Observer {
     }
 
     public void handleColorMatchesFor(TilemapTile newTile) {
-        Tilemap tm = listTilemaps[newTile.getTilemapId()];
+        Tilemap tm = tilemap[newTile.getTilemapId()];
         ArrayList<TilemapTile> match = match3.getColorMatchesFromTile(newTile, tm);
 
         if (match.size() < 3) {
@@ -198,33 +209,34 @@ public class TilemapManager extends Observable implements Observer {
 
         notifyObservers(NotificationType.SAME_COLOR_MATCH, match.size());
     }
-
     //////////////////|            |//////////////////
 
     public TilemapBuilder newLayer() {
-        if (tilemapCount + 1 > maxTilemapCount) {
+        if (tilemapCount == maxTilemapCount) {
             throw new RuntimeException("Cannot initialize more tilemaps");
         }
+        tilemapBuilder.startNewTilemap(tilemap[tilemapCount]);
         ++tilemapCount;
-        return tilemapBuilder.startNewTilemap(listTilemaps[tilemapCount - 1]);
+        return tilemapBuilder;
     }
 
     public void update(float delta) {
-        for (int i = 0; i < tilemapCount; ++i) {
-            listTilemaps[i].update(delta);
+        for (int i = 0; i < maxTilemapCount; ++i) {
+            tilemap[i].update(delta);
         }
     }
 
     public void reset() {
         tilemapCount = 0;
         for (int i = 0; i < maxTilemapCount; ++i) {
-            listTilemaps[i].reset();
+            tilemap[i].reset();
         }
     }
 
     public void draw(RenderManager renderManager) {
-        for (int i = 0; i < tilemapCount; ++i) {
-            renderManager.draw(listTilemaps[i]);
+        for (int i = 0; i < maxTilemapCount; ++i) {
+            if (tilemap[i].getTileCount() == 0) continue;
+            renderManager.draw(tilemap[i]);
         }
     }
 
@@ -239,7 +251,7 @@ public class TilemapManager extends Observable implements Observer {
      */
     private void removeDisconnectedTiles() {
         TilemapTile tile;
-        Tilemap tm = listTilemaps[0];
+        Tilemap tm = tilemap[0];
         for (int y = 0; y < tm.getTilemapSize(); ++y) {
             for (int x = 0; x < tm.getTilemapSize(); ++x) {
                 tile = tm.getAbsoluteTile(x, y);

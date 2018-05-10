@@ -1,4 +1,4 @@
-package com.breakthecore.screens;
+package com.breakthecore.levelbuilder;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -15,28 +15,37 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.breakthecore.CoreSmash;
 import com.breakthecore.Coords2D;
-import com.breakthecore.LevelFormatParser;
+import com.breakthecore.io.LevelFormatParser;
+import com.breakthecore.screens.ScreenBase;
 import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.tilemap.TilemapBuilder;
@@ -50,15 +59,18 @@ import java.util.List;
 import java.util.Locale;
 
 public class LevelBuilderScreen extends ScreenBase {
-    private RenderManager renderManager;
-    private OrthographicCamera camera;
     private ExtendViewport viewport;
+    private OrthographicCamera camera;
+    private RenderManager renderManager;
     private TilemapManager tilemapManager;
+    private LevelSettings levelSettings;
     private Stage stage;
     private Skin skin;
-    private Container prefsContainer;
+
+    private GroupStack prefsStack;
     private UIComponent uiTools, uiToolbarTop;
-    private UIDebug uiDebug;
+    private UIInfo uiInfo;
+    private final Dialog dlgToast;
 
     private ScreenToWorldTranslator screenToWorld;
 
@@ -73,7 +85,7 @@ public class LevelBuilderScreen extends ScreenBase {
         renderManager = game.getRenderManager();
         camera = new OrthographicCamera();
         viewport = new ExtendViewport(1080, 1920, camera);
-        camera.position.set(viewport.getMinWorldWidth()/2,viewport.getMinWorldHeight()/2,0);
+        camera.position.set(viewport.getMinWorldWidth() / 2, viewport.getMinWorldHeight() / 2, 0);
         camera.update();
 
         tilemapManager = new TilemapManager();
@@ -87,10 +99,15 @@ public class LevelBuilderScreen extends ScreenBase {
         eraseMode = new EraseMode();
         rotateMode = new RotateMode();
         freeMode = new FreeMode();
-        activeMode = freeMode;
+        freeMode.activate();
 
-        uiDebug.lblDebug[0].setText(String.format(Locale.ENGLISH, "CamPos| X: %.0f Y: %.0f", camera.position.x, camera.position.y));
-        uiDebug.lblDebug[1].setText(String.format(Locale.ENGLISH, "Zoom| %.2f", camera.zoom));
+        Window.WindowStyle ws = new Window.WindowStyle();
+        ws.background = skin.getDrawable("toast1");
+        ws.titleFont = skin.getFont("comic_24b");
+
+        dlgToast = new Dialog("", ws);
+        dlgToast.text(new Label("", skin, "comic_24b"));
+        dlgToast.setTouchable(Touchable.disabled);
 
         screenInputMultiplexer.addProcessor(new BackButtonInputHandler());
         screenInputMultiplexer.addProcessor(stage);
@@ -115,38 +132,29 @@ public class LevelBuilderScreen extends ScreenBase {
         Stage stage = new Stage(gameInstance.getUIViewport());
         skin = gameInstance.getSkin();
         uiTools = new UITools();
-        uiDebug = new UIDebug();
+        uiInfo = new UIInfo();
         uiToolbarTop = new UIToolbarTop();
 
-        prefsContainer = new Container();
-        prefsContainer.fill();
-        prefsContainer.setTouchable(Touchable.enabled);
-        prefsContainer.addCaptureListener(new EventListener() {
-            @Override
-            public boolean handle(Event event) {
-                event.handle();
-                return true;
-            }
-        });
+        prefsStack = new GroupStack();
+        prefsStack.setBackground(skin.getDrawable("box_white_10"));
 
         Stack mainStack = new Stack();
         mainStack.setFillParent(true);
 
         Table prefs = new Table();
-        prefs.center().bottom().add(prefsContainer).expandX().fill();
-        mainStack.addActor(prefs);
+        prefs.center().bottom().add(prefsStack.getRoot()).expandX().fill();
 
         mainStack.addActor(uiTools.getRoot());
         mainStack.addActor(uiToolbarTop.getRoot());
-        mainStack.addActor(uiDebug.getRoot());
-
+        mainStack.addActor(prefs);
+        mainStack.addActor(uiInfo.getRoot());
 
         stage.addActor(mainStack);
         return stage;
     }
 
     private void drawTilemap() {
-        int tilemapCount = tilemapManager.getTilemapCount();
+        int tilemapCount = tilemapManager.getMaxTilemapCount();
 
         renderManager.start(camera.combined);
         for (int i = 0; i < tilemapCount; ++i) {
@@ -156,22 +164,34 @@ public class LevelBuilderScreen extends ScreenBase {
         renderManager.renderCenterDot(tilemapManager.getTilemapPosition(), camera.combined);
     }
 
+    private void showToast(String text) {
+        showToast(text, 2.5f);
+    }
+
+    private void showToast(String text, float duration) {
+        ((Label) dlgToast.getContentTable().getCells().get(0).getActor()).setText(text);
+        dlgToast.show(stage, Actions.sequence(
+                Actions.alpha(0),
+                Actions.fadeIn(.4f),
+                Actions.delay(duration),
+                Actions.run(new Runnable() {
+                    @Override
+                    public void run() {
+                        dlgToast.hide(Actions.fadeOut(.4f));
+                    }
+                })));
+        dlgToast.setPosition(camera.viewportWidth / 2 - dlgToast.getWidth() / 2, camera.viewportHeight * .90f);
+
+    }
+
     private class UIToolbarTop implements UIComponent {
         private Container<Table> root;
         private final TextButton tbSave, tbLoad;
-        private final Dialog dlgToast;
 
         UIToolbarTop() {
             TextButton.TextButtonStyle tbs = new TextButton.TextButtonStyle();
             tbs.up = skin.newDrawable("box_white_5", Color.DARK_GRAY);
             tbs.font = skin.getFont("comic_24b");
-
-            Window.WindowStyle ws = new Window.WindowStyle();
-            ws.background = skin.getDrawable("toast1");
-            ws.titleFont = skin.getFont("comic_24b");
-            dlgToast = new Dialog("", ws);
-            dlgToast.text(new Label("", skin, "comic_24b"));
-            dlgToast.setTouchable(Touchable.disabled);
 
             tbSave = new TextButton("Save", tbs);
             tbSave.addListener(new ChangeListener() {
@@ -244,32 +264,11 @@ public class LevelBuilderScreen extends ScreenBase {
 
         }
 
-        private void showToast(String text) {
-            showToast(text, 2.5f);
-        }
-
-        private void showToast(String text, float duration) {
-            ((Label) dlgToast.getContentTable().getCells().get(0).getActor()).setText(text);
-            dlgToast.show(stage, Actions.sequence(
-                    Actions.alpha(0),
-                    Actions.fadeIn(.4f),
-                    Actions.delay(duration),
-                    Actions.run(new Runnable() {
-                        @Override
-                        public void run() {
-                            dlgToast.hide(Actions.fadeOut(.4f));
-                        }
-                    })));
-            dlgToast.setPosition(camera.viewportWidth / 2 - dlgToast.getWidth() / 2, camera.viewportHeight * .90f);
-
-        }
-
         @Override
         public Group getRoot() {
             return root;
         }
     }
-
 
     private class UITools implements UIComponent {
         private TextButton tbDraw, tbErase, tbRotate;
@@ -348,20 +347,24 @@ public class LevelBuilderScreen extends ScreenBase {
         }
     }
 
-
-    private class UIDebug implements UIComponent {
-        Label lblDebug[];
+    private class UIInfo implements UIComponent {
+        Label lbl[];
         Table root;
 
-        UIDebug() {
+        UIInfo() {
             root = new Table();
-            lblDebug = new Label[4];
+            lbl = new Label[8];
 
-            for (int i = 0; i < lblDebug.length; ++i) {
-                lblDebug[i] = new Label("", skin, "comic_24b");
-                root.left().top().add(lblDebug[i]).left().row();
+            for (int i = 0; i < lbl.length; ++i) {
+                lbl[i] = new Label("", skin, "comic_24b");
+                root.left().top().add(lbl[i]).left().row();
             }
+        }
 
+        public void reset() {
+            for (Label lbl : lbl) {
+                lbl.setText("");
+            }
         }
 
         @Override
@@ -370,9 +373,9 @@ public class LevelBuilderScreen extends ScreenBase {
         }
     }
 
-
     private class DrawMode extends Mode {
-        private int tileId;
+        private int tileID;
+        private int layerID;
         private ImageButton materialButtons[];
 
         DrawMode() {
@@ -386,10 +389,9 @@ public class LevelBuilderScreen extends ScreenBase {
             materialGroup.wrap(true);
             materialGroup.wrapSpace(10);
 
-
             Drawable checked = skin.newDrawable("box_white_5", Color.GREEN);
             Drawable unchecked = skin.newDrawable("box_white_5", Color.GRAY);
-            ButtonGroup<ImageButton> imgbGroup = new ButtonGroup<ImageButton>();
+            ButtonGroup<ImageButton> imgbGroup = new ButtonGroup<>();
             imgbGroup.setMinCheckCount(1);
             imgbGroup.setMaxCheckCount(1);
 
@@ -408,13 +410,14 @@ public class LevelBuilderScreen extends ScreenBase {
                 materialGroup.addActor(imgb);
                 imgb.getImage().setScaling(Scaling.fill);
                 imgb.getImageCell().height(100).width(100);
+
                 final int finalButtonIndex = buttonIndex;
                 imgb.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
                         if (materialButtons[finalButtonIndex].isChecked()) {
-                            tileId = knownIds.get(finalButtonIndex);
-                            uiDebug.lblDebug[2].setText("TileActive| " + tileId);
+                            tileID = knownIds.get(finalButtonIndex);
+                            updateTileID();
                         }
                     }
                 });
@@ -424,47 +427,37 @@ public class LevelBuilderScreen extends ScreenBase {
 
                 ++buttonIndex;
             }
-//            imgbs = new ImageButton.ImageButtonStyle();
-//            imgbs.imageUp = skin.newDrawable("ball");
-//            imgbs.checked = checked;
-//            imgbs.up = unchecked;
-//
-//            ImageButton imgb = new ImageButton(imgbs);
-//            imgb.getImageCell().height(100).width(100);
-//            final int finalButtonIndex = buttonIndex;
-//            materialButtons[buttonIndex++] = imgb;
-//            imgb.addListener(new ChangeListener() {
-//                @Override
-//                public void changed(ChangeEvent event, Actor actor) {
-//                    if (materialButtons[finalButtonIndex].isChecked()) {
-//                        tileId = 17;
-//                        uiDebug.lblDebug[2].setText("TileActive| " + tileId);
-//                    }
-//                }
-//            });
-
-
 
             setPreferencesRoot(main);
         }
 
-
         @Override
         public boolean tap(float x, float y, int count, int button) {
             screenToWorld.set(x, y);
-            Tilemap tm = tilemapManager.getTilemap(0);
+            Tilemap tm = tilemapManager.getTilemap(layerID);
             Coords2D res = tm.worldToTilemapCoords(screenToWorld.get());
 
             if (tm.getRelativeTile(res.x, res.y) == null) {
-                    tm.setRelativeTile(res.x, res.y, TileFactory.getTileFromID(tileId));
+                tilemapManager.placeTile(layerID, res.x, res.y, tileID);
             }
 
             return true;
         }
+
+        @Override
+        void onActivate() {
+            uiInfo.reset();
+            updateTileID();
+        }
+
+        public void updateTileID() {
+            uiInfo.lbl[0].setText("Layer: " + layerID);
+            uiInfo.lbl[1].setText("TileActive: " + tileID);
+        }
     }
 
-
     private class EraseMode extends Mode {
+
         @Override
         public boolean tap(float x, float y, int count, int button) {
             screenToWorld.set(x, y);
@@ -473,16 +466,20 @@ public class LevelBuilderScreen extends ScreenBase {
 
             TilemapTile tile = tm.getRelativeTile(res.x, res.y);
             if (tile != null) {
-                Coords2D pos = tile.getRelativePosition();
+//                Coords2D pos = tile.getRelativePosition();
 //                if (pos.x != 0 || pos.y != 0) {
-                    tm.destroyRelativeTile(res.x, res.y);
+                tm.destroyRelativeTile(res.x, res.y);
 //                }
             }
 
             return true;
         }
-    }
 
+        @Override
+        void onActivate() {
+
+        }
+    }
 
     private class RotateMode extends Mode {
         private boolean isPanning;
@@ -517,18 +514,41 @@ public class LevelBuilderScreen extends ScreenBase {
             isPanning = false;
             return false;
         }
+
+        @Override
+        void onActivate() {
+
+        }
     }
 
-
     private class FreeMode extends Mode {
+        private UIGameSettings gameSettings = new UIGameSettings();
         float currentZoom = 1;
+
+        FreeMode() {
+            HorizontalGroup root = new HorizontalGroup();
+            root.pad(20);
+            root.space(20);
+            root.wrap(true);
+
+            TextButton btnSettings = new TextButton("Settings", skin);
+            btnSettings.setSize(100, 50);
+            btnSettings.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    prefsStack.push(gameSettings.getRoot());
+                }
+            });
+
+            root.addActor(btnSettings);
+            setPreferencesRoot(root);
+        }
 
         @Override
         public boolean pan(float x, float y, float deltaX, float deltaY) {
             camera.position.add(-deltaX * currentZoom, deltaY * currentZoom, 0);
 
-            uiDebug.lblDebug[0].setText(String.format(Locale.ENGLISH, "CamPos| X: %.0f Y: %.0f", camera.position.x, camera.position.y));
-
+            updateCamInfo();
             camera.update();
             return true;
         }
@@ -538,7 +558,7 @@ public class LevelBuilderScreen extends ScreenBase {
             camera.zoom = MathUtils.clamp(initialDistance / distance * currentZoom, 0.16f, 3.f);//currentZoom;
             camera.update();
 
-            uiDebug.lblDebug[1].setText(String.format(Locale.ENGLISH, "Zoom| %.2f", camera.zoom));
+            updateCamInfo();
             return true;
         }
 
@@ -546,8 +566,173 @@ public class LevelBuilderScreen extends ScreenBase {
         public void pinchStop() {
             currentZoom = camera.zoom;
         }
-    }
 
+        @Override
+        void onActivate() {
+            uiInfo.reset();
+            updateCamInfo();
+        }
+
+        private void updateCamInfo() {
+            uiInfo.lbl[0].setText(String.format(Locale.ENGLISH, "Cam Z:%4.2f X:%4.0f Y:%4.0f", camera.zoom, camera.position.x, camera.position.y));
+        }
+
+        private class UIGameSettings implements UIComponent {
+            Table root;
+            Slider sldrBallSpeed, sldrLauncherCooldown, sldrColorCount;
+            Label lblBallSpeed, lblLauncherCooldown, lblColorount;
+            CheckBox cbUseMoves, cbUseLives, cbUseTime, cbSpinTheCoreMode;
+            TextField tfMoves, tfLives, tfTime;
+            Table tblCheckboxesWithValues;
+
+            final int settingsPadding = 40;
+
+            // XXX(14/4/2018): *TOO* many magic values
+            private UIGameSettings() {
+                root = new Table();
+
+                Label dummy = new Label
+                        (":Level Setup:", skin, "comic_48b");
+                root.padLeft(30).padRight(30).padTop(10).padBottom(10).top();
+                root.add(dummy).padBottom(20).colspan(3).row();
+
+                Table settingsTbl = new Table();
+                settingsTbl.defaults().padBottom(settingsPadding);
+
+                final ScrollPane scrollPane = new ScrollPane(settingsTbl);
+                scrollPane.setScrollingDisabled(true, false);
+                scrollPane.setCancelTouchFocus(false);
+                scrollPane.setOverscroll(false, false);
+                root.add(scrollPane).colspan(3).expand().fill().row();
+
+                InputListener stopTouchDown = new InputListener() {
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                        event.stop();
+                        return false;
+                    }
+                };
+
+                final TextField.TextFieldListener returnOnNewLineListener = new TextField.TextFieldListener() {
+                    public void keyTyped(TextField textField, char key) {
+                        if (key == '\n' || key == '\r') {
+                            textField.getOnscreenKeyboard().show(false);
+                            stage.setKeyboardFocus(null);
+                        }
+                    }
+                };
+
+                cbUseLives = createCheckBox("Use Lives");
+                tfLives = createTextField(returnOnNewLineListener);
+                tfLives.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        tfLives.setCursorPosition(tfLives.getText().length());
+                    }
+                });
+
+                cbUseMoves = createCheckBox("Use Moves");
+                tfMoves = createTextField(returnOnNewLineListener);
+                tfMoves.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        tfMoves.setCursorPosition(tfMoves.getText().length());
+                    }
+                });
+
+                cbUseTime = createCheckBox("Use Time");
+                tfTime = createTextField(returnOnNewLineListener);
+                tfTime.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        tfTime.setCursorPosition(tfTime.getText().length());
+                    }
+                });
+
+                cbSpinTheCoreMode = createCheckBox("Spin The Core Mode");
+
+                tblCheckboxesWithValues = new Table();
+                tblCheckboxesWithValues.defaults().padBottom(settingsPadding);
+
+                tblCheckboxesWithValues.add(cbUseLives).left().padRight(15);
+                tblCheckboxesWithValues.add(tfLives).center().width(101).padRight(60);
+                tblCheckboxesWithValues.add(cbSpinTheCoreMode).left();
+                tblCheckboxesWithValues.add().row();
+
+                tblCheckboxesWithValues.add(cbUseMoves).left().padRight(15);
+                tblCheckboxesWithValues.add(tfMoves).center().width(101).padRight(60);
+                tblCheckboxesWithValues.add().left();
+                tblCheckboxesWithValues.add().row();
+
+                tblCheckboxesWithValues.add(cbUseTime).left().padRight(15).padBottom(0);
+                tblCheckboxesWithValues.add(tfTime).center().width(101).padRight(60).padBottom(0);
+                tblCheckboxesWithValues.add().padBottom(0);
+                tblCheckboxesWithValues.add().padBottom(0).row();
+
+                settingsTbl.add(tblCheckboxesWithValues).colspan(3).expandX().left().row();
+
+                sldrBallSpeed = new Slider(5, 20, 1, false, skin);
+                lblBallSpeed = new Label(String.valueOf((int) sldrBallSpeed.getValue()), skin, "comic_48");
+                sldrBallSpeed.addListener(stopTouchDown);
+                sldrBallSpeed.addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
+                        lblBallSpeed.setText(String.valueOf((int) sldrBallSpeed.getValue()));
+                    }
+                });
+                attachSliderToTable("Ball Speed", sldrBallSpeed, lblBallSpeed, settingsTbl);
+
+                sldrLauncherCooldown = new Slider(0f, 4.8f, .16f, false, skin);
+                lblLauncherCooldown = new Label(String.format(Locale.ENGLISH, "%.2f", sldrLauncherCooldown.getValue()), skin, "comic_48");
+                sldrLauncherCooldown.addListener(stopTouchDown);
+                sldrLauncherCooldown.addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
+                        lblLauncherCooldown.setText(String.format(Locale.ENGLISH, "%.2f", sldrLauncherCooldown.getValue()));
+                    }
+                });
+                attachSliderToTable("Launcher Cooldown", sldrLauncherCooldown, lblLauncherCooldown, settingsTbl);
+
+                sldrColorCount = new Slider(1, 8, 1, false, skin);
+                lblColorount = new Label(String.valueOf((int) sldrColorCount.getValue()), skin, "comic_48");
+                sldrColorCount.addListener(stopTouchDown);
+                sldrColorCount.addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
+                        lblColorount.setText(String.valueOf((int) sldrColorCount.getValue()));
+                    }
+                });
+                attachSliderToTable("Color Count", sldrColorCount, lblColorount, settingsTbl);
+            }
+
+            private TextField createTextField(TextField.TextFieldListener backOnNewLineListener) {
+                TextField tf = new TextField("", skin);
+                tf.setAlignment(Align.center);
+                tf.setMaxLength(3);
+                tf.setTextFieldFilter(new TextField.TextFieldFilter.DigitsOnlyFilter());
+                tf.setTextFieldListener(backOnNewLineListener);
+                return tf;
+            }
+
+            private CheckBox createCheckBox(String name) {
+                CheckBox cb = new CheckBox(name, skin);
+                cb.getImageCell().width(cb.getLabel().getPrefHeight()).height(cb.getLabel().getPrefHeight()).padRight(15);
+                cb.getImage().setScaling(Scaling.fill);
+                return cb;
+            }
+
+            private void attachSliderToTable(String name, Slider slider, Label amountLbl, Table tbl) {
+                Label dummy = new Label(name + ":", skin, "comic_32b");
+                tbl.add(dummy).padRight(30).align(Align.right).padBottom(5);
+                tbl.add(amountLbl).align(Align.left).padBottom(5).expandX().row();
+                tbl.add(slider).colspan(tbl.getColumns()).growX().row();
+            }
+
+            @Override
+            public Group getRoot() {
+                return root;
+            }
+        }
+    }
 
     private class ScreenToWorldTranslator {
         private Camera camera;
@@ -568,77 +753,35 @@ public class LevelBuilderScreen extends ScreenBase {
         }
     }
 
-
-    private abstract class Mode implements GestureDetector.GestureListener {
+    private abstract class Mode extends GestureDetector.GestureAdapter {
         private Group preferences;
-
 
         public void activate() {
             activeMode = this;
-            prefsContainer.setActor(preferences);
+            prefsStack.setRoot(preferences);
+            onActivate();
         }
 
         void setPreferencesRoot(Group preferences) {
             this.preferences = preferences;
         }
 
-        @Override
-        public boolean touchDown(float x, float y, int pointer, int button) {
-            return false;
-        }
-
-        @Override
-        public boolean tap(float x, float y, int count, int button) {
-            return false;
-        }
-
-        @Override
-        public boolean longPress(float x, float y) {
-            return false;
-        }
-
-        @Override
-        public boolean fling(float velocityX, float velocityY, int button) {
-            return false;
-        }
-
-        @Override
-        public boolean pan(float x, float y, float deltaX, float deltaY) {
-            return false;
-        }
-
-        @Override
-        public boolean panStop(float x, float y, int pointer, int button) {
-            return false;
-        }
-
-        @Override
-        public boolean zoom(float initialDistance, float distance) {
-            return false;
-        }
-
-        @Override
-        public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
-            return false;
-        }
-
-        @Override
-        public void pinchStop() {
-
-        }
+        abstract void onActivate();
     }
-
 
     private class BackButtonInputHandler extends InputAdapter {
         @Override
         public boolean keyDown(int keycode) {
             if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
-                gameInstance.setPrevScreen();
+                if (prefsStack.size() == 1) {
+                    gameInstance.setPrevScreen();
+                } else {
+                    prefsStack.pop();
+                }
             }
             return false;
         }
     }
-
 
     private class LevelBuilderGestureListner implements GestureDetector.GestureListener {
 

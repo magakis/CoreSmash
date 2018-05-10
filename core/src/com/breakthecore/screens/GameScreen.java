@@ -113,21 +113,6 @@ public class GameScreen extends ScreenBase implements Observer {
         screenInputMultiplexer.addProcessor(gameGestureDetector);
     }
 
-    private void checkEndingConditions() {
-        if (!statsManager.isGameActive()) {
-            endGame();
-        }
-        if (statsManager.isTimeEnabled() && statsManager.getTime() < 0) {
-            endGame();
-        }
-        if (statsManager.isLivesEnabled() && statsManager.getLives() == 0) {
-            endGame();
-        }
-        if (statsManager.isMovesEnabled() && statsManager.getMoves() == 0 && movingBallManager.getActiveList().size() == 0) {
-            endGame();
-        }
-    }
-
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height);
@@ -173,6 +158,21 @@ public class GameScreen extends ScreenBase implements Observer {
             gameUI.lblTime.setText(String.format("%d:%02d", (int) time / 60, (int) time % 60));
         }
         debugUI.dblb2.setText("FPS: " + Gdx.graphics.getFramesPerSecond());
+    }
+
+    private void checkEndingConditions() {
+        if (!statsManager.isGameActive()) {
+            endGame();
+        }
+        if (statsManager.isTimeEnabled() && statsManager.getTime() < 0) {
+            endGame();
+        }
+        if (statsManager.isLivesEnabled() && statsManager.getLives() == 0) {
+            endGame();
+        }
+        if (statsManager.isMovesEnabled() && statsManager.getMoves() == 0 && movingBallManager.getActiveList().size() == 0) {
+            endGame();
+        }
     }
 
     private void endGame() {

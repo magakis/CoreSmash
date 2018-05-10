@@ -1,13 +1,17 @@
-package com.breakthecore;
+package com.breakthecore.io;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
+import com.breakthecore.Coords2D;
+import com.breakthecore.screens.GameScreen;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.Tilemap;
-import com.breakthecore.tiles.RegularTile;
 import com.breakthecore.tilemap.TilemapTile;
+
+import org.kxml2.io.KXmlParser;
+import org.xmlpull.v1.XmlPullParser;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -17,7 +21,7 @@ import java.util.Locale;
 
 
 /* Maybe this should not be a static class in the future for multithreading? */
-public class LevelFormatParser {
+public final class LevelFormatParser {
     private static Pool<ParsedTile> parsedTilePool = new Pool<ParsedTile>() {
         @Override
         protected ParsedTile newObject() {
@@ -25,16 +29,30 @@ public class LevelFormatParser {
         }
     };
     private static Array<ParsedTile> parsedTileArray = new Array<>();
+    private static LevelSerializer serializer = new LevelSerializer();
+    private static XmlPullParser xmlParser = new KXmlParser();
+
+    private static LevelFormatParser levelFormatParser = new LevelFormatParser();
 
 
     private LevelFormatParser() {
     }
 
+    public static LevelFormatParser getInstance() {return levelFormatParser;}
+
+    public boolean saveLevel() {return false;}
+
+    public boolean loadLevel(GameScreen.LevelTools levelTools) {return false;}
+
+
+
+
+
+    ////////////| OLD |////////////
     public static boolean fileExists(String name) {
         FileHandle file = Gdx.files.external("/CoreSmash/maps/" + name + ".map");
         return file.exists();
     }
-
 
     public static Array<ParsedTile> load(String name) {
         FileHandle file = Gdx.files.external("/CoreSmash/maps/" + name + ".map");
@@ -69,7 +87,6 @@ public class LevelFormatParser {
         return parsedTileArray;
     }
 
-
     private static void clearParsedTileArray() {
         for (ParsedTile tile : parsedTileArray) {
             parsedTilePool.free(tile);
@@ -78,43 +95,10 @@ public class LevelFormatParser {
         parsedTileArray.clear();
     }
 
-
-//    public static boolean load(String name, TilemapManager tilemapManager) {
-//        FileHandle file = Gdx.files.external("/CoreSmash/maps/" + name + ".map");
-//        if (!file.exists()) return false;
-//
-//        BufferedReader reader = file.reader(1024);
-//        String line;
-//        try {
-//            while (true) {
-//                line = reader.readLine();
-//                if (line == null) break;
-//                Tilemap tm = tilemapManager.newTilemap();
-//
-//                int tileCount = Integer.parseInt(line);
-//                for (int i = 0; i < tileCount; ++i) {
-//                    line = reader.readLine();
-//                    String[] tokens = line.split(":");
-//
-//                    int id = Integer.parseInt(tokens[0]);
-//                    int x = Integer.parseInt(tokens[1]);
-//                    int y = Integer.parseInt(tokens[2]);
-//
-//                    tm.setRelativeTile(x, y, new RegularTile(id));
-//                }
-//            }
-//
-//            return true;
-//        } catch (IOException ex) {
-//
-//        }
-//        return false;
-//    }
-
     public static void saveTo(String name, TilemapManager tilemapManager) {
         FileHandle file = Gdx.files.external("/CoreSmash/maps/" + name + ".map");
 
-        int tilemapCount = tilemapManager.getTilemapCount();
+        int tilemapCount = tilemapManager.getMaxTilemapCount();
 
         try (PrintWriter writer = new PrintWriter(new BufferedWriter(file.writer(false)))) {
             for (int i = 0; i < tilemapCount; ++i) {

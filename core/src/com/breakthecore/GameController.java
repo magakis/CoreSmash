@@ -39,8 +39,9 @@ public class GameController {
             if (tileHit == null) continue;
 
             mb.getTile().onCollide(mb, tileHit, behaviourPowerPack);
-            movingBallManager.dispose(mb);
+            mb.dispose();
         }
+        movingBallManager.disposeInactive();
     }
 
     private void resolveCollisionOf(MovingBall movingBall, TilemapTile tileHit) {

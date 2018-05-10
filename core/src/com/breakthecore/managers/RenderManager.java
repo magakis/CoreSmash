@@ -63,7 +63,7 @@ public class RenderManager {
 
     public void renderCenterDot(Coords2D pos, Matrix4 combined) {
         shapeRenderer.setProjectionMatrix(combined);
-        shapeRenderer.setColor(Color.BLACK);
+        shapeRenderer.setColor(Color.GOLDENROD);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.circle(pos.x, pos.y, 15);
         shapeRenderer.end();

@@ -10,7 +10,6 @@ import com.breakthecore.tilemap.TilemapTile;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 
 public class CollisionDetector {
     private ArrayList<DistanceSideStruct> m_collisionDisSide;
@@ -114,7 +113,7 @@ public class CollisionDetector {
 
     public TilemapTile checkIfBallCollides(MovingBall mb, TilemapManager tmm) {
         TilemapTile result = null;
-        for (int i = 0; i < tmm.getTilemapCount(); ++i) {
+        for (int i = 0; i < tmm.getMaxTilemapCount(); ++i) {
             result = findCollision(tmm.getTilemap(i), mb);
 
             if (result != null) break;
