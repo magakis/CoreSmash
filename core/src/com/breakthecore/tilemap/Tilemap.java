@@ -23,7 +23,8 @@ public class Tilemap extends Observable {
     private int maxTileDistanceFromCenter;
     private int centerTile;
     private Coords2D screenPosition;
-    private TilemapTile[][] listTilemapTiles;
+    private WorldToTilemap worldToTilemap;
+    private TilemapTile[][] tilemapTileList;
     private int[] colorsAvailable;
 
     private boolean hadTilesDestroyed;
@@ -32,8 +33,8 @@ public class Tilemap extends Observable {
     private boolean rotateCounterClockwise;
     private boolean autoRotationEnabled;
     private float rotation;
-    private float minRotationSpeed;
-    private float maxRotationSpeed;
+    private int minRotationSpeed;
+    private int maxRotationSpeed;
     private float speedDiff;
 
     private float cos;
@@ -47,10 +48,19 @@ public class Tilemap extends Observable {
         tilesPerSide = 30; // NOTE: If this is changed, change it also in pathfinder!
         tileSize = WorldSettings.getTileSize();
         centerTile = tilesPerSide / 2;
-        listTilemapTiles = new TilemapTile[tilesPerSide][tilesPerSide];
+        tilemapTileList = new TilemapTile[tilesPerSide][tilesPerSide];
         colorsAvailable = new int[10]; // XXX(22/4/2018): Magic Value 10!
         cos = 1;
         sin = 0;
+        worldToTilemap = new WorldToTilemap();
+    }
+
+    public int getMinRotationSpeed() {
+        return minRotationSpeed;
+    }
+
+    public int getMaxRotationSpeed() {
+        return maxRotationSpeed;
     }
 
     public Tilemap(int id, int posX, int posY) {
@@ -63,12 +73,26 @@ public class Tilemap extends Observable {
         screenPosition = screenPos;
     }
 
+    public TilemapTile[] getTileList() {
+        TilemapTile[] list = new TilemapTile[tileCount];
+        int listIndex = 0;
+
+        for (int y = 0; y < tilesPerSide; ++y) {
+            for (int x = 0; x < tilesPerSide; ++x) {
+                if (tilemapTileList[y][x] != null) {
+                    list[listIndex++] = tilemapTileList[y][x];
+                }
+            }
+        }
+        return list;
+    }
+
     public int[] getColorAmountsAvailable() {
         for (int i = 0; i < colorsAvailable.length; ++i) {
             colorsAvailable[i] = 0;
         }
 
-        for (TilemapTile[] arr : listTilemapTiles) {
+        for (TilemapTile[] arr : tilemapTileList) {
             for (TilemapTile t : arr) {
                 if (t == null) continue;
                 if (TileDictionary.getTypeOf(t.getTileID()) == TileType.REGULAR) {
@@ -82,6 +106,10 @@ public class Tilemap extends Observable {
 
     public int getCenterTilePos() {
         return centerTile;
+    }
+
+    public boolean isCCWRotationEnabled() {
+        return rotateCounterClockwise;
     }
 
     public int getId() {
@@ -112,16 +140,20 @@ public class Tilemap extends Observable {
         return sin;
     }
 
+    public Coords2D getWorldToTilemapCoords(Vector3 worldCoords) {
+        return worldToTilemap.convert(worldCoords);
+    }
+
     public Coords2D getPositionInWorld() {
         return new Coords2D(screenPosition);
     }
 
     public TilemapTile getAbsoluteTile(int x, int y) {
-        return listTilemapTiles[y][x];
+        return tilemapTileList[y][x];
     }
 
     public TilemapTile getRelativeTile(int x, int y) {
-        return listTilemapTiles[centerTile + y][centerTile + x];
+        return tilemapTileList[centerTile + y][centerTile + x];
     }
 
     public void setCounterClockwiseRotation(boolean counterClockwise) {
@@ -133,8 +165,8 @@ public class Tilemap extends Observable {
     }
 
     public void setMinMaxSpeed(float min, float max) {
-        minRotationSpeed = min;
-        maxRotationSpeed = max;
+        minRotationSpeed = (int)min;
+        maxRotationSpeed = (int)max;
         speedDiff = max - min;
     }
 
@@ -165,7 +197,7 @@ public class Tilemap extends Observable {
             ++tileCount;
         }
 
-        listTilemapTiles[centerTile + y][centerTile + x] = tilemapTile;
+        tilemapTileList[centerTile + y][centerTile + x] = tilemapTile;
 
         if (tile.getID() < 8) {
             ++colorsAvailable[tile.getID()];
@@ -191,7 +223,7 @@ public class Tilemap extends Observable {
         cos = (float) Math.cos(rotRad);
         sin = (float) Math.sin(rotRad);
 
-        for (TilemapTile[] arr : listTilemapTiles) {
+        for (TilemapTile[] arr : tilemapTileList) {
             for (TilemapTile hex : arr) {
                 if (hex != null) {
                     updateTilemapTile(hex);
@@ -264,29 +296,6 @@ public class Tilemap extends Observable {
         return hadTilesDestroyed;
     }
 
-    public Coords2D worldToTilemapCoords(Vector3 worldCoords) {
-        Coords2D result = new Coords2D();
-        result.x = (int) worldCoords.x;
-        result.y = (int) worldCoords.y;
-
-        result.x -= screenPosition.x;
-        result.y -= screenPosition.y;
-
-        float tileYDistance = tileSize * .8f;
-        float tileXDistance = tileSize * .95f;
-        float tileXDistanceHalf = tileXDistance / 2.f;
-
-        float revX = result.x * cos + result.y * -sin;
-        float revY = result.x * sin + result.y * cos;
-
-        int y = roundClosestInt(revY / tileYDistance);
-        int x = roundClosestInt((revX - y * tileXDistanceHalf) / tileXDistance);
-
-        result.y = y;
-        result.x = x;
-        return result;
-    }
-
     private int roundClosestInt(float n) {
         if (n > 0)
             return (int) Math.floor(n + .5f);
@@ -315,10 +324,37 @@ public class Tilemap extends Observable {
     }
 
     private void emptyRelativeTile(int x, int y) {
-        listTilemapTiles[y + centerTile][x + centerTile] = null;
+        tilemapTileList[y + centerTile][x + centerTile] = null;
     }
 
     private void emptyAbsoluteTile(int x, int y) {
-        listTilemapTiles[y][x] = null;
+        tilemapTileList[y][x] = null;
+    }
+
+    private class WorldToTilemap {
+        private Coords2D result = new Coords2D();
+
+        public Coords2D convert(Vector3 world) {
+            result.x = (int) world.x;
+            result.y = (int) world.y;
+
+            result.x -= screenPosition.x;
+            result.y -= screenPosition.y;
+
+            // XXX(11/5/2018): MAGIC VALUES .8f , .95f
+            float tileYDistance = tileSize * .8f;
+            float tileXDistance = tileSize * .95f;
+            float tileXDistanceHalf = tileXDistance / 2.f;
+
+            float revX = result.x * cos + result.y * -sin;
+            float revY = result.x * sin + result.y * cos;
+
+            int y = roundClosestInt(revY / tileYDistance);
+            int x = roundClosestInt((revX - y * tileXDistanceHalf) / tileXDistance);
+
+            result.y = y;
+            result.x = x;
+            return result;
+        }
     }
 }

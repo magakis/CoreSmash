@@ -175,7 +175,7 @@ public class RenderManager {
             draw(mt);
 //            scale = mt.getScale();
 //            sideLength = sideLengthHalf * scale;
-//            batch.setColor(colorList[mt.getTileID()]);
+//            batch.setColor(colorList[mt.getCurrentTileID()]);
 //            batch.draw(texture, atPos.x - sideLength, atPos.y - sideLength - i * this.sideLength, sideLength * 2, sideLength * 2);
         }
     }

@@ -159,19 +159,19 @@ public class StatsManager extends Observable implements Observer {
         return specialBallCount;
     }
 
-    public void setLives(boolean enabled, int lives) {
-        isLivesEnabled = enabled;
-        this.lives = lives;
+    public void setLives(int lives) {
+        this.lives = lives < 0 ? 0: lives;
+        isLivesEnabled = lives != 0;
     }
 
-    public void setTime(boolean enabled, float time) {
-        isTimeEnabled = enabled;
-        this.time = time;
+    public void setTime(float time) {
+        this.time = time < 0 ? 0: time;
+        isTimeEnabled = time != 0;
     }
 
-    public void setMoves(boolean enabled, int moves) {
-        isMovesEnabled = enabled;
-        this.moves = moves;
+    public void setMoves(int moves) {
+        this.moves = moves < 0 ? 0: moves;
+        isMovesEnabled = moves != 0;
     }
 
     public void setSpecialBallCount(int specialBallCount) {

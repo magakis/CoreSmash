@@ -11,7 +11,7 @@ import com.breakthecore.tilemap.TilemapManager;
 
 /* If StatManager forces a UserAccount in the future, the Level interface should probably force that too? */
 public interface Level {
-    void initialize(GameScreen.LevelTools levelTools);
+    void initialize(GameScreen.GameScreenController gameScreenController);
 
     void update(float delta, TilemapManager tilemapManager);
 

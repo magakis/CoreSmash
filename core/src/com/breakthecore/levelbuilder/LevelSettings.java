@@ -1,11 +1,19 @@
 package com.breakthecore.levelbuilder;
 
-class LevelSettings {
-    int lives;
-    int moves;
-    int time;
+public class LevelSettings {
+    public int lives;
+    public int moves;
+    public int time;
+    public int ballSpeed = 5;
+    public int launcherSize = 1;
+    public float launcherCooldown;
 
-    int colorCount;
-    int launcherSize;
-    float launcherCooldown;
+    void copy(LevelSettings from) {
+        lives = from.lives;
+        moves = from.moves;
+        time = from.time;
+        ballSpeed = from.ballSpeed;
+        launcherSize = from.launcherSize;
+        launcherCooldown = from.launcherCooldown;
+    }
 }

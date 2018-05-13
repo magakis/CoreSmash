@@ -34,6 +34,7 @@ import com.breakthecore.Launcher;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.levelbuilder.LevelBuilderScreen;
 import com.breakthecore.levels.CampaignLevel;
+import com.breakthecore.levels.CampaignScreen;
 import com.breakthecore.levels.Level;
 import com.breakthecore.managers.MovingBallManager;
 import com.breakthecore.managers.StatsManager;
@@ -49,14 +50,13 @@ import java.util.Locale;
  */
 
 public class MainMenuScreen extends ScreenBase {
-    private GameScreen gameScreen;
     private CampaignScreen campaignScreen;
     private ScoresScreen scoresScreen;
     private LevelBuilderScreen levelBuilderScreen;
     private Stage stage;
     private Skin skin;
     private Stack rootStack;
-    private UIComponent uiMainMenu, uiMenuOverlay, uiGameSettings;
+    private UIComponent uiMainMenu, uiMenuOverlay;
 
     public MainMenuScreen(CoreSmash game) {
         super(game);
@@ -65,7 +65,6 @@ public class MainMenuScreen extends ScreenBase {
         screenInputMultiplexer.addProcessor(stage);
         setupMainMenuStage(stage);
 
-        gameScreen = new GameScreen(gameInstance);
         campaignScreen = new CampaignScreen(gameInstance);
         scoresScreen = new ScoresScreen(gameInstance);
         levelBuilderScreen = new LevelBuilderScreen(gameInstance);
@@ -91,7 +90,6 @@ public class MainMenuScreen extends ScreenBase {
 
         uiMainMenu = new UIMainMenu();
         uiMenuOverlay = new UIOverlay();
-        uiGameSettings = new UIGameSettings();
 
         rootStack = new Stack();
         rootStack.setFillParent(true);
@@ -222,19 +220,19 @@ public class MainMenuScreen extends ScreenBase {
                 }
             });
 
-            ImageButton.ImageButtonStyle imgbsCog = new ImageButton.ImageButtonStyle();
-            imgbsCog.imageUp = skin.getDrawable("cog");
-            imgbsCog.imageDown = skin.newDrawable("cog", Color.RED);
-            ImageButton imgbCog = new ImageButton(imgbsCog);
-            imgbCog.getImageCell().width(70).height(70);
-            tblSettings.add(imgbCog).height(80).width(80).padLeft(20);
-            imgbCog.addListener(new ChangeListener() {
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-                    rootStack.clear();
-                    rootStack.addActor(uiGameSettings.getRoot());
-                }
-            });
+//            ImageButton.ImageButtonStyle imgbsCog = new ImageButton.ImageButtonStyle();
+//            imgbsCog.imageUp = skin.getDrawable("cog");
+//            imgbsCog.imageDown = skin.newDrawable("cog", Color.RED);
+//            ImageButton imgbCog = new ImageButton(imgbsCog);
+//            imgbCog.getImageCell().width(70).height(70);
+//            tblSettings.add(imgbCog).height(80).width(80).padLeft(20);
+//            imgbCog.addListener(new ChangeListener() {
+//                @Override
+//                public void changed(ChangeEvent event, Actor actor) {
+//                    rootStack.clear();
+//                    rootStack.addActor(uiGameSettings.getRoot());
+//                }
+//            });
         }
 
         @Override
@@ -483,94 +481,92 @@ public class MainMenuScreen extends ScreenBase {
                     if (tfLives.getText().isEmpty()) tfLives.setText("0");
                     if (tfTime.getText().isEmpty()) tfTime.setText("0");
 
-                    Level dbLevel = new CampaignLevel(999, gameInstance.getUserAccount(), null) {
-                        @Override
-                        public void initialize(GameScreen.LevelTools levelTools) {
-                            Preferences prefs = Gdx.app.getPreferences("game_settings");
-
-                            TilemapManager tilemapManager = levelTools.tilemapManager;
-                            MovingBallManager movingBallManager = levelTools.movingBallManager;
-                            StatsManager statsManager = levelTools.statsManager;
-                            Launcher launcher = levelTools.launcher;
-
-
-                            boolean spinTheCoreEnabled = cbSpinTheCoreMode.isChecked();
-                            int minRotationSpeed = (int) minRotSlider.getValue();
-                            int maxRotationSpeed = (int) maxRotSlider.getValue();
-                            int initRadius = (int) radiusSlider.getValue();
-                            int colorCount = (int) sldrColorCount.getValue();
-                            int moves = Integer.parseInt(tfMoves.getText());
-                            int lives = Integer.parseInt(tfLives.getText());
-                            int time = Integer.parseInt(tfTime.getText());
-
-                            TilemapBuilder builder = tilemapManager.newLayer();
-                            builder.setColorCount(colorCount);
-                            if (cbUseCustomMap.isChecked()) {
-                                builder.loadMapFromFile("mainmenumap");
-                            } else {
-                                builder.generateRadius(initRadius);
-                            }
-                            if (colorCount > 1) {
-                                builder.reduceColorMatches(2)
-                                        .balanceColorAmounts()
-                                        .forceEachColorOnEveryRadius()
-                                        .reduceCenterTileColorMatch(2, false);
-                            }
-                            if (!spinTheCoreEnabled) {
-                                builder.setMinMaxRotationSpeed(minRotationSpeed, maxRotationSpeed);
-                            }
-                            builder.build();
-
-                            launcher.setLauncherCooldown(sldrLauncherCooldown.getValue());
-//                            launcher.setAutoEject(spinTheCoreEnabled);
-                            movingBallManager.setDefaultBallSpeed((int) sldrBallSpeed.getValue());
-                            launcher.setLauncherSize(3);
-
-                            statsManager.setUserAccount(getUser());
-                            statsManager.setGameMode(spinTheCoreEnabled ? GameMode.SPIN_THE_CORE : GameMode.CLASSIC);
-                            statsManager.setLives(cbUseLives.isChecked(), lives);
-                            statsManager.setMoves(cbUseMoves.isChecked(), moves);
-                            statsManager.setTime(cbUseTime.isChecked(), time);
-                            statsManager.setSpecialBallCount(2);
-                            statsManager.getScoreMultiplier().setup(
-                                    colorCount,
-                                    cbUseLives.isChecked(), lives,
-                                    cbUseMoves.isChecked(), moves,
-                                    cbUseTime.isChecked(), time,
-                                    tilemapManager.getTotalTileCount());
-
-                            prefs.putBoolean("spinthecore_enabled", spinTheCoreEnabled);
-                            prefs.putBoolean("custom_map_enabled", cbUseCustomMap.isChecked());
-                            prefs.putInteger("init_radius", initRadius);
-                            prefs.putFloat("min_rotation_speed", minRotationSpeed);
-                            prefs.putFloat("max_rotation_speed", maxRotationSpeed);
-                            prefs.putFloat("launcher_cooldown", sldrLauncherCooldown.getValue());
-                            prefs.putFloat("ball_speed", sldrBallSpeed.getValue());
-                            prefs.putInteger("color_count", colorCount);
-                            prefs.putBoolean("moves_enabled", cbUseMoves.isChecked());
-                            prefs.putInteger("move_count", moves);
-                            prefs.putBoolean("time_enabled", cbUseTime.isChecked());
-                            prefs.putInteger("time_amount", time);
-                            prefs.putBoolean("lives_enabled", cbUseLives.isChecked());
-                            prefs.putInteger("lives_amount", lives);
-                            prefs.flush();
-                        }
-
-                        @Override
-                        public void update(float delta, TilemapManager tilemapManager) {
-
-                        }
-
-                        @Override
-                        public void end(StatsManager statsManager) {
-                            if (statsManager.getRoundOutcome()) {
-                                statsManager.getUser().saveScore(statsManager.getScore(), statsManager.getDifficultyMultiplier());
-                            }
-                        }
-                    };
-
-
-                    gameScreen.deployLevel(dbLevel);
+//                    Level dbLevel = new CampaignLevel(999, gameInstance.getUserAccount(), null) {
+//                        @Override
+//                        public void initialize(GameScreen.LevelTools levelTools) {
+//                            Preferences prefs = Gdx.app.getPreferences("game_settings");
+//
+//                            TilemapManager tilemapManager = levelTools.tilemapManager;
+//                            MovingBallManager movingBallManager = levelTools.movingBallManager;
+//                            StatsManager statsManager = levelTools.statsManager;
+//                            Launcher launcher = levelTools.launcher;
+//
+//
+//                            boolean spinTheCoreEnabled = cbSpinTheCoreMode.isChecked();
+//                            int minRotationSpeed = (int) minRotSlider.getValue();
+//                            int maxRotationSpeed = (int) maxRotSlider.getValue();
+//                            int initRadius = (int) radiusSlider.getValue();
+//                            int colorCount = (int) sldrColorCount.getValue();
+//                            int moves = Integer.parseInt(tfMoves.getText());
+//                            int lives = Integer.parseInt(tfLives.getText());
+//                            int time = Integer.parseInt(tfTime.getText());
+//
+//                            TilemapBuilder builder = tilemapManager.newLayer();
+//                            builder.setColorCount(colorCount);
+//                            if (cbUseCustomMap.isChecked()) {
+//                                builder.loadMapFromFile("mainmenumap");
+//                            } else {
+//                                builder.generateRadius(initRadius);
+//                            }
+//                            if (colorCount > 1) {
+//                                builder.reduceColorMatches(2)
+//                                        .balanceColorAmounts()
+//                                        .forceEachColorOnEveryRadius()
+//                                        .reduceCenterTileColorMatch(2, false);
+//                            }
+//                            if (!spinTheCoreEnabled) {
+//                                builder.setMinMaxRotationSpeed(minRotationSpeed, maxRotationSpeed);
+//                            }
+//                            builder.build();
+//
+//                            launcher.setLauncherCooldown(sldrLauncherCooldown.getValue());
+////                            launcher.setAutoEject(spinTheCoreEnabled);
+//                            movingBallManager.setDefaultBallSpeed((int) sldrBallSpeed.getValue());
+//                            launcher.setLauncherSize(3);
+//
+//                            statsManager.setUserAccount(getUser());
+//                            statsManager.setGameMode(spinTheCoreEnabled ? GameMode.SPIN_THE_CORE : GameMode.CLASSIC);
+//                            statsManager.setLives(cbUseLives.isChecked(), lives);
+//                            statsManager.setMoves(cbUseMoves.isChecked(), moves);
+//                            statsManager.setTime(cbUseTime.isChecked(), time);
+//                            statsManager.setSpecialBallCount(2);
+//                            statsManager.getScoreMultiplier().setup(
+//                                    colorCount,
+//                                    cbUseLives.isChecked(), lives,
+//                                    cbUseMoves.isChecked(), moves,
+//                                    cbUseTime.isChecked(), time,
+//                                    tilemapManager.getTotalTileCount());
+//
+//                            prefs.putBoolean("spinthecore_enabled", spinTheCoreEnabled);
+//                            prefs.putBoolean("custom_map_enabled", cbUseCustomMap.isChecked());
+//                            prefs.putInteger("init_radius", initRadius);
+//                            prefs.putFloat("min_rotation_speed", minRotationSpeed);
+//                            prefs.putFloat("max_rotation_speed", maxRotationSpeed);
+//                            prefs.putFloat("launcher_cooldown", sldrLauncherCooldown.getValue());
+//                            prefs.putFloat("ball_speed", sldrBallSpeed.getValue());
+//                            prefs.putInteger("color_count", colorCount);
+//                            prefs.putBoolean("moves_enabled", cbUseMoves.isChecked());
+//                            prefs.putInteger("move_count", moves);
+//                            prefs.putBoolean("time_enabled", cbUseTime.isChecked());
+//                            prefs.putInteger("time_amount", time);
+//                            prefs.putBoolean("lives_enabled", cbUseLives.isChecked());
+//                            prefs.putInteger("lives_amount", lives);
+//                            prefs.flush();
+//                        }
+//
+//                        @Override
+//                        public void update(float delta, TilemapManager tilemapManager) {
+//
+//                        }
+//
+//                        @Override
+//                        public void end(StatsManager statsManager) {
+//                            if (statsManager.getRoundOutcome()) {
+//                                statsManager.getUser().saveScore(statsManager.getScore(), statsManager.getDifficultyMultiplier());
+//                            }
+//                        }
+//                    };
+//                    gameScreen.deployLevel(dbLevel);
                 }
             });
             root.add(tbtn).

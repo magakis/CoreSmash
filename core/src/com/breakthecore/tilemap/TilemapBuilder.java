@@ -3,7 +3,8 @@ package com.breakthecore.tilemap;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.breakthecore.Coords2D;
-import com.breakthecore.io.LevelFormatParser;
+import com.breakthecore.levelbuilder.LevelFormatParser;
+import com.breakthecore.levelbuilder.ParsedTile;
 import com.breakthecore.tiles.RandomTile;
 import com.breakthecore.tiles.TileDictionary;
 import com.breakthecore.tiles.TileFactory;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Random;
 
 public class TilemapBuilder {
@@ -101,7 +103,7 @@ public class TilemapBuilder {
     }
 
     public TilemapBuilder placeMiddleTile() {
-        setTile(0,0, 17);
+        setTile(0, 0, 17);
         return this;
     }
 
@@ -341,36 +343,18 @@ public class TilemapBuilder {
         return this;
     }
 
-    /**
-     * TODO: Currently it looks on the external drive while it should look in the game files
-     */
-    public TilemapBuilder loadMapFromFile(String name) {
-        Array<LevelFormatParser.ParsedTile> parsedTiles = LevelFormatParser.load(name);
-
-        if (parsedTiles == null) throw new RuntimeException("Map '" + name + "' doesn't exist!");
-
+    public TilemapBuilder populateFrom(List<ParsedTile> parsedTiles) {
         int randomTileID = TileDictionary.getIdOf(TileType.RANDOM_REGULAR);
-
-        for (LevelFormatParser.ParsedTile parsedTile : parsedTiles) {
-            Coords2D pos = parsedTile.getRelativePosition();
+        for (ParsedTile parsedTile : parsedTiles) {
             if (parsedTile.getTileID() == randomTileID) {
-
-                if (debugEnabled) {
-                    BlueprintTile tile = getTile(pos.x, pos.y);
-                    if (tile == null) {
-                        tile = blueprintTilePool.obtain();
-                    }
-                    setTile(pos.x, pos.y, randomTileID);
-                } else {
-                    checkIfCanBuild();
-                    BlueprintTile tile = getTile(pos.x, pos.y);
-                    if (tile == null) {
-                        setTile(pos.x, pos.y, getRandomColorID());
-                    }
+                checkIfCanBuild();
+                BlueprintTile tile = getTile(parsedTile.getX(), parsedTile.getY());
+                if (tile == null) {
+                    setTile(parsedTile.getX(), parsedTile.getY(), getRandomColorID());
                 }
             } else {
                 BlueprintTile tile = blueprintTilePool.obtain();
-                tile.set(pos.x, pos.y);
+                tile.set(parsedTile.getX(), parsedTile.getY());
                 tile.ID = parsedTile.getTileID();
                 fixedTilesArray.add(tile);
             }

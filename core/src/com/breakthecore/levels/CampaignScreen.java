@@ -1,4 +1,4 @@
-package com.breakthecore.screens;
+package com.breakthecore.levels;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -17,10 +17,11 @@ import com.breakthecore.CoreSmash;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.breakthecore.RoundEndListener;
 import com.breakthecore.WorldSettings;
-import com.breakthecore.levels.Level1;
-import com.breakthecore.levels.Level2;
-import com.breakthecore.levels.Level3;
+import com.breakthecore.levelbuilder.LevelFormatParser;
 import com.breakthecore.managers.StatsManager;
+import com.breakthecore.screens.GameScreen;
+import com.breakthecore.screens.ScreenBase;
+import com.breakthecore.tilemap.TilemapManager;
 
 public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private GameScreen gameScreen;
@@ -85,37 +86,39 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
     private void startCampaignLevel(int lvl) {
         activeLevel = lvl;
-        switch (lvl) {
-            case 1:
-                gameScreen.deployLevel(new Level1(gameInstance.getUserAccount(), this));
-                break;
-            case 2:
-                gameScreen.deployLevel(new Level2(gameInstance.getUserAccount(), this));
-                break;
-            case 3:
-                gameScreen.deployLevel(new Level3(gameInstance.getUserAccount(), this));
-                break;
-            default:
-                return;
-        }
+        final String levelName = "level"+lvl;
+        
+        if (!LevelFormatParser.fileExists(levelName)) return;
 
+        gameScreen.deployLevel(new CampaignLevel(lvl,gameInstance.getUserAccount(), this) {
+            @Override
+            public void initialize(GameScreen.GameScreenController gameScreenController) {
+                gameScreenController.loadLevel(levelName);
+            }
+
+            @Override
+            public void update(float delta, TilemapManager tilemapManager) {
+
+            }
+        });
     }
 
     @Override
     public void onRoundEnded(StatsManager statsManager) {
         // Round WON
+        // XXX(13/5/2018): Score saving and everything should be at one place (UserAccount)?
         if (statsManager.getRoundOutcome()) {
             Preferences prefs = Gdx.app.getPreferences("account");
+            if (prefs.getInteger("level"+activeLevel,0) < statsManager.getScore()) {
+                prefs.putInteger("level"+activeLevel, statsManager.getScore());
+            }
             if (currentLevel == activeLevel) {
-                if (prefs.getInteger("level"+activeLevel,0) < statsManager.getScore()) {
-                    prefs.putInteger("level"+activeLevel, statsManager.getScore());
-                }
                 prefs.putInteger("campaign_level", currentLevel+1);
-                prefs.flush();
                 levelButtons[currentLevel].enable();
                 ++currentLevel;
             }
-            statsManager.getUser().saveScore(statsManager.getScore(), statsManager.getDifficultyMultiplier());
+            prefs.flush();
+            statsManager.getUser().saveScore(statsManager.getScore());
         }
         //Round LOST
     }

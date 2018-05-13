@@ -47,7 +47,7 @@ public class UserAccount {
         return dfcltys[i];
     }
 
-    public void saveScore(int score, float dfclty) {
+    public void saveScore(int score) {
         Preferences prefs = Gdx.app.getPreferences("account");
 
         int scoreIndex = 0;
@@ -61,13 +61,10 @@ public class UserAccount {
                 scores[i] = scores[i - 1];
                 dfcltys[i] = dfcltys[i - 1];
                 prefs.putInteger("score" + i, scores[i - 1]);
-                prefs.putFloat("dfclty" + i, dfcltys[i - 1]);
             }
 
             scores[scoreIndex] = score;
-            dfcltys[scoreIndex] = dfclty;
             prefs.putInteger("score" + scoreIndex, score);
-            prefs.putFloat("dfclty" + scoreIndex, dfclty);
         }
 
         totalScore += score;

@@ -27,12 +27,18 @@ import com.breakthecore.CoreSmash;
 import com.breakthecore.Coords2D;
 import com.breakthecore.GameController;
 import com.breakthecore.Launcher;
+import com.breakthecore.levelbuilder.LevelFormatParser;
+import com.breakthecore.levelbuilder.LevelSettings;
+import com.breakthecore.levelbuilder.MapSettings;
+import com.breakthecore.levelbuilder.ParsedLevel;
+import com.breakthecore.levelbuilder.ParsedTile;
 import com.breakthecore.levels.Level;
 import com.breakthecore.managers.StatsManager;
 import com.breakthecore.StreakUI;
 import com.breakthecore.managers.CollisionDetector;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observer;
+import com.breakthecore.tilemap.TilemapBuilder;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.managers.MovingBallManager;
 import com.breakthecore.managers.RenderManager;
@@ -40,6 +46,7 @@ import com.breakthecore.WorldSettings;
 import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.ui.UIComponent;
 
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -51,6 +58,8 @@ public class GameScreen extends ScreenBase implements Observer {
     private OrthographicCamera camera;
     private RenderManager renderManager;
 
+    private GameScreenController gameScreenController;
+
     private GameController gameController;
     private TilemapManager tilemapManager;
     private MovingBallManager movingBallManager;
@@ -61,6 +70,7 @@ public class GameScreen extends ScreenBase implements Observer {
     private LevelTools levelTools;
 
     private Level activeLevel;
+
 
     //===========
     private DebugUI debugUI;
@@ -84,6 +94,7 @@ public class GameScreen extends ScreenBase implements Observer {
         statsManager = new StatsManager();
         gameController = new GameController(tilemapManager, movingBallManager);
         levelTools = new LevelTools(tilemapManager, movingBallManager, statsManager, launcher);
+        gameScreenController = new GameScreenController(this);
 
         skin = gameInstance.getSkin();
 
@@ -91,7 +102,6 @@ public class GameScreen extends ScreenBase implements Observer {
         gameUI = new GameUI();
         m_resultUI = new ResultUI();
         debugUI = new DebugUI();
-
 
         statsManager.addObserver(this);
         statsManager.addObserver(streakUI);
@@ -149,7 +159,7 @@ public class GameScreen extends ScreenBase implements Observer {
             updateStage();
             checkEndingConditions();
         }
-        stage.act(); //Moved out of updateStage() cause it always has to get called
+        stage.act(); //Moved out of updateStage() cause it always has to convert called
     }
 
     private void updateStage() {
@@ -200,7 +210,7 @@ public class GameScreen extends ScreenBase implements Observer {
     public void deployLevel(Level level) {
         reset();
         activeLevel = level;
-        level.initialize(levelTools);
+        level.initialize(gameScreenController);
         launcher.fillLauncher(tilemapManager);
 
         gameUI.setup();
@@ -235,6 +245,10 @@ public class GameScreen extends ScreenBase implements Observer {
                 }
                 break;
         }
+    }
+
+    public GameScreenController getGameScreenController() {
+        return gameScreenController;
     }
 
     private class GameInputListener implements GestureDetector.GestureListener {
@@ -594,4 +608,46 @@ public class GameScreen extends ScreenBase implements Observer {
             this.launcher = launcher;
         }
     }
+
+    public class GameScreenController {
+        GameScreen gameScreen;
+
+        private GameScreenController(GameScreen screen) {
+            gameScreen = screen;
+        }
+
+        public GameScreenController loadLevel(String filename) {
+            ParsedLevel parsedLevel = LevelFormatParser.loadFrom(filename);
+
+            LevelSettings levelSettings = parsedLevel.getLevelSettings();
+            statsManager.setGameMode(GameMode.CLASSIC);
+            statsManager.setLives(levelSettings.lives);
+            statsManager.setMoves(levelSettings.moves);
+            statsManager.setTime(levelSettings.time);
+
+            launcher.setLauncherSize(levelSettings.launcherSize);
+            launcher.setLauncherCooldown(levelSettings.launcherCooldown);
+
+            movingBallManager.setDefaultBallSpeed(levelSettings.ballSpeed);
+
+            for (int i = 0; i < TilemapManager.MAX_TILEMAP_COUNT; ++i) {
+                List<ParsedTile> tileList = parsedLevel.getTiles(i);
+                MapSettings settings = parsedLevel.getMapSettings(i);
+
+                if (tileList.size() == 0) break;
+
+                TilemapBuilder builder = tilemapManager.newLayer();
+                builder.setColorCount(settings.getColorCount())
+                        .setMinMaxRotationSpeed(settings.getMinSpeed(), settings.getMaxSpeed(), settings.isRotateCCW())
+                        .populateFrom(tileList)
+                        .reduceColorMatches(2)
+                        .balanceColorAmounts()
+                        .forceEachColorOnEveryRadius()
+                        .build();
+            }
+
+            return this;
+        }
+    }
+
 }

@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.breakthecore.managers.RenderManager;
+import com.breakthecore.screens.GameScreen;
 import com.breakthecore.screens.LoadingScreen;
 import com.breakthecore.screens.MainMenuScreen;
 import com.breakthecore.screens.ScreenBase;

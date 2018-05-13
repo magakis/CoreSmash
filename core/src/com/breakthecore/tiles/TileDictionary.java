@@ -25,7 +25,7 @@ public class TileDictionary {
      *
      * NOTE: Calling initialize() a second time is clearly a programmer error but I can't throw
      * in case the TileDictionary has already been initialized because when I "close" the app, it doesn't
-     * necessarily get killed by the system and static values might remain in memory in which case
+     * necessarily convert killed by the system and static values might remain in memory in which case
      * the isInitialized flag will already be set when the normal initialize() call happens.
      */
     public static void initialilze() {

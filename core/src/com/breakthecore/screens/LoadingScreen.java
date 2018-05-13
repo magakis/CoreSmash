@@ -16,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.Align;
 import com.breakthecore.CoreSmash;
+import com.breakthecore.levelbuilder.LevelFormatParser;
 import com.breakthecore.themes.AbstractTheme;
 import com.breakthecore.themes.BaseTheme;
 import com.breakthecore.tiles.TileDictionary;
@@ -61,7 +62,6 @@ public class LoadingScreen extends ScreenBase {
         stage.act();
         stage.draw();
     }
-
 
     private void loadAllTextures() {
         loadTexture("asteroid.png");
@@ -223,6 +223,7 @@ public class LoadingScreen extends ScreenBase {
 
     private void registerFont(Skin skin, String fntName, String path) {
         BitmapFont bf = am.get(path);
+        bf.setFixedWidthGlyphs("1234567890 ");
         skin.add(fntName, bf);
         Label.LabelStyle ls = new Label.LabelStyle(bf, Color.WHITE);
         skin.add(fntName, ls);
