@@ -15,98 +15,119 @@ import com.breakthecore.screens.LoadingScreen;
 import com.breakthecore.screens.MainMenuScreen;
 import com.breakthecore.screens.ScreenBase;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Stack;
 
 import static com.badlogic.gdx.Gdx.gl;
 
-public class CoreSmash  extends Game {
-	private boolean isInitialized;
-	private ExtendViewport viewport;
-	private RenderManager renderManager;
-	private AssetManager assetManager;
-	private UserAccount userAccount;
-	private Skin m_skin;
-	private InputMultiplexer m_inputMultiplexer;
+public class CoreSmash extends Game {
+    public static String VERSION = "0.1.0-alpha";
+    public static boolean LOG_CRASHES = false;
 
-	private Stack<ScreenBase> m_screenStack;
+    private boolean isInitialized;
+    private ExtendViewport viewport;
+    private RenderManager renderManager;
+    private AssetManager assetManager;
+    private UserAccount userAccount;
+    private Skin m_skin;
+    private InputMultiplexer m_inputMultiplexer;
 
-	@Override
-	public void create () {
-		WorldSettings.init();
-		m_screenStack = new Stack<ScreenBase>();
-		viewport = new ExtendViewport(1080, 1920);
+    private Stack<ScreenBase> m_screenStack;
 
-		m_inputMultiplexer = new InputMultiplexer();
-		Gdx.input.setInputProcessor(m_inputMultiplexer);
-		Gdx.input.setCatchBackKey(true);
+    @Override
+    public void create() {
+        WorldSettings.init();
+        m_screenStack = new Stack<ScreenBase>();
+        viewport = new ExtendViewport(1080, 1920);
 
-		assetManager = new AssetManager();
-		renderManager = new RenderManager(assetManager);
+        m_inputMultiplexer = new InputMultiplexer();
+        Gdx.input.setInputProcessor(m_inputMultiplexer);
+        Gdx.input.setCatchBackKey(true);
 
-		m_skin = new Skin();
-		userAccount = new UserAccount();
+        assetManager = new AssetManager();
+        renderManager = new RenderManager(assetManager);
 
-		setScreen(new LoadingScreen(this));
-	}
+        m_skin = new Skin();
+        userAccount = new UserAccount();
 
-	@Override
-	public void render () {
-		gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		super.render();
-	}
+        setScreen(new LoadingScreen(this));
+    }
 
-	public Skin getSkin() {
-		return m_skin;
-	}
+    @Override
+    public void render() {
+        gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        try {
+            super.render();
+        } catch (RuntimeException err) {
+            if (LOG_CRASHES) {
+                SimpleDateFormat format = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss");
+                try (Writer writer = Gdx.files.external("/CoreSmash/crash-logs/" + format.format(Calendar.getInstance().getTime()) + ".txt").writer(false)) {
+                    err.printStackTrace(new PrintWriter(writer));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            throw err;
+        }
 
-	public void setInputProcessor(InputProcessor ip) {
-		m_inputMultiplexer.clear();
-		m_inputMultiplexer.addProcessor(ip);
+    }
 
-	}
+    public Skin getSkin() {
+        return m_skin;
+    }
 
-	public UserAccount getUserAccount() {
-		return userAccount;
-	}
+    public void setInputProcessor(InputProcessor ip) {
+        m_inputMultiplexer.clear();
+        m_inputMultiplexer.addProcessor(ip);
 
-	public void setPrevScreen() {
-		ScreenBase prev = m_screenStack.pop();
-		setInputProcessor(prev.getScreenInputProcessor());
-		super.setScreen(prev);
-	}
+    }
 
-	public void setScreen(ScreenBase newScreen) {
-		m_screenStack.push((ScreenBase) screen);
-		setInputProcessor(newScreen.getScreenInputProcessor());
-		super.setScreen(newScreen);
-	}
+    public UserAccount getUserAccount() {
+        return userAccount;
+    }
 
-	public Viewport getUIViewport() {
-		return viewport;
-	}
+    public void setPrevScreen() {
+        ScreenBase prev = m_screenStack.pop();
+        setInputProcessor(prev.getScreenInputProcessor());
+        super.setScreen(prev);
+    }
 
-	public RenderManager getRenderManager() {
-		return renderManager;
-	}
+    public void setScreen(ScreenBase newScreen) {
+        m_screenStack.push((ScreenBase) screen);
+        setInputProcessor(newScreen.getScreenInputProcessor());
+        super.setScreen(newScreen);
+    }
 
-	public AssetManager getAssetManager() {
-		return assetManager;
-	}
+    public Viewport getUIViewport() {
+        return viewport;
+    }
 
-	public void initApp() {
-		if (!isInitialized) {
-			setScreen(new MainMenuScreen(this));
-			isInitialized = true;
-		}
-	}
+    public RenderManager getRenderManager() {
+        return renderManager;
+    }
 
-	@Override
-	public void dispose () {
-	}
+    public AssetManager getAssetManager() {
+        return assetManager;
+    }
 
-	@Override
-	public void resize(int width, int height) {
-		super.resize(width, height);
-		viewport.update(width, height, true);
-	}
+    public void initApp() {
+        if (!isInitialized) {
+            setScreen(new MainMenuScreen(this));
+            isInitialized = true;
+        }
+    }
+
+    @Override
+    public void dispose() {
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        super.resize(width, height);
+        viewport.update(width, height, true);
+    }
 }

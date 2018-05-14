@@ -42,6 +42,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.breakthecore.CoreSmash;
 import com.breakthecore.Coords2D;
@@ -53,8 +54,15 @@ import com.breakthecore.managers.RenderManager;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tiles.TileDictionary;
 import com.breakthecore.ui.ActorFactory;
+import com.breakthecore.ui.GroupStack;
 import com.breakthecore.ui.UIComponent;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -70,7 +78,7 @@ public class LevelBuilderScreen extends ScreenBase {
     private Stage stage;
     private Skin skin;
 
-    private GroupStack prefsStack;
+    private com.breakthecore.ui.GroupStack prefsStack;
     private UIComponent uiToolbarTop;
     private UITools uiTools;
     private UIInfo uiInfo;
@@ -159,6 +167,15 @@ public class LevelBuilderScreen extends ScreenBase {
 
         stage.addActor(mainStack);
         return stage;
+    }
+
+    public void saveProgress() {
+        applySettings();
+        levelBuilder.saveAs("_editor_");
+    }
+
+    private void applySettings() {
+        freeMode.mapSettings.saveSettings();
     }
 
     private void showToast(String text) {
@@ -250,6 +267,7 @@ public class LevelBuilderScreen extends ScreenBase {
                             if (length == 0) return;
                             cacheFileName = text;
                             if (length > 2 && length < 17) {
+                                applySettings();
                                 if (levelBuilder.saveAs(text)) {
                                     showToast("Level Saved");
                                 } else {
@@ -264,7 +282,7 @@ public class LevelBuilderScreen extends ScreenBase {
                         public void canceled() {
 
                         }
-                    }, "Save File:", cacheFileName.isEmpty()? "level": cacheFileName, "Chars Min 3 Max 16");
+                    }, "Save File:", cacheFileName.isEmpty() ? "level" : cacheFileName, "Chars Min 3 Max 16");
                 }
             });
             tbLoad = new TextButton("Load", tbs);
@@ -278,6 +296,7 @@ public class LevelBuilderScreen extends ScreenBase {
                             cacheFileName = text;
                             if (levelBuilder.load(text)) {
                                 freeMode.gameSettings.updateValues();
+                                freeMode.mapSettings.updateValues(levelBuilder.getLayer());
                                 showToast("File Loaded");
                             } else {
                                 showToast("Error: File not found");
@@ -288,7 +307,7 @@ public class LevelBuilderScreen extends ScreenBase {
                         public void canceled() {
 
                         }
-                    }, "Load File:", cacheFileName.isEmpty()? "level": cacheFileName, "File name");
+                    }, "Load File:", cacheFileName.isEmpty() ? "level" : cacheFileName, "File name");
                 }
             });
 
@@ -297,7 +316,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     levelBuilder.saveAs("_editor_");
-                    gameScreen.deployLevel(testLevel);
+                        gameScreen.deployLevel(testLevel);
                 }
             });
 
@@ -327,10 +346,12 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
 
                 @Override
-                public void update(float delta, TilemapManager tilemapManager) {}
+                public void update(float delta, TilemapManager tilemapManager) {
+                }
 
                 @Override
-                public void end(StatsManager statsManager) {}
+                public void end(StatsManager statsManager) {
+                }
 
                 @Override
                 public int getLevelNumber() {
@@ -794,7 +815,7 @@ public class LevelBuilderScreen extends ScreenBase {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
                         lblBallSpeed.setText(String.valueOf((int) sldrBallSpeed.getValue()));
-                        levelBuilder.setBallSpeed((int)sldrBallSpeed.getValue());
+                        levelBuilder.setBallSpeed((int) sldrBallSpeed.getValue());
                     }
                 });
                 attachSliderToTable("Ball Speed", sldrBallSpeed, lblBallSpeed, settingsTbl);
@@ -812,13 +833,13 @@ public class LevelBuilderScreen extends ScreenBase {
                 attachSliderToTable("Launcher Cooldown", sldrLauncherCooldown, lblLauncherCooldown, settingsTbl);
 
                 sldrLauncherSize = new Slider(levelBuilder.getLauncherSize(), 5, 1, false, skin);
-                lblLauncherSize = new Label(String.valueOf((int)sldrLauncherSize.getValue()), skin, "comic_48");
+                lblLauncherSize = new Label(String.valueOf((int) sldrLauncherSize.getValue()), skin, "comic_48");
                 sldrLauncherSize.addListener(stopTouchDown);
                 sldrLauncherSize.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        lblLauncherSize.setText(String.valueOf((int)sldrLauncherSize.getValue()));
-                        levelBuilder.setLauncherSize((int)sldrLauncherSize.getValue());
+                        lblLauncherSize.setText(String.valueOf((int) sldrLauncherSize.getValue()));
+                        levelBuilder.setLauncherSize((int) sldrLauncherSize.getValue());
                     }
                 });
                 attachSliderToTable("Launcher Size", sldrLauncherSize, lblLauncherSize, settingsTbl);
@@ -883,7 +904,6 @@ public class LevelBuilderScreen extends ScreenBase {
                             sldrMaxRot.setValue(min);
                         }
                         lblMinRot.setText(String.format(Locale.ROOT, "Min:%3d", min));
-                        levelBuilder.setMinSpeed(min);
                     }
                 });
 
@@ -898,7 +918,6 @@ public class LevelBuilderScreen extends ScreenBase {
                             sldrMinRot.setValue(max);
                         }
                         lblMaxRot.setText(String.format(Locale.ROOT, "Max:%3d", max));
-                        levelBuilder.setMaxSpeed(max);
                     }
                 });
 
@@ -908,17 +927,10 @@ public class LevelBuilderScreen extends ScreenBase {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
                         lblColorCount.setText(String.format(Locale.ROOT, "Colors:%2d", (int) sldrColorCount.getValue()));
-                        levelBuilder.setColorCount((int) sldrColorCount.getValue());
                     }
                 });
 
                 cbRotateCounterCW = ActorFactory.createCheckBox("Rotate CCW", skin);
-                cbRotateCounterCW.addListener(new ChangeListener() {
-                    @Override
-                    public void changed(ChangeEvent event, Actor actor) {
-                        levelBuilder.setCCWRotation(cbRotateCounterCW.isChecked());
-                    }
-                });
 
                 VerticalGroup grpLayer = new VerticalGroup();
 
@@ -926,6 +938,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 btnUp.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
+                        saveSettings();
                         int newLayer = levelBuilder.upLayer();
                         if (Integer.compare(newLayer, activeLayer) != 0) {
                             updateValues(newLayer);
@@ -940,6 +953,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 btnDown.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
+                        saveSettings();
                         int newLayer = levelBuilder.downLayer();
                         if (Integer.compare(newLayer, activeLayer) != 0) {
                             updateValues(newLayer);
@@ -983,10 +997,17 @@ public class LevelBuilderScreen extends ScreenBase {
             private void updateValues(int layer) {
                 activeLayer = layer;
                 lblLayer.setText(layer);
-                sldrMinRot.setValue(levelBuilder.getMinSpeed());
                 sldrMaxRot.setValue(levelBuilder.getMaxSpeed());
+                sldrMinRot.setValue(levelBuilder.getMinSpeed());
                 sldrColorCount.setValue(levelBuilder.getColorCount());
                 cbRotateCounterCW.setChecked(levelBuilder.isCCWRotationEnabled());
+            }
+
+            public void saveSettings() {
+                levelBuilder.setMinSpeed((int) sldrMinRot.getValue());
+                levelBuilder.setMaxSpeed((int) sldrMaxRot.getValue());
+                levelBuilder.setColorCount((int) sldrColorCount.getValue());
+                levelBuilder.setCCWRotation(cbRotateCounterCW.isChecked());
             }
 
             @Override

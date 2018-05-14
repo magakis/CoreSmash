@@ -209,6 +209,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
     public void deployLevel(Level level) {
         reset();
+        statsManager.setUserAccount(gameInstance.getUserAccount());
         activeLevel = level;
         level.initialize(gameScreenController);
         launcher.fillLauncher(tilemapManager);

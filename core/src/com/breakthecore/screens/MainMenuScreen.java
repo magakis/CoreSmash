@@ -130,6 +130,7 @@ public class MainMenuScreen extends ScreenBase {
         public boolean keyDown(int keycode) {
             if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
                 if (uiMainMenu.getRoot().getParent() == rootStack) {
+                    levelBuilderScreen.saveProgress();
                     Gdx.app.exit();
                     return true;
                 } else {
@@ -154,25 +155,25 @@ public class MainMenuScreen extends ScreenBase {
                     gameInstance.setScreen(campaignScreen);
                 }
             });
-
-            Container btnAccount = newMenuButton("Scores", "btnAccount", new ChangeListener() {
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-                    gameInstance.setScreen(scoresScreen);
-                }
-            });
+//
+//            Container btnAccount = newMenuButton("Scores", "btnAccount", new ChangeListener() {
+//                @Override
+//                public void changed(ChangeEvent event, Actor actor) {
+//                    gameInstance.setScreen(scoresScreen);
+//                }
+//            });
 
             root.defaults()
                     .width(WorldSettings.getWorldWidth() * 3 / 5)
                     .height(WorldSettings.getWorldHeight() * 2 / 16)
                     .fill();
 
-            Label versInfo = new Label("v.1.0.0 - Michail Angelos Gakis", skin, "comic_24b", Color.DARK_GRAY);
+            Label versInfo = new Label("v."+gameInstance.VERSION+" | Michail Angelos Gakis", skin, "comic_24b", Color.DARK_GRAY);
             versInfo.setAlignment(Align.bottom);
 
             root.bottom();
             root.add(btnPlay).padBottom(Value.percentHeight(1 / 16f, root)).row();
-            root.add(btnAccount).padBottom(Value.percentHeight(3 / 16f, root)).row();
+//            root.add(btnAccount).padBottom(Value.percentHeight(3 / 16f, root)).row();
             root.add(versInfo).align(Align.center).height(versInfo.getPrefHeight());
         }
 

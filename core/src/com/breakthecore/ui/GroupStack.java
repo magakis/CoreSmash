@@ -1,4 +1,4 @@
-package com.breakthecore.levelbuilder;
+package com.breakthecore.ui;
 
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
@@ -11,11 +11,11 @@ import com.breakthecore.ui.UIComponent;
 import java.util.Stack;
 
 
-final class GroupStack implements UIComponent {
+final public class GroupStack implements UIComponent {
     private Container<Group> root;
     private Stack<Group> history;
 
-    GroupStack() {
+    public GroupStack() {
         root = new Container<>();
         root.fill();
         root.setTouchable(Touchable.enabled);
