@@ -165,8 +165,8 @@ public class Tilemap extends Observable {
     }
 
     public void setMinMaxSpeed(float min, float max) {
-        minRotationSpeed = (int)min;
-        maxRotationSpeed = (int)max;
+        minRotationSpeed = (int) min;
+        maxRotationSpeed = (int) max;
         speedDiff = max - min;
     }
 
@@ -208,7 +208,7 @@ public class Tilemap extends Observable {
         setRelativeTile(position.x, position.y, tile);
     }
 
-    public int getTileDistance(int aX1, int aY1, int aX2, int aY2) {
+    public static int getTileDistance(int aX1, int aY1, int aX2, int aY2) {
         int dx = aX1 - aX2;     // signed deltas
         int dy = aY1 - aY2;
         int x = Math.abs(dx);  // absolute deltas

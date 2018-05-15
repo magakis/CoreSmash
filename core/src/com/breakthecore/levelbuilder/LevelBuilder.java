@@ -1,8 +1,10 @@
 package com.breakthecore.levelbuilder;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector3;
 import com.breakthecore.Coords2D;
+import com.breakthecore.managers.RenderManager;
 import com.breakthecore.tilemap.TilemapManager;
 
 import java.util.Objects;
@@ -17,6 +19,8 @@ final public class LevelBuilder {
 
     private int layer;
     private int tileID;
+
+    boolean layerIndicatorEnabled = true;
 
     public LevelBuilder(TilemapManager tilemapManager, OrthographicCamera cam) {
         camera = cam;
@@ -50,6 +54,10 @@ final public class LevelBuilder {
     public void eraseAt(float x, float y) {
         Coords2D relative = tilemapManager.getWorldToLayerCoords(layer, screenToWorld.convert(x, y));
         tilemapManager.removeTile(layer, relative.x, relative.y);
+    }
+
+    public void setLayerIndicator(boolean enabled) {
+        layerIndicatorEnabled = enabled;
     }
 
     public void setCCWRotation (boolean ccw) {
@@ -134,6 +142,21 @@ final public class LevelBuilder {
 
     public Coords2D getLayerPosition() {
         return tilemapManager.getTilemapPosition(); //should return per layer
+    }
+
+    public void draw(RenderManager renderManager) {
+        if (layerIndicatorEnabled) {
+            int maxTilemaps = tilemapManager.getMaxTilemapCount();
+            renderManager.setColorTint(Color.DARK_GRAY);
+            for (int i = 0; i < maxTilemaps; ++i) {
+                if (i == layer) continue;
+                tilemapManager.draw(renderManager, i);
+            }
+            renderManager.setColorTint(Color.WHITE);
+            tilemapManager.draw(renderManager, layer);
+        } else {
+            tilemapManager.draw(renderManager);
+        }
     }
 
     public boolean saveAs(String name) {

@@ -50,6 +50,10 @@ public class RenderManager {
         batch.begin();
     }
 
+    public void setColorTint(Color color) {
+        batch.setColor(color);
+    }
+
     public void setTheme(AbstractTheme newTheme) {
         if (theme != null) {
             theme.dispose();

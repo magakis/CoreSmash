@@ -52,8 +52,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         scrollPane.setSmoothScrolling(false);
         scrollPane.setScrollPercentY(100);
 
-        currentLevel = Gdx.app.getPreferences("account").getInteger("campaign_level", 1);
-        for (int i = 0; i < currentLevel; ++i) {
+//        currentLevel = Gdx.app.getPreferences("account").getInteger("campaign_level", 1);
+        currentLevel = levelButtons.length;
+        for (int i = 0; i < currentLevel && i < levelButtons.length; ++i) {
             levelButtons[i].enable();
         }
 
@@ -112,11 +113,11 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             if (prefs.getInteger("level"+activeLevel,0) < statsManager.getScore()) {
                 prefs.putInteger("level"+activeLevel, statsManager.getScore());
             }
-            if (currentLevel == activeLevel) {
-                prefs.putInteger("campaign_level", currentLevel+1);
-                levelButtons[currentLevel].enable();
-                ++currentLevel;
-            }
+//            if (currentLevel == activeLevel) {
+//                prefs.putInteger("campaign_level", currentLevel+1);
+//                levelButtons[currentLevel].enable();
+//                ++currentLevel;
+//            }
             prefs.flush();
             statsManager.getUser().saveScore(statsManager.getScore());
         }

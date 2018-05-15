@@ -40,9 +40,10 @@ public class TilemapManager extends Observable implements Observer {
     private final Tilemap[] tilemap;
     private final Coords2D tilemapPosition = new Coords2D(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
     public static final int MAX_TILEMAP_COUNT = 3;
-    public final int tilemapSize = 30;
 
-    /** This is only used by the TilemapBuilder which will become obsolete after level builder is setup. */
+    /**
+     * This is only used by the TilemapBuilder which will become obsolete after level builder is setup.
+     */
     @Deprecated
     private int tilemapCount;
 
@@ -62,7 +63,7 @@ public class TilemapManager extends Observable implements Observer {
 
     public TilemapTile getTilemapTile(int layer, int x, int y) {
         assertLayerIndex(layer);
-        return tilemap[layer].getRelativeTile(x,y);
+        return tilemap[layer].getRelativeTile(x, y);
     }
 
     public TilemapTile[] getTileList(int layer) {
@@ -108,7 +109,7 @@ public class TilemapManager extends Observable implements Observer {
 
     public boolean isTileEmpty(int layer, int x, int y) {
         assertLayerIndex(layer);
-        return tilemap[layer].getRelativeTile(x,y) == null;
+        return tilemap[layer].getRelativeTile(x, y) == null;
     }
 
     public Coords2D getTilemapPosition() {
@@ -144,12 +145,16 @@ public class TilemapManager extends Observable implements Observer {
 
     public void placeTile(int layer, int x, int y, int tileID) {
         assertLayerIndex(layer);
-        tilemap[layer].setRelativeTile(x,y, TileFactory.getTileFromID(tileID));
+        tilemap[layer].setRelativeTile(x, y, TileFactory.getTileFromID(tileID));
     }
 
     public void removeTile(int layer, int x, int y) {
         assertLayerIndex(layer);
-        tilemap[layer].destroyRelativeTile(x,y);
+        tilemap[layer].destroyRelativeTile(x, y);
+    }
+
+    public int getCenterTileID() {
+        return tilemap[0].getRelativeTile(0, 0).getTileID();
     }
 
     public TilemapTile attachBall(MovingBall ball, TilemapTile tileHit, CollisionDetector collisionDetector) {
@@ -161,6 +166,7 @@ public class TilemapManager extends Observable implements Observer {
 
 
     //////////////////| GET RID OF |//////////////////
+
     /**
      * Finds an empty side from the coordinates specified and attach the tile provided.
      *
@@ -175,6 +181,7 @@ public class TilemapManager extends Observable implements Observer {
         }
         return placedTile;
     }
+
     private TilemapTile attachTile(int layer, Tile tile, TilemapTile tileHit, TileContainer.Side side) {
         Tilemap tm = tilemap[layer];
         Coords2D tileHitPos = tileHit.getRelativePosition();
@@ -278,6 +285,11 @@ public class TilemapManager extends Observable implements Observer {
             if (tilemap[i].getTileCount() == 0) continue;
             renderManager.draw(tilemap[i]);
         }
+    }
+
+    public void draw(RenderManager renderManager, int layer) {
+        if (tilemap[layer].getTileCount() == 0) return;
+        renderManager.draw(tilemap[layer]);
     }
 
     @Override

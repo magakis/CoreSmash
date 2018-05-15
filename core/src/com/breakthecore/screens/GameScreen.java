@@ -239,7 +239,7 @@ public class GameScreen extends ScreenBase implements Observer {
                     if (moves > launcher.getLauncherSize()) {
                         launcher.loadLauncher(tilemapManager);
                     } else if (moves == launcher.getLauncherSize()) {
-                        launcher.loadLauncher(tilemapManager.getTilemap(0).getRelativeTile(0, 0).getTileID());
+                        launcher.loadLauncher(tilemapManager.getCenterTileID());
                     }
                 } else {
                     launcher.loadLauncher(tilemapManager);
@@ -302,7 +302,7 @@ public class GameScreen extends ScreenBase implements Observer {
                             scrPos = camera.unproject(scrPos);
                             currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
                             currAngle = currPoint.angle();
-                            tilemapManager.getTilemap(0).rotate((initAngle - currAngle) * 2.5f);
+                            tilemapManager.forceRotateLayer(0, (initAngle - currAngle) * 2.5f);
                             initAngle = currAngle;
                         } else {
                             isPanning = true;
