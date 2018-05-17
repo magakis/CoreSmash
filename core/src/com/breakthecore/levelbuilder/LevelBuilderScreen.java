@@ -1,6 +1,5 @@
 package com.breakthecore.levelbuilder;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
@@ -55,6 +54,8 @@ import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tiles.TileDictionary;
 import com.breakthecore.ui.ActorFactory;
 import com.breakthecore.ui.GroupStack;
+import com.breakthecore.ui.LoadFileDialog;
+import com.breakthecore.ui.SaveFileDialog;
 import com.breakthecore.ui.UIComponent;
 
 import java.util.List;
@@ -77,6 +78,8 @@ public class LevelBuilderScreen extends ScreenBase {
     private UITools uiTools;
     private UIInfo uiInfo;
     private final Dialog dlgToast;
+    private SaveFileDialog saveFileDialog;
+    private LoadFileDialog loadFileDialog;
 
     private FreeMode freeMode;
     private DrawMode drawMode;
@@ -105,6 +108,10 @@ public class LevelBuilderScreen extends ScreenBase {
         freeMode = new FreeMode();
         freeMode.activate();
 
+        screenInputMultiplexer.addProcessor(new BackButtonInputHandler());
+        screenInputMultiplexer.addProcessor(stage);
+        screenInputMultiplexer.addProcessor(new GestureDetector(new LevelBuilderGestureListner()));
+
         Window.WindowStyle ws = new Window.WindowStyle();
         ws.background = skin.getDrawable("toast1");
         ws.titleFont = skin.getFont("comic_24b");
@@ -113,9 +120,36 @@ public class LevelBuilderScreen extends ScreenBase {
         dlgToast.text(new Label("", skin, "comic_24b"));
         dlgToast.setTouchable(Touchable.disabled);
 
-        screenInputMultiplexer.addProcessor(new BackButtonInputHandler());
-        screenInputMultiplexer.addProcessor(stage);
-        screenInputMultiplexer.addProcessor(new GestureDetector(new LevelBuilderGestureListner()));
+        Window.WindowStyle wsLoad = new Window.WindowStyle();
+        wsLoad.background = skin.getDrawable("box_white_10");
+        wsLoad.titleFont = skin.getFont("comic_32b");
+
+        loadFileDialog = new LoadFileDialog(skin, wsLoad, stage) {
+            @Override
+            protected void result(Object object) {
+                String fileName = (String)object;
+                if (levelBuilder.load(fileName)) {
+                    freeMode.gameSettings.updateValues();
+                    freeMode.mapSettings.updateValues(levelBuilder.getLayer());
+                    showToast("File '"+fileName+"' loaded");
+                } else {
+                    showToast("Error: Couldn't load '" + fileName + "'");
+                }
+            }
+        };
+
+        saveFileDialog = new SaveFileDialog(skin, wsLoad) {
+            @Override
+            protected void result(Object object) {
+                if (object == null) {
+                    showToast("Error: Invalid file name");
+                } else {
+                    String name = (String) object;
+                    levelBuilder.saveAs(name);
+                    showToast("Level '"+name+"' saved");
+                }
+            }
+        };
     }
 
     @Override
@@ -248,53 +282,14 @@ public class LevelBuilderScreen extends ScreenBase {
             tbSave.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    Gdx.input.getTextInput(new Input.TextInputListener() {
-                        @Override
-                        public void input(String text) {
-                            int length = text.length();
-                            if (length == 0) return;
-                            cacheFileName = text;
-                            if (length > 2 && length < 17) {
-                                if (levelBuilder.saveAs(text)) {
-                                    showToast("Level Saved");
-                                } else {
-                                    showToast("Error: Level not saved");
-                                }
-                            } else {
-                                showToast("Error: Invalid name length");
-                            }
-                        }
-
-                        @Override
-                        public void canceled() {
-
-                        }
-                    }, "Save File:", cacheFileName.isEmpty() ? "level" : cacheFileName, "Chars Min 3 Max 16");
+                    saveFileDialog.show(stage, cacheFileName);
                 }
             });
             tbLoad = new TextButton("Load", tbs);
             tbLoad.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    Gdx.input.getTextInput(new Input.TextInputListener() {
-                        @Override
-                        public void input(String text) {
-                            if (text.length() == 0) return;
-                            cacheFileName = text;
-                            if (levelBuilder.load(text)) {
-                                freeMode.gameSettings.updateValues();
-                                freeMode.mapSettings.updateValues(levelBuilder.getLayer());
-                                showToast("File Loaded");
-                            } else {
-                                showToast("Error: File not found");
-                            }
-                        }
-
-                        @Override
-                        public void canceled() {
-
-                        }
-                    }, "Load File:", cacheFileName.isEmpty() ? "level" : cacheFileName, "File name");
+                    loadFileDialog.show(stage);
                 }
             });
 
@@ -536,7 +531,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
         @Override
         public boolean pan(float x, float y, float deltaX, float deltaY) {
-            levelBuilder.paintAt(x,y);
+            levelBuilder.paintAt(x, y);
             return true;
         }
 
@@ -737,7 +732,8 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 });
 
-                lblMoves = new Label("Moves:", skin, "comic_48b");;
+                lblMoves = new Label("Moves:", skin, "comic_48b");
+                ;
                 tfMoves = createTextField(returnOnNewLineListener);
                 tfMoves.addListener(new ClickListener() {
                     @Override
@@ -756,7 +752,8 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 });
 
-                lblTime = new Label("Time:", skin, "comic_48b");;
+                lblTime = new Label("Time:", skin, "comic_48b");
+                ;
                 tfTime = createTextField(returnOnNewLineListener);
                 tfTime.addListener(new ClickListener() {
                     @Override
@@ -776,12 +773,12 @@ public class LevelBuilderScreen extends ScreenBase {
                 });
 
                 sldrBallSpeed = new Slider(levelBuilder.getBallSpeed(), 20, 1, false, skin);
-                lblBallSpeed = new Label(String.format(Locale.ROOT,"BallSpeed: %2d", (int) sldrBallSpeed.getValue()), skin, "comic_48b");
+                lblBallSpeed = new Label(String.format(Locale.ROOT, "BallSpeed: %2d", (int) sldrBallSpeed.getValue()), skin, "comic_48b");
                 sldrBallSpeed.addListener(stopTouchDown);
                 sldrBallSpeed.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        lblBallSpeed.setText(String.format(Locale.ROOT,"BallSpeed: %2d", (int) sldrBallSpeed.getValue()));
+                        lblBallSpeed.setText(String.format(Locale.ROOT, "BallSpeed: %2d", (int) sldrBallSpeed.getValue()));
                         levelBuilder.setBallSpeed((int) sldrBallSpeed.getValue());
                     }
                 });
@@ -800,12 +797,12 @@ public class LevelBuilderScreen extends ScreenBase {
                 Table grpLauncherCD = createSliderGroup(lblLauncherCooldown, sldrLauncherCooldown);
 
                 sldrLauncherSize = new Slider(levelBuilder.getLauncherSize(), 5, 1, false, skin);
-                lblLauncherSize = new Label("LauncherSize: "+(int) sldrLauncherSize.getValue(), skin, "comic_48b");
+                lblLauncherSize = new Label("LauncherSize: " + (int) sldrLauncherSize.getValue(), skin, "comic_48b");
                 sldrLauncherSize.addListener(stopTouchDown);
                 sldrLauncherSize.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        lblLauncherSize.setText("LauncherSize: "+(int) sldrLauncherSize.getValue());
+                        lblLauncherSize.setText("LauncherSize: " + (int) sldrLauncherSize.getValue());
                         levelBuilder.setLauncherSize((int) sldrLauncherSize.getValue());
                     }
                 });

@@ -113,7 +113,7 @@ public class CollisionDetector {
 
     public TilemapTile checkIfBallCollides(MovingBall mb, TilemapManager tmm) {
         TilemapTile result = null;
-        for (int i = 0; i < tmm.getMaxTilemapCount(); ++i) {
+        for (int i = tmm.getMaxTilemapCount()-1; i >= 0; --i) {
             result = findCollision(tmm.getTilemap(i), mb);
 
             if (result != null) break;

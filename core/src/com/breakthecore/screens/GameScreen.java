@@ -212,15 +212,14 @@ public class GameScreen extends ScreenBase implements Observer {
         statsManager.setUserAccount(gameInstance.getUserAccount());
         activeLevel = level;
         level.initialize(gameScreenController);
+        if (tilemapManager.getTilemapTile(0,0,0) == null) {
+            endGame();
+            gameInstance.setScreen(this);
+            return;
+        }
         launcher.fillLauncher(tilemapManager);
 
         gameUI.setup();
-        if (activeLevel != null) {
-            gameUI.lblHighscore.setText(String.valueOf(Gdx.app.getPreferences("account").getInteger("level" + activeLevel.getLevelNumber(), 0)));
-        }
-        gameUI.lblLives.setText(String.valueOf(statsManager.getLives()));
-        gameUI.tbPower1.setText(String.valueOf(statsManager.getSpecialBallCount()));
-        gameUI.lblMoves.setText(String.valueOf(statsManager.getMoves()));
 
         rootUIStack.addActor(gameUI.getRoot());
         rootUIStack.addActor(streakUI.getRoot());
@@ -462,11 +461,19 @@ public class GameScreen extends ScreenBase implements Observer {
             root.clear();
             grpTop.clear();
 
+            lblScore.setText(0);
+            if (activeLevel != null) {
+                lblHighscore.setText(String.valueOf(Gdx.app.getPreferences("account").getInteger("level" + activeLevel.getLevelNumber(), 0)));
+            }
+            lblLives.setText(String.valueOf(statsManager.getLives()));
+            tbPower1.setText(String.valueOf(statsManager.getSpecialBallCount()));
+            lblMoves.setText(String.valueOf(statsManager.getMoves()));
+
             lblStaticTime.setVisible(statsManager.isTimeEnabled());
             tblTime.setVisible(statsManager.isTimeEnabled());
 
-            tbPower1.setDisabled(false);
             tblPowerUps.setVisible(statsManager.getSpecialBallCount() != 0);
+            tbPower1.setDisabled(statsManager.getSpecialBallCount() == 0);
 
             if (statsManager.isLivesEnabled()) {
                 grpTop.addActor(grpLives);

@@ -536,56 +536,75 @@ public class TilemapBuilder {
             exclude.add(tile);
 
             //top_left
-            tt = getTile(tx - 1, ty + 1);
-            if (tt != null && !exclude.contains(tt)) {
-                if (tt.ID == tile.ID) {
-                    addSurroundingColorMatches(tt);
+            if (checkBounds(tx - 1, ty + 1)) {
+                tt = getTile(tx - 1, ty + 1);
+                if (tt != null && !exclude.contains(tt)) {
+                    if (tt.ID == tile.ID) {
+                        addSurroundingColorMatches(tt);
+                    }
                 }
             }
 
             //top_right
-            tt = getTile(tx, ty + 1);
-            if (tt != null && !exclude.contains(tt)) {
-                if (tt.ID == tile.ID) {
-                    addSurroundingColorMatches(tt);
+            if (checkBounds(tx, ty + 1)) {
+                tt = getTile(tx, ty + 1);
+                if (tt != null && !exclude.contains(tt)) {
+                    if (tt.ID == tile.ID) {
+                        addSurroundingColorMatches(tt);
+                    }
                 }
             }
 
             //right
-            tt = getTile(tx + 1, ty);
-            if (tt != null && !exclude.contains(tt)) {
-                if (tt.ID == tile.ID) {
-                    addSurroundingColorMatches(tt);
+            if (checkBounds(tx + 1, ty)) {
+                tt = getTile(tx + 1, ty);
+                if (tt != null && !exclude.contains(tt)) {
+                    if (tt.ID == tile.ID) {
+                        addSurroundingColorMatches(tt);
+                    }
                 }
             }
 
             //bottom_right
-            tt = getTile(tx + 1, ty - 1);
-            if (tt != null && !exclude.contains(tt)) {
-                if (tt.ID == tile.ID) {
-                    addSurroundingColorMatches(tt);
+            if (checkBounds(tx + 1, ty - 1)) {
+                tt = getTile(tx + 1, ty - 1);
+                if (tt != null && !exclude.contains(tt)) {
+                    if (tt.ID == tile.ID) {
+                        addSurroundingColorMatches(tt);
+                    }
                 }
             }
 
             //bottom_left
-            tt = getTile(tx, ty - 1);
-            if (tt != null && !exclude.contains(tt)) {
-                if (tt.ID == tile.ID) {
-                    addSurroundingColorMatches(tt);
+            if (checkBounds(tx, ty - 1)) {
+                tt = getTile(tx, ty - 1);
+                if (tt != null && !exclude.contains(tt)) {
+                    if (tt.ID == tile.ID) {
+                        addSurroundingColorMatches(tt);
+                    }
                 }
             }
 
+
             //left
-            tt = getTile(tx - 1, ty);
-            if (tt != null && !exclude.contains(tt)) {
-                if (tt.ID == tile.ID) {
-                    addSurroundingColorMatches(tt);
+            if (checkBounds(tx - 1, ty)) {
+                tt = getTile(tx - 1, ty);
+                if (tt != null && !exclude.contains(tt)) {
+                    if (tt.ID == tile.ID) {
+                        addSurroundingColorMatches(tt);
+                    }
                 }
             }
         }
 
     }
+
+    private boolean checkBounds(int x, int y) {
+        return x >= 0 && x < blueprintSize &&
+                y >= 0 && y < blueprintSize;
+    }
 }
+
 
 // NOTE: Procedural shape creation will probably not be needed in the future because of hand-made maps
 //    public void generateSquare(Tilemap tm, int size) {

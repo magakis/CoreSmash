@@ -20,6 +20,7 @@ import com.breakthecore.levelbuilder.LevelFormatParser;
 import com.breakthecore.themes.AbstractTheme;
 import com.breakthecore.themes.BaseTheme;
 import com.breakthecore.tiles.TileDictionary;
+import com.breakthecore.ui.UITools;
 
 import java.util.Locale;
 
@@ -55,6 +56,7 @@ public class LoadingScreen extends ScreenBase {
             baseTheme.finishLoading();
             setupSkin();
             TileDictionary.initialilze();
+            UITools.initialize(skin);
             gameInstance.initApp();
         }
         percent.setText(String.format(Locale.ENGLISH, "%.0f %%", am.getProgress() * 100));

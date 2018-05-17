@@ -149,10 +149,12 @@ public class Tilemap extends Observable {
     }
 
     public TilemapTile getAbsoluteTile(int x, int y) {
+        if (indexSafeGuard(x, y)) return null;
         return tilemapTileList[y][x];
     }
 
     public TilemapTile getRelativeTile(int x, int y) {
+        if (indexSafeGuard(centerTile + x, centerTile + y)) return null;
         return tilemapTileList[centerTile + y][centerTile + x];
     }
 
@@ -170,16 +172,13 @@ public class Tilemap extends Observable {
         speedDiff = max - min;
     }
 
-    public void setAbsoluteTile(int x, int y, Tile tile) {
-        setRelativeTile(x - centerTile, y - centerTile, tile);
-    }
-
     public int getMaxTileDistanceFromCenter() {
         return maxTileDistanceFromCenter;
     }
 
     public void setRelativeTile(int x, int y, Tile tile) {
         if (tile == null) throw new InvalidParameterException();
+        if (indexSafeGuard(centerTile + x, centerTile + y)) return;
 
         TilemapTile tilemapTile = new TilemapTile(tile);
         tilemapTile.setPositionInTilemap(ID, x, y, centerTile);
@@ -202,10 +201,6 @@ public class Tilemap extends Observable {
         if (tile.getID() < 8) {
             ++colorsAvailable[tile.getID()];
         }
-    }
-
-    public void setRelativeTile(Coords2D position, Tile tile) {
-        setRelativeTile(position.x, position.y, tile);
     }
 
     public static int getTileDistance(int aX1, int aY1, int aX2, int aY2) {
@@ -236,16 +231,20 @@ public class Tilemap extends Observable {
         isTilemapInitilized = true;
     }
 
-    public void destroyAbsoluteTile(int absX, int absY) {
-        destroyRelativeTile(absX - centerTile, absY - centerTile);
+    public void destroyAbsoluteTile(int x, int y) {
+        if (indexSafeGuard(x, y)) return;
+
+        destroyRelativeTile(x - centerTile, y - centerTile);
     }
 
-    public void destroyRelativeTile(int tileX, int tileY) {
-        TilemapTile t = getRelativeTile(tileX, tileY);
+    public void destroyRelativeTile(int x, int y) {
+        if (indexSafeGuard(centerTile + x, centerTile + y)) return;
+
+        TilemapTile t = getRelativeTile(x, y);
         if (t == null) return;
         notifyObservers(NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED, t);
         t.clear();
-        emptyRelativeTile(tileX, tileY);
+        emptyRelativeTile(x, y);
         --tileCount;
         hadTilesDestroyed = true;
     }
@@ -294,6 +293,11 @@ public class Tilemap extends Observable {
 
     public boolean hadTilesDestroyed() {
         return hadTilesDestroyed;
+    }
+
+    private boolean indexSafeGuard(int x, int y) {
+        return x < 0 || x >= tilesPerSide ||
+                y < 0 || y >= tilesPerSide;
     }
 
     private int roundClosestInt(float n) {
