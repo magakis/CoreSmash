@@ -17,6 +17,7 @@ import com.badlogic.gdx.utils.Array;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.Arrays;
 
 public class LoadFileDialog extends Dialog {
     private final List levelsFound;
@@ -115,6 +116,7 @@ public class LoadFileDialog extends Dialog {
     public Dialog show(Stage stage) {
         levelsFound.clearItems();
         String[] files = Gdx.files.external("/CoreSmash/levels/").file().list(levelBuilderFilter);
+        Arrays.sort(files);
         levelsFound.setItems(files);
         super.show(stage);
         return this;

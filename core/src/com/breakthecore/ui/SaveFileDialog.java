@@ -15,6 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.Arrays;
 
 public class SaveFileDialog extends Dialog{
     private final List levelsFound;
@@ -101,6 +102,7 @@ public class SaveFileDialog extends Dialog{
     public Dialog show(Stage stage, String defText) {
         levelsFound.clearItems();
         String[] files = Gdx.files.external("/CoreSmash/levels/").file().list(levelBuilderFilter);
+        Arrays.sort(files);
         levelsFound.setItems(files);
         textField.setText(defText);
         super.show(stage);
