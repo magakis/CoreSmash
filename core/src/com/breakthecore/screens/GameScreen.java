@@ -385,25 +385,25 @@ public class GameScreen extends ScreenBase implements Observer {
         public GameUI() {
             root = new Table();
 
-            lblTime = new Label("0", skin, "comic_48");
+            lblTime = new Label("0", skin, "h4");
             lblTime.setAlignment(Align.center);
 
-            lblScore = new Label("0", skin, "comic_48");
+            lblScore = new Label("0", skin, "h4");
             lblScore.setAlignment(Align.center);
 
-            lblLives = new Label("null", skin, "comic_48");
+            lblLives = new Label("null", skin, "h4");
             lblLives.setAlignment(Align.center);
 
-            lblMoves = new Label("null", skin, "comic_48");
+            lblMoves = new Label("null", skin, "h4");
             lblMoves.setAlignment(Align.center);
 
-            lblHighscore = new Label("", skin, "comic_32b");
+            lblHighscore = new Label("", skin, "h4");
             lblHighscore.setAlignment(Align.center);
 
-            lblStaticTime = new Label("Time:", skin, "comic_48b");
-            lblStaticScore = new Label("Score:", skin, "comic_48b");
-            lblStaticLives = new Label("Lives: ", skin, "comic_48b");
-            lblStaticMoves = new Label("Moves Left: ", skin, "comic_48b");
+            lblStaticTime = new Label("Time:", skin, "h4");
+            lblStaticScore = new Label("Score:", skin, "h4");
+            lblStaticLives = new Label("Lives: ", skin, "h4");
+            lblStaticMoves = new Label("Moves Left: ", skin, "h4");
 
             tblTime = new Table();
             tblScore = new Table();
@@ -489,7 +489,7 @@ public class GameScreen extends ScreenBase implements Observer {
             root.add().expandX();
             root.add(tblScore).width(200).height(100).padRight(-10).row();
             root.add().colspan(2);
-            root.add(new Label("Highscore:", skin, "comic_32b")).row();
+            root.add(new Label("Highscore:", skin, "h4")).row();
             root.add().colspan(2);
             root.add(lblHighscore).row();
             root.add().colspan(2);
@@ -528,9 +528,9 @@ public class GameScreen extends ScreenBase implements Observer {
             root = new Container<>(main);
             root.setFillParent(true);
 
-            resultTextLbl = new Label("null", skin, "comic_96b");
-            timeLbl = new Label("null", skin, "comic_48");
-            scoreLbl = new Label("null", skin, "comic_48");
+            resultTextLbl = new Label("null", skin, "h1");
+            timeLbl = new Label("null", skin, "h4");
+            scoreLbl = new Label("null", skin, "h4");
 
             TextButton tbMenu = new TextButton("Menu", skin);
             tbMenu.addListener(new ChangeListener() {
@@ -545,8 +545,8 @@ public class GameScreen extends ScreenBase implements Observer {
             buttonGroup.align(Align.center);
             buttonGroup.addActor(tbMenu);
 
-            Label staticTime = new Label("Time:", skin, "comic_48b");
-            Label staticScore = new Label("Score:", skin, "comic_48b");
+            Label staticTime = new Label("Time:", skin, "h4");
+            Label staticScore = new Label("Score:", skin, "h4");
 
             main.center();
             main.add(resultTextLbl).colspan(2).padBottom(50).row();
@@ -577,15 +577,15 @@ public class GameScreen extends ScreenBase implements Observer {
 
         public DebugUI() {
             root = new Table();
-            dblb1 = new Label("", skin, "comic_24b");
+            dblb1 = new Label("", skin, "h6");
             dblb1.setAlignment(Align.left);
-            dblb2 = new Label("", skin, "comic_24b");
+            dblb2 = new Label("", skin, "h6");
             dblb2.setAlignment(Align.left);
-            dblb3 = new Label("", skin, "comic_24b");
+            dblb3 = new Label("", skin, "h6");
             dblb3.setAlignment(Align.left);
-            dblb4 = new Label("", skin, "comic_24b");
+            dblb4 = new Label("", skin, "h6");
             dblb4.setAlignment(Align.left);
-            dblb5 = new Label("", skin, "comic_24b");
+            dblb5 = new Label("", skin, "h6");
             dblb5.setAlignment(Align.left);
 
             root.bottom().left();

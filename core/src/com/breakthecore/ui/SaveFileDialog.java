@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.breakthecore.WorldSettings;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -36,12 +37,12 @@ public class SaveFileDialog extends Dialog{
         ls.fontColorSelected = Color.WHITE;
         ls.fontColorUnselected = Color.WHITE;
         ls.selection = skin.newDrawable("box_white_5", Color.BLACK);
-        ls.font = skin.getFont("comic_32b");
+        ls.font = skin.getFont("h5");
 
         levelsFound = new List(ls);
 
         TextField.TextFieldStyle tfstyle = new TextField.TextFieldStyle();
-        tfstyle.font = skin.getFont("comic_32b");
+        tfstyle.font = skin.getFont("h4");
         tfstyle.fontColor = Color.WHITE;
         tfstyle.background = skin.getDrawable("box_white_5");
 
@@ -89,7 +90,7 @@ public class SaveFileDialog extends Dialog{
         padTop(10);
 
         Table content = getContentTable();
-        content.add(sp).colspan(2).growX().height(400).left().row();
+        content.pad(20).padBottom(0).add(sp).colspan(2).fill().width(WorldSettings.getWorldWidth()/2).height(400).left().row();
 
         Table buttons = getButtonTable();
         buttons.pad(20);

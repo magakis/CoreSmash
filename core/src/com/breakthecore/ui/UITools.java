@@ -18,10 +18,10 @@ public final class UITools {
         if (!isInitialized) {
             Window.WindowStyle ws = new Window.WindowStyle();
             ws.background = skin.getDrawable("toast1");
-            ws.titleFont = skin.getFont("comic_24b");
+            ws.titleFont = skin.getFont("h6");
 
             dlgToast = new Dialog("", ws);
-            dlgToast.text(new Label("", skin, "comic_24b"));
+            dlgToast.text(new Label("", skin, "h6"));
             dlgToast.setTouchable(Touchable.disabled);
             isInitialized = true;
         }

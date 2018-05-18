@@ -114,15 +114,15 @@ public class LevelBuilderScreen extends ScreenBase {
 
         Window.WindowStyle ws = new Window.WindowStyle();
         ws.background = skin.getDrawable("toast1");
-        ws.titleFont = skin.getFont("comic_24b");
+        ws.titleFont = skin.getFont("h6");
 
         dlgToast = new Dialog("", ws);
-        dlgToast.text(new Label("", skin, "comic_24b"));
+        dlgToast.text(new Label("", skin, "h5"));
         dlgToast.setTouchable(Touchable.disabled);
 
         Window.WindowStyle wsLoad = new Window.WindowStyle();
         wsLoad.background = skin.getDrawable("box_white_10");
-        wsLoad.titleFont = skin.getFont("comic_32b");
+        wsLoad.titleFont = skin.getFont("h3");
 
         loadFileDialog = new LoadFileDialog(skin, wsLoad, stage) {
             @Override
@@ -239,7 +239,7 @@ public class LevelBuilderScreen extends ScreenBase {
             });
             btnUp.add().size(50, 50);
 
-            lblLayer = new Label(String.valueOf(levelBuilder.getLayer()), skin, "comic_48b");
+            lblLayer = new Label(String.valueOf(levelBuilder.getLayer()), skin, "h4");
 
             Button btnDown = new Button(skin.get("default", TextButton.TextButtonStyle.class));
             btnDown.addListener(new ChangeListener() {
@@ -276,7 +276,7 @@ public class LevelBuilderScreen extends ScreenBase {
         UIToolbarTop() {
             TextButton.TextButtonStyle tbs = new TextButton.TextButtonStyle();
             tbs.up = skin.newDrawable("box_white_5", Color.DARK_GRAY);
-            tbs.font = skin.getFont("comic_24b");
+            tbs.font = skin.getFont("h4");
 
             tbSave = new TextButton("Save", tbs);
             tbSave.addListener(new ChangeListener() {
@@ -317,9 +317,11 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
             });
 
-            main.add(tbDeploy).width(80).height(80);
-            main.add(tbSave).width(80).height(80);
-            main.add(tbLoad).width(80).height(80);
+            float minWidth = tbDeploy.getPrefWidth() + 15;
+
+            main.add(tbDeploy).width(minWidth).height(100);
+            main.add(tbSave).width(minWidth).height(100);
+            main.add(tbLoad).width(minWidth).height(100);
 
             testLevel = new Level() {
                 @Override
@@ -358,7 +360,7 @@ public class LevelBuilderScreen extends ScreenBase {
             TextButton.TextButtonStyle tbs = new TextButton.TextButtonStyle();
             tbs.checked = skin.newDrawable("box_white_5", Color.GREEN);
             tbs.up = skin.newDrawable("box_white_5", Color.GRAY);
-            tbs.font = skin.getFont("comic_24b");
+            tbs.font = skin.getFont("h4");
 
             Table main = new Table(skin);
             root.center().right().padRight(-10).setActor(main);
@@ -415,9 +417,11 @@ public class LevelBuilderScreen extends ScreenBase {
             btnGroup.setMaxCheckCount(1);
             btnGroup.setMinCheckCount(0);
 
-            main.add(tbDraw).width(80).height(80).row();
-            main.add(tbErase).width(80).height(80).row();
-            main.add(tbRotate).width(80).height(80).row();
+            float minWidth = tbRotate.getLabel().getPrefWidth() + 15;
+
+            main.add(tbDraw).width(minWidth).height(100).row();
+            main.add(tbErase).width(minWidth).height(100).row();
+            main.add(tbRotate).width(minWidth).height(100).row();
 
         }
 
@@ -436,7 +440,7 @@ public class LevelBuilderScreen extends ScreenBase {
             lbl = new Label[8];
 
             for (int i = 0; i < lbl.length; ++i) {
-                lbl[i] = new Label("", skin, "comic_24b");
+                lbl[i] = new Label("", skin, "h6");
                 root.left().top().add(lbl[i]).left().row();
             }
         }
@@ -624,7 +628,7 @@ public class LevelBuilderScreen extends ScreenBase {
             root.space(20);
             root.wrap(true);
 
-            TextButton btnLevelSettings = new TextButton("Level Settings", skin);
+            TextButton btnLevelSettings = new TextButton("Level", skin);
             btnLevelSettings.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -632,7 +636,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
             });
 
-            TextButton btnMapSettings = new TextButton("Layer Settings", skin);
+            TextButton btnMapSettings = new TextButton("Layer", skin);
             btnMapSettings.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -640,6 +644,9 @@ public class LevelBuilderScreen extends ScreenBase {
                     prefsStack.push(mapSettings.getRoot());
                 }
             });
+
+            btnLevelSettings.getLabelCell().pad(20);
+            btnMapSettings.getLabelCell().pad(20);
 
             root.addActor(btnLevelSettings);
             root.addActor(btnMapSettings);
@@ -693,7 +700,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 root = new Table();
 
                 Label dummy = new Label
-                        (":Level Setup:", skin, "comic_48b");
+                        (":Level Setup:", skin, "h4");
                 root.padLeft(30).padRight(30).padTop(10).padBottom(10).top();
                 root.add(dummy).padBottom(10).colspan(3).row();
 
@@ -713,7 +720,7 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 };
 
-                lblLives = new Label("Lives:", skin, "comic_48b");
+                lblLives = new Label("Lives:", skin, "h4");
                 tfLives = createTextField(returnOnNewLineListener);
                 tfLives.addListener(new ClickListener() {
                     @Override
@@ -732,7 +739,7 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 });
 
-                lblMoves = new Label("Moves:", skin, "comic_48b");
+                lblMoves = new Label("Moves:", skin, "h4");
                 ;
                 tfMoves = createTextField(returnOnNewLineListener);
                 tfMoves.addListener(new ClickListener() {
@@ -752,7 +759,7 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 });
 
-                lblTime = new Label("Time:", skin, "comic_48b");
+                lblTime = new Label("Time:", skin, "h4");
                 ;
                 tfTime = createTextField(returnOnNewLineListener);
                 tfTime.addListener(new ClickListener() {
@@ -773,7 +780,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 });
 
                 sldrBallSpeed = new Slider(levelBuilder.getBallSpeed(), 20, 1, false, skin);
-                lblBallSpeed = new Label(String.format(Locale.ROOT, "BallSpeed: %2d", (int) sldrBallSpeed.getValue()), skin, "comic_48b");
+                lblBallSpeed = new Label(String.format(Locale.ROOT, "BallSpeed: %2d", (int) sldrBallSpeed.getValue()), skin, "h4");
                 sldrBallSpeed.addListener(stopTouchDown);
                 sldrBallSpeed.addListener(new ChangeListener() {
                     @Override
@@ -785,7 +792,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 Table grpBallSpeed = createSliderGroup(lblBallSpeed, sldrBallSpeed);
 
                 sldrLauncherCooldown = new Slider(0f, 4.8f, .16f, false, skin);
-                lblLauncherCooldown = new Label(String.format(Locale.ENGLISH, "LauncherCD: %1.2f", sldrLauncherCooldown.getValue()), skin, "comic_48b");
+                lblLauncherCooldown = new Label(String.format(Locale.ENGLISH, "LauncherCD: %1.2f", sldrLauncherCooldown.getValue()), skin, "h4");
                 sldrLauncherCooldown.addListener(stopTouchDown);
                 sldrLauncherCooldown.addListener(new ChangeListener() {
                     @Override
@@ -797,7 +804,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 Table grpLauncherCD = createSliderGroup(lblLauncherCooldown, sldrLauncherCooldown);
 
                 sldrLauncherSize = new Slider(levelBuilder.getLauncherSize(), 5, 1, false, skin);
-                lblLauncherSize = new Label("LauncherSize: " + (int) sldrLauncherSize.getValue(), skin, "comic_48b");
+                lblLauncherSize = new Label("LauncherSize: " + (int) sldrLauncherSize.getValue(), skin, "h4");
                 sldrLauncherSize.addListener(stopTouchDown);
                 sldrLauncherSize.addListener(new ChangeListener() {
                     @Override
@@ -871,7 +878,7 @@ public class LevelBuilderScreen extends ScreenBase {
             UIMapSettings() {
                 activeLayer = levelBuilder.getLayer();
                 sldrMinRot = new Slider(0, 120, 1, false, skin);
-                lblMinRot = new Label(String.format(Locale.ROOT, "Min:%3d", (int) sldrMinRot.getValue()), skin, "comic_48");
+                lblMinRot = new Label(String.format(Locale.ROOT, "Min:%3d", (int) sldrMinRot.getValue()), skin, "h4");
                 sldrMinRot.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
@@ -905,7 +912,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 });
 
                 sldrMaxRot = new Slider(0, 120, 1, false, skin);
-                lblMaxRot = new Label(String.format(Locale.ROOT, "Max:%3d", (int) sldrMaxRot.getValue()), skin, "comic_48");
+                lblMaxRot = new Label(String.format(Locale.ROOT, "Max:%3d", (int) sldrMaxRot.getValue()), skin, "h4");
                 sldrMaxRot.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
@@ -938,7 +945,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 });
 
                 sldrColorCount = new Slider(levelBuilder.getColorCount(), 8, 1, false, skin);
-                lblColorCount = new Label(String.format(Locale.ROOT, "Colors:%2d", (int) sldrColorCount.getValue()), skin, "comic_48");
+                lblColorCount = new Label(String.format(Locale.ROOT, "Colors:%2d", (int) sldrColorCount.getValue()), skin, "h4");
                 sldrColorCount.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
@@ -969,7 +976,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 });
                 btnUp.add().size(50, 50);
 
-                lblLayer = new Label(String.valueOf(levelBuilder.getLayer()), skin, "comic_48b");
+                lblLayer = new Label(String.valueOf(levelBuilder.getLayer()), skin, "h4");
 
                 Button btnDown = new Button(skin.get("default", TextButton.TextButtonStyle.class));
                 btnDown.addListener(new ChangeListener() {
@@ -988,7 +995,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 grpLayer.addActor(btnDown);
                 grpLayer.center().space(20).pad(10);
 
-                Label slblRotation = new Label(":Rotation:", skin, "comic_48b");
+                Label slblRotation = new Label(":Rotation:", skin, "h4");
 
                 Table rotLabels = new Table();
                 rotLabels.defaults().expandX().padBottom(30);

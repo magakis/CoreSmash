@@ -168,7 +168,7 @@ public class MainMenuScreen extends ScreenBase {
                     .height(WorldSettings.getWorldHeight() * 2 / 16)
                     .fill();
 
-            Label versInfo = new Label("v."+gameInstance.VERSION+" | Michail Angelos Gakis", skin, "comic_24b", Color.DARK_GRAY);
+            Label versInfo = new Label("v."+gameInstance.VERSION+" | Michail Angelos Gakis", skin, "h6", Color.DARK_GRAY);
             versInfo.setAlignment(Align.bottom);
 
             root.bottom();
@@ -260,7 +260,7 @@ public class MainMenuScreen extends ScreenBase {
             root.setFillParent(true);
 
             Label dummy = new Label
-                    ("Game Setup", skin, "comic_96b");
+                    ("Game Setup", skin, "h1");
             root.top().pad(50);
             root.add(dummy).padBottom(50).colspan(2).row();
 
@@ -355,7 +355,7 @@ public class MainMenuScreen extends ScreenBase {
 
             radiusSlider = new Slider(1, 8, 1, false, skin);
             radiusSlider.setValue(prefs.getInteger("init_radius", 4));
-            radiusLbl = new Label(String.valueOf((int) radiusSlider.getValue()), skin, "comic_48");
+            radiusLbl = new Label(String.valueOf((int) radiusSlider.getValue()), skin, "h4");
             radiusSlider.addListener(stopTouchDown);
             radiusSlider.addListener(new ChangeListener() {
                 @Override
@@ -368,7 +368,7 @@ public class MainMenuScreen extends ScreenBase {
 
             minRotSlider = new Slider(10, 120, 1, false, skin);
             minRotSlider.setValue(prefs.getFloat("min_rotation_speed", 40));
-            minRotLbl = new Label(String.valueOf((int) minRotSlider.getValue()), skin, "comic_48");
+            minRotLbl = new Label(String.valueOf((int) minRotSlider.getValue()), skin, "h4");
             minRotSlider.addListener(stopTouchDown);
             minRotSlider.addListener(new ChangeListener() {
                 @Override
@@ -387,7 +387,7 @@ public class MainMenuScreen extends ScreenBase {
 
             maxRotSlider = new Slider(10, 120, 1, false, skin);
             maxRotSlider.setValue(prefs.getFloat("max_rotation_speed", 70));
-            maxRotLbl = new Label(String.valueOf((int) maxRotSlider.getValue()), skin, "comic_48");
+            maxRotLbl = new Label(String.valueOf((int) maxRotSlider.getValue()), skin, "h4");
             maxRotSlider.addListener(stopTouchDown);
             maxRotSlider.addListener(new ChangeListener() {
                 @Override
@@ -406,7 +406,7 @@ public class MainMenuScreen extends ScreenBase {
 
             sldrBallSpeed = new Slider(5, 20, 1, false, skin);
             sldrBallSpeed.setValue(prefs.getFloat("ball_speed", 15));
-            lblBallSpeed = new Label(String.valueOf((int) sldrBallSpeed.getValue()), skin, "comic_48");
+            lblBallSpeed = new Label(String.valueOf((int) sldrBallSpeed.getValue()), skin, "h4");
             sldrBallSpeed.addListener(stopTouchDown);
             sldrBallSpeed.addListener(new ChangeListener() {
                 @Override
@@ -418,7 +418,7 @@ public class MainMenuScreen extends ScreenBase {
 
             sldrLauncherCooldown = new Slider(0f, 4.8f, .16f, false, skin);
             sldrLauncherCooldown.setValue(prefs.getFloat("launcher_cooldown", 0.16f));
-            lblLauncherCooldown = new Label(String.format(Locale.ENGLISH, "%.2f", sldrLauncherCooldown.getValue()), skin, "comic_48");
+            lblLauncherCooldown = new Label(String.format(Locale.ENGLISH, "%.2f", sldrLauncherCooldown.getValue()), skin, "h4");
             sldrLauncherCooldown.addListener(stopTouchDown);
             sldrLauncherCooldown.addListener(new ChangeListener() {
                 @Override
@@ -430,7 +430,7 @@ public class MainMenuScreen extends ScreenBase {
 
             sldrColorCount = new Slider(1, 8, 1, false, skin);
             sldrColorCount.setValue(prefs.getInteger("color_count", 7));
-            lblColorount = new Label(String.valueOf((int) sldrColorCount.getValue()), skin, "comic_48");
+            lblColorount = new Label(String.valueOf((int) sldrColorCount.getValue()), skin, "h4");
             sldrColorCount.addListener(stopTouchDown);
             sldrColorCount.addListener(new ChangeListener() {
                 @Override
@@ -448,7 +448,7 @@ public class MainMenuScreen extends ScreenBase {
 //
 //            Table tmGeneration = new Table();
 //            tmGeneration.defaults().padBottom(50);
-//            tmGeneration.add(new Label("~: Map Generation :~",skin, "comic_32"))
+//            tmGeneration.add(new Label("~: Map Generation :~",skin, "h5"))
 //                    .expandX().center().padBottom(25).row();
 //
 //            tmGeneration.add(cbDrawCircle).left().row();
@@ -469,7 +469,7 @@ public class MainMenuScreen extends ScreenBase {
             });
             root.add(tbtn).width(250).height(200).padTop(50).align(Align.left);
 
-            lblDifficulty = new Label("null", skin, "comic_48b");
+            lblDifficulty = new Label("null", skin, "h4");
             lblDifficulty.setAlignment(Align.center);
             updateDifficulty();
             root.add(lblDifficulty).expandX();
@@ -615,7 +615,7 @@ public class MainMenuScreen extends ScreenBase {
         }
 
         private void attachSliderToTable(String name, Slider slider, Label amountLbl, Table tbl) {
-            Label dummy = new Label(name + ":", skin, "comic_48b");
+            Label dummy = new Label(name + ":", skin, "h4");
             tbl.add(dummy).padRight(30).align(Align.right).padBottom(5);
             tbl.add(amountLbl).align(Align.left).padBottom(5).expandX().row();
             tbl.add(slider).colspan(tbl.getColumns()).fill().expandX().row();

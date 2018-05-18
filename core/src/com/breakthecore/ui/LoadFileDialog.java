@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
+import com.breakthecore.WorldSettings;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -38,7 +39,7 @@ public class LoadFileDialog extends Dialog {
         ls.fontColorSelected = Color.GREEN;
         ls.fontColorUnselected = Color.WHITE;
         ls.selection = skin.newDrawable("box_white_5", Color.BLACK);
-        ls.font = skin.getFont("comic_32b");
+        ls.font = skin.getFont("h5");
 
         levelsFound = new List(ls);
 
@@ -87,7 +88,7 @@ public class LoadFileDialog extends Dialog {
         dlgConfirmDelete.getContentTable().defaults().padBottom(20);
         dlgConfirmDelete.getButtonTable().columnDefaults(0).padRight(40);
         dlgConfirmDelete.getButtonTable().defaults().height(100).width(150);
-        dlgConfirmDelete.text(new Label("",skin, "comic_32b"));
+        dlgConfirmDelete.text(new Label("",skin, "h3"));
         dlgConfirmDelete.button(new TextButton("Yes",skin), true);
         dlgConfirmDelete.button(new TextButton("No",skin), false);
 
@@ -103,7 +104,7 @@ public class LoadFileDialog extends Dialog {
         padTop(10);
 
         Table content = getContentTable();
-        content.add(sp).colspan(2).growX().height(400).left().row();
+        content.pad(20).padBottom(0).add(sp).colspan(2).fill().width(WorldSettings.getWorldWidth()/2).height(400).left().row();
 
         Table buttons = getButtonTable();
         buttons.pad(10);

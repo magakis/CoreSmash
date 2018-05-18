@@ -46,7 +46,7 @@ public class ScoresScreen extends ScreenBase {
 
         VerticalGroup verticalGroup = new VerticalGroup();
         verticalGroup.setFillParent(true);
-        verticalGroup.addActor(new Label("Scores", skin, "comic_96b"));
+        verticalGroup.addActor(new Label("Scores", skin, "h1"));
         verticalGroup.padTop(50);
         verticalGroup.addActor(uiScoreTable.getRoot());
         stage.addActor(verticalGroup);
@@ -71,17 +71,17 @@ public class ScoresScreen extends ScreenBase {
              root.defaults().padRight(30).padBottom(20);
              root.pad(50);
 
-             root.add(new Label("A/A",skin, "comic_48"));
-             root.add(new Label("Difficulty",skin, "comic_48"));
-             root.add(new Label("Score",skin, "comic_48")).row();
+             root.add(new Label("A/A",skin, "h4"));
+             root.add(new Label("Difficulty",skin, "h4"));
+             root.add(new Label("Score",skin, "h4")).row();
 
              lblScore = new Label[5];
              lblDfclty = new Label[5];
              lblTotalScore = new Label("", skin, "comic_72bo");
 
              String style1st = "comic_72bo",
-                     style2nd = "comic_48b",
-                     styledef = "comic_48";
+                     style2nd = "h4",
+                     styledef = "h4";
 
              for (int i = 0; i < 5; ++i) {
                  String style = i == 0 ? style1st : i == 1 ? style2nd : styledef;

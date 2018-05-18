@@ -88,6 +88,13 @@ public class LoadingScreen extends ScreenBase {
 
         loadBitmapFont("comic_72bo.fnt");
         loadBitmapFont("comic_96bo.fnt");
+
+        loadBitmapFont("gidole_24.fnt");
+        loadBitmapFont("gidole_36.fnt");
+        loadBitmapFont("gidole_48.fnt");
+        loadBitmapFont("gidole_60.fnt");
+        loadBitmapFont("gidole_72.fnt");
+        loadBitmapFont("gidole_84.fnt");
     }
 
     private void loadTexture(String name) {
@@ -144,37 +151,41 @@ public class LoadingScreen extends ScreenBase {
         skin.add("speaker", am.get("speaker.png"));
 
         // Fonts
-        registerFont(skin, "comic_32", "comic_32.fnt");
-        registerFont(skin, "comic_48", "comic_48.fnt");
+//        registerFont(skin, "h5", "comic_32.fnt");
+//        registerFont(skin, "h4", "comic_48.fnt");
 
-        registerFont(skin, "comic_24b", "comic_24b.fnt");
-        registerFont(skin, "comic_32b", "comic_32b.fnt");
-        registerFont(skin, "comic_48b", "comic_48b.fnt");
-        registerFont(skin, "comic_96b", "comic_96b.fnt");
+        registerFont(skin, "h6", "gidole_24.fnt");
+        registerFont(skin, "h5", "gidole_36.fnt");
+        registerFont(skin, "h4", "gidole_48.fnt");
+        registerFont(skin, "h3", "gidole_60.fnt");
+        registerFont(skin, "h2", "gidole_72.fnt");
+        registerFont(skin, "h1", "gidole_84.fnt");
 
         registerFont(skin, "comic_72bo", "comic_72bo.fnt");
         registerFont(skin, "comic_96bo", "comic_96bo.fnt");
+
+        // 96   84  72  60  48  36
 
         // TextButtonStyles
         TextButton.TextButtonStyle stb = new TextButton.TextButtonStyle();
         stb.up = skin.newDrawable("box_white_10", Color.WHITE);
         stb.down = skin.newDrawable("box_white_10", Color.GRAY);
         stb.checked = stb.up;
-        stb.font = skin.getFont("comic_96b");
+        stb.font = skin.getFont("h1");
         skin.add("menuButton", stb);
 
         stb = new TextButton.TextButtonStyle();
         stb.up = skin.newDrawable("box_white_10", Color.WHITE);
         stb.down = skin.newDrawable("box_white_10", Color.GRAY);
         stb.checked = stb.up;
-        stb.font = skin.getFont("comic_48");
+        stb.font = skin.getFont("h4");
         skin.add("modeButton", stb);
 
         stb = new TextButton.TextButtonStyle();
         stb.up = skin.newDrawable("box_white_5", Color.WHITE);
         stb.down = skin.newDrawable("box_white_5", Color.GRAY);
         stb.checked = stb.up;
-        stb.font = skin.getFont("comic_48b");
+        stb.font = skin.getFont("h4");
         skin.add("default", stb);
 
         stb = new TextButton.TextButtonStyle();
@@ -194,7 +205,7 @@ public class LoadingScreen extends ScreenBase {
         stb = new TextButton.TextButtonStyle();
         stb.up = skin.newDrawable("myBall", Color.CORAL);
         stb.down = skin.newDrawable("myBall", Color.RED);
-        stb.font = skin.getFont("comic_48b");
+        stb.font = skin.getFont("h4");
         skin.add("tmpPowerup", stb);
 
         // SliderStyles
@@ -210,14 +221,14 @@ public class LoadingScreen extends ScreenBase {
         CheckBox.CheckBoxStyle cbs = new CheckBox.CheckBoxStyle();
         cbs.checkboxOff = skin.newDrawable("box_white_10", Color.RED);
         cbs.checkboxOn = skin.newDrawable("box_white_10", Color.GREEN);
-        cbs.font = skin.getFont("comic_48b");
+        cbs.font = skin.getFont("h4");
         cbs.disabledFontColor = Color.DARK_GRAY;
         skin.add("default", cbs);
 
         // Textfield
         TextField.TextFieldStyle tfs = new TextField.TextFieldStyle();
         tfs.background = skin.getDrawable("box_white_5");
-        tfs.font = skin.getFont("comic_48");
+        tfs.font = skin.getFont("h4");
         tfs.fontColor = Color.WHITE;
         skin.add("default", tfs);
 
