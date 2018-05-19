@@ -78,8 +78,6 @@ public class LevelBuilderScreen extends ScreenBase {
     private UITools uiTools;
     private UIInfo uiInfo;
     private final Dialog dlgToast;
-    private SaveFileDialog saveFileDialog;
-    private LoadFileDialog loadFileDialog;
 
     private FreeMode freeMode;
     private DrawMode drawMode;
@@ -119,37 +117,6 @@ public class LevelBuilderScreen extends ScreenBase {
         dlgToast = new Dialog("", ws);
         dlgToast.text(new Label("", skin, "h5"));
         dlgToast.setTouchable(Touchable.disabled);
-
-        Window.WindowStyle wsLoad = new Window.WindowStyle();
-        wsLoad.background = skin.getDrawable("box_white_10");
-        wsLoad.titleFont = skin.getFont("h3");
-
-        loadFileDialog = new LoadFileDialog(skin, wsLoad, stage) {
-            @Override
-            protected void result(Object object) {
-                String fileName = (String)object;
-                if (levelBuilder.load(fileName)) {
-                    freeMode.gameSettings.updateValues();
-                    freeMode.mapSettings.updateValues(levelBuilder.getLayer());
-                    showToast("File '"+fileName+"' loaded");
-                } else {
-                    showToast("Error: Couldn't load '" + fileName + "'");
-                }
-            }
-        };
-
-        saveFileDialog = new SaveFileDialog(skin, wsLoad) {
-            @Override
-            protected void result(Object object) {
-                if (object == null) {
-                    showToast("Error: Invalid file name");
-                } else {
-                    String name = (String) object;
-                    levelBuilder.saveAs(name);
-                    showToast("Level '"+name+"' saved");
-                }
-            }
-        };
     }
 
     @Override
@@ -269,9 +236,11 @@ public class LevelBuilderScreen extends ScreenBase {
 
     private class UIToolbarTop implements UIComponent {
         private Container<Table> root;
+        private SaveFileDialog saveFileDialog;
+        private LoadFileDialog loadFileDialog;
         private Level testLevel;
         private final TextButton tbSave, tbLoad, tbDeploy;
-        private String cacheFileName = "";
+        private String filenameCache = "";
 
         UIToolbarTop() {
             TextButton.TextButtonStyle tbs = new TextButton.TextButtonStyle();
@@ -282,7 +251,7 @@ public class LevelBuilderScreen extends ScreenBase {
             tbSave.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    saveFileDialog.show(stage, cacheFileName);
+                    saveFileDialog.show(stage, filenameCache);
                 }
             });
             tbLoad = new TextButton("Load", tbs);
@@ -323,7 +292,39 @@ public class LevelBuilderScreen extends ScreenBase {
             main.add(tbSave).width(minWidth).height(100);
             main.add(tbLoad).width(minWidth).height(100);
 
-            testLevel = new Level() {
+            Window.WindowStyle wsLoad = new Window.WindowStyle();
+            wsLoad.background = skin.getDrawable("box_white_10");
+            wsLoad.titleFont = skin.getFont("h3");
+
+            loadFileDialog = new LoadFileDialog(skin, wsLoad, stage) {
+                @Override
+                protected void result(Object object) {
+                    filenameCache = (String)object;
+                    if (levelBuilder.load(filenameCache)) {
+                        freeMode.gameSettings.updateValues();
+                        freeMode.mapSettings.updateValues(levelBuilder.getLayer());
+                        showToast("File '"+filenameCache+"' loaded");
+                    } else {
+                        showToast("Error: Couldn't load '" + filenameCache + "'");
+                    }
+                }
+            };
+
+            saveFileDialog = new SaveFileDialog(skin, wsLoad) {
+                @Override
+                protected void result(Object object) {
+                    if (object == null) {
+                        showToast("Error: Invalid file name");
+                    } else {
+                    filenameCache = (String) object;
+                        levelBuilder.saveAs(filenameCache);
+                        showToast("Level '"+filenameCache+"' saved");
+                    }
+                }
+            };
+
+
+        testLevel = new Level() {
                 @Override
                 public void initialize(GameScreen.GameScreenController gameScreenController) {
                     gameScreenController.loadLevel("_editor_");
