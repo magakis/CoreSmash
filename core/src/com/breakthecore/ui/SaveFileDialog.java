@@ -36,7 +36,7 @@ public class SaveFileDialog extends Dialog{
         List.ListStyle ls = new List.ListStyle();
         ls.fontColorSelected = Color.WHITE;
         ls.fontColorUnselected = Color.WHITE;
-        ls.selection = skin.newDrawable("box_white_5", Color.BLACK);
+        ls.selection = skin.newDrawable("box_white_5", 0,0,0,0);
         ls.font = skin.getFont("h5");
 
         levelsFound = new List(ls);

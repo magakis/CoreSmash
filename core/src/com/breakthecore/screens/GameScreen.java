@@ -648,9 +648,9 @@ public class GameScreen extends ScreenBase implements Observer {
                 builder.setColorCount(settings.getColorCount())
                         .setMinMaxRotationSpeed(settings.getMinSpeed(), settings.getMaxSpeed(), settings.isRotateCCW())
                         .populateFrom(tileList)
-                        .reduceColorMatches(2)
-                        .balanceColorAmounts()
-                        .forceEachColorOnEveryRadius()
+                   //     .reduceColorMatches(2)
+                     //   .balanceColorAmounts()
+                       // .forceEachColorOnEveryRadius()
                         .build();
             }
 

@@ -2,8 +2,6 @@ package com.breakthecore.tilemap;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
-import com.breakthecore.Coords2D;
-import com.breakthecore.levelbuilder.LevelFormatParser;
 import com.breakthecore.levelbuilder.ParsedTile;
 import com.breakthecore.tiles.RandomTile;
 import com.breakthecore.tiles.TileDictionary;
@@ -12,6 +10,7 @@ import com.breakthecore.tiles.TileType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -28,6 +27,7 @@ public class TilemapBuilder {
     private int colorCount;
     private int maxDistance;
     private int blueprintTileCount;
+    int maxMatchCount;
 
     private Random rand;
     private Pool<BlueprintTile> blueprintTilePool;
@@ -38,13 +38,18 @@ public class TilemapBuilder {
     private BlueprintTile[][] blueprintMap;
     private Matcher matcher;
 
+    private boolean balanceColorAmountsFilter;
+    private boolean reduceColorMatchesFilter;
+    private boolean reduceCenterTileMatchesFilter;
+    private boolean balanceColorsOnEachRadius;
+
     private int minRotSpeed;
     private int maxRotSpeed;
     private boolean isRotating;
     private boolean rotateCounterClockwise;
 
     public TilemapBuilder() {
-        rand = new Random();
+        rand = new Random(666);
         colorGroupList = new ColorGroupContainer[maxColorCount];
         blueprintMap = new BlueprintTile[blueprintSize][blueprintSize];
         fixedTilesArray = new Array<>();
@@ -87,19 +92,16 @@ public class TilemapBuilder {
         compDistance = new Comparator<BlueprintTile>() {
             @Override
             public int compare(BlueprintTile o1, BlueprintTile o2) {
-                int o1Dist = getTileDistance(o1.x, o1.y, 0, 0);
-                int o2Dist = getTileDistance(o2.x, o2.y, 0, 0);
-                return Integer.compare(o1Dist, o2Dist);
+                return Integer.compare(o1.distance, o2.distance);
             }
         };
     }
 
-    public TilemapBuilder startNewTilemap(Tilemap tm) {
+    public void startNewTilemap(Tilemap tm) {
         if (tm == null) throw new NullPointerException();
         reset();
         tm.reset();
         tilemap = tm;
-        return this;
     }
 
     public TilemapBuilder placeMiddleTile() {
@@ -110,6 +112,7 @@ public class TilemapBuilder {
     public TilemapBuilder setColorCount(int colorCount) {
         this.colorCount = colorCount;
         checkIfCanBuild();
+        maxMatchCount = 7 / colorCount + 1;
         return this;
     }
 
@@ -362,7 +365,251 @@ public class TilemapBuilder {
         return this;
     }
 
+    private void applyFilter() {
+        fillColorGroupContainers();
+        balanceColors(); // Equalize colors
+        balanceColorsOnEachRadius();
+        spreadBalls();
+    }
+
+    private void balanceColors() {
+        checkIfCanBuild();
+
+        int aver = blueprintTileCount / colorCount;
+        int maxIndex = colorCount - 1;
+
+        Arrays.sort(colorGroupList, compSizes);
+
+        while (colorGroupList[0].list.size() < aver || colorGroupList[maxIndex].list.size() != aver + 1) {
+            ColorGroupContainer cgcLeastFilled = colorGroupList[0];
+            ColorGroupContainer cgcMostFilled = colorGroupList[maxIndex];
+
+            BlueprintTile tile = cgcMostFilled.list.get(rand.nextInt(cgcMostFilled.list.size()));
+            cgcMostFilled.list.remove(tile);
+
+            tile.ID = cgcLeastFilled.groupColor;
+            cgcLeastFilled.list.add(tile);
+
+            Arrays.sort(colorGroupList, compSizes);
+        }
+    }
+
+    private void balanceColorsOnEachRadius() {
+        Arrays.sort(colorGroupList, compSizes);
+
+        for (ColorGroupContainer group : colorGroupList) {
+            Collections.sort(group.list, compDistance);
+        }
+
+        for (ColorGroupContainer primeGroup : colorGroupList) {
+            if (primeGroup.groupColor == colorCount) break;
+
+            int distanceToSearchFor = maxDistance;
+            BlueprintTile tmp = blueprintTilePool.obtain();
+
+            for (int availableSize = primeGroup.list.size(); availableSize >= 0 && distanceToSearchFor > 0; --availableSize) {
+                tmp.distance = distanceToSearchFor;
+
+                if (Collections.binarySearch(primeGroup.list, tmp, compDistance) < 0) {
+                    int primeIndex = getConsequetiveValueIndex(primeGroup.list);
+
+                    if (primeIndex < 0) {
+                        if (primeGroup.list.get(0).distance < distanceToSearchFor) {
+                            primeIndex = 0;
+                        } else {
+                            break;
+                        }
+                    }
+
+                    for (ColorGroupContainer donorGroup : colorGroupList) { // should I make this descend?
+                        if (donorGroup.groupColor == colorCount) break;
+                        if (donorGroup == primeGroup) continue;
+
+                        int donorIndex = getConsequetiveValueIndexFor(distanceToSearchFor, donorGroup.list);
+                        if (donorIndex >= 0) {
+                            swapColorGroups(primeIndex, primeGroup, donorIndex, donorGroup);
+                            break;
+                        }
+                    }
+
+                }
+
+                --distanceToSearchFor;
+            }
+
+            blueprintTilePool.free(tmp);
+        }
+    }
+
+    /* Greedy implementation.
+     * Should be profiled at some point
+     */
+    private void spreadBalls() {
+        for (ColorGroupContainer primeGroup : colorGroupList) {
+            ArrayList<BlueprintTile> primeMatch = findBigColorMatch(maxMatchCount, primeGroup.list);
+
+            primeLoop:
+            while (primeMatch != null) {
+                for (ColorGroupContainer donorGroup : colorGroupList) {
+                    if (donorGroup == primeGroup) continue;
+
+//                    ArrayList<BlueprintTile> donorMatch = findBigColorMatch(maxMatchCount, donorGroup.list);
+//                    if (donorMatch != null) {
+                    for (BlueprintTile first : primeMatch) {
+                        for (BlueprintTile second : donorGroup.list) {
+                            if (isSwapValid(primeGroup.list.indexOf(first), primeGroup, donorGroup.list.indexOf(second), donorGroup)) {
+                                swapColorGroups(primeGroup.list.indexOf(first), primeGroup, donorGroup.list.indexOf(second), donorGroup);
+                                primeMatch = findBigColorMatch(maxMatchCount, primeGroup.list);
+                                continue primeLoop;
+                            }
+                        }
+                    }
+//                    }
+
+                }
+                /* If loop reached this point, it means that it can't swap with any other grop
+                 * and so it should stop and move to the next group.
+                 */
+                break;
+            }
+
+        }
+    }
+
+    private ArrayList<BlueprintTile> findBigColorMatch(int maxMatch, List<BlueprintTile> list) {
+//        ArrayList<BlueprintTile> cache = null;
+
+        for (BlueprintTile tile : list) {
+            ArrayList<BlueprintTile> cache = matcher.getColorMatchesFromTile(tile);
+            if (cache.size() > maxMatch) {
+                return cache;
+            }
+        }
+        return null;
+    }
+
+    private void swapColorGroups(int primeIndx, ColorGroupContainer primeGroup, int donorIndx, ColorGroupContainer donorGroup) {
+        BlueprintTile forDonor = primeGroup.list.get(primeIndx);
+        BlueprintTile forPrime = donorGroup.list.get(donorIndx);
+
+        primeGroup.list.remove(forDonor);
+        donorGroup.list.remove(forPrime);
+
+        forDonor.ID = donorGroup.groupColor;
+        forPrime.ID = primeGroup.groupColor;
+
+        primeGroup.list.add(forPrime);
+        donorGroup.list.add(forDonor);
+
+        Collections.sort(primeGroup.list, compDistance);
+        Collections.sort(donorGroup.list, compDistance);
+    }
+
+    private boolean isSwapValid(int primeIndex, ColorGroupContainer primeGroup, int donorIndex, ColorGroupContainer donorGroup) {
+        boolean result = false;
+
+        if (!distanceCheck(primeIndex, primeGroup, donorIndex, donorGroup)) return false;
+
+        BlueprintTile prime = primeGroup.list.get(primeIndex);
+        BlueprintTile donor = donorGroup.list.get(donorIndex);
+
+        BlueprintTile dummy = blueprintTilePool.obtain();
+        dummy.set(prime);
+        dummy.ID = donor.ID;
+        ArrayList<BlueprintTile> matches = matcher.getColorMatchesFromTile(dummy);
+        if (matches.size() <= maxMatchCount) {
+            dummy.set(donor);
+            dummy.ID = prime.ID;
+            matches = matcher.getColorMatchesFromTile(dummy);
+
+            if (matches.size() <= maxMatchCount) {
+                result = true;
+            }
+        }
+        blueprintTilePool.free(dummy);
+
+        return result;
+    }
+
+    private boolean distanceCheck(int primeIndex, ColorGroupContainer primeGroup, int donorIndex, ColorGroupContainer donorGroup) {
+        BlueprintTile prime = primeGroup.list.get(primeIndex);
+        BlueprintTile donor = donorGroup.list.get(donorIndex);
+
+        if (prime.distance == donor.distance) return true;
+
+        boolean isPrimeAllowed = false;
+        if (primeIndex - 1 >= 0) {
+            isPrimeAllowed = primeGroup.list.get(primeIndex - 1).distance == prime.distance;
+        }
+        if (!isPrimeAllowed && primeIndex + 1 < primeGroup.list.size()) {
+            isPrimeAllowed = primeGroup.list.get(primeIndex + 1).distance == prime.distance;
+        }
+
+        boolean isDonorAllowed = false;
+        if (donorIndex - 1 >= 0) {
+            isDonorAllowed = donorGroup.list.get(donorIndex - 1).distance == donor.distance;
+        }
+        if (!isDonorAllowed && donorIndex + 1 < donorGroup.list.size()) {
+            isDonorAllowed = donorGroup.list.get(donorIndex + 1).distance == donor.distance;
+        }
+
+        return isPrimeAllowed && isDonorAllowed;
+    }
+
+    private ColorGroupContainer getColorGroupForID(int id) {
+        for (ColorGroupContainer colorGroup : colorGroupList) {
+            if (colorGroup.groupColor == id) return colorGroup;
+        }
+        return null;
+    }
+
+    private int getConsequetiveValueIndex(List<BlueprintTile> list) {
+        int listSize = list.size();
+        if (listSize == 0) return -1;
+
+        BlueprintTile prev = list.get(0);
+        BlueprintTile next;
+
+        for (int i = 1; i < listSize; ++i) {
+            next = list.get(i);
+            if (prev.distance == next.distance) {
+                return i;
+            }
+            prev = next;
+        }
+        return -1;
+    }
+
+    private int getConsequetiveValueIndexFor(int distanceToSearch, List<BlueprintTile> list) {
+        int result = -1;
+        int listSize = list.size();
+        if (listSize == 0) return result;
+
+
+        BlueprintTile tmp = blueprintTilePool.obtain();
+
+        tmp.distance = distanceToSearch;
+        int foundIndex = Collections.binarySearch(list, tmp, compDistance);
+
+        if (foundIndex >= 0) {
+            if (foundIndex - 1 >= 0) {
+                if (list.get(foundIndex - 1).distance == distanceToSearch)
+                    result = foundIndex - 1;
+            }
+            if (foundIndex + 1 < listSize) {
+                if (list.get(foundIndex + 1).distance == distanceToSearch)
+                    result = foundIndex + 1;
+            }
+        }
+
+        blueprintTilePool.free(tmp);
+        return result;
+    }
+
     public void build() {
+        if (colorCount > 1) {
+            applyFilter();
+        }
         putFixedTilesInBlueprint();
         // TODO(4/5/2018): this function needs to know what each id represents...
 
@@ -474,6 +721,7 @@ public class TilemapBuilder {
         isBuilt = false;
         colorCount = 0;
         maxDistance = 0;
+        maxMatchCount = 0;
         blueprintTileCount = 0;
         debugEnabled = false;
         minRotSpeed = 0;
@@ -507,6 +755,13 @@ public class TilemapBuilder {
             distance = getTileDistance(x, y, 0, 0);
         }
 
+        public void set(BlueprintTile copy) {
+            ID = copy.ID;
+            x = copy.x;
+            y = copy.y;
+            distance = copy.distance;
+        }
+
         @Override
         public void reset() {
             ID = 0;
@@ -523,7 +778,7 @@ public class TilemapBuilder {
             match.clear();
             exclude.clear();
             addSurroundingColorMatches(tile);
-            return match;
+            return (ArrayList<BlueprintTile>) match.clone();
         }
 
         private void addSurroundingColorMatches(BlueprintTile tile) {
@@ -600,75 +855,10 @@ public class TilemapBuilder {
     }
 
     private boolean checkBounds(int x, int y) {
+        x += centerTile;
+        y += centerTile;
         return x >= 0 && x < blueprintSize &&
                 y >= 0 && y < blueprintSize;
     }
+
 }
-
-
-// NOTE: Procedural shape creation will probably not be needed in the future because of hand-made maps
-//    public void generateSquare(Tilemap tm, int size) {
-//        int signFix;
-//        for (int y = -size; y <= size; ++y) {
-//            signFix = y > 0 ? 1 : 0;
-//            for (int x = -size; x <= size; ++x) {
-//                tm.setRelativeTile(x - (y + signFix) / 2, y, new RegularTile(rand.nextInt(colorCount)));
-//            }
-//        }
-//    }
-//    public void generateDiamond(Tilemap tm, int size) {
-//        int fixSign;
-//        int absY;
-//        int sizeY = size * 2;
-//        for (int y = -sizeY; y <= sizeY; ++y) {
-//            absY = Math.abs(y);
-//            fixSign = y < 0 ? absY : 0;
-//            for (int x = -size; x <= size - absY; ++x) {
-//                tm.setRelativeTile(x + fixSign, y, new RegularTile(rand.nextInt(colorCount)));
-//            }
-//        }
-//    }
-//    public void generateSquareSkewed(Tilemap tm, int size, boolean flipX) {
-//        if (flipX) {
-//            for (int y = -size; y <= size; ++y) {
-//                for (int x = -size; x <= size; ++x) {
-//                    tm.setRelativeTile(x - y, y, new RegularTile(rand.nextInt(colorCount)));
-//                }
-//            }
-//        } else {
-//            for (int y = -size; y <= size; ++y) {
-//                for (int x = -size; x <= size; ++x) {
-//                    tm.setRelativeTile(x, y, new RegularTile(rand.nextInt(colorCount)));
-//                }
-//            }
-//        }
-//    }
-//
-//    public void reduceColorMatches(Tilemap tm, int max, boolean strict) {
-//        int tilemapSize = tm.getTilemapSize();
-//        BlueprintTile tmTile;
-//        ArrayList<BlueprintTile> matches;
-//        for (int y = 0; y < tilemapSize; ++y) {
-//            for (int x = 0; x < tilemapSize; ++x) {
-//                tmTile = tm.getAbsoluteTile(x, y);
-//                if (tmTile == null) continue;
-//
-//                matches = match3.getColorMatchesFromTile(tmTile, tm);
-//                if (strict) {
-//                    while (matches.size() > max) {
-//                        tmTile.setTile(new RegularTile(rand.nextInt(colorCount)));
-//                        matches = match3.getColorMatchesFromTile(tmTile, tm);
-//                    }
-//                } else {
-//                    if (matches.size() > max) {
-//                        int color = tmTile.ID;
-//                        int newColor = rand.nextInt(colorCount);
-//                        while (newColor == color && colorCount != 1) {
-//                            newColor = rand.nextInt(colorCount);
-//                        }
-//                        tmTile.setTile(new RegularTile(rand.nextInt(colorCount)));
-//                    }
-//                }
-//            }
-//        }
-//    }

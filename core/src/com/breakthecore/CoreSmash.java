@@ -25,8 +25,8 @@ import java.util.Stack;
 import static com.badlogic.gdx.Gdx.gl;
 
 public class CoreSmash extends Game {
-    public static String VERSION = "0.1.0-alpha";
-    public static boolean LOG_CRASHES = false;
+    public static String VERSION = "0.1.2-alpha";
+    public static boolean LOG_CRASHES = true;
 
     private boolean isInitialized;
     private ExtendViewport viewport;
@@ -55,6 +55,7 @@ public class CoreSmash extends Game {
         userAccount = new UserAccount();
 
         setScreen(new LoadingScreen(this));
+        gl.glClearColor(30/255f, 30/255f, 30/255f, 1);
     }
 
     @Override

@@ -115,7 +115,7 @@ public class LoadingScreen extends ScreenBase {
         pix = new Pixmap(pixHeight, pixHeight, Pixmap.Format.RGB888);
         pix.setColor(Color.WHITE);
         pix.fill();
-        pix.setColor(Color.BLACK);
+        pix.setColor(Color.rgba8888(30/255f ,30/255f, 30/255f, 1));
         pix.fillRectangle(5, 5, pix.getWidth() - 10, pixHeight - 10);
         tex = new Texture(pix);
         ninePatch = new NinePatch(tex, 10, 10, 10, 10);
@@ -124,7 +124,7 @@ public class LoadingScreen extends ScreenBase {
         pix = new Pixmap(pixHeight, pixHeight, Pixmap.Format.RGB888);
         pix.setColor(Color.WHITE);
         pix.fill();
-        pix.setColor(Color.BLACK);
+        pix.setColor(Color.rgba8888(30/255f ,30/255f, 30/255f, 1));
         pix.fillRectangle(10, 10, pix.getWidth() - 20, pixHeight - 20);
         tex = new Texture(pix);
         ninePatch = new NinePatch(tex, 10, 10, 10, 10);
