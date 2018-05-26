@@ -30,17 +30,10 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.breakthecore.CoreSmash;
-import com.breakthecore.Launcher;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.levelbuilder.LevelBuilderScreen;
-import com.breakthecore.levels.CampaignLevel;
 import com.breakthecore.levels.CampaignScreen;
-import com.breakthecore.levels.Level;
-import com.breakthecore.managers.MovingBallManager;
 import com.breakthecore.managers.StatsManager;
-import com.breakthecore.tilemap.TilemapBuilder;
-import com.breakthecore.tilemap.TilemapManager;
-import com.breakthecore.screens.GameScreen.GameMode;
 import com.breakthecore.ui.UIComponent;
 
 import java.util.Locale;
@@ -93,8 +86,8 @@ public class MainMenuScreen extends ScreenBase {
 
         rootStack = new Stack();
         rootStack.setFillParent(true);
-        rootStack.add(uiMainMenu.getRoot());
-        rootStack.add(uiMenuOverlay.getRoot());
+        rootStack.add(uiMainMenu.show());
+        rootStack.add(uiMenuOverlay.show());
 
         stage.addActor(rootStack);
     }
@@ -129,14 +122,14 @@ public class MainMenuScreen extends ScreenBase {
         @Override
         public boolean keyDown(int keycode) {
             if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
-                if (uiMainMenu.getRoot().getParent() == rootStack) {
+                if (uiMainMenu.show().getParent() == rootStack) {
                     levelBuilderScreen.saveProgress();
                     Gdx.app.exit();
                     return true;
                 } else {
                     rootStack.clear();
-                    rootStack.addActor(uiMainMenu.getRoot());
-                    rootStack.addActor(uiMenuOverlay.getRoot());
+                    rootStack.addActor(uiMainMenu.show());
+                    rootStack.addActor(uiMenuOverlay.show());
                 }
             }
             return false;
@@ -193,7 +186,7 @@ public class MainMenuScreen extends ScreenBase {
         }
 
         @Override
-        public Group getRoot() {
+        public Group show() {
             return root;
         }
     }
@@ -231,13 +224,13 @@ public class MainMenuScreen extends ScreenBase {
 //                @Override
 //                public void changed(ChangeEvent event, Actor actor) {
 //                    rootStack.clear();
-//                    rootStack.addActor(uiGameSettings.getRoot());
+//                    rootStack.addActor(uiGameSettings.show());
 //                }
 //            });
         }
 
         @Override
-        public Group getRoot() {
+        public Group show() {
             return root;
         }
     }
@@ -463,8 +456,8 @@ public class MainMenuScreen extends ScreenBase {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     rootStack.clear();
-                    rootStack.addActor(uiMainMenu.getRoot());
-                    rootStack.addActor(uiMenuOverlay.getRoot());
+                    rootStack.addActor(uiMainMenu.show());
+                    rootStack.addActor(uiMenuOverlay.show());
                 }
             });
             root.add(tbtn).width(250).height(200).padTop(50).align(Align.left);
@@ -622,7 +615,7 @@ public class MainMenuScreen extends ScreenBase {
         }
 
         @Override
-        public Group getRoot() {
+        public Group show() {
             return root;
         }
     }

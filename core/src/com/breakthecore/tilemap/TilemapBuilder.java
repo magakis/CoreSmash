@@ -49,7 +49,7 @@ public class TilemapBuilder {
     private boolean rotateCounterClockwise;
 
     public TilemapBuilder() {
-        rand = new Random(666);
+        rand = new Random();
         colorGroupList = new ColorGroupContainer[maxColorCount];
         blueprintMap = new BlueprintTile[blueprintSize][blueprintSize];
         fixedTilesArray = new Array<>();

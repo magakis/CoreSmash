@@ -31,7 +31,8 @@ public class LoadFileDialog extends Dialog {
         levelBuilderFilter = new FilenameFilter() {
             @Override
             public boolean accept(File file, String s) {
-                return !s.startsWith("_editor_") && s.toLowerCase().endsWith(".xml");
+                // TODO(25/5/2018): Enable this at some point? !s.startsWith("_editor_") &&
+                return s.toLowerCase().endsWith(".xml");
             }
         };
 

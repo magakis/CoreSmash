@@ -6,16 +6,14 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import com.breakthecore.ui.UIComponent;
 
 import java.util.Stack;
 
-
-final public class GroupStack implements UIComponent {
+public class UIComponentStack implements UIComponent{
     private Container<Group> root;
-    private Stack<Group> history;
+    private Stack<UIComponent> history;
 
-    public GroupStack() {
+    public UIComponentStack() {
         root = new Container<>();
         root.fill();
         root.setTouchable(Touchable.enabled);
@@ -30,27 +28,27 @@ final public class GroupStack implements UIComponent {
         history = new Stack<>();
     }
 
-    public void push(Group group) {
-        history.push(group);
-        root.setActor(group);
+    public void push(UIComponent comp) {
+        history.push(comp);
+        root.setActor(comp.show());
     }
 
     public void pop() {
         history.pop();
-        root.setActor(history.peek());
+        root.setActor(history.peek().show());
     }
 
     public int size() {
         return history.size();
     }
 
-    public void setRoot(Group group) {
+    public void setRoot(UIComponent comp) {
         history.clear();
-        push(group);
+        push(comp);
     }
 
     public void restoreRoot() {
-        Group origin = history.firstElement();
+        UIComponent origin = history.firstElement();
         setRoot(origin);
     }
 

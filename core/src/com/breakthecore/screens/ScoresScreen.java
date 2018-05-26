@@ -48,7 +48,7 @@ public class ScoresScreen extends ScreenBase {
         verticalGroup.setFillParent(true);
         verticalGroup.addActor(new Label("Scores", skin, "h1"));
         verticalGroup.padTop(50);
-        verticalGroup.addActor(uiScoreTable.getRoot());
+        verticalGroup.addActor(uiScoreTable.show());
         stage.addActor(verticalGroup);
     }
 
@@ -107,7 +107,7 @@ public class ScoresScreen extends ScreenBase {
          }
 
         @Override
-        public Group getRoot() {
+        public Group show() {
             return root;
         }
     }

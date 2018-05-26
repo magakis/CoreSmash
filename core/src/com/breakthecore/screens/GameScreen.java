@@ -35,7 +35,6 @@ import com.breakthecore.levelbuilder.ParsedTile;
 import com.breakthecore.levels.Level;
 import com.breakthecore.managers.StatsManager;
 import com.breakthecore.StreakUI;
-import com.breakthecore.managers.CollisionDetector;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observer;
 import com.breakthecore.tilemap.TilemapBuilder;
@@ -189,7 +188,7 @@ public class GameScreen extends ScreenBase implements Observer {
         statsManager.stopGame();
         m_resultUI.update();
         rootUIStack.clear();
-        rootUIStack.addActor(m_resultUI.getRoot());
+        rootUIStack.addActor(m_resultUI.show());
 
         if (activeLevel != null) {
             activeLevel.end(statsManager);
@@ -221,9 +220,9 @@ public class GameScreen extends ScreenBase implements Observer {
 
         gameUI.setup();
 
-        rootUIStack.addActor(gameUI.getRoot());
-        rootUIStack.addActor(streakUI.getRoot());
-        rootUIStack.addActor(debugUI.getRoot());
+        rootUIStack.addActor(gameUI.show());
+        rootUIStack.addActor(streakUI.show());
+        rootUIStack.addActor(debugUI.show());
 
         debugUI.dblb3.setText(String.format(Locale.ENGLISH, "Diff: %.2f", statsManager.getDifficultyMultiplier()));
         gameInstance.setScreen(this);
@@ -497,7 +496,7 @@ public class GameScreen extends ScreenBase implements Observer {
         }
 
         @Override
-        public Group getRoot() {
+        public Group show() {
             return root;
         }
 
@@ -566,7 +565,7 @@ public class GameScreen extends ScreenBase implements Observer {
         }
 
         @Override
-        public Group getRoot() {
+        public Group show() {
             return root;
         }
     }
@@ -598,7 +597,7 @@ public class GameScreen extends ScreenBase implements Observer {
         }
 
         @Override
-        public Group getRoot() {
+        public Group show() {
             return root;
         }
     }

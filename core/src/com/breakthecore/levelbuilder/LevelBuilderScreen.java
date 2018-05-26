@@ -53,10 +53,10 @@ import com.breakthecore.screens.ScreenBase;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tiles.TileDictionary;
 import com.breakthecore.ui.ActorFactory;
-import com.breakthecore.ui.GroupStack;
 import com.breakthecore.ui.LoadFileDialog;
 import com.breakthecore.ui.SaveFileDialog;
 import com.breakthecore.ui.UIComponent;
+import com.breakthecore.ui.UIComponentStack;
 
 import java.util.List;
 import java.util.Locale;
@@ -73,7 +73,7 @@ public class LevelBuilderScreen extends ScreenBase {
     private Stage stage;
     private Skin skin;
 
-    private GroupStack prefsStack;
+    private UIComponentStack prefsStack;
     private UIComponent uiToolbarTop;
     private UITools uiTools;
     private UIInfo uiInfo;
@@ -146,19 +146,19 @@ public class LevelBuilderScreen extends ScreenBase {
         uiInfo = new UIInfo();
         uiToolbarTop = new UIToolbarTop();
 
-        prefsStack = new GroupStack();
+        prefsStack = new UIComponentStack();
         prefsStack.setBackground(skin.getDrawable("box_white_10"));
 
         Stack mainStack = new Stack();
         mainStack.setFillParent(true);
 
         Table prefs = new Table();
-        prefs.center().bottom().add(prefsStack.getRoot()).expandX().fill().padBottom(-10);
+        prefs.center().bottom().add(prefsStack.show()).expandX().fill().padBottom(-10);
 
-        mainStack.addActor(uiTools.getRoot());
-        mainStack.addActor(uiToolbarTop.getRoot());
+        mainStack.addActor(uiTools.show());
+        mainStack.addActor(uiToolbarTop.show());
         mainStack.addActor(prefs);
-        mainStack.addActor(uiInfo.getRoot());
+        mainStack.addActor(uiInfo.show());
 
         stage.addActor(mainStack);
         return stage;
@@ -229,7 +229,7 @@ public class LevelBuilderScreen extends ScreenBase {
         }
 
         @Override
-        public Group getRoot() {
+        public Group show() {
             return root;
         }
     }
@@ -299,11 +299,11 @@ public class LevelBuilderScreen extends ScreenBase {
             loadFileDialog = new LoadFileDialog(skin, wsLoad, stage) {
                 @Override
                 protected void result(Object object) {
-                    filenameCache = (String)object;
+                    filenameCache = (String) object;
                     if (levelBuilder.load(filenameCache)) {
                         freeMode.gameSettings.updateValues();
                         freeMode.mapSettings.updateValues(levelBuilder.getLayer());
-                        showToast("File '"+filenameCache+"' loaded");
+                        showToast("File '" + filenameCache + "' loaded");
                     } else {
                         showToast("Error: Couldn't load '" + filenameCache + "'");
                     }
@@ -316,15 +316,15 @@ public class LevelBuilderScreen extends ScreenBase {
                     if (object == null) {
                         showToast("Error: Invalid file name");
                     } else {
-                    filenameCache = (String) object;
+                        filenameCache = (String) object;
                         levelBuilder.saveAs(filenameCache);
-                        showToast("Level '"+filenameCache+"' saved");
+                        showToast("Level '" + filenameCache + "' saved");
                     }
                 }
             };
 
 
-        testLevel = new Level() {
+            testLevel = new Level() {
                 @Override
                 public void initialize(GameScreen.GameScreenController gameScreenController) {
                     gameScreenController.loadLevel("_editor_");
@@ -346,7 +346,7 @@ public class LevelBuilderScreen extends ScreenBase {
         }
 
         @Override
-        public Group getRoot() {
+        public Group show() {
             return root;
         }
     }
@@ -427,7 +427,7 @@ public class LevelBuilderScreen extends ScreenBase {
         }
 
         @Override
-        public Group getRoot() {
+        public Group show() {
             return root;
         }
     }
@@ -453,7 +453,7 @@ public class LevelBuilderScreen extends ScreenBase {
         }
 
         @Override
-        public Group getRoot() {
+        public Group show() {
             return root;
         }
     }
@@ -513,12 +513,17 @@ public class LevelBuilderScreen extends ScreenBase {
             scrollPane.setOverscroll(false, false);
 
             uiLayer = new UILayer();
-            Table main = new Table(skin);
+            final Table main = new Table(skin);
             main.add(uiLayer.root);
             main.add(scrollPane).fill().expandX().height(270);
 
 
-            setPreferencesRoot(main);
+            setPreferencesRoot(new UIComponent() {
+                @Override
+                public Group show() {
+                    return main;
+                }
+            });
         }
 
         @Override
@@ -550,7 +555,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
         EraseMode() {
             uiLayer = new UILayer();
-            setPreferencesRoot(uiLayer.root);
+            setPreferencesRoot(uiLayer);
         }
 
         @Override
@@ -582,7 +587,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
         RotateMode() {
             uiLayer = new UILayer();
-            setPreferencesRoot(uiLayer.root);
+            setPreferencesRoot(uiLayer);
         }
 
         @Override
@@ -624,7 +629,7 @@ public class LevelBuilderScreen extends ScreenBase {
         float currentZoom = 1;
 
         FreeMode() {
-            HorizontalGroup root = new HorizontalGroup();
+            final HorizontalGroup root = new HorizontalGroup();
             root.pad(20);
             root.space(20);
             root.wrap(true);
@@ -633,7 +638,7 @@ public class LevelBuilderScreen extends ScreenBase {
             btnLevelSettings.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    prefsStack.push(gameSettings.getRoot());
+                    prefsStack.push(gameSettings);
                 }
             });
 
@@ -642,7 +647,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     mapSettings.updateValues(levelBuilder.getLayer());
-                    prefsStack.push(mapSettings.getRoot());
+                    prefsStack.push(mapSettings);
                 }
             });
 
@@ -651,7 +656,12 @@ public class LevelBuilderScreen extends ScreenBase {
 
             root.addActor(btnLevelSettings);
             root.addActor(btnMapSettings);
-            setPreferencesRoot(root);
+            setPreferencesRoot(new UIComponent() {
+                @Override
+                public Group show() {
+                    return root;
+                }
+            });
         }
 
         @Override
@@ -735,13 +745,12 @@ public class LevelBuilderScreen extends ScreenBase {
                         String txtAmount = tfLives.getText();
                         // check to avoid parsing empty string
                         int amount = txtAmount.length() > 0 ? Integer.parseInt(txtAmount) : 0;
-                        // ensure positive or 0 number
-                        levelBuilder.setLives(amount < 0 ? 0 : amount);
+                        levelBuilder.setLives(amount);
                     }
                 });
 
                 lblMoves = new Label("Moves:", skin, "h4");
-                ;
+
                 tfMoves = createTextField(returnOnNewLineListener);
                 tfMoves.addListener(new ClickListener() {
                     @Override
@@ -755,13 +764,13 @@ public class LevelBuilderScreen extends ScreenBase {
                         String txtAmount = tfMoves.getText();
                         // check to avoid parsing empty string
                         int amount = txtAmount.length() > 0 ? Integer.parseInt(txtAmount) : 0;
-                        // ensure positive or 0 number
-                        levelBuilder.setMoves(amount < 0 ? 0 : amount);
+                        levelBuilder.setMoves(amount);
+                        updateMovesPercent(amount);
                     }
                 });
 
                 lblTime = new Label("Time:", skin, "h4");
-                ;
+
                 tfTime = createTextField(returnOnNewLineListener);
                 tfTime.addListener(new ClickListener() {
                     @Override
@@ -775,8 +784,7 @@ public class LevelBuilderScreen extends ScreenBase {
                         String txtAmount = tfTime.getText();
                         // check to avoid parsing empty string
                         int amount = txtAmount.length() > 0 ? Integer.parseInt(txtAmount) : 0;
-                        // ensure positive or 0 number
-                        levelBuilder.setTime(amount < 0 ? 0 : amount);
+                        levelBuilder.setTime(amount);
                     }
                 });
 
@@ -814,6 +822,7 @@ public class LevelBuilderScreen extends ScreenBase {
                         levelBuilder.setLauncherSize((int) sldrLauncherSize.getValue());
                     }
                 });
+
                 Table grpLauncherSize = createSliderGroup(lblLauncherSize, sldrLauncherSize);
 
                 Table grpTextFields = new Table();
@@ -829,7 +838,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 root.defaults().padBottom(settingsPadding);
                 root.columnDefaults(0).padRight(20);
 
-                root.add(grpTextFields).left().row();
+                root.add(grpTextFields).colspan(2).left().row();
                 root.add(grpLauncherSize).growX();
                 root.add(grpLauncherCD).growX().row();
                 root.add(grpBallSpeed).growX();
@@ -844,6 +853,12 @@ public class LevelBuilderScreen extends ScreenBase {
                 tfLives.setText(String.valueOf(levelBuilder.getLives()));
                 tfMoves.setText(String.valueOf(levelBuilder.getMoves()));
                 tfTime.setText(String.valueOf(levelBuilder.getTime()));
+            }
+
+            private void updateMovesPercent(int amount) {
+                float totalTiles = tilemapManager.getTotalTileCount();
+                int percent = (int) ((amount / (totalTiles == 0 ? 1 : totalTiles))*100f);
+                uiInfo.lbl[0].setText("Moves/Balls: " + percent + "%");
             }
 
             private Table createSliderGroup(Label label, Slider slider) {
@@ -864,7 +879,12 @@ public class LevelBuilderScreen extends ScreenBase {
             }
 
             @Override
-            public Group getRoot() {
+            public Group show() {
+                uiInfo.reset();
+                String txtAmount = tfMoves.getText();
+                // check to avoid parsing empty string
+                int amount = txtAmount.length() > 0 ? Integer.parseInt(txtAmount) : 0;
+                updateMovesPercent(amount);
                 return root;
             }
         }
@@ -1033,7 +1053,7 @@ public class LevelBuilderScreen extends ScreenBase {
             }
 
             @Override
-            public Group getRoot() {
+            public Group show() {
                 return root;
             }
         }
@@ -1041,7 +1061,7 @@ public class LevelBuilderScreen extends ScreenBase {
     }
 
     private abstract class Mode extends GestureDetector.GestureAdapter {
-        private Group preferences;
+        private UIComponent preferences;
 
         public void activate() {
             activeMode = this;
@@ -1050,7 +1070,7 @@ public class LevelBuilderScreen extends ScreenBase {
             onActivate();
         }
 
-        void setPreferencesRoot(Group preferences) {
+        void setPreferencesRoot(UIComponent preferences) {
             this.preferences = preferences;
         }
 
