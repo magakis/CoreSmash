@@ -145,6 +145,8 @@ public class MainMenuScreen extends ScreenBase {
             Container btnPlay = newMenuButton("Play", "btnPlay", new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
+                    campaignScreen.updateInfo(); // XXX(26/5/2018): Remove this
+
                     gameInstance.setScreen(campaignScreen);
                 }
             });

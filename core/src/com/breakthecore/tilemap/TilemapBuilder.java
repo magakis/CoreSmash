@@ -380,7 +380,7 @@ public class TilemapBuilder {
 
         Arrays.sort(colorGroupList, compSizes);
 
-        while (colorGroupList[0].list.size() < aver || colorGroupList[maxIndex].list.size() != aver + 1) {
+        while (colorGroupList[0].list.size() < aver && colorGroupList[maxIndex].list.size() != aver + 1) {
             ColorGroupContainer cgcLeastFilled = colorGroupList[0];
             ColorGroupContainer cgcMostFilled = colorGroupList[maxIndex];
 
@@ -402,7 +402,7 @@ public class TilemapBuilder {
         }
 
         for (ColorGroupContainer primeGroup : colorGroupList) {
-            if (primeGroup.groupColor == colorCount) break;
+            if (primeGroup.groupColor == colorCount || primeGroup.list.size() == 0) break;
 
             int distanceToSearchFor = maxDistance;
             BlueprintTile tmp = blueprintTilePool.obtain();
@@ -423,7 +423,7 @@ public class TilemapBuilder {
 
                     for (ColorGroupContainer donorGroup : colorGroupList) { // should I make this descend?
                         if (donorGroup.groupColor == colorCount) break;
-                        if (donorGroup == primeGroup) continue;
+                        if (donorGroup == primeGroup || donorGroup.list.size() == 0) continue;
 
                         int donorIndex = getConsequetiveValueIndexFor(distanceToSearchFor, donorGroup.list);
                         if (donorIndex >= 0) {

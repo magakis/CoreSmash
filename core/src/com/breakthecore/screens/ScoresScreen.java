@@ -64,7 +64,7 @@ public class ScoresScreen extends ScreenBase {
     }
     private class UIScoreTable implements UIComponent {
         Table root;
-        Label lblScore[], lblDfclty[], lblTotalScore;
+        Label lblScore[], lblTotalScore;
 
          UIScoreTable(){
              root = new Table();
@@ -76,7 +76,6 @@ public class ScoresScreen extends ScreenBase {
              root.add(new Label("Score",skin, "h4")).row();
 
              lblScore = new Label[5];
-             lblDfclty = new Label[5];
              lblTotalScore = new Label("", skin, "comic_72bo");
 
              String style1st = "comic_72bo",
@@ -86,10 +85,8 @@ public class ScoresScreen extends ScreenBase {
              for (int i = 0; i < 5; ++i) {
                  String style = i == 0 ? style1st : i == 1 ? style2nd : styledef;
                  lblScore[i] = new Label("", skin, style);
-                 lblDfclty[i] = new Label("", skin, style);
 
                  root.add(new Label("#"+(i+1), skin, style));
-                 root.add(lblDfclty[i]);
                  root.add(lblScore[i]).row();
              }
 
@@ -100,8 +97,6 @@ public class ScoresScreen extends ScreenBase {
              UserAccount user = gameInstance.getUserAccount();
 
              for (int i = 0; i < 5; ++i) {
-                 lblScore[i].setText(String.valueOf(user.getScore(i)));
-                 lblDfclty[i].setText(String.format(Locale.ENGLISH,"%.2f", user.getScoreDificulty(i)));
                  lblTotalScore.setText("Total Score: " + user.getTotalScore());
              }
          }

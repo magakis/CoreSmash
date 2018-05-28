@@ -72,6 +72,7 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("cog.png");
         loadTexture("group.png");
         loadTexture("speaker.png");
+        loadTexture("userIcon.png");
         loadTexture("NinePatches/toast1.png");
         loadTexture("NinePatches/dialog1.png");
         loadTexture("map.png");
@@ -145,6 +146,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("myBall", tex);
 
         skin.add("cog", am.get("cog.png"));
+        skin.add("userDefIcon", am.get("userIcon.png"));
         skin.add("ball", am.get("ball.png"));
         skin.add("asteroid", am.get("asteroid.png"));
         skin.add("map", am.get("map.png"));

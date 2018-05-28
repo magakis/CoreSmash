@@ -6,22 +6,33 @@ import com.badlogic.gdx.Preferences;
 
 public class UserAccount {
     private String name;
+    private int level;
+    private int levelProgress;
     private int totalScore;
-    private int[] scores;
-    private float[] dfcltys;
+    private static final int[] expRequiredForLevelTable = new int[100];
+
+    static {
+        int baseExp = 500;
+        expRequiredForLevelTable[0] = baseExp;
+        for (int i = 1; i < expRequiredForLevelTable.length; ++i) {
+            expRequiredForLevelTable[i] = (int) Math.pow(expRequiredForLevelTable[i - 1], 1.05f);
+        }
+    }
 
     public UserAccount() {
-        scores = new int[5];
-        dfcltys = new float[5];
         Preferences prefs = Gdx.app.getPreferences("account");
         name = prefs.getString("username", "_error_");
-
-        for (int i = 0; i < 5; ++i) {
-            scores[i] = prefs.getInteger("score" + i, 0);
-            dfcltys[i] = prefs.getFloat("dfclty" + i, 0);
-        }
-
         totalScore = prefs.getInteger("total_score", 0);
+
+        int scoreLeft = totalScore;
+        for (int i = 0; i < expRequiredForLevelTable.length; ++i) {
+            if (scoreLeft < expRequiredForLevelTable[i]) {
+                level = i + 1;
+                levelProgress = scoreLeft;
+                break;
+            }
+            scoreLeft -= expRequiredForLevelTable[i];
+        }
     }
 
     public String getUsername() {
@@ -37,39 +48,28 @@ public class UserAccount {
         return totalScore;
     }
 
-    public int getScore(int i) {
-        if (i < 0 || i > 4) throw new ArrayIndexOutOfBoundsException("i = " + i);
-        return scores[i];
-    }
-
-    public float getScoreDificulty(int i) {
-        if (i < 0 || i > 4) throw new ArrayIndexOutOfBoundsException("i = " + i);
-        return dfcltys[i];
-    }
-
     public void saveScore(int score) {
-        Preferences prefs = Gdx.app.getPreferences("account");
-
-        int scoreIndex = 0;
-        while (score < scores[scoreIndex] && scoreIndex < 4) {
-            ++scoreIndex;
-        }
-
-        // Don't save equal scores
-        if (score != scores[scoreIndex]) {
-            for (int i = 4; i > scoreIndex; --i) {
-                scores[i] = scores[i - 1];
-                dfcltys[i] = dfcltys[i - 1];
-                prefs.putInteger("score" + i, scores[i - 1]);
-            }
-
-            scores[scoreIndex] = score;
-            prefs.putInteger("score" + scoreIndex, score);
-        }
-
         totalScore += score;
-        prefs.putInteger("total_score", totalScore);
+        levelProgress += score;
+        if (levelProgress >= expRequiredForLevelTable[level-1]) {
+            levelProgress -= expRequiredForLevelTable[level-1];
+            ++level;
+        }
 
+        Preferences prefs = Gdx.app.getPreferences("account");
+        prefs.putInteger("total_score", totalScore);
         prefs.flush();
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public int getLevelProgress() {
+        return levelProgress;
+    }
+
+    public int getExpForNextLevel() {
+        return expRequiredForLevelTable[level - 1];
     }
 }

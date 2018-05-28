@@ -100,7 +100,7 @@ public class LevelBuilderScreen extends ScreenBase {
         levelBuilder = new LevelBuilder(tilemapManager, camera);
         stage = setupStage();
 
-        drawMode = new DrawMode(renderManager);
+        drawMode = new DrawMode();
         eraseMode = new EraseMode();
         rotateMode = new RotateMode();
         freeMode = new FreeMode();
@@ -301,8 +301,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 protected void result(Object object) {
                     filenameCache = (String) object;
                     if (levelBuilder.load(filenameCache)) {
-                        freeMode.gameSettings.updateValues();
-                        freeMode.mapSettings.updateValues(levelBuilder.getLayer());
+                        freeMode.optionsMenu.updateValues(levelBuilder.getLayer());
                         showToast("File '" + filenameCache + "' loaded");
                     } else {
                         showToast("Error: Couldn't load '" + filenameCache + "'");
@@ -459,78 +458,18 @@ public class LevelBuilderScreen extends ScreenBase {
     }
 
     private class DrawMode extends Mode {
-        private ImageButton materialButtons[];
-        private UILayer uiLayer;
+        private UIDrawPalette uiDrawPalette;
 
-        DrawMode(RenderManager renderManager) {
-            HorizontalGroup materialGroup = new HorizontalGroup();
-            materialGroup.space(10);
-            materialGroup.pad(10);
-            materialGroup.wrap(true);
-            materialGroup.wrapSpace(10);
-
-            Drawable checked = skin.newDrawable("box_white_5", Color.GREEN);
-            Drawable unchecked = skin.newDrawable("box_white_5", Color.GRAY);
-            ButtonGroup<ImageButton> imgbGroup = new ButtonGroup<>();
-            imgbGroup.setMinCheckCount(1);
-            imgbGroup.setMaxCheckCount(1);
-
-            final List<Integer> knownIds = TileDictionary.getAllPlaceableIDs();
-
-            materialButtons = new ImageButton[knownIds.size()];
-            int buttonIndex = 0;
-            for (int i = 0; i < knownIds.size(); ++i) {
-                ImageButton.ImageButtonStyle imgbs;
-                imgbs = new ImageButton.ImageButtonStyle();
-                imgbs.imageUp = new TextureRegionDrawable(new TextureRegion(renderManager.getTextureFor(knownIds.get(i))));
-                imgbs.checked = checked;
-                imgbs.up = unchecked;
-
-                ImageButton imgb = new ImageButton(imgbs);
-                materialGroup.addActor(imgb);
-                imgb.getImage().setScaling(Scaling.fill);
-                imgb.getImageCell().height(100).width(100);
-
-                final int finalButtonIndex = buttonIndex;
-                imgb.addListener(new ChangeListener() {
-                    @Override
-                    public void changed(ChangeEvent event, Actor actor) {
-                        if (materialButtons[finalButtonIndex].isChecked()) {
-                            levelBuilder.setTileID(knownIds.get(finalButtonIndex));
-                            updateTileID();
-                        }
-                    }
-                });
-
-                materialButtons[buttonIndex] = imgb;
-                imgbGroup.add(imgb);
-                ++buttonIndex;
-            }
-
-            materialGroup.center();
-            ScrollPane scrollPane = new ScrollPane(materialGroup);
-
-            scrollPane.setOverscroll(false, false);
-
-            uiLayer = new UILayer();
-            final Table main = new Table(skin);
-            main.add(uiLayer.root);
-            main.add(scrollPane).fill().expandX().height(270);
-
-
-            setPreferencesRoot(new UIComponent() {
-                @Override
-                public Group show() {
-                    return main;
-                }
-            });
+        DrawMode() {
+            uiDrawPalette = new UIDrawPalette();
+            setPreferencesRoot(uiDrawPalette);
         }
 
         @Override
         void onActivate() {
             uiInfo.reset();
-            updateTileID();
-            uiLayer.updateLayer();
+            uiDrawPalette.updateTileID();
+            uiDrawPalette.updateLayer();
         }
 
         @Override
@@ -545,8 +484,81 @@ public class LevelBuilderScreen extends ScreenBase {
             return true;
         }
 
-        private void updateTileID() {
-            uiInfo.lbl[0].setText("TileID: " + levelBuilder.getCurrentTileID());
+        private class UIDrawPalette implements UIComponent {
+            private ImageButton materialButtons[];
+            private UILayer uiLayer;
+            private final Table root;
+
+            private UIDrawPalette() {
+                HorizontalGroup materialGroup = new HorizontalGroup();
+                materialGroup.space(10);
+                materialGroup.pad(10);
+                materialGroup.wrap(true);
+                materialGroup.wrapSpace(10);
+
+                Drawable checked = skin.newDrawable("box_white_5", Color.GREEN);
+                Drawable unchecked = skin.newDrawable("box_white_5", Color.GRAY);
+                ButtonGroup<ImageButton> imgbGroup = new ButtonGroup<>();
+                imgbGroup.setMinCheckCount(1);
+                imgbGroup.setMaxCheckCount(1);
+
+                final List<Integer> knownIds = TileDictionary.getAllPlaceableIDs();
+
+                materialButtons = new ImageButton[knownIds.size()];
+                int buttonIndex = 0;
+                for (int i = 0; i < knownIds.size(); ++i) {
+                    ImageButton.ImageButtonStyle imgbs;
+                    imgbs = new ImageButton.ImageButtonStyle();
+                    imgbs.imageUp = new TextureRegionDrawable(new TextureRegion(renderManager.getTextureFor(knownIds.get(i))));
+                    imgbs.checked = checked;
+                    imgbs.up = unchecked;
+
+                    ImageButton imgb = new ImageButton(imgbs);
+                    materialGroup.addActor(imgb);
+                    imgb.getImage().setScaling(Scaling.fill);
+                    imgb.getImageCell().height(100).width(100);
+
+                    final int finalButtonIndex = buttonIndex;
+                    imgb.addListener(new ChangeListener() {
+                        @Override
+                        public void changed(ChangeEvent event, Actor actor) {
+                            if (materialButtons[finalButtonIndex].isChecked()) {
+                                levelBuilder.setTileID(knownIds.get(finalButtonIndex));
+                                updateTileID();
+                            }
+                        }
+                    });
+
+                    materialButtons[buttonIndex] = imgb;
+                    imgbGroup.add(imgb);
+                    ++buttonIndex;
+                }
+
+                materialGroup.center();
+                ScrollPane scrollPane = new ScrollPane(materialGroup);
+
+                scrollPane.setOverscroll(false, false);
+
+                uiLayer = new UILayer();
+                root = new Table(skin);
+                root.add(uiLayer.root);
+                root.add(scrollPane).fill().expandX().height(270);
+            }
+
+            private void updateLayer() {
+                uiLayer.updateLayer();
+            }
+
+            @Override
+            public Group show() {
+                uiInfo.reset();
+                updateTileID();
+                return root;
+            }
+
+            private void updateTileID() {
+                uiInfo.lbl[0].setText("TileID: " + levelBuilder.getCurrentTileID());
+            }
         }
     }
 
@@ -624,44 +636,12 @@ public class LevelBuilderScreen extends ScreenBase {
     }
 
     private class FreeMode extends Mode {
-        private UILevelSettings gameSettings = new UILevelSettings();
-        private UIMapSettings mapSettings = new UIMapSettings();
+        private OptionsMenu optionsMenu;
         float currentZoom = 1;
 
         FreeMode() {
-            final HorizontalGroup root = new HorizontalGroup();
-            root.pad(20);
-            root.space(20);
-            root.wrap(true);
-
-            TextButton btnLevelSettings = new TextButton("Level", skin);
-            btnLevelSettings.addListener(new ChangeListener() {
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-                    prefsStack.push(gameSettings);
-                }
-            });
-
-            TextButton btnMapSettings = new TextButton("Layer", skin);
-            btnMapSettings.addListener(new ChangeListener() {
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-                    mapSettings.updateValues(levelBuilder.getLayer());
-                    prefsStack.push(mapSettings);
-                }
-            });
-
-            btnLevelSettings.getLabelCell().pad(20);
-            btnMapSettings.getLabelCell().pad(20);
-
-            root.addActor(btnLevelSettings);
-            root.addActor(btnMapSettings);
-            setPreferencesRoot(new UIComponent() {
-                @Override
-                public Group show() {
-                    return root;
-                }
-            });
+            optionsMenu = new OptionsMenu();
+            setPreferencesRoot(optionsMenu);
         }
 
         @Override
@@ -695,6 +675,54 @@ public class LevelBuilderScreen extends ScreenBase {
 
         private void updateCamInfo() {
             uiInfo.lbl[0].setText(String.format(Locale.ENGLISH, "Cam Z:%4.2f X:%4.0f Y:%4.0f", camera.zoom, camera.position.x, camera.position.y));
+        }
+
+        private class OptionsMenu implements UIComponent {
+            final HorizontalGroup root;
+            private UILevelSettings gameSettings = new UILevelSettings();
+            private UIMapSettings mapSettings = new UIMapSettings();
+
+            private OptionsMenu() {
+                root = new HorizontalGroup();
+                root.pad(20);
+                root.space(20);
+                root.wrap(true);
+
+                TextButton btnLevelSettings = new TextButton("Level", skin);
+                btnLevelSettings.addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
+                        prefsStack.push(gameSettings);
+                    }
+                });
+
+                TextButton btnMapSettings = new TextButton("Layer", skin);
+                btnMapSettings.addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
+                        mapSettings.updateValues(levelBuilder.getLayer());
+                        prefsStack.push(mapSettings);
+                    }
+                });
+
+                btnLevelSettings.getLabelCell().pad(20);
+                btnMapSettings.getLabelCell().pad(20);
+
+                root.addActor(btnLevelSettings);
+                root.addActor(btnMapSettings);
+            }
+
+            public void updateValues(int layer) {
+                gameSettings.updateValues();
+                mapSettings.updateValues(layer);
+            }
+
+            @Override
+            public Group show() {
+                uiInfo.reset();
+                updateCamInfo();
+                return root;
+            }
         }
 
         private class UILevelSettings implements UIComponent {
@@ -857,7 +885,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
             private void updateMovesPercent(int amount) {
                 float totalTiles = tilemapManager.getTotalTileCount();
-                int percent = (int) ((amount / (totalTiles == 0 ? 1 : totalTiles))*100f);
+                int percent = (int) ((amount / (totalTiles == 0 ? 1 : totalTiles)) * 100f);
                 uiInfo.lbl[0].setText("Moves/Balls: " + percent + "%");
             }
 

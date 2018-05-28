@@ -3,30 +3,45 @@ package com.breakthecore.levels;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Preferences;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
+import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
+import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Scaling;
 import com.breakthecore.CoreSmash;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.breakthecore.RoundEndListener;
+import com.breakthecore.UserAccount;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.levelbuilder.LevelFormatParser;
 import com.breakthecore.managers.StatsManager;
 import com.breakthecore.screens.GameScreen;
 import com.breakthecore.screens.ScreenBase;
 import com.breakthecore.tilemap.TilemapManager;
+import com.breakthecore.ui.ActorFactory;
+import com.breakthecore.ui.UIComponent;
+
+import java.util.Locale;
 
 public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private GameScreen gameScreen;
+    private UIOverlay uiOverlay;
     private GestureDetector gd;
-    private Skin m_skin;
+    private Skin skin;
     private Stage stage;
     private LevelButton[] levelButtons;
     private int currentLevel;
@@ -34,7 +49,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
     public CampaignScreen(CoreSmash game) {
         super(game);
-        m_skin = game.getSkin();
+        skin = game.getSkin();
         stage = new Stage(game.getUIViewport());
         gd = new CustomGestureDetector(new InputListener());
 
@@ -58,7 +73,15 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             levelButtons[i].enable();
         }
 
-        stage.addActor(scrollPane);
+        uiOverlay = new UIOverlay();
+
+        Stack rootStack = new Stack();
+        rootStack.setFillParent(true);
+        rootStack.addActor(scrollPane);
+        rootStack.addActor(uiOverlay.show());
+
+
+        stage.addActor(rootStack);
     }
 
     @Override
@@ -80,18 +103,18 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         }
 
         Container<WidgetGroup> container = new Container<WidgetGroup>(grp);
-        container.prefSize(WorldSettings.getWorldWidth(), 200+20*190);
+        container.prefSize(WorldSettings.getWorldWidth(), 200 + 20 * 190);
 
         return container;
     }
 
     private void startCampaignLevel(int lvl) {
         activeLevel = lvl;
-        final String levelName = "level"+lvl;
-        
+        final String levelName = "level" + lvl;
+
         if (!LevelFormatParser.fileExists(levelName)) return;
 
-        gameScreen.deployLevel(new CampaignLevel(lvl,gameInstance.getUserAccount(), this) {
+        gameScreen.deployLevel(new CampaignLevel(lvl, gameInstance.getUserAccount(), this) {
             @Override
             public void initialize(GameScreen.GameScreenController gameScreenController) {
                 gameScreenController.loadLevel(levelName);
@@ -104,22 +127,28 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         });
     }
 
+    public void updateInfo() {
+        uiOverlay.updateValues();
+    }
+
     @Override
     public void onRoundEnded(StatsManager statsManager) {
         // Round WON
         // XXX(13/5/2018): Score saving and everything should be at one place (UserAccount)?
         if (statsManager.getRoundOutcome()) {
             Preferences prefs = Gdx.app.getPreferences("account");
-            if (prefs.getInteger("level"+activeLevel,0) < statsManager.getScore()) {
-                prefs.putInteger("level"+activeLevel, statsManager.getScore());
+            if (prefs.getInteger("level" + activeLevel, 0) < statsManager.getScore()) {
+                prefs.putInteger("level" + activeLevel, statsManager.getScore());
             }
 //            if (currentLevel == activeLevel) {
 //                prefs.putInteger("campaign_level", currentLevel+1);
 //                levelButtons[currentLevel].enable();
 //                ++currentLevel;
 //            }
+
             prefs.flush();
             statsManager.getUser().saveScore(statsManager.getScore());
+            uiOverlay.updateValues();
         }
         //Round LOST
     }
@@ -172,7 +201,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         }
     }
 
-    /** Why do I have a GestureDetector in Campaign Screen?!? */
+    /**
+     * Why do I have a GestureDetector in Campaign Screen?!?
+     */
     private class CustomGestureDetector extends GestureDetector {
         public CustomGestureDetector(GestureListener listener) {
             super(listener);
@@ -205,7 +236,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         private int m_level;
 
         public LevelButton(int lvl, int x, int y) {
-            super(String.valueOf(lvl), m_skin, "levelBtnDisabled");
+            super(String.valueOf(lvl), skin, "levelBtnDisabled");
             setSize(160, 160);
             setPosition(x - 80, y - 80);
             addListener(new LevelLauncher(lvl));
@@ -219,7 +250,83 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
         public void enable() {
             setDisabled(false);
-            setStyle(m_skin.get("levelBtnEnabled", TextButtonStyle.class));
+            setStyle(skin.get("levelBtnEnabled", TextButtonStyle.class));
+        }
+    }
+
+    private class UIOverlay implements UIComponent {
+        private Table root;
+        private ProgressBar pbAccountExp;
+        private Label lblLevel, lblExp, lblExpForLevel;
+
+        public UIOverlay() {
+
+            ImageButton.ImageButtonStyle userButtonStyle = new ImageButton.ImageButtonStyle();
+            userButtonStyle.up = skin.getDrawable("box_white_5");
+            userButtonStyle.down = skin.newDrawable("box_white_5", Color.GRAY);
+            userButtonStyle.imageUp = skin.newDrawable("userDefIcon");
+
+            ImageButton btnUser = new ImageButton(userButtonStyle);
+            btnUser.getImage().setScaling(Scaling.fit);
+            btnUser.getImageCell().pad(10);
+
+            ProgressBar.ProgressBarStyle pbStyle = new ProgressBar.ProgressBarStyle();
+            pbStyle.background = skin.newDrawable("box_white_5", Color.DARK_GRAY);
+            pbStyle.knobBefore = skin.newDrawable("box_white_5", Color.GREEN);
+
+            pbStyle.background.setLeftWidth(0);
+            pbStyle.background.setRightWidth(0);
+
+            pbStyle.knobBefore.setLeftWidth(0);
+            pbStyle.knobBefore.setRightWidth(0);
+
+            pbAccountExp = new ProgressBar(0, 1, 1, false, pbStyle);
+
+            lblLevel = new Label("", skin, "h5");
+            lblExp = new Label("", skin, "h5");
+            lblExpForLevel = new Label("", skin, "h6", Color.GRAY);
+
+            HorizontalGroup hgExp = new HorizontalGroup();
+            hgExp.wrap(false);
+            hgExp.addActor(lblExp);
+            hgExp.addActor(new Label("/", skin, "h6", Color.GRAY));
+            hgExp.addActor(lblExpForLevel);
+
+            HorizontalGroup hgLevel = new HorizontalGroup();
+            hgLevel.wrap(false);
+            hgLevel.addActor(new Label("Level: ", skin, "h5"));
+            hgLevel.addActor(lblLevel);
+
+            Table tblInfo = new Table();
+
+            Table tblAccount = new Table();
+            tblAccount.background(skin.newDrawable("box_white_5", 30 / 255f, 30 / 255f, 30 / 255f, 1));
+            tblAccount.pad(15);
+            tblAccount.add(btnUser).width(130).height(130).padBottom(15).padRight(15).left();
+            tblAccount.add(tblInfo).fill().padBottom(15).row();
+            tblAccount.add(hgLevel).padBottom(5).left();
+            tblAccount.add(hgExp).padBottom(5).right().row();
+            tblAccount.add(pbAccountExp).growX().width(350).colspan(tblAccount.getColumns());
+
+            root = new Table();
+            root.top().left().pad(25);
+            root.add(tblAccount);
+
+            updateValues();
+        }
+
+        public void updateValues() {
+            UserAccount user = gameInstance.getUserAccount();
+            lblExp.setText(user.getLevelProgress());
+            lblLevel.setText(user.getLevel());
+            lblExpForLevel.setText(user.getExpForNextLevel());
+            pbAccountExp.setRange(0, user.getExpForNextLevel());
+            pbAccountExp.setValue(user.getLevelProgress());
+        }
+
+        @Override
+        public Group show() {
+            return root;
         }
     }
 }
