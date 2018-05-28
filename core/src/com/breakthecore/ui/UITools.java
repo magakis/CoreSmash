@@ -18,17 +18,23 @@ public final class UITools {
         if (!isInitialized) {
             Window.WindowStyle ws = new Window.WindowStyle();
             ws.background = skin.getDrawable("toast1");
-            ws.titleFont = skin.getFont("h6");
+            ws.titleFont = skin.getFont("h5");
 
             dlgToast = new Dialog("", ws);
-            dlgToast.text(new Label("", skin, "h6"));
+            dlgToast.text(new Label("", skin, "h5"));
             dlgToast.setTouchable(Touchable.disabled);
             isInitialized = true;
         }
     }
 
+    public static void showToast(String text, Stage stage) {
+        showToast(text, 2.5f, stage);
+
+    }
+
     public static void showToast(String text, float duration, Stage stage) {
         ((Label) dlgToast.getContentTable().getCells().get(0).getActor()).setText(text);
+        dlgToast.clearActions();
         dlgToast.show(stage, Actions.sequence(
                 Actions.alpha(0),
                 Actions.fadeIn(.4f),

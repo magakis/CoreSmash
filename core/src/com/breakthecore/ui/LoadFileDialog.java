@@ -82,6 +82,7 @@ public class LoadFileDialog extends Dialog {
                     Array tmp = levelsFound.getItems();
                     tmp.removeValue(chosen,false);
                     levelsFound.setItems(tmp);
+                    UITools.showToast("Deleted '"+chosen+"'", this.getStage());
                 }
             }
         };

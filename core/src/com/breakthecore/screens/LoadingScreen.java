@@ -191,6 +191,13 @@ public class LoadingScreen extends ScreenBase {
         skin.add("default", stb);
 
         stb = new TextButton.TextButtonStyle();
+        stb.up = skin.newDrawable("box_white_5", Color.GRAY);
+        stb.down = skin.newDrawable("box_white_5", Color.DARK_GRAY);
+        stb.checked = stb.up;
+        stb.font = skin.getFont("h4");
+        skin.add("box_gray_5", stb);
+
+        stb = new TextButton.TextButtonStyle();
         stb.up = skin.newDrawable("asteroid", Color.WHITE);
         stb.down = skin.newDrawable("asteroid", Color.GRAY);
         stb.checked = stb.up;

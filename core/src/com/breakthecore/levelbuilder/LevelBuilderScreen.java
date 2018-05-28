@@ -243,18 +243,14 @@ public class LevelBuilderScreen extends ScreenBase {
         private String filenameCache = "";
 
         UIToolbarTop() {
-            TextButton.TextButtonStyle tbs = new TextButton.TextButtonStyle();
-            tbs.up = skin.newDrawable("box_white_5", Color.DARK_GRAY);
-            tbs.font = skin.getFont("h4");
-
-            tbSave = new TextButton("Save", tbs);
+            tbSave = new TextButton("Save", skin, "box_gray_5");
             tbSave.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     saveFileDialog.show(stage, filenameCache);
                 }
             });
-            tbLoad = new TextButton("Load", tbs);
+            tbLoad = new TextButton("Load", skin, "box_gray_5");
             tbLoad.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -262,7 +258,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
             });
 
-            tbDeploy = new TextButton("Deploy", tbs);
+            tbDeploy = new TextButton("Deploy", skin, "box_gray_5");
             tbDeploy.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -360,6 +356,7 @@ public class LevelBuilderScreen extends ScreenBase {
             TextButton.TextButtonStyle tbs = new TextButton.TextButtonStyle();
             tbs.checked = skin.newDrawable("box_white_5", Color.GREEN);
             tbs.up = skin.newDrawable("box_white_5", Color.GRAY);
+            tbs.down = skin.newDrawable("box_white_5", Color.DARK_GRAY);
             tbs.font = skin.getFont("h4");
 
             Table main = new Table(skin);
@@ -688,7 +685,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 root.space(20);
                 root.wrap(true);
 
-                TextButton btnLevelSettings = new TextButton("Level", skin);
+                TextButton btnLevelSettings = new TextButton("Level", skin, "box_gray_5");
                 btnLevelSettings.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
@@ -696,7 +693,7 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 });
 
-                TextButton btnMapSettings = new TextButton("Layer", skin);
+                TextButton btnMapSettings = new TextButton("Layer", skin, "box_gray_5");
                 btnMapSettings.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
