@@ -34,7 +34,8 @@ public abstract class AbstractTheme {
     public Texture getTexture(int id) {
         // TODO(3/5/2018): If texture is null, return a 'fail' texture
         ResourceData data = resourceList.get(id);
-        if (data == null) throw new RuntimeException("No texture found for ID: "+id);
+        if (data == null) return assetManager.get("default.png", Texture.class);
+        //        if (data == null) throw new RuntimeException("No texture found for ID: "+id);
         return data.texture;
     }
 

@@ -7,11 +7,9 @@ import com.breakthecore.Observer;
 import com.breakthecore.UserAccount;
 import com.breakthecore.screens.GameScreen;
 
-import java.util.Date;
 import java.util.Random;
 
 public class StatsManager extends Observable implements Observer {
-    private ScoreMultiplier scoreMultiplier = new ScoreMultiplier();
     private Random rand = new Random();
     private UserAccount user;
 
@@ -56,7 +54,7 @@ public class StatsManager extends Observable implements Observer {
                     multiplier = 15;
                     break;
             }
-            scoreGained = (int) (ballsDestroyedThisFrame * scoreMultiplier.get() * multiplier);
+            scoreGained = (int) (ballsDestroyedThisFrame * multiplier);
             score += scoreGained;
             notifyObservers(NotificationType.NOTIFICATION_TYPE_SCORE_INCREMENTED, scoreGained);
 
@@ -74,7 +72,6 @@ public class StatsManager extends Observable implements Observer {
 
     /* Q: Should reset be private and provide only a function that resets but requires a user? */
     public void reset() {
-        scoreMultiplier.reset();
         score = 0;
         gameMode = null;
         // If UserAccount listens to StatManager in the future,
@@ -102,9 +99,6 @@ public class StatsManager extends Observable implements Observer {
         this.user = user;
     }
 
-    public ScoreMultiplier getScoreMultiplier() {
-        return scoreMultiplier;
-    }
 
     public boolean getRoundOutcome() {
         if (isGameActive) throw new IllegalStateException("The game is still running?!");
@@ -119,9 +113,6 @@ public class StatsManager extends Observable implements Observer {
         isGameActive = false;
     }
 
-    public float getDifficultyMultiplier() {
-        return scoreMultiplier.get();
-    }
 
     public int getScore() {
         return score;

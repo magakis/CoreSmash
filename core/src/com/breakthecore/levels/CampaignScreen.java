@@ -20,22 +20,19 @@ import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
-import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.Scaling;
 import com.breakthecore.CoreSmash;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.breakthecore.RoundEndListener;
 import com.breakthecore.UserAccount;
 import com.breakthecore.WorldSettings;
-import com.breakthecore.levelbuilder.LevelFormatParser;
+import com.breakthecore.levelbuilder.XmlManager;
 import com.breakthecore.managers.StatsManager;
 import com.breakthecore.screens.GameScreen;
 import com.breakthecore.screens.ScreenBase;
 import com.breakthecore.tilemap.TilemapManager;
-import com.breakthecore.ui.ActorFactory;
 import com.breakthecore.ui.UIComponent;
-
-import java.util.Locale;
 
 public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private GameScreen gameScreen;
@@ -46,6 +43,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private LevelButton[] levelButtons;
     private int currentLevel;
     private int activeLevel;
+    private static final IntMap<String> levelNames = new IntMap<>(20);
+
 
     public CampaignScreen(CoreSmash game) {
         super(game);
@@ -67,8 +66,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         scrollPane.setSmoothScrolling(false);
         scrollPane.setScrollPercentY(100);
 
-//        currentLevel = Gdx.app.getPreferences("account").getInteger("campaign_level", 1);
-        currentLevel = levelButtons.length;
+        currentLevel = Gdx.app.getPreferences("account").getInteger("campaign_level", 1);
+//        currentLevel = levelButtons.length;
         for (int i = 0; i < currentLevel && i < levelButtons.length; ++i) {
             levelButtons[i].enable();
         }
@@ -112,7 +111,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         activeLevel = lvl;
         final String levelName = "level" + lvl;
 
-        if (!LevelFormatParser.fileExists(levelName)) return;
+        if (!XmlManager.fileExists(levelName)) return;
 
         gameScreen.deployLevel(new CampaignLevel(lvl, gameInstance.getUserAccount(), this) {
             @Override
@@ -140,11 +139,12 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             if (prefs.getInteger("level" + activeLevel, 0) < statsManager.getScore()) {
                 prefs.putInteger("level" + activeLevel, statsManager.getScore());
             }
-//            if (currentLevel == activeLevel) {
-//                prefs.putInteger("campaign_level", currentLevel+1);
-//                levelButtons[currentLevel].enable();
-//                ++currentLevel;
-//            }
+
+            if (currentLevel == activeLevel) {
+                prefs.putInteger("campaign_level", currentLevel + 1);
+                levelButtons[currentLevel].enable();
+                ++currentLevel;
+            }
 
             prefs.flush();
             statsManager.getUser().saveScore(statsManager.getScore());
@@ -271,8 +271,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             btnUser.getImageCell().pad(10);
 
             ProgressBar.ProgressBarStyle pbStyle = new ProgressBar.ProgressBarStyle();
-            pbStyle.background = skin.newDrawable("box_white_5", Color.DARK_GRAY);
-            pbStyle.knobBefore = skin.newDrawable("box_white_5", Color.GREEN);
+            pbStyle.background = skin.newDrawable("progressbar_inner", Color.DARK_GRAY);
+            pbStyle.knobBefore = skin.newDrawable("progressbar_inner", Color.GREEN);
 
             pbStyle.background.setLeftWidth(0);
             pbStyle.background.setRightWidth(0);

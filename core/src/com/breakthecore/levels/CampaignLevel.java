@@ -7,11 +7,11 @@ import com.breakthecore.managers.StatsManager;
 public abstract class CampaignLevel implements Level {
     private RoundEndListener roundEndListener;
     private UserAccount user;
-    private int idLevel;
+    private int level;
 
-    public CampaignLevel(int level,UserAccount user, RoundEndListener roundEndListener) {
+    public CampaignLevel(int level, UserAccount user, RoundEndListener roundEndListener) {
         this.roundEndListener = roundEndListener;
-        idLevel = level;
+        this.level = level;
         this.user = user;
     }
 
@@ -30,6 +30,6 @@ public abstract class CampaignLevel implements Level {
 
     @Override
     public int getLevelNumber() {
-        return idLevel;
+        return level;
     }
 }

@@ -3,14 +3,12 @@ package com.breakthecore.tilemap;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.breakthecore.levelbuilder.ParsedTile;
-import com.breakthecore.tiles.RandomTile;
 import com.breakthecore.tiles.TileDictionary;
 import com.breakthecore.tiles.TileFactory;
 import com.breakthecore.tiles.TileType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -618,7 +616,7 @@ public class TilemapBuilder {
             for (BlueprintTile tile : arr) {
                 if (tile == null) continue;
                 if (debugEnabled && tile.ID == randomTileID)
-                    tilemap.setRelativeTile(tile.x, tile.y, new RandomTile());
+                    tilemap.setRelativeTile(tile.x, tile.y, TileFactory.getTileFromID(randomTileID));
                 else
                     tilemap.setRelativeTile(tile.x, tile.y, TileFactory.getTileFromID(tile.ID));
             }

@@ -1,22 +1,22 @@
 package com.breakthecore.tiles;
 
 import com.breakthecore.GameController;
-import com.breakthecore.managers.CollisionDetector;
-import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
 
-abstract public class Tile {
-    private int ID;
+public interface Tile {
+    void onCollide(MovingBall movingBall, TilemapTile tilemapTile, GameController.BehaviourPowerPack pack);
 
-    public Tile(int id) {
-        ID = id;
-    }
+    void update(float delta);
 
-    abstract public void onCollide(MovingBall movingBall, TilemapTile tilemapTile, GameController.BehaviourPowerPack pack);
+    boolean isMatchable();
 
-    abstract public void update(float delta);
+    boolean isBreakable();
 
-    public int getID() {
-        return ID;
-    }
+    boolean isPlaceable();
+
+    TileType getTileType();
+
+    int getID();
+
+    TileAttributes getTileAttributes();
 }

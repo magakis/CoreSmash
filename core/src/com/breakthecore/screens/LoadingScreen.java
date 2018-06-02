@@ -16,10 +16,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.Align;
 import com.breakthecore.CoreSmash;
-import com.breakthecore.levelbuilder.LevelFormatParser;
 import com.breakthecore.themes.AbstractTheme;
 import com.breakthecore.themes.BaseTheme;
+import com.breakthecore.tiles.TileAttributes;
 import com.breakthecore.tiles.TileDictionary;
+import com.breakthecore.tiles.TileType;
 import com.breakthecore.ui.UITools;
 
 import java.util.Locale;
@@ -44,6 +45,10 @@ public class LoadingScreen extends ScreenBase {
         screenInputMultiplexer.addProcessor(stage);
         loadAllTextures();
         loadAllBitmapFonts();
+        if (!TileDictionary.isInitialized()) {
+            loadAllBalls();
+            TileDictionary.initialize();
+        }
 
         baseTheme = new BaseTheme();
         baseTheme.queueForLoad(am);
@@ -55,7 +60,6 @@ public class LoadingScreen extends ScreenBase {
         if (am.update()) {
             baseTheme.finishLoading();
             setupSkin();
-            TileDictionary.initialilze();
             UITools.initialize(skin);
             gameInstance.initApp();
         }
@@ -75,7 +79,9 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("userIcon.png");
         loadTexture("NinePatches/toast1.png");
         loadTexture("NinePatches/dialog1.png");
+        loadTexture("NinePatches/progressbar_inner.png");
         loadTexture("map.png");
+        loadTexture("default.png");
     }
 
     private void loadAllBitmapFonts() {
@@ -96,6 +102,182 @@ public class LoadingScreen extends ScreenBase {
         loadBitmapFont("gidole_60.fnt");
         loadBitmapFont("gidole_72.fnt");
         loadBitmapFont("gidole_84.fnt");
+    }
+
+    private void loadAllBalls() {
+        TileAttributes ballAttr;
+
+        ballAttr = TileAttributes.getBuilder()
+                .setID(0)
+                .setBreakable(true)
+                .setMatchable(true)
+                .setPlaceable(true)
+                .setTileType(TileType.REGULAR)
+                .build();
+        TileDictionary.registerTile(ballAttr);
+
+        ballAttr = TileAttributes.getBuilder()
+                .setID(1)
+                .setBreakable(true)
+                .setMatchable(true)
+                .setPlaceable(true)
+                .setTileType(TileType.REGULAR)
+                .build();
+        TileDictionary.registerTile(ballAttr);
+
+        ballAttr = TileAttributes.getBuilder()
+                .setID(2)
+                .setBreakable(true)
+                .setMatchable(true)
+                .setPlaceable(true)
+                .setTileType(TileType.REGULAR)
+                .build();
+        TileDictionary.registerTile(ballAttr);
+
+        ballAttr = TileAttributes.getBuilder()
+                .setID(3)
+                .setBreakable(true)
+                .setMatchable(true)
+                .setPlaceable(true)
+                .setTileType(TileType.REGULAR)
+                .build();
+        TileDictionary.registerTile(ballAttr);
+
+        ballAttr = TileAttributes.getBuilder()
+                .setID(4)
+                .setBreakable(true)
+                .setMatchable(true)
+                .setPlaceable(true)
+                .setTileType(TileType.REGULAR)
+                .build();
+        TileDictionary.registerTile(ballAttr);
+
+        ballAttr = TileAttributes.getBuilder()
+                .setID(5)
+                .setBreakable(true)
+                .setMatchable(true)
+                .setPlaceable(true)
+                .setTileType(TileType.REGULAR)
+                .build();
+        TileDictionary.registerTile(ballAttr);
+
+        ballAttr = TileAttributes.getBuilder()
+                .setID(6)
+                .setBreakable(true)
+                .setMatchable(true)
+                .setPlaceable(true)
+                .setTileType(TileType.REGULAR)
+                .build();
+        TileDictionary.registerTile(ballAttr);
+
+        ballAttr = TileAttributes.getBuilder()
+                .setID(7)
+                .setBreakable(true)
+                .setMatchable(true)
+                .setPlaceable(true)
+                .setTileType(TileType.REGULAR)
+                .build();
+        TileDictionary.registerTile(ballAttr);
+
+//        ballAttr = TileAttributes.getBuilder()
+//                .setID(8)
+//                .setBreakable(true)
+//                .setMatchable(true)
+//                .setPlaceable(true)
+//                .setTileType(TileType.REGULAR)
+//                .build();
+//        TileDictionary.registerTile(ballAttr);
+//
+//        ballAttr = TileAttributes.getBuilder()
+//                .setID(9)
+//                .setBreakable(true)
+//                .setMatchable(true)
+//                .setPlaceable(true)
+//                .setTileType(TileType.REGULAR)
+//                .build();
+//        TileDictionary.registerTile(ballAttr);
+//
+//        ballAttr = TileAttributes.getBuilder()
+//                .setID(10)
+//                .setBreakable(true)
+//                .setMatchable(true)
+//                .setPlaceable(true)
+//                .setTileType(TileType.REGULAR)
+//                .build();
+//        TileDictionary.registerTile(ballAttr);
+//
+//        ballAttr = TileAttributes.getBuilder()
+//                .setID(11)
+//                .setBreakable(true)
+//                .setMatchable(true)
+//                .setPlaceable(true)
+//                .setTileType(TileType.REGULAR)
+//                .build();
+//        TileDictionary.registerTile(ballAttr);
+//
+//        ballAttr = TileAttributes.getBuilder()
+//                .setID(12)
+//                .setBreakable(true)
+//                .setMatchable(true)
+//                .setPlaceable(true)
+//                .setTileType(TileType.REGULAR)
+//                .build();
+//        TileDictionary.registerTile(ballAttr);
+//
+//        ballAttr = TileAttributes.getBuilder()
+//                .setID(13)
+//                .setBreakable(true)
+//                .setMatchable(true)
+//                .setPlaceable(true)
+//                .setTileType(TileType.REGULAR)
+//                .build();
+//        TileDictionary.registerTile(ballAttr);
+//
+//        ballAttr = TileAttributes.getBuilder()
+//                .setID(14)
+//                .setBreakable(true)
+//                .setMatchable(true)
+//                .setPlaceable(true)
+//                .setTileType(TileType.REGULAR)
+//                .build();
+//        TileDictionary.registerTile(ballAttr);
+//
+//        ballAttr = TileAttributes.getBuilder()
+//                .setID(15)
+//                .setBreakable(true)
+//                .setMatchable(true)
+//                .setPlaceable(true)
+//                .setTileType(TileType.REGULAR)
+//                .build();
+//        TileDictionary.registerTile(ballAttr);
+
+        ballAttr = TileAttributes.getBuilder()
+                .setID(17)
+                .setBreakable(false)
+                .setMatchable(false)
+                .setPlaceable(true)
+                .setTileType(TileType.RANDOM_REGULAR)
+                .build();
+        TileDictionary.registerTile(ballAttr);
+
+        ballAttr = TileAttributes.getBuilder()
+                .setID(18)
+                .setBreakable(false)
+                .setMatchable(false)
+                .setPlaceable(true)
+                .setTileType(TileType.WALL)
+                .build();
+        TileDictionary.registerTile(ballAttr);
+
+        ballAttr = TileAttributes.getBuilder()
+                .setID(19)
+                .setBreakable(false)
+                .setMatchable(false)
+                .setPlaceable(false)
+                .setTileType(TileType.BOMB)
+                .build();
+        TileDictionary.registerTile(ballAttr);
+
     }
 
     private void loadTexture(String name) {
@@ -133,6 +315,9 @@ public class LoadingScreen extends ScreenBase {
 
         ninePatch = new NinePatch(am.get("NinePatches/toast1.png", Texture.class), 15, 15, 15, 15);
         skin.add("toast1", ninePatch);
+
+        ninePatch = new NinePatch(am.get("NinePatches/progressbar_inner.png", Texture.class), 15, 15, 15, 15);
+        skin.add("progressbar_inner", ninePatch);
 
         // Textures
         pix = new Pixmap(41, 41, Pixmap.Format.RGBA8888);

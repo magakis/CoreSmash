@@ -10,7 +10,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.breakthecore.managers.RenderManager;
-import com.breakthecore.screens.GameScreen;
 import com.breakthecore.screens.LoadingScreen;
 import com.breakthecore.screens.MainMenuScreen;
 import com.breakthecore.screens.ScreenBase;
@@ -25,7 +24,7 @@ import java.util.Stack;
 import static com.badlogic.gdx.Gdx.gl;
 
 public class CoreSmash extends Game {
-    public static String VERSION = "0.1.2.1-alpha";
+    public static String VERSION = "0.1.2.2-alpha";
     public static boolean LOG_CRASHES = true;
 
     private boolean isInitialized;
@@ -40,6 +39,21 @@ public class CoreSmash extends Game {
 
     @Override
     public void create() {
+        Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread thread, Throwable err) {
+                if (LOG_CRASHES) {
+                    SimpleDateFormat format = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss");
+                    try (Writer writer = Gdx.files.external("/CoreSmash/crash-logs/" + format.format(Calendar.getInstance().getTime()) + ".txt").writer(false)) {
+                        err.printStackTrace(new PrintWriter(writer));
+                    } catch (IOException ignored) {
+                    }
+                }
+                err.printStackTrace();
+                Gdx.app.exit();
+            }
+        });
+
         WorldSettings.init();
         m_screenStack = new Stack<ScreenBase>();
         viewport = new ExtendViewport(1080, 1920);
@@ -55,7 +69,18 @@ public class CoreSmash extends Game {
         userAccount = new UserAccount();
 
         setScreen(new LoadingScreen(this));
-        gl.glClearColor(30/255f, 30/255f, 30/255f, 1);
+        gl.glClearColor(30 / 255f, 30 / 255f, 30 / 255f, 1);
+//        } catch (RuntimeException err) {
+//            if (LOG_CRASHES) {
+//                SimpleDateFormat format = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss");
+//                try (Writer writer = Gdx.files.external("/CoreSmash/crash-logs/" + format.format(Calendar.getInstance().getTime()) + ".txt").writer(false)) {
+//                    err.printStackTrace(new PrintWriter(writer));
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//            throw err;
+//        }
     }
 
     @Override
@@ -74,7 +99,6 @@ public class CoreSmash extends Game {
             }
             throw err;
         }
-
     }
 
     public Skin getSkin() {

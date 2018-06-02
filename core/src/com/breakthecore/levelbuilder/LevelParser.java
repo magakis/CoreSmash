@@ -2,36 +2,107 @@ package com.breakthecore.levelbuilder;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
-import com.breakthecore.Coords2D;
+import com.breakthecore.tilemap.TilemapManager;
+import com.breakthecore.tilemap.TilemapTile;
 
-import org.kxml2.io.KXmlParser;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlSerializer;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.Writer;
 import java.util.List;
+import java.util.Objects;
 
-final class LevelParser {
-    private XmlPullParser parser = new KXmlParser();
-    private Pool<ParsedTile> parsedTilePool = new Pool<ParsedTile>() {
+import static com.breakthecore.levelbuilder.XmlManager.createElement;
+import static org.xmlpull.v1.XmlPullParser.NO_NAMESPACE;
+
+public final class LevelParser {
+    static final String TAG_LEVEL = "level";
+    static final String TAG_LEVEL_SETTINGS = "levelSettings";
+    static final String TAG_MAP_SETTINGS = "mapSettings";
+    static final String TAG_LIVES = "lives";
+    static final String TAG_MOVES = "moves";
+    static final String TAG_TIME = "time";
+    static final String TAG_MAP = "map";
+    static final String TAG_MINSPEED = "minSpeed";
+    static final String TAG_MAXSPEED = "maxSpeed";
+    static final String TAG_ROTATECCW = "rotateCCW";
+    static final String TAG_COLORCOUNT = "colorCount";
+    static final String TAG_BALLSPEED = "ballSpeed";
+    static final String TAG_LAUNCHERSIZE = "launcherSize";
+    static final String TAG_LAUNCHERCD = "launcherCD";
+    static final String TAG_CONTENT = "content";
+    static final String TAG_BALL = "ball";
+
+    private static Pool<ParsedTile> parsedTilePool = new Pool<ParsedTile>() {
         @Override
         protected ParsedTile newObject() {
             return new ParsedTile();
         }
     };
-    private ParsedLevel parsedLevel = new ParsedLevel();
+    private static ParsedLevel parsedLevel = new ParsedLevel();
 
-    LevelParser() {
+    public static boolean saveAs(String name, TilemapManager tilemapManager, LevelSettings levelSettings, MapSettings[] mapSettings) {
+        FileHandle file = Gdx.files.external("/CoreSmash/levels/" + name + ".xml");
+        int maxTilemaps = tilemapManager.getMaxTilemapCount();
+        XmlSerializer serializer = XmlManager.getSerializer();
+
+        try (Writer writer = file.writer(false)) {
+            serializer.setOutput(writer);
+            serializer.startDocument("UTF-8", false);
+
+            serializer.startTag(NO_NAMESPACE, TAG_LEVEL);
+            serializer.startTag(NO_NAMESPACE, TAG_LEVEL_SETTINGS);
+            createElement(TAG_LIVES, levelSettings.lives);
+            createElement(TAG_MOVES, levelSettings.moves);
+            createElement(TAG_TIME, levelSettings.time);
+            createElement(TAG_BALLSPEED, levelSettings.ballSpeed);
+            createElement(TAG_LAUNCHERSIZE, levelSettings.launcherSize);
+            createElement(TAG_LAUNCHERCD, levelSettings.launcherCooldown);
+            serializer.endTag(NO_NAMESPACE, TAG_LEVEL_SETTINGS);
+
+            serializer.startTag(NO_NAMESPACE, TAG_MAP_SETTINGS);
+            for (int mapIndex = 0; mapIndex < maxTilemaps; ++mapIndex) {
+                if (tilemapManager.getTileCountFrom(mapIndex) == 0) break;
+                MapSettings map = mapSettings[mapIndex];
+
+                serializer.startTag(NO_NAMESPACE, TAG_MAP);
+                serializer.attribute(NO_NAMESPACE, "id", String.valueOf(mapIndex));
+                createElement(TAG_MINSPEED, map.minSpeed);
+                createElement(TAG_MAXSPEED, map.maxSpeed);
+                createElement(TAG_ROTATECCW, map.rotateCCW);
+                createElement(TAG_COLORCOUNT, map.colorCount);
+                serializer.startTag(NO_NAMESPACE, TAG_CONTENT);
+                for (TilemapTile tile : tilemapManager.getTileList(mapIndex)) {
+                    serializer.startTag(NO_NAMESPACE, TAG_BALL);
+                    serializer.attribute(NO_NAMESPACE, "id", String.valueOf(tile.getTile().getID()));
+                    serializer.attribute(NO_NAMESPACE, "x", String.valueOf(tile.getRelativePosition().x));
+                    serializer.attribute(NO_NAMESPACE, "y", String.valueOf(tile.getRelativePosition().y));
+                    serializer.endTag(NO_NAMESPACE, TAG_BALL);
+                }
+                serializer.endTag(NO_NAMESPACE, TAG_CONTENT);
+                serializer.endTag(NO_NAMESPACE, TAG_MAP);
+            }
+            serializer.endTag(NO_NAMESPACE, TAG_MAP_SETTINGS);
+            serializer.endTag(NO_NAMESPACE, TAG_LEVEL);
+            serializer.endDocument();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
-    public ParsedLevel parseFile(String filename) {
+    public static ParsedLevel loadFrom(String filename) {
         FileHandle file = Gdx.files.external("/CoreSmash/levels/" + filename + ".xml");
         if (!file.exists()) return null;
 
         parsedLevel.reset();
+        XmlPullParser parser = XmlManager.getParser();
+        Objects.requireNonNull(parser);
 
         try (Reader reader = file.reader()) {
             parser.setInput(reader);
@@ -40,11 +111,11 @@ final class LevelParser {
                 switch (type) {
                     case XmlPullParser.START_TAG:
                         switch (parser.getName()) {
-                            case LevelFormatParser.TAG_LEVEL_SETTINGS:
-                                parseLevelSettings();
+                            case TAG_LEVEL_SETTINGS:
+                                parseLevelSettings(parser);
                                 break;
-                            case LevelFormatParser.TAG_MAP_SETTINGS:
-                                parseMapSettings();
+                            case TAG_MAP_SETTINGS:
+                                parseMapSettings(parser);
                                 break;
                         }
                         break;
@@ -63,7 +134,7 @@ final class LevelParser {
         return parsedLevel;
     }
 
-    private void parseLevelSettings() throws IOException, XmlPullParserException {
+    private static void parseLevelSettings(XmlPullParser parser) throws IOException, XmlPullParserException {
         int type;
         String name;
         do {
@@ -74,36 +145,36 @@ final class LevelParser {
                 String text;
 
                 switch (name) {
-                    case LevelFormatParser.TAG_LIVES:
+                    case TAG_LIVES:
                         text = parser.nextText();
                         parsedLevel.levelSettings.lives = text.isEmpty() ? 0 : Integer.parseInt(text);
                         break;
-                    case LevelFormatParser.TAG_MOVES:
+                    case TAG_MOVES:
                         text = parser.nextText();
                         parsedLevel.levelSettings.moves = text.isEmpty() ? 0 : Integer.parseInt(text);
                         break;
-                    case LevelFormatParser.TAG_TIME:
+                    case TAG_TIME:
                         text = parser.nextText();
                         parsedLevel.levelSettings.time = text.isEmpty() ? 0 : Integer.parseInt(text);
                         break;
-                    case LevelFormatParser.TAG_LAUNCHERSIZE:
+                    case TAG_LAUNCHERSIZE:
                         text = parser.nextText();
                         parsedLevel.levelSettings.launcherSize = text.isEmpty() ? 0 : Integer.parseInt(text);
                         break;
-                    case LevelFormatParser.TAG_LAUNCHERCD:
+                    case TAG_LAUNCHERCD:
                         text = parser.nextText();
                         parsedLevel.levelSettings.launcherCooldown = text.isEmpty() ? 0 : Float.parseFloat(text);
                         break;
-                    case LevelFormatParser.TAG_BALLSPEED:
+                    case TAG_BALLSPEED:
                         text = parser.nextText();
                         parsedLevel.levelSettings.ballSpeed = text.isEmpty() ? 0 : Integer.parseInt(text);
                         break;
                 }
             }
-        } while (!name.equals(LevelFormatParser.TAG_LEVEL_SETTINGS));
+        } while (!name.equals(TAG_LEVEL_SETTINGS));
     }
 
-    private void parseMapSettings() throws IOException, XmlPullParserException {
+    private static void parseMapSettings(XmlPullParser parser) throws IOException, XmlPullParserException {
         int type;
         String name;
 
@@ -113,14 +184,14 @@ final class LevelParser {
             name = parser.getName();
 
             if (type == XmlPullParser.START_TAG) {
-                if (name.equals(LevelFormatParser.TAG_MAP)) {
-                    parseMap(mapIndex++);
+                if (name.equals(TAG_MAP)) {
+                    parseMap(parser, mapIndex++);
                 }
             }
-        } while (!name.equals(LevelFormatParser.TAG_MAP_SETTINGS));
+        } while (!name.equals(TAG_MAP_SETTINGS));
     }
 
-    private void parseMap(int index) throws IOException, XmlPullParserException {
+    private static void parseMap(XmlPullParser parser, int index) throws IOException, XmlPullParserException {
         if (index == parsedLevel.mapSettings.length) throw new IndexOutOfBoundsException("Index was: "+index);
 
         int type;
@@ -134,30 +205,30 @@ final class LevelParser {
             if (type == XmlPullParser.START_TAG) {
                 String text;
                 switch (name) {
-                    case LevelFormatParser.TAG_MINSPEED:
+                    case TAG_MINSPEED:
                         text = parser.nextText();
                         map.minSpeed = text.isEmpty() ? 0 : Integer.parseInt(text);
                         break;
-                    case LevelFormatParser.TAG_MAXSPEED:
+                    case TAG_MAXSPEED:
                         text = parser.nextText();
                         map.maxSpeed = text.isEmpty() ? 0 : Integer.parseInt(text);
                         break;
-                    case LevelFormatParser.TAG_ROTATECCW:
+                    case TAG_ROTATECCW:
                         text = parser.nextText();
                         map.rotateCCW = !text.isEmpty() && Boolean.parseBoolean(text);
                         break;
-                    case LevelFormatParser.TAG_COLORCOUNT:
+                    case TAG_COLORCOUNT:
                         text = parser.nextText();
                         map.colorCount = text.isEmpty() ? 0 : Integer.parseInt(text);
                         break;
-                    case LevelFormatParser.TAG_CONTENT:
+                    case TAG_CONTENT:
                         List<ParsedTile> tiles = parsedLevel.mapTiles[index];
                         do {
                             type = parser.next();
                             name = parser.getName();
 
                             if (type == XmlPullParser.START_TAG) {
-                                if (name.equals(LevelFormatParser.TAG_BALL)) {
+                                if (name.equals(TAG_BALL)) {
                                     ParsedTile tile = parsedTilePool.obtain();
 
                                     tile.tilemapID = index;
@@ -168,11 +239,11 @@ final class LevelParser {
                                     tiles.add(tile);
                                 }
                             }
-                        } while (!name.equals(LevelFormatParser.TAG_CONTENT));
+                        } while (!name.equals(TAG_CONTENT));
                         break;
                 }
             }
-        } while (!name.equals(LevelFormatParser.TAG_MAP));
+        } while (!name.equals(TAG_MAP));
     }
 
 }

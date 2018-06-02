@@ -3,13 +3,12 @@ package com.breakthecore.tiles;
 import com.breakthecore.Coords2D;
 import com.breakthecore.GameController;
 import com.breakthecore.tilemap.Tilemap;
-import com.breakthecore.managers.CollisionDetector;
-import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
 
-public class BombTile extends Tile {
-    public BombTile() {
-        super(TileDictionary.getIdOf(TileType.BOMB));
+public class BombTile implements Tile {
+    private final static TileAttributes ballAttr = TileDictionary.getAttributesFor(19);
+
+    BombTile() {
     }
 
     @Override
@@ -32,4 +31,35 @@ public class BombTile extends Tile {
     public void update(float delta) {
 
     }
+
+    @Override
+    public boolean isMatchable() {
+        return ballAttr.isMatchable();
+    }
+
+    @Override
+    public boolean isBreakable() {
+        return ballAttr.isBreakable();
+    }
+
+    @Override
+    public boolean isPlaceable() {
+        return ballAttr.isPlaceable();
+    }
+
+    @Override
+    public TileType getTileType() {
+        return ballAttr.getTileType();
+    }
+
+    @Override
+    public int getID() {
+        return ballAttr.getID();
+    }
+
+    @Override
+    public TileAttributes getTileAttributes() {
+        return ballAttr;
+    }
+
 }

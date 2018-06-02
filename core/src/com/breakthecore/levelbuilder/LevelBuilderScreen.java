@@ -239,7 +239,7 @@ public class LevelBuilderScreen extends ScreenBase {
         private SaveFileDialog saveFileDialog;
         private LoadFileDialog loadFileDialog;
         private Level testLevel;
-        private final TextButton tbSave, tbLoad, tbDeploy;
+        private final TextButton tbSave, tbLoad, tbDeploy, tbAssign;
         private String filenameCache = "";
 
         UIToolbarTop() {
@@ -264,6 +264,14 @@ public class LevelBuilderScreen extends ScreenBase {
                 public void changed(ChangeEvent event, Actor actor) {
                     levelBuilder.saveAs("_editor_");
                     gameScreen.deployLevel(testLevel);
+                }
+            });
+
+            tbAssign = new TextButton("Assign", skin, "box_gray_5");
+            tbAssign.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+
                 }
             });
 

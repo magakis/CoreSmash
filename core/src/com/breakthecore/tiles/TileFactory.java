@@ -11,7 +11,7 @@ public class TileFactory {
 
         switch (type) {
             case REGULAR:
-                return new RegularTile(id);
+                return RegularTile.newBall(id);
             case RANDOM_REGULAR:
                 return new RandomTile();
             case WALL:

@@ -23,25 +23,25 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.breakthecore.CoreSmash;
 import com.breakthecore.Coords2D;
+import com.breakthecore.CoreSmash;
 import com.breakthecore.GameController;
 import com.breakthecore.Launcher;
-import com.breakthecore.levelbuilder.LevelFormatParser;
+import com.breakthecore.NotificationType;
+import com.breakthecore.Observer;
+import com.breakthecore.StreakUI;
+import com.breakthecore.WorldSettings;
+import com.breakthecore.levelbuilder.LevelParser;
 import com.breakthecore.levelbuilder.LevelSettings;
 import com.breakthecore.levelbuilder.MapSettings;
 import com.breakthecore.levelbuilder.ParsedLevel;
 import com.breakthecore.levelbuilder.ParsedTile;
 import com.breakthecore.levels.Level;
-import com.breakthecore.managers.StatsManager;
-import com.breakthecore.StreakUI;
-import com.breakthecore.NotificationType;
-import com.breakthecore.Observer;
-import com.breakthecore.tilemap.TilemapBuilder;
-import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.managers.MovingBallManager;
 import com.breakthecore.managers.RenderManager;
-import com.breakthecore.WorldSettings;
+import com.breakthecore.managers.StatsManager;
+import com.breakthecore.tilemap.TilemapBuilder;
+import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.ui.UIComponent;
 
@@ -624,7 +624,7 @@ public class GameScreen extends ScreenBase implements Observer {
         }
 
         public GameScreenController loadLevel(String filename) {
-            ParsedLevel parsedLevel = LevelFormatParser.loadFrom(filename);
+            ParsedLevel parsedLevel = LevelParser.loadFrom(filename);
 
             LevelSettings levelSettings = parsedLevel.getLevelSettings();
             statsManager.setGameMode(GameMode.CLASSIC);

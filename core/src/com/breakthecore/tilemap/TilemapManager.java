@@ -13,7 +13,6 @@ import com.breakthecore.managers.RenderManager;
 import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.tiles.Tile;
 import com.breakthecore.tiles.TileContainer;
-import com.breakthecore.tiles.TileDictionary;
 import com.breakthecore.tiles.TileFactory;
 
 import java.util.ArrayList;
@@ -317,14 +316,14 @@ public class TilemapManager extends Observable implements Observer {
      * This check is only done on the 0 layer cause that is the only one that requires tiles to be connected to the center tile.
      */
     private void removeDisconnectedTiles() {
-        TilemapTile tile;
+        TilemapTile tilemapTile;
         Tilemap tm = tilemap[0];
         for (int y = 0; y < tm.getTilemapSize(); ++y) {
             for (int x = 0; x < tm.getTilemapSize(); ++x) {
-                tile = tm.getAbsoluteTile(x, y);
-                if (tile != null) {
-                    if (!TileDictionary.isBreakable(tile.getTileID())) continue; //skip unbreakables
-                    if (pathfinder.getPathToCenter(tile, tm) == null) {
+                tilemapTile = tm.getAbsoluteTile(x, y);
+                if (tilemapTile != null) {
+                    if (!tilemapTile.getTile().isBreakable()) continue; //skip unbreakable
+                    if (pathfinder.getPathToCenter(tilemapTile, tm) == null) {
                         // TODO(13/4/2018): I should put TilemapTiles in an Object pool
                         tm.destroyAbsoluteTile(x, y);
                     }

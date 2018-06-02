@@ -7,8 +7,6 @@ import com.breakthecore.Coords2D;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.tilemap.TilemapManager;
 
-import java.util.Objects;
-
 final public class LevelBuilder {
     private OrthographicCamera camera;
     private ScreenToWorld screenToWorld;
@@ -160,11 +158,11 @@ final public class LevelBuilder {
     }
 
     public boolean saveAs(String name) {
-        return LevelFormatParser.saveAs(name, tilemapManager,levelSettings,mapSettings);
+        return LevelParser.saveAs(name, tilemapManager, levelSettings, mapSettings);
     }
 
     public boolean load(String name) {
-        ParsedLevel parsedLevel = LevelFormatParser.loadFrom(name);
+        ParsedLevel parsedLevel = LevelParser.loadFrom(name);
         if (parsedLevel == null) return false;
 
         tilemapManager.reset();

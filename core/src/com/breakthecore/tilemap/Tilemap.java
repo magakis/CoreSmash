@@ -7,7 +7,6 @@ import com.breakthecore.NotificationType;
 import com.breakthecore.Observable;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.tiles.Tile;
-import com.breakthecore.tiles.TileDictionary;
 import com.breakthecore.tiles.TileType;
 
 import java.security.InvalidParameterException;
@@ -95,7 +94,7 @@ public class Tilemap extends Observable {
         for (TilemapTile[] arr : tilemapTileList) {
             for (TilemapTile t : arr) {
                 if (t == null) continue;
-                if (TileDictionary.getTypeOf(t.getTileID()) == TileType.REGULAR) {
+                if (t.getTile().getTileType() == TileType.REGULAR) {
                     colorsAvailable[t.getTileID()]++;
                 }
             }

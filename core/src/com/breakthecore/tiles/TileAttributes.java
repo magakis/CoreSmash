@@ -1,7 +1,10 @@
 package com.breakthecore.tiles;
 
 public class TileAttributes {
+    private static final Builder builder = new Builder();
+
     private final TileType tileType;
+    private final int ID;
     private final boolean isMatchable;
     private final boolean isPlaceable;
     private final boolean isBreakable;
@@ -11,6 +14,11 @@ public class TileAttributes {
         isMatchable = builder.isMatchable;
         isPlaceable = builder.isPlaceable;
         isBreakable = builder.isBreakable;
+        ID = builder.ID;
+    }
+
+    public static Builder getBuilder() {
+        return builder.reset();
     }
 
     public TileType getTileType() {
@@ -27,8 +35,13 @@ public class TileAttributes {
         return isPlaceable;
     }
 
+    public int getID() {
+        return ID;
+    }
+
     public static class Builder {
         private TileType tileType;
+        private int ID;
         private boolean isMatchable;
         private boolean isPlaceable;
         private boolean isBreakable = true;
@@ -51,20 +64,28 @@ public class TileAttributes {
             return this;
         }
 
+        public Builder setID(int id) {
+            ID = id;
+            return this;
+        }
+
         public Builder setBreakable(boolean breakable) {
             isBreakable = breakable;
             return this;
         }
 
         public TileAttributes build() {
+            if (ID < 0) throw new IllegalStateException("Invalid ID (" + ID + ")");
             return new TileAttributes(this);
         }
 
-        public void reset() {
+        public Builder reset() {
             tileType = null;
             isMatchable = false;
             isBreakable = true;
             isPlaceable = false;
+            ID = -1;
+            return this;
         }
     }
 }
