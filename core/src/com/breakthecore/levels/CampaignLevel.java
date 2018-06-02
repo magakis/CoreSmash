@@ -4,7 +4,7 @@ import com.breakthecore.RoundEndListener;
 import com.breakthecore.UserAccount;
 import com.breakthecore.managers.StatsManager;
 
-public abstract class CampaignLevel implements Level {
+public abstract class CampaignLevel extends Level {
     private RoundEndListener roundEndListener;
     private UserAccount user;
     private int level;

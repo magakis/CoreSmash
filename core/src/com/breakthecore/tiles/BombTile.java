@@ -5,7 +5,7 @@ import com.breakthecore.GameController;
 import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.tilemap.TilemapTile;
 
-public class BombTile implements Tile {
+public class BombTile extends Tile {
     private final static TileAttributes ballAttr = TileDictionary.getAttributesFor(19);
 
     BombTile() {

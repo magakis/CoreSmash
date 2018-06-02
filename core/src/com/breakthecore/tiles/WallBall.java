@@ -3,7 +3,7 @@ package com.breakthecore.tiles;
 import com.breakthecore.GameController;
 import com.breakthecore.tilemap.TilemapTile;
 
-public class WallBall implements Tile {
+public class WallBall extends Tile {
     private final static TileAttributes ballAttr = TileDictionary.getAttributesFor(18);
 
 

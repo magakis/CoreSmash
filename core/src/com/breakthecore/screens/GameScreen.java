@@ -46,7 +46,6 @@ import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.ui.UIComponent;
 
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Created by Michail on 17/3/2018.
@@ -224,7 +223,6 @@ public class GameScreen extends ScreenBase implements Observer {
         rootUIStack.addActor(streakUI.show());
         rootUIStack.addActor(debugUI.show());
 
-        debugUI.dblb3.setText(String.format(Locale.ENGLISH, "Diff: %.2f", statsManager.getDifficultyMultiplier()));
         gameInstance.setScreen(this);
     }
 

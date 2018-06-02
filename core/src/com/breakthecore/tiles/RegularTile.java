@@ -3,7 +3,7 @@ package com.breakthecore.tiles;
 import com.breakthecore.GameController;
 import com.breakthecore.tilemap.TilemapTile;
 
-public abstract class RegularTile implements Tile {
+public abstract class RegularTile extends Tile {
     static RegularTile newBall(int id) {
         switch (id) {
             case 0:
