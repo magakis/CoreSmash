@@ -4,7 +4,7 @@ import com.breakthecore.GameController;
 import com.breakthecore.tilemap.TilemapTile;
 
 public class RandomTile extends Tile {
-    private final static TileAttributes ballAttr = TileDictionary.getAttributesFor(17);
+    private final TileAttributes ballAttr = TileIndex.get().getAttributesFor(17);
 
     RandomTile() {
     }

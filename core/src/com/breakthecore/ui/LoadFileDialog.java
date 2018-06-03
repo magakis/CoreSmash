@@ -21,7 +21,7 @@ import java.io.FilenameFilter;
 import java.util.Arrays;
 
 public class LoadFileDialog extends Dialog {
-    private final List levelsFound;
+    private final List<String> levelsFound;
     private final FilenameFilter levelBuilderFilter;
     private final Dialog dlgConfirmDelete;
 
@@ -42,7 +42,7 @@ public class LoadFileDialog extends Dialog {
         ls.selection = skin.newDrawable("box_white_5", Color.BLACK);
         ls.font = skin.getFont("h5");
 
-        levelsFound = new List(ls);
+        levelsFound = new List<>(ls);
 
         TextButton tbLoad = new TextButton("Load", skin);
         tbLoad.addListener(new ChangeListener() {

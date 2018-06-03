@@ -2,7 +2,6 @@ package com.breakthecore.managers;
 
 import com.badlogic.gdx.utils.Pool;
 import com.breakthecore.Observable;
-import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.tiles.Tile;
 import com.breakthecore.tiles.TileFactory;
@@ -10,7 +9,6 @@ import com.breakthecore.tiles.TileFactory;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
-import java.util.Random;
 
 /**
  * Created by Michail on 24/3/2018.
@@ -49,6 +47,10 @@ public class MovingBallManager extends Observable {
 
     public void setDefaultBallSpeed(int defaultSpeed) {
         this.defaultSpeed = defaultSpeed;
+    }
+
+    public boolean hasActiveBalls() {
+        return activeList.size() == 0;
     }
 
     public void activate(MovingBall ball) {

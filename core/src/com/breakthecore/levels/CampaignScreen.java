@@ -1,8 +1,6 @@
 package com.breakthecore.levels;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
@@ -21,7 +19,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.Scaling;
 import com.breakthecore.CoreSmash;
 import com.breakthecore.RoundEndListener;
@@ -41,10 +38,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private Skin skin;
     private Stage stage;
     private LevelButton[] levelButtons;
-    private int currentLevel;
-    private int activeLevel;
-    private static final IntMap<String> levelNames = new IntMap<>(20);
-
 
     public CampaignScreen(CoreSmash game) {
         super(game);
@@ -66,9 +59,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         scrollPane.setSmoothScrolling(false);
         scrollPane.setScrollPercentY(100);
 
-        currentLevel = Gdx.app.getPreferences("account").getInteger("campaign_level", 1);
-//        currentLevel = levelButtons.length;
-        for (int i = 0; i < currentLevel && i < levelButtons.length; ++i) {
+        int levelsUnlocked = gameInstance.getUserAccount().getUnlockedLevels();
+        for (int i = 0; i < levelsUnlocked && i < levelButtons.length; ++i) {
             levelButtons[i].enable();
         }
 
@@ -108,15 +100,12 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     }
 
     private void startCampaignLevel(int lvl) {
-        activeLevel = lvl;
-        final String levelName = "level" + lvl;
-
-        if (!XmlManager.fileExists(levelName)) return;
+        if (!XmlManager.fileExists("level" + lvl)) return;
 
         gameScreen.deployLevel(new CampaignLevel(lvl, gameInstance.getUserAccount(), this) {
             @Override
             public void initialize(GameScreen.GameScreenController gameScreenController) {
-                gameScreenController.loadLevel(levelName);
+                gameScreenController.loadLevel(getLevelNumber());
             }
 
             @Override
@@ -132,25 +121,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
     @Override
     public void onRoundEnded(StatsManager statsManager) {
-        // Round WON
-        // XXX(13/5/2018): Score saving and everything should be at one place (UserAccount)?
-        if (statsManager.getRoundOutcome()) {
-            Preferences prefs = Gdx.app.getPreferences("account");
-            if (prefs.getInteger("level" + activeLevel, 0) < statsManager.getScore()) {
-                prefs.putInteger("level" + activeLevel, statsManager.getScore());
-            }
-
-            if (currentLevel == activeLevel) {
-                prefs.putInteger("campaign_level", currentLevel + 1);
-                levelButtons[currentLevel].enable();
-                ++currentLevel;
-            }
-
-            prefs.flush();
-            statsManager.getUser().saveScore(statsManager.getScore());
-            uiOverlay.updateValues();
-        }
-        //Round LOST
+        gameInstance.getUserAccount().saveStats(statsManager);
+        uiOverlay.updateValues();
     }
 
     private class InputListener implements GestureDetector.GestureListener {
@@ -317,11 +289,14 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
         public void updateValues() {
             UserAccount user = gameInstance.getUserAccount();
-            lblExp.setText(user.getLevelProgress());
+            lblExp.setText(user.getXPProgress());
             lblLevel.setText(user.getLevel());
             lblExpForLevel.setText(user.getExpForNextLevel());
             pbAccountExp.setRange(0, user.getExpForNextLevel());
-            pbAccountExp.setValue(user.getLevelProgress());
+            pbAccountExp.setValue(user.getXPProgress());
+            if (levelButtons[user.getUnlockedLevels()].isDisabled()) {
+                levelButtons[user.getUnlockedLevels()].enable();
+            }
         }
 
         @Override

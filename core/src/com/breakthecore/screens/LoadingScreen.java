@@ -19,7 +19,7 @@ import com.breakthecore.CoreSmash;
 import com.breakthecore.themes.AbstractTheme;
 import com.breakthecore.themes.BaseTheme;
 import com.breakthecore.tiles.TileAttributes;
-import com.breakthecore.tiles.TileDictionary;
+import com.breakthecore.tiles.TileIndex;
 import com.breakthecore.tiles.TileType;
 import com.breakthecore.ui.UITools;
 
@@ -45,10 +45,7 @@ public class LoadingScreen extends ScreenBase {
         screenInputMultiplexer.addProcessor(stage);
         loadAllTextures();
         loadAllBitmapFonts();
-        if (!TileDictionary.isInitialized()) {
-            loadAllBalls();
-            TileDictionary.initialize();
-        }
+        loadAllBalls();
 
         baseTheme = new BaseTheme();
         baseTheme.queueForLoad(am);
@@ -107,6 +104,9 @@ public class LoadingScreen extends ScreenBase {
     private void loadAllBalls() {
         TileAttributes ballAttr;
 
+        TileIndex tileIndex = TileIndex.get();
+        if (tileIndex.isFrozen()) return;
+
         ballAttr = TileAttributes.getBuilder()
                 .setID(0)
                 .setBreakable(true)
@@ -114,7 +114,7 @@ public class LoadingScreen extends ScreenBase {
                 .setPlaceable(true)
                 .setTileType(TileType.REGULAR)
                 .build();
-        TileDictionary.registerTile(ballAttr);
+        tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(1)
@@ -123,7 +123,7 @@ public class LoadingScreen extends ScreenBase {
                 .setPlaceable(true)
                 .setTileType(TileType.REGULAR)
                 .build();
-        TileDictionary.registerTile(ballAttr);
+        tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(2)
@@ -132,7 +132,7 @@ public class LoadingScreen extends ScreenBase {
                 .setPlaceable(true)
                 .setTileType(TileType.REGULAR)
                 .build();
-        TileDictionary.registerTile(ballAttr);
+        tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(3)
@@ -141,7 +141,7 @@ public class LoadingScreen extends ScreenBase {
                 .setPlaceable(true)
                 .setTileType(TileType.REGULAR)
                 .build();
-        TileDictionary.registerTile(ballAttr);
+        tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(4)
@@ -150,7 +150,7 @@ public class LoadingScreen extends ScreenBase {
                 .setPlaceable(true)
                 .setTileType(TileType.REGULAR)
                 .build();
-        TileDictionary.registerTile(ballAttr);
+        tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(5)
@@ -159,7 +159,7 @@ public class LoadingScreen extends ScreenBase {
                 .setPlaceable(true)
                 .setTileType(TileType.REGULAR)
                 .build();
-        TileDictionary.registerTile(ballAttr);
+        tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(6)
@@ -168,7 +168,7 @@ public class LoadingScreen extends ScreenBase {
                 .setPlaceable(true)
                 .setTileType(TileType.REGULAR)
                 .build();
-        TileDictionary.registerTile(ballAttr);
+        tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(7)
@@ -177,7 +177,7 @@ public class LoadingScreen extends ScreenBase {
                 .setPlaceable(true)
                 .setTileType(TileType.REGULAR)
                 .build();
-        TileDictionary.registerTile(ballAttr);
+        tileIndex.registerTile(ballAttr);
 
 //        ballAttr = TileAttributes.getBuilder()
 //                .setID(8)
@@ -186,7 +186,7 @@ public class LoadingScreen extends ScreenBase {
 //                .setPlaceable(true)
 //                .setTileType(TileType.REGULAR)
 //                .build();
-//        TileDictionary.registerTile(ballAttr);
+//        TileIndex.registerTile(ballAttr);
 //
 //        ballAttr = TileAttributes.getBuilder()
 //                .setID(9)
@@ -195,7 +195,7 @@ public class LoadingScreen extends ScreenBase {
 //                .setPlaceable(true)
 //                .setTileType(TileType.REGULAR)
 //                .build();
-//        TileDictionary.registerTile(ballAttr);
+//        TileIndex.registerTile(ballAttr);
 //
 //        ballAttr = TileAttributes.getBuilder()
 //                .setID(10)
@@ -204,7 +204,7 @@ public class LoadingScreen extends ScreenBase {
 //                .setPlaceable(true)
 //                .setTileType(TileType.REGULAR)
 //                .build();
-//        TileDictionary.registerTile(ballAttr);
+//        TileIndex.registerTile(ballAttr);
 //
 //        ballAttr = TileAttributes.getBuilder()
 //                .setID(11)
@@ -213,7 +213,7 @@ public class LoadingScreen extends ScreenBase {
 //                .setPlaceable(true)
 //                .setTileType(TileType.REGULAR)
 //                .build();
-//        TileDictionary.registerTile(ballAttr);
+//        TileIndex.registerTile(ballAttr);
 //
 //        ballAttr = TileAttributes.getBuilder()
 //                .setID(12)
@@ -222,7 +222,7 @@ public class LoadingScreen extends ScreenBase {
 //                .setPlaceable(true)
 //                .setTileType(TileType.REGULAR)
 //                .build();
-//        TileDictionary.registerTile(ballAttr);
+//        TileIndex.registerTile(ballAttr);
 //
 //        ballAttr = TileAttributes.getBuilder()
 //                .setID(13)
@@ -231,7 +231,7 @@ public class LoadingScreen extends ScreenBase {
 //                .setPlaceable(true)
 //                .setTileType(TileType.REGULAR)
 //                .build();
-//        TileDictionary.registerTile(ballAttr);
+//        TileIndex.registerTile(ballAttr);
 //
 //        ballAttr = TileAttributes.getBuilder()
 //                .setID(14)
@@ -240,7 +240,7 @@ public class LoadingScreen extends ScreenBase {
 //                .setPlaceable(true)
 //                .setTileType(TileType.REGULAR)
 //                .build();
-//        TileDictionary.registerTile(ballAttr);
+//        TileIndex.registerTile(ballAttr);
 //
 //        ballAttr = TileAttributes.getBuilder()
 //                .setID(15)
@@ -249,7 +249,7 @@ public class LoadingScreen extends ScreenBase {
 //                .setPlaceable(true)
 //                .setTileType(TileType.REGULAR)
 //                .build();
-//        TileDictionary.registerTile(ballAttr);
+//        TileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(17)
@@ -258,7 +258,7 @@ public class LoadingScreen extends ScreenBase {
                 .setPlaceable(true)
                 .setTileType(TileType.RANDOM_REGULAR)
                 .build();
-        TileDictionary.registerTile(ballAttr);
+        tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(18)
@@ -267,7 +267,7 @@ public class LoadingScreen extends ScreenBase {
                 .setPlaceable(true)
                 .setTileType(TileType.WALL)
                 .build();
-        TileDictionary.registerTile(ballAttr);
+        tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(19)
@@ -276,8 +276,9 @@ public class LoadingScreen extends ScreenBase {
                 .setPlaceable(false)
                 .setTileType(TileType.BOMB)
                 .build();
-        TileDictionary.registerTile(ballAttr);
+        tileIndex.registerTile(ballAttr);
 
+        tileIndex.freeze();
     }
 
     private void loadTexture(String name) {
@@ -298,7 +299,7 @@ public class LoadingScreen extends ScreenBase {
         pix = new Pixmap(pixHeight, pixHeight, Pixmap.Format.RGB888);
         pix.setColor(Color.WHITE);
         pix.fill();
-        pix.setColor(Color.rgba8888(30/255f ,30/255f, 30/255f, 1));
+        pix.setColor(Color.rgba8888(30 / 255f, 30 / 255f, 30 / 255f, 1));
         pix.fillRectangle(5, 5, pix.getWidth() - 10, pixHeight - 10);
         tex = new Texture(pix);
         ninePatch = new NinePatch(tex, 10, 10, 10, 10);
@@ -307,7 +308,7 @@ public class LoadingScreen extends ScreenBase {
         pix = new Pixmap(pixHeight, pixHeight, Pixmap.Format.RGB888);
         pix.setColor(Color.WHITE);
         pix.fill();
-        pix.setColor(Color.rgba8888(30/255f ,30/255f, 30/255f, 1));
+        pix.setColor(Color.rgba8888(30 / 255f, 30 / 255f, 30 / 255f, 1));
         pix.fillRectangle(10, 10, pix.getWidth() - 20, pixHeight - 20);
         tex = new Texture(pix);
         ninePatch = new NinePatch(tex, 10, 10, 10, 10);

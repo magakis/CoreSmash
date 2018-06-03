@@ -6,7 +6,7 @@ import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.tilemap.TilemapTile;
 
 public class BombTile extends Tile {
-    private final static TileAttributes ballAttr = TileDictionary.getAttributesFor(19);
+    private final TileAttributes ballAttr = TileIndex.get().getAttributesFor(19);
 
     BombTile() {
     }

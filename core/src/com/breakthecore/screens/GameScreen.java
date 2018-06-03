@@ -46,6 +46,8 @@ import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.ui.UIComponent;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 /**
  * Created by Michail on 17/3/2018.
@@ -65,15 +67,14 @@ public class GameScreen extends ScreenBase implements Observer {
     private Launcher launcher;
 
     private StreakUI streakUI;
-    private LevelTools levelTools;
-
     private Level activeLevel;
 
+    boolean isGameActive = false;
 
     //===========
     private DebugUI debugUI;
     private GameUI gameUI;
-    private ResultUI m_resultUI;
+    private ResultUI resultUI;
     private Skin skin;
     private Stage stage;
     private Stack rootUIStack;
@@ -91,14 +92,13 @@ public class GameScreen extends ScreenBase implements Observer {
         tilemapManager = new TilemapManager();
         statsManager = new StatsManager();
         gameController = new GameController(tilemapManager, movingBallManager);
-        levelTools = new LevelTools(tilemapManager, movingBallManager, statsManager, launcher);
         gameScreenController = new GameScreenController(this);
 
         skin = gameInstance.getSkin();
 
         streakUI = new StreakUI(skin);
         gameUI = new GameUI();
-        m_resultUI = new ResultUI();
+        resultUI = new ResultUI();
         debugUI = new DebugUI();
 
         statsManager.addObserver(this);
@@ -145,9 +145,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private void update(float delta) {
         if (statsManager.isGameActive()) {
-            if (activeLevel != null) {
-                activeLevel.update(delta, tilemapManager);
-            }
+            activeLevel.update(delta, tilemapManager);
             launcher.update(delta);
             tilemapManager.update(delta);
             movingBallManager.update(delta);
@@ -155,7 +153,10 @@ public class GameScreen extends ScreenBase implements Observer {
 
             statsManager.update(delta);
             updateStage();
-            checkEndingConditions();
+
+            if (statsManager.checkEndingConditions(movingBallManager)) {
+                endGame();
+            }
         }
         stage.act(); //Moved out of updateStage() cause it always has to convert called
     }
@@ -163,35 +164,18 @@ public class GameScreen extends ScreenBase implements Observer {
     private void updateStage() {
         if (statsManager.isTimeEnabled()) {
             float time = statsManager.getTime();
-            gameUI.lblTime.setText(String.format("%d:%02d", (int) time / 60, (int) time % 60));
+            gameUI.lblTime.setText(String.format(Locale.ENGLISH, "%d:%02d", (int) time / 60, (int) time % 60));
         }
         debugUI.dblb2.setText("FPS: " + Gdx.graphics.getFramesPerSecond());
     }
 
-    private void checkEndingConditions() {
-        if (!statsManager.isGameActive()) {
-            endGame();
-        }
-        if (statsManager.isTimeEnabled() && statsManager.getTime() < 0) {
-            endGame();
-        }
-        if (statsManager.isLivesEnabled() && statsManager.getLives() == 0) {
-            endGame();
-        }
-        if (statsManager.isMovesEnabled() && statsManager.getMoves() == 0 && movingBallManager.getActiveList().size() == 0) {
-            endGame();
-        }
-    }
 
     private void endGame() {
-        statsManager.stopGame();
-        m_resultUI.update();
-        rootUIStack.clear();
-        rootUIStack.addActor(m_resultUI.show());
+        activeLevel.end(statsManager);
 
-        if (activeLevel != null) {
-            activeLevel.end(statsManager);
-        }
+        resultUI.update();
+        rootUIStack.clear();
+        rootUIStack.addActor(resultUI.show());
     }
 
     private void reset() {
@@ -207,10 +191,9 @@ public class GameScreen extends ScreenBase implements Observer {
 
     public void deployLevel(Level level) {
         reset();
-        statsManager.setUserAccount(gameInstance.getUserAccount());
-        activeLevel = level;
+        activeLevel = Objects.requireNonNull(level);
         level.initialize(gameScreenController);
-        if (tilemapManager.getTilemapTile(0,0,0) == null) {
+        if (tilemapManager.getTilemapTile(0, 0, 0) == null) {
             endGame();
             gameInstance.setScreen(this);
             return;
@@ -375,7 +358,7 @@ public class GameScreen extends ScreenBase implements Observer {
         Table root, tblPowerUps;
         Table tblTime, tblScore;
         HorizontalGroup grpTop, grpLives, grpMoves;
-        Label lblTime, lblScore, lblLives, lblMoves, lblHighscore;
+        Label lblTime, lblScore, lblLives, lblMoves, lblTargetScore;
         TextButton tbPower1;
         final Label lblStaticTime, lblStaticScore, lblStaticLives, lblStaticMoves;
 
@@ -394,13 +377,13 @@ public class GameScreen extends ScreenBase implements Observer {
             lblMoves = new Label("null", skin, "h4");
             lblMoves.setAlignment(Align.center);
 
-            lblHighscore = new Label("", skin, "h4");
-            lblHighscore.setAlignment(Align.center);
+            lblTargetScore = new Label("", skin, "h4");
+            lblTargetScore.setAlignment(Align.center);
 
             lblStaticTime = new Label("Time:", skin, "h4");
             lblStaticScore = new Label("Score:", skin, "h4");
             lblStaticLives = new Label("Lives: ", skin, "h4");
-            lblStaticMoves = new Label("Moves Left: ", skin, "h4");
+            lblStaticMoves = new Label("Moves: ", skin, "h4");
 
             tblTime = new Table();
             tblScore = new Table();
@@ -459,9 +442,7 @@ public class GameScreen extends ScreenBase implements Observer {
             grpTop.clear();
 
             lblScore.setText(0);
-            if (activeLevel != null) {
-                lblHighscore.setText(String.valueOf(Gdx.app.getPreferences("account").getInteger("level" + activeLevel.getLevelNumber(), 0)));
-            }
+            lblTargetScore.setText(statsManager.getTargetScore());
             lblLives.setText(String.valueOf(statsManager.getLives()));
             tbPower1.setText(String.valueOf(statsManager.getSpecialBallCount()));
             lblMoves.setText(String.valueOf(statsManager.getMoves()));
@@ -486,9 +467,9 @@ public class GameScreen extends ScreenBase implements Observer {
             root.add().expandX();
             root.add(tblScore).width(200).height(100).padRight(-10).row();
             root.add().colspan(2);
-            root.add(new Label("Highscore:", skin, "h4")).row();
+            root.add(new Label("Target:", skin, "h4")).row();
             root.add().colspan(2);
-            root.add(lblHighscore).row();
+            root.add(lblTargetScore).row();
             root.add().colspan(2);
             root.add(tblPowerUps).height(300).width(140).expandY().fill().bottom().padBottom(150);
         }
@@ -515,19 +496,18 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     private class ResultUI implements UIComponent {
-        Label resultTextLbl, timeLbl, scoreLbl;
+        Label resultTextLbl, lblScore;
         Container<Table> root;
 
-        public ResultUI() {
+        ResultUI() {
             Table main = new Table(skin);
             main.background("box_white_5");
             main.pad(40);
             root = new Container<>(main);
             root.setFillParent(true);
 
-            resultTextLbl = new Label("null", skin, "h1");
-            timeLbl = new Label("null", skin, "h4");
-            scoreLbl = new Label("null", skin, "h4");
+            resultTextLbl = new Label("null", skin, "h2");
+            lblScore = new Label("null", skin, "h3");
 
             TextButton tbMenu = new TextButton("Menu", skin);
             tbMenu.addListener(new ChangeListener() {
@@ -542,24 +522,20 @@ public class GameScreen extends ScreenBase implements Observer {
             buttonGroup.align(Align.center);
             buttonGroup.addActor(tbMenu);
 
-            Label staticTime = new Label("Time:", skin, "h4");
-            Label staticScore = new Label("Score:", skin, "h4");
+            Label staticScore = new Label("Score:", skin, "h3");
 
             main.center();
-            main.add(resultTextLbl).colspan(2).padBottom(50).row();
-            main.add(staticTime);
-            main.add(staticScore).row();
-            main.add(timeLbl);
-            main.add(scoreLbl).row();
-            main.add(buttonGroup).colspan(2).padTop(100);
+            main.add(resultTextLbl).padBottom(40).row();
+            main.add(staticScore).padBottom(20).row();
+            main.add(lblScore).row();
+            main.add(buttonGroup).padTop(100);
 
         }
 
         public void update() {
-            String resultText = statsManager.getRoundOutcome() ? "Congratulations!" : "You Failed!";
+            String resultText = statsManager.getRoundOutcome() ? "Level Completed!" : "You Failed!";
             resultTextLbl.setText(resultText);
-            timeLbl.setText(gameUI.lblTime.getText());
-            scoreLbl.setText(String.valueOf(statsManager.getScore()));
+            lblScore.setText(String.valueOf(statsManager.getScore()));
         }
 
         @Override
@@ -621,8 +597,13 @@ public class GameScreen extends ScreenBase implements Observer {
             gameScreen = screen;
         }
 
-        public GameScreenController loadLevel(String filename) {
-            ParsedLevel parsedLevel = LevelParser.loadFrom(filename);
+        public void loadLevel(int lvl) {
+            statsManager.setLevel(lvl);
+            loadLevelMap("level" + lvl);
+        }
+
+        public GameScreenController loadLevelMap(String fileName) {
+            ParsedLevel parsedLevel = LevelParser.loadFrom(fileName);
 
             LevelSettings levelSettings = parsedLevel.getLevelSettings();
             statsManager.setGameMode(GameMode.CLASSIC);
@@ -645,9 +626,6 @@ public class GameScreen extends ScreenBase implements Observer {
                 builder.setColorCount(settings.getColorCount())
                         .setMinMaxRotationSpeed(settings.getMinSpeed(), settings.getMaxSpeed(), settings.isRotateCCW())
                         .populateFrom(tileList)
-                   //     .reduceColorMatches(2)
-                     //   .balanceColorAmounts()
-                       // .forceEachColorOnEveryRadius()
                         .build();
             }
 

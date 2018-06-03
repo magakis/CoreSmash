@@ -51,7 +51,7 @@ import com.breakthecore.managers.StatsManager;
 import com.breakthecore.screens.GameScreen;
 import com.breakthecore.screens.ScreenBase;
 import com.breakthecore.tilemap.TilemapManager;
-import com.breakthecore.tiles.TileDictionary;
+import com.breakthecore.tiles.TileIndex;
 import com.breakthecore.ui.ActorFactory;
 import com.breakthecore.ui.LoadFileDialog;
 import com.breakthecore.ui.SaveFileDialog;
@@ -330,7 +330,7 @@ public class LevelBuilderScreen extends ScreenBase {
             testLevel = new Level() {
                 @Override
                 public void initialize(GameScreen.GameScreenController gameScreenController) {
-                    gameScreenController.loadLevel("_editor_");
+                    gameScreenController.loadLevelMap("_editor_");
                 }
 
                 @Override
@@ -507,7 +507,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 imgbGroup.setMinCheckCount(1);
                 imgbGroup.setMaxCheckCount(1);
 
-                final List<Integer> knownIds = TileDictionary.getAllPlaceableIDs();
+                final List<Integer> knownIds = TileIndex.get().getAllPlaceableIDs();
 
                 materialButtons = new ImageButton[knownIds.size()];
                 int buttonIndex = 0;

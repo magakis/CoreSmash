@@ -7,11 +7,11 @@ public class TileFactory {
     }
 
     public static Tile getTileFromID(int id) {
-        TileType type = TileDictionary.getTypeOf(id);
+        TileType type = TileIndex.get().getTypeOf(id);
 
         switch (type) {
             case REGULAR:
-                return RegularTile.newBall(id);
+                return new RegularTile(id);
             case RANDOM_REGULAR:
                 return new RandomTile();
             case WALL:

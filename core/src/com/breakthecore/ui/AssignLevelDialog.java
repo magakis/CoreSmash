@@ -19,7 +19,7 @@ import java.io.FilenameFilter;
 import java.util.Arrays;
 
 public class AssignLevelDialog extends Dialog {
-    private final List levelsFound;
+    private final List<String> levelsFound;
     private final FilenameFilter levelBuilderFilter;
     private final TextField textField;
 
@@ -39,7 +39,7 @@ public class AssignLevelDialog extends Dialog {
         ls.selection = skin.newDrawable("box_white_5", 0, 0, 0, 0);
         ls.font = skin.getFont("h5");
 
-        levelsFound = new List(ls);
+        levelsFound = new List<>(ls);
 
         TextField.TextFieldStyle tfstyle = new TextField.TextFieldStyle();
         tfstyle.font = skin.getFont("h4");

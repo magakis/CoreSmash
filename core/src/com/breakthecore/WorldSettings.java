@@ -6,7 +6,7 @@ public final class WorldSettings {
     private WorldSettings() {}
 
     public static void init() {
-        s_tileSize = 65;
+        s_tileSize = 70;
     }
 
     public static int getTileSize() {return s_tileSize;}

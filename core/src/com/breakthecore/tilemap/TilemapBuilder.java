@@ -3,8 +3,8 @@ package com.breakthecore.tilemap;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.breakthecore.levelbuilder.ParsedTile;
-import com.breakthecore.tiles.TileDictionary;
 import com.breakthecore.tiles.TileFactory;
+import com.breakthecore.tiles.TileIndex;
 import com.breakthecore.tiles.TileType;
 
 import java.util.ArrayList;
@@ -345,7 +345,7 @@ public class TilemapBuilder {
     }
 
     public TilemapBuilder populateFrom(List<ParsedTile> parsedTiles) {
-        int randomTileID = TileDictionary.getIdOf(TileType.RANDOM_REGULAR);
+        int randomTileID = TileIndex.get().getIdOf(TileType.RANDOM_REGULAR);
         for (ParsedTile parsedTile : parsedTiles) {
             if (parsedTile.getTileID() == randomTileID) {
                 checkIfCanBuild();
@@ -611,7 +611,7 @@ public class TilemapBuilder {
         putFixedTilesInBlueprint();
         // TODO(4/5/2018): this function needs to know what each id represents...
 
-        int randomTileID = TileDictionary.getIdOf(TileType.RANDOM_REGULAR);
+        int randomTileID = TileIndex.get().getIdOf(TileType.RANDOM_REGULAR);
         for (BlueprintTile[] arr : blueprintMap) {
             for (BlueprintTile tile : arr) {
                 if (tile == null) continue;

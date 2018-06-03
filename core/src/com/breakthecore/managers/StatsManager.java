@@ -1,22 +1,24 @@
 package com.breakthecore.managers;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.breakthecore.Launcher;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observable;
 import com.breakthecore.Observer;
-import com.breakthecore.UserAccount;
 import com.breakthecore.screens.GameScreen;
 
 import java.util.Random;
 
 public class StatsManager extends Observable implements Observer {
     private Random rand = new Random();
-    private UserAccount user;
 
+    private int level;
     private boolean isGameActive;
     private boolean isRoundWon;
 
     private int score;
+    private int targetScore;
 
     private int lives;
     private float time;
@@ -54,7 +56,7 @@ public class StatsManager extends Observable implements Observer {
                     multiplier = 15;
                     break;
             }
-            scoreGained = (int) (ballsDestroyedThisFrame * multiplier);
+            scoreGained = (ballsDestroyedThisFrame * multiplier);
             score += scoreGained;
             notifyObservers(NotificationType.NOTIFICATION_TYPE_SCORE_INCREMENTED, scoreGained);
 
@@ -73,11 +75,10 @@ public class StatsManager extends Observable implements Observer {
     /* Q: Should reset be private and provide only a function that resets but requires a user? */
     public void reset() {
         score = 0;
+        targetScore = 0;
         gameMode = null;
         // If UserAccount listens to StatManager in the future,
         // make sure I remove the current user from the StatManager observer list.
-        user = null;
-
         isGameActive = true;
         isRoundWon = false;
 
@@ -91,14 +92,35 @@ public class StatsManager extends Observable implements Observer {
         lives = 0;
     }
 
-    public UserAccount getUser() {
-        return user;
+    public boolean checkEndingConditions(MovingBallManager ballManager) {
+        if (!isGameActive) {
+            return true;
+        }
+
+        if (isTimeEnabled && time < 0) {
+            isGameActive = false;
+            return true;
+        }
+        if (isLivesEnabled && lives == 0) {
+            isGameActive = false;
+            return true;
+        }
+        if (isMovesEnabled && moves == 0 && !ballManager.hasActiveBalls()) {
+            isGameActive = false;
+            return true;
+        }
+        return false;
     }
 
-    public void setUserAccount(UserAccount user) {
-        this.user = user;
+    public int getLevel() {
+        return level;
     }
 
+    public void setLevel(int lvl) {
+        level = lvl;
+        Preferences prefs = Gdx.app.getPreferences("account");
+        targetScore = prefs.getInteger("level" + lvl, 0);
+    }
 
     public boolean getRoundOutcome() {
         if (isGameActive) throw new IllegalStateException("The game is still running?!");
@@ -113,6 +135,9 @@ public class StatsManager extends Observable implements Observer {
         isGameActive = false;
     }
 
+    public int getTargetScore() {
+        return targetScore;
+    }
 
     public int getScore() {
         return score;
@@ -171,10 +196,6 @@ public class StatsManager extends Observable implements Observer {
 
     public void setGameMode(GameScreen.GameMode mode) {
         gameMode = mode;
-    }
-
-    public void setRandomSeed(long seed) {
-        rand.setSeed(seed);
     }
 
     public void consumeSpecialBall(Launcher launcher) {

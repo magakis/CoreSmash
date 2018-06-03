@@ -4,7 +4,7 @@ import com.breakthecore.GameController;
 import com.breakthecore.tilemap.TilemapTile;
 
 public class WallBall extends Tile {
-    private final static TileAttributes ballAttr = TileDictionary.getAttributesFor(18);
+    private final static TileAttributes ballAttr = TileIndex.get().getAttributesFor(18);
 
 
     public WallBall() {
