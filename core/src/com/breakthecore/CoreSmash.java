@@ -24,7 +24,7 @@ import java.util.Stack;
 import static com.badlogic.gdx.Gdx.gl;
 
 public class CoreSmash extends Game {
-    public static String VERSION = "0.1.2.2-alpha";
+    public static String VERSION = "0.1.3.0-alpha";
     public static boolean LOG_CRASHES = true;
 
     private boolean isInitialized;

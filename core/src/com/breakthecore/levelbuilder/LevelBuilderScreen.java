@@ -17,12 +17,10 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
-import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -53,6 +51,7 @@ import com.breakthecore.screens.ScreenBase;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tiles.TileIndex;
 import com.breakthecore.ui.ActorFactory;
+import com.breakthecore.ui.Components;
 import com.breakthecore.ui.LoadFileDialog;
 import com.breakthecore.ui.SaveFileDialog;
 import com.breakthecore.ui.UIComponent;
@@ -77,7 +76,6 @@ public class LevelBuilderScreen extends ScreenBase {
     private UIComponent uiToolbarTop;
     private UITools uiTools;
     private UIInfo uiInfo;
-    private final Dialog dlgToast;
 
     private FreeMode freeMode;
     private DrawMode drawMode;
@@ -110,13 +108,6 @@ public class LevelBuilderScreen extends ScreenBase {
         screenInputMultiplexer.addProcessor(stage);
         screenInputMultiplexer.addProcessor(new GestureDetector(new LevelBuilderGestureListner()));
 
-        Window.WindowStyle ws = new Window.WindowStyle();
-        ws.background = skin.getDrawable("toast1");
-        ws.titleFont = skin.getFont("h6");
-
-        dlgToast = new Dialog("", ws);
-        dlgToast.text(new Label("", skin, "h5"));
-        dlgToast.setTouchable(Touchable.disabled);
     }
 
     @Override
@@ -166,25 +157,6 @@ public class LevelBuilderScreen extends ScreenBase {
 
     public void saveProgress() {
         levelBuilder.saveAs("_editor_");
-    }
-
-    private void showToast(String text) {
-        showToast(text, 2.5f);
-    }
-
-    private void showToast(String text, float duration) {
-        ((Label) dlgToast.getContentTable().getCells().get(0).getActor()).setText(text);
-        dlgToast.show(stage, Actions.sequence(
-                Actions.alpha(0),
-                Actions.fadeIn(.4f),
-                Actions.delay(duration),
-                Actions.run(new Runnable() {
-                    @Override
-                    public void run() {
-                        dlgToast.hide(Actions.fadeOut(.4f));
-                    }
-                })));
-        dlgToast.setPosition(camera.viewportWidth / 2 - dlgToast.getWidth() / 2, camera.viewportHeight * .90f);
     }
 
     private class UILayer implements UIComponent {
@@ -306,9 +278,9 @@ public class LevelBuilderScreen extends ScreenBase {
                     filenameCache = (String) object;
                     if (levelBuilder.load(filenameCache)) {
                         freeMode.optionsMenu.updateValues(levelBuilder.getLayer());
-                        showToast("File '" + filenameCache + "' loaded");
+                        Components.showToast("File '" + filenameCache + "' loaded", stage);
                     } else {
-                        showToast("Error: Couldn't load '" + filenameCache + "'");
+                        Components.showToast("Error: Couldn't load '" + filenameCache + "'", stage);
                     }
                 }
             };
@@ -317,11 +289,11 @@ public class LevelBuilderScreen extends ScreenBase {
                 @Override
                 protected void result(Object object) {
                     if (object == null) {
-                        showToast("Error: Invalid file name");
+                        Components.showToast("Error: Invalid file name", stage);
                     } else {
                         filenameCache = (String) object;
                         levelBuilder.saveAs(filenameCache);
-                        showToast("Level '" + filenameCache + "' saved");
+                        Components.showToast("Level '" + filenameCache + "' saved", stage);
                     }
                 }
             };
@@ -418,7 +390,7 @@ public class LevelBuilderScreen extends ScreenBase {
             });
 
 
-            btnGroup = new ButtonGroup<TextButton>(tbDraw, tbErase, tbRotate);
+            btnGroup = new ButtonGroup<>(tbDraw, tbErase, tbRotate);
             btnGroup.setMaxCheckCount(1);
             btnGroup.setMinCheckCount(0);
 

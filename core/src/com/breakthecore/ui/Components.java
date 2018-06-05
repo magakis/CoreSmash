@@ -9,10 +9,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.breakthecore.WorldSettings;
 
-public final class UITools {
+public final class Components {
     private static boolean isInitialized;
     private static Dialog dlgToast;
-    private UITools(){}
+
+    private Components() {
+    }
 
     public static void initialize(Skin skin) {
         if (!isInitialized) {
@@ -29,7 +31,6 @@ public final class UITools {
 
     public static void showToast(String text, Stage stage) {
         showToast(text, 2.5f, stage);
-
     }
 
     public static void showToast(String text, float duration, Stage stage) {

@@ -449,11 +449,11 @@ public class GameScreen extends ScreenBase implements Observer {
 
             tblCenter = new Table();
             tblCenter.row().padTop(70);
-            tblCenter.columnDefaults(0).padRight(10).padLeft(-10);
+            tblCenter.columnDefaults(0).padRight(8);
             tblCenter.columnDefaults(1).width(50);
             tblCenter.add(imgMovesIcon).size(lblMoves.getPrefHeight());
             tblCenter.add(lblMoves);
-            tblCenter.row().padTop(10);
+            tblCenter.row().padTop(8);
             tblCenter.add(imgLivesIcon).size(lblLives.getPrefHeight());
             tblCenter.add(lblLives);
 
