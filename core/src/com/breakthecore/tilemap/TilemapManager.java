@@ -16,6 +16,7 @@ import com.breakthecore.tiles.TileContainer;
 import com.breakthecore.tiles.TileFactory;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * The TilemapManager is responsible for every interaction with the Tilemaps and provides the
@@ -229,6 +230,7 @@ public class TilemapManager extends Observable implements Observer {
     }
 
     public void handleColorMatchesFor(TilemapTile newTile) {
+        Objects.requireNonNull(newTile);
         Tilemap tm = tilemap[newTile.getTilemapId()];
         ArrayList<TilemapTile> match = match3.getColorMatchesFromTile(newTile, tm);
 

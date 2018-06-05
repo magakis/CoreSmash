@@ -15,13 +15,17 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Value;
+import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.breakthecore.Coords2D;
 import com.breakthecore.CoreSmash;
@@ -68,8 +72,6 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private StreakUI streakUI;
     private Level activeLevel;
-
-    boolean isGameActive = false;
 
     //===========
     private DebugUI debugUI;
@@ -194,6 +196,7 @@ public class GameScreen extends ScreenBase implements Observer {
         activeLevel = Objects.requireNonNull(level);
         level.initialize(gameScreenController);
         if (tilemapManager.getTilemapTile(0, 0, 0) == null) {
+            statsManager.stopGame();
             endGame();
             gameInstance.setScreen(this);
             return;
@@ -355,12 +358,15 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     private class GameUI implements UIComponent, Observer {
-        Table root, tblPowerUps;
-        Table tblTime, tblScore;
-        HorizontalGroup grpTop, grpLives, grpMoves;
+        Table root, tblPowerUps, tblTop;
+        Table tblTime, tblLives, tblMoves, tblScore;
+        Table tblCenter;
+        VerticalGroup grpCenter;
         Label lblTime, lblScore, lblLives, lblMoves, lblTargetScore;
         TextButton tbPower1;
-        final Label lblStaticTime, lblStaticScore, lblStaticLives, lblStaticMoves;
+        Label lblStaticLives;
+        Image imgHourGlass, imgMovesIcon, imgLivesIcon;
+        Stack rootStack;
 
         public GameUI() {
             root = new Table();
@@ -380,30 +386,46 @@ public class GameScreen extends ScreenBase implements Observer {
             lblTargetScore = new Label("", skin, "h4");
             lblTargetScore.setAlignment(Align.center);
 
-            lblStaticTime = new Label("Time:", skin, "h4");
-            lblStaticScore = new Label("Score:", skin, "h4");
             lblStaticLives = new Label("Lives: ", skin, "h4");
-            lblStaticMoves = new Label("Moves: ", skin, "h4");
 
-            tblTime = new Table();
-            tblScore = new Table();
+            imgHourGlass = new Image(skin.getDrawable("timeIcon"));
+            imgHourGlass.setScaling(Scaling.fit);
 
-            tblTime.setBackground(skin.getDrawable("box_white_5"));
-            tblTime.add(lblTime).center();
+            imgMovesIcon = new Image(skin.getDrawable("movesIcon"));
+            imgMovesIcon.setScaling(Scaling.fit);
 
-            tblScore.setBackground(skin.getDrawable("box_white_5"));
-            tblScore.add(lblScore).center();
+            imgLivesIcon = new Image(skin.getDrawable("heartIcon"));
+            imgLivesIcon.setScaling(Scaling.fit);
 
-            grpLives = new HorizontalGroup();
-            grpLives.addActor(lblStaticLives);
-            grpLives.addActor(lblLives);
+            tblTime = new Table(skin);
+            tblTime.setBackground("softGray");
+            tblTime.pad(0)
+                    .padLeft(20)
+                    .left();
+            tblTime.add(imgHourGlass)
+                    .size(Value.percentHeight(.9f, lblTime))
+                    .padRight(5)
+                    .left();
+            tblTime.add(lblTime)
+                    .align(Align.left)
+                    .left();
 
-            grpMoves = new HorizontalGroup();
-            grpMoves.addActor(lblStaticMoves);
-            grpMoves.addActor(lblMoves);
+            tblScore = new Table(skin);
+            tblScore.background("softGray");
+            tblScore.pad(0);
+            tblScore.padRight(20);
+            tblScore.right().add(lblScore);
+            tblScore.add("/", "h4");
+            tblScore.add(lblTargetScore);
 
-            grpTop = new HorizontalGroup();
-            grpTop.space(30);
+            tblLives = new Table();
+            tblLives.add(imgLivesIcon).height(lblLives.getPrefHeight()).width(lblLives.getPrefHeight()).padRight(5);
+            tblLives.add(lblLives);
+
+            tblMoves = new Table();
+            tblMoves.add(imgMovesIcon).height(lblMoves.getPrefHeight()).width(lblMoves.getPrefHeight()).padRight(5);
+            tblMoves.add(lblMoves);
+
 
             tbPower1 = new TextButton("null", skin, "tmpPowerup");
             tbPower1.getLabel().setAlignment(Align.bottomLeft);
@@ -425,6 +447,39 @@ public class GameScreen extends ScreenBase implements Observer {
             tblPowerUps.center();
             tblPowerUps.add(tbPower1).size(100, 100);
 
+            tblCenter = new Table();
+            tblCenter.row().padTop(70);
+            tblCenter.columnDefaults(0).padRight(10).padLeft(-10);
+            tblCenter.columnDefaults(1).width(50);
+            tblCenter.add(imgMovesIcon).size(lblMoves.getPrefHeight());
+            tblCenter.add(lblMoves);
+            tblCenter.row().padTop(10);
+            tblCenter.add(imgLivesIcon).size(lblLives.getPrefHeight());
+            tblCenter.add(lblLives);
+
+            Image image = new Image(skin, "gameScreenTopRound");
+            image.setScaling(Scaling.fit);
+
+            Table tblTestCenter = new Table(skin);
+            tblTestCenter.stack(image, tblCenter);
+
+            tblTop = new Table(skin);
+            tblTop.background("gameScreenTop");
+            tblTop.pad(25);
+            tblTop.padTop(30);
+            tblTop.columnDefaults(0).width(300).padLeft(Value.percentWidth(.05f, tblTop));
+            tblTop.columnDefaults(1).expandX();
+            tblTop.columnDefaults(2).width(300).padRight(Value.percentWidth(.05f, tblTop));
+            tblTop.add(tblTime).left();
+            tblTop.add().center();
+            tblTop.add(tblScore).right();
+
+            Table tblRoundCenter = new Table();
+            tblRoundCenter.center().top()
+                    .add(tblTestCenter)
+//                    .size(Value.percentHeight(1.8f, tblTop))
+                    .padTop(Value.percentHeight(-.35f, image));
+
             tblPowerUps.setTouchable(Touchable.enabled);
             tblPowerUps.addCaptureListener(new EventListener() {
                 @Override
@@ -435,48 +490,36 @@ public class GameScreen extends ScreenBase implements Observer {
             });
 
             root.setFillParent(true);
+            root.top().add(tblTop).growX().padTop(-20);
+
+            rootStack = new Stack();
+            rootStack.add(root);
+            rootStack.add(tblRoundCenter);
         }
 
         public void setup() {
-            root.clear();
-            grpTop.clear();
-
             lblScore.setText(0);
             lblTargetScore.setText(statsManager.getTargetScore());
             lblLives.setText(String.valueOf(statsManager.getLives()));
             tbPower1.setText(String.valueOf(statsManager.getSpecialBallCount()));
             lblMoves.setText(String.valueOf(statsManager.getMoves()));
 
-            lblStaticTime.setVisible(statsManager.isTimeEnabled());
+            imgMovesIcon.setVisible(statsManager.isMovesEnabled());
+            lblMoves.setVisible(statsManager.isMovesEnabled());
+
+            imgLivesIcon.setVisible(statsManager.isLivesEnabled());
+            lblLives.setVisible(statsManager.isLivesEnabled());
+
             tblTime.setVisible(statsManager.isTimeEnabled());
 
             tblPowerUps.setVisible(statsManager.getSpecialBallCount() != 0);
             tbPower1.setDisabled(statsManager.getSpecialBallCount() == 0);
 
-            if (statsManager.isLivesEnabled()) {
-                grpTop.addActor(grpLives);
-            }
-            if (statsManager.isMovesEnabled()) {
-                grpTop.addActor(grpMoves);
-            }
-
-            root.top().left();
-            root.add(lblStaticTime, grpTop, lblStaticScore);
-            root.row();
-            root.add(tblTime).width(200).height(100).padLeft(-10);
-            root.add().expandX();
-            root.add(tblScore).width(200).height(100).padRight(-10).row();
-            root.add().colspan(2);
-            root.add(new Label("Target:", skin, "h4")).row();
-            root.add().colspan(2);
-            root.add(lblTargetScore).row();
-            root.add().colspan(2);
-            root.add(tblPowerUps).height(300).width(140).expandY().fill().bottom().padBottom(150);
         }
 
         @Override
         public Group show() {
-            return root;
+            return rootStack;
         }
 
         @Override
@@ -526,7 +569,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
             main.center();
             main.add(resultTextLbl).padBottom(40).row();
-            main.add(staticScore).padBottom(20).row();
+            main.add(staticScore).padBottom(10).row();
             main.add(lblScore).row();
             main.add(buttonGroup).padTop(100);
 
@@ -573,20 +616,6 @@ public class GameScreen extends ScreenBase implements Observer {
         @Override
         public Group show() {
             return root;
-        }
-    }
-
-    public static class LevelTools {
-        public final TilemapManager tilemapManager;
-        public final MovingBallManager movingBallManager;
-        public final StatsManager statsManager;
-        public final Launcher launcher;
-
-        public LevelTools(TilemapManager manager, MovingBallManager ballManager, StatsManager statsManager, Launcher launcher) {
-            tilemapManager = manager;
-            movingBallManager = ballManager;
-            this.statsManager = statsManager;
-            this.launcher = launcher;
         }
     }
 

@@ -76,9 +76,15 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("userIcon.png");
         loadTexture("NinePatches/toast1.png");
         loadTexture("NinePatches/dialog1.png");
+        loadTexture("NinePatches/GameScreenTop.png");
+        loadTexture("NinePatches/softGray.png");
         loadTexture("NinePatches/progressbar_inner.png");
         loadTexture("map.png");
         loadTexture("default.png");
+        loadTexture("UIGameScreenTopRound.png");
+        loadTexture("MovesIcon.png");
+        loadTexture("HourGlass.png");
+        loadTexture("HeartIcon.png");
     }
 
     private void loadAllBitmapFonts() {
@@ -320,6 +326,12 @@ public class LoadingScreen extends ScreenBase {
         ninePatch = new NinePatch(am.get("NinePatches/progressbar_inner.png", Texture.class), 15, 15, 15, 15);
         skin.add("progressbar_inner", ninePatch);
 
+        ninePatch = new NinePatch(am.get("NinePatches/GameScreenTop.png", Texture.class), 31, 31, 31, 31);
+        skin.add("gameScreenTop", ninePatch);
+
+        ninePatch = new NinePatch(am.get("NinePatches/softGray.png", Texture.class), 31, 31, 31, 31);
+        skin.add("softGray", ninePatch);
+
         // Textures
         pix = new Pixmap(41, 41, Pixmap.Format.RGBA8888);
         pix.setColor(Color.alpha(0));
@@ -337,6 +349,10 @@ public class LoadingScreen extends ScreenBase {
         skin.add("asteroid", am.get("asteroid.png"));
         skin.add("map", am.get("map.png"));
         skin.add("speaker", am.get("speaker.png"));
+        skin.add("timeIcon", am.get("HourGlass.png"));
+        skin.add("movesIcon", am.get("MovesIcon.png"));
+        skin.add("heartIcon", am.get("HeartIcon.png"));
+        skin.add("gameScreenTopRound", am.get("UIGameScreenTopRound.png"));
 
         // Fonts
 //        registerFont(skin, "h5", "comic_32.fnt");

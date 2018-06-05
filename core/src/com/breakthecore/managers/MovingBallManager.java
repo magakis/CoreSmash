@@ -50,7 +50,7 @@ public class MovingBallManager extends Observable {
     }
 
     public boolean hasActiveBalls() {
-        return activeList.size() == 0;
+        return activeList.size() != 0;
     }
 
     public void activate(MovingBall ball) {
