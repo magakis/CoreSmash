@@ -360,12 +360,12 @@ public class GameScreen extends ScreenBase implements Observer {
     private class GameUI implements UIComponent, Observer {
         Table root, tblPowerUps, tblTop;
         Table tblTime, tblLives, tblMoves, tblScore;
-        Table tblCenter;
+        Table tblCenter, tblRoundCenter;
         VerticalGroup grpCenter;
         Label lblTime, lblScore, lblLives, lblMoves, lblTargetScore;
         TextButton tbPower1;
         Label lblStaticLives;
-        Image imgHourGlass, imgMovesIcon, imgLivesIcon;
+        Image imgHourGlass, imgMovesIcon, imgLivesIcon, imgRound;
         Stack rootStack;
 
         public GameUI() {
@@ -457,11 +457,11 @@ public class GameScreen extends ScreenBase implements Observer {
             tblCenter.add(imgLivesIcon).size(lblLives.getPrefHeight());
             tblCenter.add(lblLives);
 
-            Image image = new Image(skin, "gameScreenTopRound");
-            image.setScaling(Scaling.fit);
+            imgRound = new Image(skin, "gameScreenTopRound");
+            imgRound.setScaling(Scaling.fit);
 
             Table tblTestCenter = new Table(skin);
-            tblTestCenter.stack(image, tblCenter);
+            tblTestCenter.stack(imgRound, tblCenter);
 
             tblTop = new Table(skin);
             tblTop.background("gameScreenTop");
@@ -474,11 +474,11 @@ public class GameScreen extends ScreenBase implements Observer {
             tblTop.add().center();
             tblTop.add(tblScore).right();
 
-            Table tblRoundCenter = new Table();
+            tblRoundCenter = new Table();
             tblRoundCenter.center().top()
                     .add(tblTestCenter)
 //                    .size(Value.percentHeight(1.8f, tblTop))
-                    .padTop(Value.percentHeight(-.35f, image));
+                    .padTop(Value.percentHeight(-.35f, imgRound));
 
             tblPowerUps.setTouchable(Touchable.enabled);
             tblPowerUps.addCaptureListener(new EventListener() {
@@ -503,6 +503,16 @@ public class GameScreen extends ScreenBase implements Observer {
             lblLives.setText(String.valueOf(statsManager.getLives()));
             tbPower1.setText(String.valueOf(statsManager.getSpecialBallCount()));
             lblMoves.setText(String.valueOf(statsManager.getMoves()));
+
+            if (statsManager.isMovesEnabled() && statsManager.isLivesEnabled()) {
+                tblRoundCenter.getCells().get(0).padTop(-90);
+                tblCenter.getCells().get(0).padTop(70);
+                tblCenter.getCells().get(1).padTop(70);
+            } else {
+                tblRoundCenter.getCells().get(0).padTop(-140);
+                tblCenter.getCells().get(0).padTop(160);
+                tblCenter.getCells().get(1).padTop(160);
+            }
 
             imgMovesIcon.setVisible(statsManager.isMovesEnabled());
             lblMoves.setVisible(statsManager.isMovesEnabled());
