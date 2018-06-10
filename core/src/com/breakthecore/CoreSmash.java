@@ -8,6 +8,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.screens.LoadingScreen;
@@ -24,11 +25,12 @@ import java.util.Stack;
 import static com.badlogic.gdx.Gdx.gl;
 
 public class CoreSmash extends Game {
-    public static String VERSION = "0.1.3.0-alpha";
+    public static String VERSION = "0.1.3.1-alpha";
     public static boolean LOG_CRASHES = true;
+    public static boolean DEBUG_TABLET = false;
 
     private boolean isInitialized;
-    private ExtendViewport viewport;
+    private Viewport viewport;
     private RenderManager renderManager;
     private AssetManager assetManager;
     private UserAccount userAccount;
@@ -55,8 +57,8 @@ public class CoreSmash extends Game {
         });
 
         WorldSettings.init();
-        m_screenStack = new Stack<ScreenBase>();
-        viewport = new ExtendViewport(1080, 1920);
+        m_screenStack = new Stack<>();
+        viewport = new ScreenViewport();
 
         m_inputMultiplexer = new InputMultiplexer();
         Gdx.input.setInputProcessor(m_inputMultiplexer);
@@ -152,7 +154,7 @@ public class CoreSmash extends Game {
 
     @Override
     public void resize(int width, int height) {
-        super.resize(width, height);
         viewport.update(width, height, true);
+        super.resize(width, height);
     }
 }

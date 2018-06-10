@@ -1,5 +1,6 @@
 package com.breakthecore.levels;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.input.GestureDetector;
@@ -17,13 +18,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.Scaling;
 import com.breakthecore.CoreSmash;
 import com.breakthecore.RoundEndListener;
 import com.breakthecore.UserAccount;
-import com.breakthecore.WorldSettings;
 import com.breakthecore.levelbuilder.XmlManager;
 import com.breakthecore.managers.StatsManager;
 import com.breakthecore.screens.GameScreen;
@@ -37,7 +37,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private GestureDetector gd;
     private Skin skin;
     private Stage stage;
-    private LevelButton[] levelButtons;
+    private LevelWidget[] levelButtons;
+    private Stack rootStack;
 
     public CampaignScreen(CoreSmash game) {
         super(game);
@@ -49,30 +50,29 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         screenInputMultiplexer.addProcessor(gd);
         gameScreen = new GameScreen(gameInstance);
 
-        levelButtons = new LevelButton[20];
+        rootStack = new Stack();
+        rootStack.setFillParent(true);
+        stage.addActor(rootStack);
+
+        levelButtons = new LevelWidget[20];
 
         WidgetGroup buttonsGroup = createButtonGroup();
         ScrollPane scrollPane = new ScrollPane(buttonsGroup);
-        scrollPane.setFillParent(true);
         scrollPane.setOverscroll(false, false);
         scrollPane.validate();
         scrollPane.setSmoothScrolling(false);
         scrollPane.setScrollPercentY(100);
+        rootStack.addActor(scrollPane);
+
+        Table uiOverlayRoot = new Table();
+        rootStack.addActor(uiOverlayRoot);
 
         int levelsUnlocked = gameInstance.getUserAccount().getUnlockedLevels();
         for (int i = 0; i < levelsUnlocked && i < levelButtons.length; ++i) {
             levelButtons[i].enable();
         }
 
-        uiOverlay = new UIOverlay();
-
-        Stack rootStack = new Stack();
-        rootStack.setFillParent(true);
-        rootStack.addActor(scrollPane);
-        rootStack.addActor(uiOverlay.show());
-
-
-        stage.addActor(rootStack);
+        uiOverlay = new UIOverlay(uiOverlayRoot);
     }
 
     @Override
@@ -84,18 +84,24 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private Container<WidgetGroup> createButtonGroup() {
         WidgetGroup grp = new WidgetGroup();
 
+        final int WIDTH = Gdx.graphics.getWidth();
+        final int HEIGHT = Gdx.graphics.getHeight();
+
+        float ySpace = (HEIGHT > WIDTH ? HEIGHT : WIDTH) / 8f;
+
         float x;
         float y;
-        for (int i = 0; i < 20; ++i) {
-            x = WorldSettings.getWorldWidth() / 2 + (WorldSettings.getWorldWidth() / 3) * (float) Math.cos(i * Math.PI / 2);
-            y = 200 + i * 190;
-            levelButtons[i] = new LevelButton(i + 1, (int) x, (int) y);
+        for (int i = 0; i < levelButtons.length; ++i) {
+            x = WIDTH/2  + ySpace * (float) Math.cos(i * Math.PI / 2);
+            y = ySpace + i * ySpace;
+            levelButtons[i] = new LevelWidget(i + 1, (int) x, (int) y);
             grp.addActor(levelButtons[i]);
         }
 
-        Container<WidgetGroup> container = new Container<WidgetGroup>(grp);
-        container.prefSize(WorldSettings.getWorldWidth(), 200 + 20 * 190);
+        Container<WidgetGroup> container = new Container<>(grp);
+        container.prefSize(WIDTH, ySpace + levelButtons.length * ySpace);
 
+        container.debug();
         return container;
     }
 
@@ -191,38 +197,59 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         }
     }
 
-    private class LevelLauncher extends ChangeListener {
-        private int m_lvl;
+//    private void invalidateAll() {
+//        SnapshotArray<Actor> actors = ((Container<WidgetGroup>)((ScrollPane)rootStack.getChildren().get(0)).getActor()).getActor().getChildren();
+//
+//        for (Actor actor : actors){
+//            ((WidgetGroup)actor).invalidate();
+//        }
+//
+//        ((WidgetGroup)actors.get(0)).invalidateHierarchy();
+//    }
 
-        public LevelLauncher(int lvl) {
-            m_lvl = lvl;
-        }
+    private class LevelWidget extends Container<TextButton>{
+        private int level;
+        private TextButton button;
 
-        @Override
-        public void changed(ChangeEvent event, Actor actor) {
-            startCampaignLevel(m_lvl);
-        }
-    }
+        public LevelWidget(int lvl, int x, int y) {
+            button = new TextButton(String.valueOf(lvl), skin, "levelButton");
 
-    private class LevelButton extends TextButton {
-        private int m_level;
+            setActor(button);
+            if (CoreSmash.DEBUG_TABLET) {
+                size(Value.percentWidth(.1f, rootStack));
+            } else {
+                size(Value.percentHeight(.1f, rootStack));
+            }
 
-        public LevelButton(int lvl, int x, int y) {
-            super(String.valueOf(lvl), skin, "levelBtnDisabled");
-            setSize(160, 160);
-            setPosition(x - 80, y - 80);
+            setPosition(x - getWidth()/2, y - getHeight()/2);
+
             addListener(new LevelLauncher(lvl));
-            m_level = lvl;
-            setDisabled(true);
+            level = lvl;
         }
 
         public int getLevel() {
-            return m_level;
+            return level;
+        }
+
+        public boolean isDisabled() {
+            return button.isDisabled();
         }
 
         public void enable() {
-            setDisabled(false);
-            setStyle(skin.get("levelBtnEnabled", TextButtonStyle.class));
+            button.setDisabled(false);
+        }
+
+        private class LevelLauncher extends ChangeListener {
+            private int m_lvl;
+
+            public LevelLauncher(int lvl) {
+                m_lvl = lvl;
+            }
+
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                startCampaignLevel(m_lvl);
+            }
         }
     }
 
@@ -231,16 +258,14 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         private ProgressBar pbAccountExp;
         private Label lblLevel, lblExp, lblExpForLevel;
 
-        public UIOverlay() {
-
+        public UIOverlay(Table root) {
+            this.root = root;
             ImageButton.ImageButtonStyle userButtonStyle = new ImageButton.ImageButtonStyle();
             userButtonStyle.up = skin.getDrawable("box_white_5");
             userButtonStyle.down = skin.newDrawable("box_white_5", Color.GRAY);
             userButtonStyle.imageUp = skin.newDrawable("userDefIcon");
 
             ImageButton btnUser = new ImageButton(userButtonStyle);
-            btnUser.getImage().setScaling(Scaling.fit);
-            btnUser.getImageCell().pad(10);
 
             ProgressBar.ProgressBarStyle pbStyle = new ProgressBar.ProgressBarStyle();
             pbStyle.background = skin.newDrawable("progressbar_inner", Color.DARK_GRAY);
@@ -270,19 +295,23 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             hgLevel.addActor(lblLevel);
 
             Table tblInfo = new Table();
-
             Table tblAccount = new Table();
+
+            tblAccount.columnDefaults(0).padRight(5);
+            tblAccount.row().padBottom(5);
             tblAccount.background(skin.newDrawable("box_white_5", 30 / 255f, 30 / 255f, 30 / 255f, 1));
-            tblAccount.pad(15);
-            tblAccount.add(btnUser).width(130).height(130).padBottom(15).padRight(15).left();
-            tblAccount.add(tblInfo).fill().padBottom(15).row();
+            tblAccount.add(btnUser)
+                    .size(60);
+            tblAccount.add(tblInfo).fill().row();
             tblAccount.add(hgLevel).padBottom(5).left();
             tblAccount.add(hgExp).padBottom(5).right().row();
-            tblAccount.add(pbAccountExp).growX().width(350).colspan(tblAccount.getColumns());
+            tblAccount.add(pbAccountExp).grow().colspan(tblAccount.getColumns());
 
-            root = new Table();
-            root.top().left().pad(25);
+            root.top().left().pad(5);
             root.add(tblAccount);
+            tblAccount.pack();
+            btnUser.invalidateHierarchy();
+            tblAccount.validate();
 
             updateValues();
         }
@@ -304,4 +333,5 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             return root;
         }
     }
+
 }

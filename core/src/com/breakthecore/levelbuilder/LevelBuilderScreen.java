@@ -31,6 +31,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
@@ -138,13 +139,13 @@ public class LevelBuilderScreen extends ScreenBase {
         uiToolbarTop = new UIToolbarTop();
 
         prefsStack = new UIComponentStack();
-        prefsStack.setBackground(skin.getDrawable("box_white_10"));
+        prefsStack.setBackground(skin.getDrawable("box_white_5"));
 
         Stack mainStack = new Stack();
         mainStack.setFillParent(true);
 
         Table prefs = new Table();
-        prefs.center().bottom().add(prefsStack.show()).expandX().fill().padBottom(-10);
+        prefs.center().bottom().add(prefsStack.show()).expandX().fill().padBottom(-5);
 
         mainStack.addActor(uiTools.show());
         mainStack.addActor(uiToolbarTop.show());
@@ -159,7 +160,7 @@ public class LevelBuilderScreen extends ScreenBase {
         levelBuilder.saveAs("_editor_");
     }
 
-    private class UILayer implements UIComponent {
+    private abstract class UILayer implements UIComponent {
         Container<VerticalGroup> root;
         Label lblLayer;
 
@@ -174,9 +175,10 @@ public class LevelBuilderScreen extends ScreenBase {
                 public void changed(ChangeEvent event, Actor actor) {
                     levelBuilder.upLayer();
                     updateLayer();
+                    onLayerChange(levelBuilder.getLayer());
                 }
             });
-            btnUp.add().size(50, 50);
+            btnUp.add().size(Value.percentWidth(0.3f, root));
 
             lblLayer = new Label(String.valueOf(levelBuilder.getLayer()), skin, "h4");
 
@@ -186,19 +188,22 @@ public class LevelBuilderScreen extends ScreenBase {
                 public void changed(ChangeEvent event, Actor actor) {
                     levelBuilder.downLayer();
                     updateLayer();
+                    onLayerChange(levelBuilder.getLayer());
                 }
             });
-            btnDown.add().size(50, 50);
+            btnDown.add().size(Value.percentWidth(0.3f, root));
 
             group.addActor(btnUp);
             group.addActor(lblLayer);
             group.addActor(btnDown);
-            group.center().space(20).pad(10);
+            group.center().space(20).pad(5);
         }
 
         private void updateLayer() {
             lblLayer.setText(levelBuilder.getLayer());
         }
+
+        public abstract void onLayerChange(int layer);
 
         @Override
         public Group show() {
@@ -250,9 +255,10 @@ public class LevelBuilderScreen extends ScreenBase {
             root = new Container<>();
 
             Table main = new Table(skin);
-            root.top().right().padTop(-10).padRight(-10).setActor(main);
-            main.setBackground("box_white_10");
-            main.defaults().pad(20);
+            root.top().right().padTop(-5).padRight(-5).setActor(main);
+            main.setBackground("box_white_5");
+            main.pad(5);
+            main.defaults().pad(Value.percentWidth(.1f, tbDeploy)).padRight(0).padTop(0);
             main.setTouchable(Touchable.enabled);
             main.addCaptureListener(new EventListener() {
                 @Override
@@ -262,11 +268,11 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
             });
 
-            float minWidth = tbDeploy.getPrefWidth() + 15;
+            float minWidth = tbDeploy.getPrefWidth();
 
-            main.add(tbDeploy).width(minWidth).height(100);
-            main.add(tbSave).width(minWidth).height(100);
-            main.add(tbLoad).width(minWidth).height(100);
+            main.add(tbDeploy).width(minWidth);
+            main.add(tbSave).width(minWidth);
+            main.add(tbLoad).width(minWidth);
 
             Window.WindowStyle wsLoad = new Window.WindowStyle();
             wsLoad.background = skin.getDrawable("box_white_10");
@@ -339,20 +345,6 @@ public class LevelBuilderScreen extends ScreenBase {
             tbs.down = skin.newDrawable("box_white_5", Color.DARK_GRAY);
             tbs.font = skin.getFont("h4");
 
-            Table main = new Table(skin);
-            root.center().right().padRight(-10).setActor(main);
-
-            main.setBackground("box_white_10");
-            main.defaults().pad(20);
-            main.setTouchable(Touchable.enabled);
-            main.addCaptureListener(new EventListener() {
-                @Override
-                public boolean handle(Event event) {
-                    event.handle();
-                    return true;
-                }
-            });
-
             final TextButton tbDraw, tbErase, tbRotate;
 
             tbDraw = new TextButton("Draw", tbs);
@@ -394,11 +386,27 @@ public class LevelBuilderScreen extends ScreenBase {
             btnGroup.setMaxCheckCount(1);
             btnGroup.setMinCheckCount(0);
 
-            float minWidth = tbRotate.getLabel().getPrefWidth() + 15;
+            float minWidth = tbRotate.getPrefWidth();
 
-            main.add(tbDraw).width(minWidth).height(100).row();
-            main.add(tbErase).width(minWidth).height(100).row();
-            main.add(tbRotate).width(minWidth).height(100).row();
+
+            Table main = new Table(skin);
+            root.center().right().padRight(-5).setActor(main);
+
+            main.setBackground("box_white_5");
+            main.pad(5);
+            main.defaults().pad(Value.percentWidth(.1f,tbRotate)).padRight(0);
+            main.setTouchable(Touchable.enabled);
+            main.addCaptureListener(new EventListener() {
+                @Override
+                public boolean handle(Event event) {
+                    event.handle();
+                    return true;
+                }
+            });
+
+            main.add(tbDraw).width(minWidth).row();
+            main.add(tbErase).width(minWidth).row();
+            main.add(tbRotate).width(minWidth).row();
 
         }
 
@@ -468,10 +476,10 @@ public class LevelBuilderScreen extends ScreenBase {
 
             private UIDrawPalette() {
                 HorizontalGroup materialGroup = new HorizontalGroup();
-                materialGroup.space(10);
-                materialGroup.pad(10);
+                materialGroup.space(5);
+                materialGroup.pad(0);
                 materialGroup.wrap(true);
-                materialGroup.wrapSpace(10);
+                materialGroup.wrapSpace(5);
 
                 Drawable checked = skin.newDrawable("box_white_5", Color.GREEN);
                 Drawable unchecked = skin.newDrawable("box_white_5", Color.GRAY);
@@ -493,7 +501,7 @@ public class LevelBuilderScreen extends ScreenBase {
                     ImageButton imgb = new ImageButton(imgbs);
                     materialGroup.addActor(imgb);
                     imgb.getImage().setScaling(Scaling.fill);
-                    imgb.getImageCell().height(100).width(100);
+                    imgb.getImageCell().size(32);
 
                     final int finalButtonIndex = buttonIndex;
                     imgb.addListener(new ChangeListener() {
@@ -516,10 +524,16 @@ public class LevelBuilderScreen extends ScreenBase {
 
                 scrollPane.setOverscroll(false, false);
 
-                uiLayer = new UILayer();
+                uiLayer = new UILayer(){
+                    @Override
+                    public void onLayerChange(int layer) {
+
+                    }
+                };
                 root = new Table(skin);
                 root.add(uiLayer.root);
-                root.add(scrollPane).fill().expandX().height(270);
+                root.add(scrollPane).fill().expandX().height(Value.prefHeight.get(uiLayer.root));
+                root.debug();
             }
 
             private void updateLayer() {
@@ -543,7 +557,12 @@ public class LevelBuilderScreen extends ScreenBase {
         UILayer uiLayer;
 
         EraseMode() {
-            uiLayer = new UILayer();
+            uiLayer = new UILayer(){
+                @Override
+                public void onLayerChange(int layer) {
+
+                }
+            };
             setPreferencesRoot(uiLayer);
         }
 
@@ -575,7 +594,11 @@ public class LevelBuilderScreen extends ScreenBase {
         private Vector2 currPoint = new Vector2();
 
         RotateMode() {
-            uiLayer = new UILayer();
+            uiLayer = new UILayer() {
+                @Override
+                public void onLayerChange(int layer) {
+                }
+            };
             setPreferencesRoot(uiLayer);
         }
 
@@ -660,10 +683,6 @@ public class LevelBuilderScreen extends ScreenBase {
             private UIMapSettings mapSettings = new UIMapSettings();
 
             private OptionsMenu() {
-                root = new HorizontalGroup();
-                root.pad(20);
-                root.space(20);
-                root.wrap(true);
 
                 TextButton btnLevelSettings = new TextButton("Level", skin, "box_gray_5");
                 btnLevelSettings.addListener(new ChangeListener() {
@@ -682,8 +701,12 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 });
 
-                btnLevelSettings.getLabelCell().pad(20);
-                btnMapSettings.getLabelCell().pad(20);
+//                btnLevelSettings.getLabelCell().pad(10);
+//                btnMapSettings.getLabelCell().pad(10);
+
+                root = new HorizontalGroup();
+                root.space(5);
+                root.wrap(true);
 
                 root.addActor(btnLevelSettings);
                 root.addActor(btnMapSettings);
@@ -709,7 +732,7 @@ public class LevelBuilderScreen extends ScreenBase {
             Label lblMoves, lblLives, lblTime;
             TextField tfMoves, tfLives, tfTime;
 
-            final int settingsPadding = 40;
+            final int settingsPadding = 5;
 
             // XXX(14/4/2018): *TOO* many magic values
             private UILevelSettings() {
@@ -717,8 +740,8 @@ public class LevelBuilderScreen extends ScreenBase {
 
                 Label dummy = new Label
                         (":Level Setup:", skin, "h4");
-                root.padLeft(30).padRight(30).padTop(10).padBottom(10).top();
-                root.add(dummy).padBottom(10).colspan(3).row();
+                root.padLeft(0).padRight(0).padTop(0).padBottom(0).top();
+                root.add(dummy).padBottom(0).colspan(3).row();
 
                 InputListener stopTouchDown = new InputListener() {
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -841,7 +864,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 grpTextFields.add(tfTime).padBottom(0).row();
 
                 root.defaults().padBottom(settingsPadding);
-                root.columnDefaults(0).padRight(20);
+                root.columnDefaults(0).padRight(10);
 
                 root.add(grpTextFields).colspan(2).left().row();
                 root.add(grpLauncherSize).growX();
@@ -896,12 +919,20 @@ public class LevelBuilderScreen extends ScreenBase {
 
         private class UIMapSettings implements UIComponent {
             Container<Table> root;
+            UILayer uiLayer;
             Slider sldrMinRot, sldrMaxRot, sldrColorCount;
             Label lblMinRot, lblMaxRot, lblColorCount, lblLayer;
             CheckBox cbRotateCCW;
             int activeLayer;
 
             UIMapSettings() {
+                uiLayer = new UILayer() {
+                    @Override
+                    public void onLayerChange(int layer) {
+                        updateValues(layer);
+                    }
+                };
+
                 activeLayer = levelBuilder.getLayer();
                 sldrMinRot = new Slider(0, 120, 1, false, skin);
                 lblMinRot = new Label(String.format(Locale.ROOT, "Min:%3d", (int) sldrMinRot.getValue()), skin, "h4");
@@ -988,8 +1019,6 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 });
 
-                VerticalGroup grpLayer = new VerticalGroup();
-
                 Button btnUp = new Button(skin.get("default", TextButton.TextButtonStyle.class));
                 btnUp.addListener(new ChangeListener() {
                     @Override
@@ -1000,32 +1029,12 @@ public class LevelBuilderScreen extends ScreenBase {
                         }
                     }
                 });
-                btnUp.add().size(50, 50);
-
-                lblLayer = new Label(String.valueOf(levelBuilder.getLayer()), skin, "h4");
-
-                Button btnDown = new Button(skin.get("default", TextButton.TextButtonStyle.class));
-                btnDown.addListener(new ChangeListener() {
-                    @Override
-                    public void changed(ChangeEvent event, Actor actor) {
-                        int newLayer = levelBuilder.downLayer();
-                        if (Integer.compare(newLayer, activeLayer) != 0) {
-                            updateValues(newLayer);
-                        }
-                    }
-                });
-                btnDown.add().size(50, 50);
-
-                grpLayer.addActor(btnUp);
-                grpLayer.addActor(lblLayer);
-                grpLayer.addActor(btnDown);
-                grpLayer.center().space(20).pad(10);
 
                 Label slblRotation = new Label(":Rotation:", skin, "h4");
 
                 Table rotLabels = new Table();
-                rotLabels.defaults().expandX().padBottom(30);
-                rotLabels.columnDefaults(0).padRight(40);
+                rotLabels.defaults().expandX().padBottom(5);
+                rotLabels.columnDefaults(0).padRight(5);
                 rotLabels.add(slblRotation).colspan(2).padRight(0).padBottom(5).row();
                 rotLabels.add(lblMinRot).padBottom(5);
                 rotLabels.add(lblMaxRot).padBottom(5).row();
@@ -1037,11 +1046,11 @@ public class LevelBuilderScreen extends ScreenBase {
                 rotLabels.add(sldrColorCount).colspan(2).padRight(0).fill().row();
 
                 VerticalGroup vgroup = new VerticalGroup();
-                vgroup.grow().pad(30);
+                vgroup.grow().pad(5);
                 vgroup.addActor(rotLabels);
 
                 Table main = new Table();
-                main.add(grpLayer);
+                main.add(uiLayer.root);
                 main.add(vgroup).grow();
 
                 root = new Container<>(main);
@@ -1050,7 +1059,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
             private void updateValues(int layer) {
                 activeLayer = layer;
-                lblLayer.setText(layer);
+                uiLayer.updateLayer();
                 sldrMaxRot.setValue(levelBuilder.getMaxSpeed());
                 sldrMinRot.setValue(levelBuilder.getMinSpeed());
                 sldrColorCount.setValue(levelBuilder.getColorCount());
