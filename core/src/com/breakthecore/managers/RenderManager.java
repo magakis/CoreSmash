@@ -1,6 +1,10 @@
 package com.breakthecore.managers;
 
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.BitmapFontLoader;
+import com.badlogic.gdx.assets.loaders.TextureLoader;
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
+import com.badlogic.gdx.assets.loaders.resolvers.ResolutionFileResolver;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -8,15 +12,14 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
-
 import com.badlogic.gdx.utils.Queue;
 import com.breakthecore.Coords2D;
-import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.themes.AbstractTheme;
+import com.breakthecore.tilemap.Tilemap;
+import com.breakthecore.tilemap.TilemapTile;
 import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.tiles.Tile;
-import com.breakthecore.tilemap.TilemapTile;
 
 import java.util.List;
 import java.util.Locale;
@@ -39,9 +42,15 @@ public class RenderManager {
         shapeRenderer = new ShapeRenderer();
         assetManager = am;
 
-        am.load("comic_48.fnt", BitmapFont.class);
+        ResolutionFileResolver.Resolution p1920x1080 = new ResolutionFileResolver.Resolution(1920, 1080, "p1920x1080");
+        ResolutionFileResolver resolver = new ResolutionFileResolver(new InternalFileHandleResolver(), p1920x1080);
+
+        am.setLoader(Texture.class, new TextureLoader(resolver));
+        am.setLoader(BitmapFont.class, new BitmapFontLoader(resolver));
+
+        am.load("gidole_96.fnt", BitmapFont.class);
         am.finishLoading();
-        defaultFont = assetManager.get("comic_48.fnt", BitmapFont.class);
+        defaultFont = assetManager.get("gidole_96.fnt", BitmapFont.class);
     }
 
     public void start(Matrix4 combined) {

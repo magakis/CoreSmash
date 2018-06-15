@@ -7,7 +7,6 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.breakthecore.managers.RenderManager;
@@ -58,6 +57,8 @@ public class CoreSmash extends Game {
 
         WorldSettings.init();
         m_screenStack = new Stack<>();
+
+//        viewport = new ExtendViewport(768, 1024);
         viewport = new ScreenViewport();
 
         m_inputMultiplexer = new InputMultiplexer();
@@ -72,17 +73,6 @@ public class CoreSmash extends Game {
 
         setScreen(new LoadingScreen(this));
         gl.glClearColor(30 / 255f, 30 / 255f, 30 / 255f, 1);
-//        } catch (RuntimeException err) {
-//            if (LOG_CRASHES) {
-//                SimpleDateFormat format = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss");
-//                try (Writer writer = Gdx.files.external("/CoreSmash/crash-logs/" + format.format(Calendar.getInstance().getTime()) + ".txt").writer(false)) {
-//                    err.printStackTrace(new PrintWriter(writer));
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//            throw err;
-//        }
     }
 
     @Override

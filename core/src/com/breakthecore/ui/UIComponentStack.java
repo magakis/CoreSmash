@@ -5,11 +5,13 @@ import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
+import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
 import java.util.Stack;
 
-public class UIComponentStack implements UIComponent{
+public class UIComponentStack implements UIComponent {
+    private boolean isHidden;
     private Container<Group> root;
     private Stack<UIComponent> history;
 
@@ -30,13 +32,25 @@ public class UIComponentStack implements UIComponent{
 
     public void push(UIComponent comp) {
         history.push(comp);
-        root.setActor(comp.show());
+        if (!isHidden) {
+            root.setActor(comp.getRoot());
+        }
     }
 
     public void pop() {
         history.pop();
-        root.setActor(history.peek().show());
+        if (!isHidden) {
+            root.setActor(history.peek().getRoot());
+        }
     }
+
+//    public void show() {
+//        root.setActor(history.peek().getRoot());
+//    }
+//
+//    public void hide() {
+//        root.clear();
+//    }
 
     public int size() {
         return history.size();
@@ -56,8 +70,12 @@ public class UIComponentStack implements UIComponent{
         root.setBackground(background);
     }
 
+    public void setMaxHeight(Value height) {
+        root.maxHeight(height);
+    }
+
     @Override
-    public Group show() {
+    public Group getRoot() {
         return root;
     }
 }

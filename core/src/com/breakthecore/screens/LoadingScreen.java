@@ -1,8 +1,6 @@
 package com.breakthecore.screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.assets.AssetDescriptor;
-import com.badlogic.gdx.assets.AssetLoaderParameters;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.assets.loaders.TextureLoader;
@@ -12,6 +10,9 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGeneratorLoader;
+import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -36,21 +37,31 @@ public class LoadingScreen extends ScreenBase {
     private Skin skin;
     private Label percent;
     private AbstractTheme baseTheme;
+    private final float PPI = Gdx.graphics.getDensity();
 
     private TextureLoader.TextureParameter textureParam;
 
     public LoadingScreen(CoreSmash game) {
         super(game);
+
         stage = new Stage(gameInstance.getUIViewport());
 
         am = game.getAssetManager();
+
         textureParam = new TextureLoader.TextureParameter();
         textureParam.genMipMaps = true;
         textureParam.minFilter = Texture.TextureFilter.MipMapLinearNearest;
         textureParam.magFilter = Texture.TextureFilter.Nearest;
 
+        FileHandleResolver resolver = new InternalFileHandleResolver();
+        am.setLoader(FreeTypeFontGenerator.class, new FreeTypeFontGeneratorLoader(resolver));
+        am.setLoader(BitmapFont.class, ".ttf", new FreetypeFontLoader(resolver));
+
+        generateBitmapFont(48, "h1.ttf");
+        am.finishLoading();
+
         skin = game.getSkin();
-        percent = new Label("null", new Label.LabelStyle(new BitmapFont(Gdx.files.internal("gidole_72.fnt"), false), Color.WHITE));
+        percent = new Label("null", new Label.LabelStyle(am.get("h1.ttf", BitmapFont.class), Color.WHITE));
         percent.setAlignment(Align.center);
         percent.setFillParent(true);
         stage.addActor(percent);
@@ -86,13 +97,15 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("cog.png");
         loadTexture("group.png");
         loadTexture("speaker.png");
-        loadTexture("userIcon.png");
-        loadTexture("NinePatches/toast1.png");
-        loadTexture("NinePatches/dialog1.png");
-        loadTexture("NinePatches/GameScreenTop.png");
-        loadTexture("NinePatches/softGray.png");
-        loadTexture("NinePatches/progressbar_inner.png");
+        loadTexture("DefaultUserIcon.png");
+        loadTexture("toast1.png");
+        loadTexture("dialog1.png");
+        loadTexture("GameScreenTop.png");
+        loadTexture("softGray.png");
+        loadTexture("progressbar_inner.png");
         loadTexture("map.png");
+        loadTexture("SimpleOrangeBorder.png");
+        loadTexture("BorderTrans.png");
         loadTexture("default.png");
         loadTexture("UIGameScreenTopRound.png");
         loadTexture("MovesIcon.png");
@@ -109,19 +122,24 @@ public class LoadingScreen extends ScreenBase {
         loadBitmapFont("comic_72bo.fnt");
         loadBitmapFont("comic_96bo.fnt");
 
-        loadBitmapFont("gidole_12.fnt");
-        loadBitmapFont("gidole_14.fnt");
-        loadBitmapFont("gidole_16.fnt");
-        loadBitmapFont("gidole_18.fnt");
         loadBitmapFont("gidole_24.fnt");
-        loadBitmapFont("gidole_32.fnt");
+        loadBitmapFont("gidole_36.fnt");
+        loadBitmapFont("gidole_48.fnt");
+        loadBitmapFont("gidole_60.fnt");
+        loadBitmapFont("gidole_72.fnt");
+        loadBitmapFont("gidole_96.fnt");
 
-        loadBitmapFont("gidole_21.fnt");
-        loadBitmapFont("gidole_28.fnt");
-        loadBitmapFont("gidole_37.fnt");
-        loadBitmapFont("gidole_50.fnt");
-        loadBitmapFont("gidole_67.fnt");
-        loadBitmapFont("gidole_83.fnt");
+//        generateBitmapFont(12, "h6.ttf");
+//        generateBitmapFont(16, "h5.ttf");
+//        generateBitmapFont(22, "h4.ttf");
+//        generateBitmapFont(28, "h3.ttf");
+//        generateBitmapFont(36, "h2.ttf");
+
+        generateBitmapFont(12, "h6.ttf");
+        generateBitmapFont(14, "h5.ttf");
+        generateBitmapFont(18, "h4.ttf");
+        generateBitmapFont(24, "h3.ttf");
+        generateBitmapFont(36, "h2.ttf");
     }
 
     private void loadAllBalls() {
@@ -312,41 +330,64 @@ public class LoadingScreen extends ScreenBase {
         am.load(name, BitmapFont.class);
     }
 
+    private void generateBitmapFont(int size, String name) {
+        FreetypeFontLoader.FreeTypeFontLoaderParameter fontParams = new FreetypeFontLoader.FreeTypeFontLoaderParameter();
+        fontParams.fontFileName = "Gidole-Regular.ttf";
+        fontParams.fontParameters.size = (int) (size * PPI);
+        am.load(name, BitmapFont.class, fontParams);
+    }
+
     private void setupSkin() {
         Pixmap pix;
         Texture tex;
         NinePatch ninePatch;
 
+        /* Used as the Original Scale of each asset */
+        float defScale = 0;
+
         // Nine-Patches
-        int pixHeight = 30;
-        pix = new Pixmap(pixHeight, pixHeight, Pixmap.Format.RGB888);
+        pix = new Pixmap(4, 4, Pixmap.Format.RGB888);
+        pix.setColor(Color.WHITE);
+        pix.fill();
+        tex = new Texture(pix);
+        ninePatch = new NinePatch(tex, 1, 1, 1, 1);
+        skin.add("flatColor", ninePatch);
+
+        pix = new Pixmap(30, 30, Pixmap.Format.RGB888);
         pix.setColor(Color.WHITE);
         pix.fill();
         pix.setColor(Color.rgba8888(30 / 255f, 30 / 255f, 30 / 255f, 1));
-        pix.fillRectangle(5, 5, pix.getWidth() - 10, pixHeight - 10);
+        pix.fillRectangle(5, 5, pix.getWidth() - 10, 30 - 10);
         tex = new Texture(pix);
         ninePatch = new NinePatch(tex, 10, 10, 10, 10);
         skin.add("box_white_5", ninePatch);
 
-        pix = new Pixmap(pixHeight, pixHeight, Pixmap.Format.RGB888);
+        pix = new Pixmap(30, 30, Pixmap.Format.RGB888);
         pix.setColor(Color.WHITE);
         pix.fill();
         pix.setColor(Color.rgba8888(30 / 255f, 30 / 255f, 30 / 255f, 1));
-        pix.fillRectangle(10, 10, pix.getWidth() - 20, pixHeight - 20);
+        pix.fillRectangle(10, 10, pix.getWidth() - 20, 30 - 20);
         tex = new Texture(pix);
         ninePatch = new NinePatch(tex, 10, 10, 10, 10);
         skin.add("box_white_10", ninePatch);
 
-        ninePatch = new NinePatch(am.get("NinePatches/toast1.png", Texture.class), 15, 15, 15, 15);
+
+        ninePatch = new NinePatch(am.get("toast1.png", Texture.class), 15, 15, 15, 15);
         skin.add("toast1", ninePatch);
 
-        ninePatch = new NinePatch(am.get("NinePatches/progressbar_inner.png", Texture.class), 7, 7, 7, 7);
+        ninePatch = new NinePatch(am.get("BorderTrans.png", Texture.class), 5, 5, 5, 5);
+        skin.add("borderTrans", ninePatch);
+
+        ninePatch = new NinePatch(am.get("progressbar_inner.png", Texture.class), 7, 7, 7, 7);
         skin.add("progressbar_inner", ninePatch);
 
-        ninePatch = new NinePatch(am.get("NinePatches/GameScreenTop.png", Texture.class), 15, 15, 15, 15);
+        ninePatch = new NinePatch(am.get("GameScreenTop.png", Texture.class), 24, 24, 24, 24);
+        ninePatch.scale(.5f, .5f);
         skin.add("gameScreenTop", ninePatch);
 
-        ninePatch = new NinePatch(am.get("NinePatches/softGray.png", Texture.class), 15, 15, 15, 15);
+        ninePatch = new NinePatch(am.get("softGray.png", Texture.class), 31, 31, 31, 31);
+        defScale = 0.5f;
+        ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
         skin.add("softGray", ninePatch);
 
         // Textures
@@ -361,7 +402,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("myBall", tex);
 
         skin.add("cog", am.get("cog.png"));
-        skin.add("userDefIcon", am.get("userIcon.png"));
+        skin.add("userDefIcon", am.get("DefaultUserIcon.png"));
         skin.add("ball", am.get("ball.png"));
         skin.add("asteroid", am.get("asteroid.png"));
         skin.add("map", am.get("map.png"));
@@ -375,12 +416,12 @@ public class LoadingScreen extends ScreenBase {
 //        registerFont(skin, "h5", "comic_32.fnt");
 //        registerFont(skin, "h4", "comic_48.fnt");
 
-        registerFont(skin, "h6", "gidole_21.fnt");
-        registerFont(skin, "h5", "gidole_28.fnt");
-        registerFont(skin, "h4", "gidole_37.fnt");
-        registerFont(skin, "h3", "gidole_50.fnt");
-        registerFont(skin, "h2", "gidole_67.fnt");
-        registerFont(skin, "h1", "gidole_83.fnt");
+        registerFont(skin, "h6", "h6.ttf");
+        registerFont(skin, "h5", "h5.ttf");
+        registerFont(skin, "h4", "h4.ttf");
+        registerFont(skin, "h3", "h3.ttf");
+        registerFont(skin, "h2", "h2.ttf");
+        registerFont(skin, "h1", "h1.ttf");
 
         registerFont(skin, "comic_72bo", "comic_72bo.fnt");
         registerFont(skin, "comic_96bo", "comic_96bo.fnt");
@@ -403,7 +444,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("modeButton", stb);
 
         stb = new TextButton.TextButtonStyle();
-        stb.up = skin.newDrawable("box_white_5", Color.WHITE);
+        stb.up = skin.newDrawable("borderTrans", Color.WHITE);
         stb.down = skin.newDrawable("box_white_5", Color.GRAY);
         stb.checked = stb.up;
         stb.font = skin.getFont("h4");
@@ -463,5 +504,4 @@ public class LoadingScreen extends ScreenBase {
         Label.LabelStyle ls = new Label.LabelStyle(bf, Color.WHITE);
         skin.add(fntName, ls);
     }
-
 }

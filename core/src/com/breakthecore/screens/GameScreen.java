@@ -3,7 +3,9 @@ package com.breakthecore.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -22,7 +24,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
-import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
@@ -176,7 +177,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
         resultUI.update();
         rootUIStack.clear();
-        rootUIStack.addActor(resultUI.show());
+        rootUIStack.addActor(resultUI.getRoot());
     }
 
     private void reset() {
@@ -204,9 +205,9 @@ public class GameScreen extends ScreenBase implements Observer {
 
         gameUI.setup();
 
-        rootUIStack.addActor(gameUI.show());
-        rootUIStack.addActor(streakUI.show());
-        rootUIStack.addActor(debugUI.show());
+        rootUIStack.addActor(gameUI.getRoot());
+        rootUIStack.addActor(streakUI.getRoot());
+        rootUIStack.addActor(debugUI.getRoot());
 
         gameInstance.setScreen(this);
     }
@@ -358,18 +359,14 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private class GameUI implements UIComponent, Observer {
         Table root, tblPowerUps, tblTop;
-        Table tblTime, tblLives, tblMoves, tblScore;
-        Table tblCenter, tblRoundCenter;
-        VerticalGroup grpCenter;
+        Table tblTime, tblScore;
+        Table tblCenter;
         Label lblTime, lblScore, lblLives, lblMoves, lblTargetScore;
         TextButton tbPower1;
         Label lblStaticLives;
         Image imgHourGlass, imgMovesIcon, imgLivesIcon, imgRound;
-        Stack rootStack;
 
         public GameUI() {
-            root = new Table();
-
             lblTime = new Label("0", skin, "h4");
             lblTime.setAlignment(Align.left);
 
@@ -382,7 +379,7 @@ public class GameScreen extends ScreenBase implements Observer {
             lblMoves = new Label("null", skin, "h4");
             lblMoves.setAlignment(Align.center);
 
-            lblTargetScore = new Label("", skin, "h4");
+            lblTargetScore = new Label("", skin, "h5", Color.GRAY);
             lblTargetScore.setAlignment(Align.center);
 
             lblStaticLives = new Label("Lives: ", skin, "h4");
@@ -398,27 +395,20 @@ public class GameScreen extends ScreenBase implements Observer {
 
             tblScore = new Table(skin);
             tblScore.background("softGray");
-            tblScore.pad(0);
-            tblScore.padRight(10);
-            tblScore.padLeft(10);
-            tblScore.add(lblScore).width(40).right();
+            tblScore.pad(Value.percentHeight(.25f, lblScore)).right();
+            tblScore.add(lblScore).right().width(lblScore.getPrefHeight() * 2);
             tblScore.add("/", "h4");
-            tblScore.add(lblTargetScore);
+            tblScore.add(lblTargetScore).padRight(Value.percentHeight(.4f, lblScore));
 
 
             tblTime = new Table(skin);
             tblTime.setBackground("softGray");
-            tblTime.pad(0)
-                    .padLeft(10)
-                    .left();
+            tblTime.pad(Value.percentHeight(.2f, lblTime))
+                    .padLeft(Value.percentHeight(.4f, lblScore));
             tblTime.add(imgHourGlass)
                     .size(Value.percentHeight(.9f, lblTime))
-                    .padRight(5)
-                    .left();
-            tblTime.add(lblTime)
-                    .align(Align.left)
-                    .padRight(10)
-                    .left();
+                    .padRight(Value.percentHeight(0.2f, lblTime));
+            tblTime.add(lblTime);
 
             tbPower1 = new TextButton("null", skin, "tmpPowerup");
             tbPower1.getLabel().setAlignment(Align.bottomLeft);
@@ -443,11 +433,11 @@ public class GameScreen extends ScreenBase implements Observer {
             tblCenter = new Table(skin);
             tblCenter.background("gameScreenTopRound");
             tblCenter.bottom();
-            tblCenter.columnDefaults(0).padRight(8);
-            tblCenter.columnDefaults(1).width(20);
-            tblCenter.add(imgMovesIcon).size(lblMoves.getPrefHeight());
+            tblCenter.columnDefaults(0).padRight(Value.percentHeight(.2f, lblLives));
+            tblCenter.columnDefaults(1).width(lblLives.getPrefHeight() * 1.5f).right();
+            tblCenter.add(imgMovesIcon).size(lblLives.getPrefHeight());
             tblCenter.add(lblMoves).left();
-            tblCenter.row().padTop(8);
+            tblCenter.row().padTop(Value.percentHeight(.2f, lblLives));
             tblCenter.add(imgLivesIcon).size(lblLives.getPrefHeight());
             tblCenter.add(lblLives).left();
             tblCenter.debug();
@@ -455,20 +445,25 @@ public class GameScreen extends ScreenBase implements Observer {
             imgRound = new Image(skin, "gameScreenTopRound");
             imgRound.setScaling(Scaling.fit);
 
-            tblTop = new Table(skin);
-            tblTop.background("gameScreenTop");
-            tblTop.pad(10);
-            tblTop.padTop(15);
-            tblTop.columnDefaults(0).padLeft(Value.percentWidth(.05f, tblTop));
-            tblTop.columnDefaults(1).expandX();
-            tblTop.columnDefaults(2).padRight(Value.percentWidth(.05f, tblTop));
-            tblTop.add(tblTime).uniformX().left();
-            tblTop.add().center();
-            tblTop.add(tblScore).uniformX().right();
+            GlyphLayout fontLayout = new GlyphLayout(skin.getFont("h4"), "000000/000000");
 
-            tblRoundCenter = new Table();
-            tblRoundCenter.center().top()
-                    .add(tblCenter);
+            tblTop = new Table(skin);
+            tblTop.background("softGray");
+            tblTop.pad(0);
+            tblTop.columnDefaults(0).padLeft(Value.percentHeight(.5f, lblScore)).expandX().uniformX();
+            tblTop.columnDefaults(1);
+            tblTop.columnDefaults(2).padRight(Value.percentHeight(.5f, lblScore)).expandX().uniformX();
+            tblTop.padTop(Value.percentHeight(.5f, lblScore));
+            tblTop.row()
+                    .padBottom(Value.percentHeight(.2f, lblScore));
+            tblTop.add(tblTime)
+                    .width(fontLayout.width);
+            tblTop.add(tblCenter)
+                    .size(lblLives.getPrefHeight() * 5);
+            tblTop.add(tblScore)
+                    .width(fontLayout.width);
+            tblTop.debug();
+
 
             tblPowerUps.setTouchable(Touchable.enabled);
             tblPowerUps.addCaptureListener(new EventListener() {
@@ -479,12 +474,11 @@ public class GameScreen extends ScreenBase implements Observer {
                 }
             });
 
+            /* Validate the tblTop in order to obtain the correct height for tblScore */
+            tblTop.validate();
+            root = new Table();
             root.setFillParent(true);
-            root.top().add(tblTop).growX().padTop(-10);
-
-            rootStack = new Stack();
-            rootStack.add(root);
-            rootStack.add(tblRoundCenter);
+            root.top().add(tblTop).growX().height(Value.percentHeight(1.6f, tblScore)).padTop(Value.percentHeight(-.25f, tblScore));
         }
 
         public void setup() {
@@ -495,13 +489,13 @@ public class GameScreen extends ScreenBase implements Observer {
             lblMoves.setText(String.valueOf(statsManager.getMoves()));
 
             if (statsManager.isMovesEnabled() && statsManager.isLivesEnabled()) {
-                tblRoundCenter.getCells().get(0).padTop(Value.percentHeight(-.30f, imgRound));
-                tblCenter.getCells().get(2).padBottom(lblLives.getHeight()* .7f);
-                tblCenter.getCells().get(3).padBottom(lblLives.getHeight()* .7f);
+                tblTop.getCells().get(1).padTop(Value.percentHeight(-1.0f, lblLives));
+                tblCenter.getCells().get(2).padBottom(lblLives.getPrefHeight() * .5f);
+                tblCenter.getCells().get(3).padBottom(lblLives.getPrefHeight() * .5f);
             } else {
-                tblRoundCenter.getCells().get(0).padTop(Value.percentHeight(-.5f, imgRound));
-                tblCenter.getCells().get(2).padBottom(-lblLives.getHeight()* .3f);
-                tblCenter.getCells().get(3).padBottom(-lblLives.getHeight()* .3f);
+                tblTop.getCells().get(1).padTop(Value.percentHeight(-2.5f, lblLives));
+                tblCenter.getCells().get(2).padBottom(-lblLives.getHeight() * .4f);
+                tblCenter.getCells().get(3).padBottom(-lblLives.getHeight() * .4f);
             }
 
             imgMovesIcon.setVisible(statsManager.isMovesEnabled());
@@ -519,8 +513,8 @@ public class GameScreen extends ScreenBase implements Observer {
         }
 
         @Override
-        public Group show() {
-            return rootStack;
+        public Group getRoot() {
+            return root;
         }
 
         @Override
@@ -583,7 +577,7 @@ public class GameScreen extends ScreenBase implements Observer {
         }
 
         @Override
-        public Group show() {
+        public Group getRoot() {
             return root;
         }
     }
@@ -615,7 +609,7 @@ public class GameScreen extends ScreenBase implements Observer {
         }
 
         @Override
-        public Group show() {
+        public Group getRoot() {
             return root;
         }
     }

@@ -145,12 +145,13 @@ public class LevelBuilderScreen extends ScreenBase {
         mainStack.setFillParent(true);
 
         Table prefs = new Table();
-        prefs.center().bottom().add(prefsStack.show()).expandX().fill().padBottom(-5);
+//        prefsStack.setMaxHeight(Value.percentHeight(.25f, prefs));
+        prefs.center().bottom().add(prefsStack.getRoot()).growX().padBottom(-5);
 
-        mainStack.addActor(uiTools.show());
-        mainStack.addActor(uiToolbarTop.show());
+        mainStack.addActor(uiTools.getRoot());
+        mainStack.addActor(uiToolbarTop.getRoot());
         mainStack.addActor(prefs);
-        mainStack.addActor(uiInfo.show());
+        mainStack.addActor(uiInfo.getRoot());
 
         stage.addActor(mainStack);
         return stage;
@@ -161,13 +162,12 @@ public class LevelBuilderScreen extends ScreenBase {
     }
 
     private abstract class UILayer implements UIComponent {
-        Container<VerticalGroup> root;
         Label lblLayer;
+        Table root;
 
         UILayer() {
-            VerticalGroup group = new VerticalGroup();
-            root = new Container<>(group);
-            root.center().left();
+            root = new Table();
+
 
             Button btnUp = new Button(skin.get("default", TextButton.TextButtonStyle.class));
             btnUp.addListener(new ChangeListener() {
@@ -178,7 +178,6 @@ public class LevelBuilderScreen extends ScreenBase {
                     onLayerChange(levelBuilder.getLayer());
                 }
             });
-            btnUp.add().size(Value.percentWidth(0.3f, root));
 
             lblLayer = new Label(String.valueOf(levelBuilder.getLayer()), skin, "h4");
 
@@ -191,12 +190,12 @@ public class LevelBuilderScreen extends ScreenBase {
                     onLayerChange(levelBuilder.getLayer());
                 }
             });
-            btnDown.add().size(Value.percentWidth(0.3f, root));
 
-            group.addActor(btnUp);
-            group.addActor(lblLayer);
-            group.addActor(btnDown);
-            group.center().space(20).pad(5);
+
+            root.add(btnUp).size(Value.percentHeight(1.1f, lblLayer)).padBottom(Value.prefHeight.get(lblLayer)).row();
+            root.add(lblLayer).padBottom(Value.prefHeight.get(lblLayer)).row();
+            root.add(btnDown).size(Value.percentHeight(1.1f, lblLayer));
+            root.center().pad(Value.percentHeight(.2f, lblLayer));
         }
 
         private void updateLayer() {
@@ -206,7 +205,7 @@ public class LevelBuilderScreen extends ScreenBase {
         public abstract void onLayerChange(int layer);
 
         @Override
-        public Group show() {
+        public Group getRoot() {
             return root;
         }
     }
@@ -327,7 +326,7 @@ public class LevelBuilderScreen extends ScreenBase {
         }
 
         @Override
-        public Group show() {
+        public Group getRoot() {
             return root;
         }
     }
@@ -411,7 +410,7 @@ public class LevelBuilderScreen extends ScreenBase {
         }
 
         @Override
-        public Group show() {
+        public Group getRoot() {
             return root;
         }
     }
@@ -437,7 +436,7 @@ public class LevelBuilderScreen extends ScreenBase {
         }
 
         @Override
-        public Group show() {
+        public Group getRoot() {
             return root;
         }
     }
@@ -475,6 +474,8 @@ public class LevelBuilderScreen extends ScreenBase {
             private final Table root;
 
             private UIDrawPalette() {
+                root = new Table(skin);
+
                 HorizontalGroup materialGroup = new HorizontalGroup();
                 materialGroup.space(5);
                 materialGroup.pad(0);
@@ -491,6 +492,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
                 materialButtons = new ImageButton[knownIds.size()];
                 int buttonIndex = 0;
+                float ballSize = skin.get("h2", Label.LabelStyle.class).font.getLineHeight();
                 for (int i = 0; i < knownIds.size(); ++i) {
                     ImageButton.ImageButtonStyle imgbs;
                     imgbs = new ImageButton.ImageButtonStyle();
@@ -501,7 +503,7 @@ public class LevelBuilderScreen extends ScreenBase {
                     ImageButton imgb = new ImageButton(imgbs);
                     materialGroup.addActor(imgb);
                     imgb.getImage().setScaling(Scaling.fill);
-                    imgb.getImageCell().size(32);
+                    imgb.getImageCell().size(ballSize);
 
                     final int finalButtonIndex = buttonIndex;
                     imgb.addListener(new ChangeListener() {
@@ -530,10 +532,8 @@ public class LevelBuilderScreen extends ScreenBase {
 
                     }
                 };
-                root = new Table(skin);
                 root.add(uiLayer.root);
-                root.add(scrollPane).fill().expandX().height(Value.prefHeight.get(uiLayer.root));
-                root.debug();
+                root.add(scrollPane).fill().expandX();
             }
 
             private void updateLayer() {
@@ -541,7 +541,7 @@ public class LevelBuilderScreen extends ScreenBase {
             }
 
             @Override
-            public Group show() {
+            public Group getRoot() {
                 uiInfo.reset();
                 updateTileID();
                 return root;
@@ -563,7 +563,14 @@ public class LevelBuilderScreen extends ScreenBase {
 
                 }
             };
-            setPreferencesRoot(uiLayer);
+            final Container<Group> container = new Container<>(uiLayer.getRoot());
+            container.top().left();
+            setPreferencesRoot(new UIComponent() {
+                @Override
+                public Group getRoot() {
+                    return container;
+                }
+            });
         }
 
         @Override
@@ -599,7 +606,14 @@ public class LevelBuilderScreen extends ScreenBase {
                 public void onLayerChange(int layer) {
                 }
             };
-            setPreferencesRoot(uiLayer);
+            final Container<Group> container = new Container<>(uiLayer.getRoot());
+            container.top().left();
+            setPreferencesRoot(new UIComponent() {
+                @Override
+                public Group getRoot() {
+                    return container;
+                }
+            });
         }
 
         @Override
@@ -718,7 +732,7 @@ public class LevelBuilderScreen extends ScreenBase {
             }
 
             @Override
-            public Group show() {
+            public Group getRoot() {
                 uiInfo.reset();
                 updateCamInfo();
                 return root;
@@ -907,7 +921,7 @@ public class LevelBuilderScreen extends ScreenBase {
             }
 
             @Override
-            public Group show() {
+            public Group getRoot() {
                 uiInfo.reset();
                 String txtAmount = tfMoves.getText();
                 // check to avoid parsing empty string
@@ -1067,7 +1081,7 @@ public class LevelBuilderScreen extends ScreenBase {
             }
 
             @Override
-            public Group show() {
+            public Group getRoot() {
                 return root;
             }
         }

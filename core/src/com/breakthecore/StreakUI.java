@@ -53,7 +53,7 @@ public class StreakUI implements UIComponent,Observer {
 
 
     @Override
-    public Group show() {
+    public Group getRoot() {
         return root;
     }
 }

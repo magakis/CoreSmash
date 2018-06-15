@@ -6,8 +6,10 @@ import com.breakthecore.CoreSmash;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {
-		int height = 850;
-		int width = (int)(height * 9/16f);
+//		int height = 1920;
+//		int width = 1080;
+        int height = 1024;
+        int width = 768;
 
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 		config.resizable = false;
@@ -19,6 +21,7 @@ public class DesktopLauncher {
 			config.height = height;
 			config.width = width;
 		}
+        config.overrideDensity = 160;
 		config.foregroundFPS = 60;
 		config.backgroundFPS = 15;
 		config.vSyncEnabled = false;

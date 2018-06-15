@@ -12,8 +12,6 @@ import com.breakthecore.CoreSmash;
 import com.breakthecore.UserAccount;
 import com.breakthecore.ui.UIComponent;
 
-import java.util.Locale;
-
 public class ScoresScreen extends ScreenBase {
     private Stage stage;
     private Skin skin;
@@ -48,7 +46,7 @@ public class ScoresScreen extends ScreenBase {
         verticalGroup.setFillParent(true);
         verticalGroup.addActor(new Label("Scores", skin, "h1"));
         verticalGroup.padTop(50);
-        verticalGroup.addActor(uiScoreTable.show());
+        verticalGroup.addActor(uiScoreTable.getRoot());
         stage.addActor(verticalGroup);
     }
 
@@ -102,7 +100,7 @@ public class ScoresScreen extends ScreenBase {
          }
 
         @Override
-        public Group show() {
+        public Group getRoot() {
             return root;
         }
     }

@@ -9,34 +9,23 @@ import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.Group;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.breakthecore.CoreSmash;
-import com.breakthecore.WorldSettings;
 import com.breakthecore.levelbuilder.LevelBuilderScreen;
 import com.breakthecore.levels.CampaignScreen;
-import com.breakthecore.managers.StatsManager;
 import com.breakthecore.ui.UIComponent;
-
-import java.util.Locale;
 
 /**
  * Created by Michail on 16/3/2018.
@@ -80,10 +69,11 @@ public class MainMenuScreen extends ScreenBase {
 
         uiMainMenu = new UIMainMenu();
         uiMenuOverlay = new UIOverlay();
+//        UIDebug uiDebug = new UIDebug(skin);
 
-        rootStack.add(uiMainMenu.show());
-        rootStack.add(uiMenuOverlay.show());
-
+        rootStack.add(uiMainMenu.getRoot());
+        rootStack.add(uiMenuOverlay.getRoot());
+//        rootStack.add(uiDebug.getRoot());
     }
 
     private void checkForLocalAccount() {
@@ -116,14 +106,14 @@ public class MainMenuScreen extends ScreenBase {
         @Override
         public boolean keyDown(int keycode) {
             if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
-                if (uiMainMenu.show().getParent() == rootStack) {
+                if (uiMainMenu.getRoot().getParent() == rootStack) {
                     levelBuilderScreen.saveProgress();
                     Gdx.app.exit();
                     return true;
                 } else {
                     rootStack.clear();
-                    rootStack.addActor(uiMainMenu.show());
-                    rootStack.addActor(uiMenuOverlay.show());
+                    rootStack.addActor(uiMainMenu.getRoot());
+                    rootStack.addActor(uiMenuOverlay.getRoot());
                 }
             }
             return false;
@@ -174,7 +164,7 @@ public class MainMenuScreen extends ScreenBase {
         }
 
         @Override
-        public Group show() {
+        public Group getRoot() {
             return root;
         }
     }
@@ -183,7 +173,6 @@ public class MainMenuScreen extends ScreenBase {
         Table root;
 
         public UIOverlay() {
-
             ImageButton.ImageButtonStyle imgbsMap = new ImageButton.ImageButtonStyle();
             imgbsMap.up = skin.getDrawable("box_white_5");
             imgbsMap.imageUp = skin.getDrawable("map");
@@ -202,19 +191,39 @@ public class MainMenuScreen extends ScreenBase {
             root = new Table();
             root.bottom().left();
             root.add(imgbMap)
-                    .size(Value.percentWidth(1 / 7f,rootStack))
+                    .size(Value.percentWidth(1 / 7f, rootStack))
                     .maxSize(Value.percentHeight(.8f, uiMainMenu.btnPlay))
                     .padBottom(Value.percentHeight(1 / 16f, rootStack))
                     .padLeft(-10)
                     .left();
-            root.invalidateHierarchy();
-            root.debug();
         }
 
         @Override
-        public Group show() {
+        public Group getRoot() {
             return root;
         }
     }
 
+    private static class UIDebug implements UIComponent {
+        Table root;
+        Skin skin;
+
+        UIDebug(Skin skin) {
+            this.skin = skin;
+            root = new Table(skin);
+
+            root.top().left();
+//            root.add("Test H1", "h1").left().row();
+//            root.add("Test H2", "h2").left().row();
+//            root.add("Test H3", "h3").left().row();
+//            root.add("Test H4", "h4").left().row();
+//            root.add("Test H5", "h5").left().row();
+            root.add("Density: " + Gdx.graphics.getDensity(), "h6").left().row();
+        }
+
+        @Override
+        public Group getRoot() {
+            return root;
+        }
+    }
 }

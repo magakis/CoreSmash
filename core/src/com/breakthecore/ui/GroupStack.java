@@ -6,7 +6,6 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import com.breakthecore.ui.UIComponent;
 
 import java.util.Stack;
 
@@ -59,7 +58,7 @@ final public class GroupStack implements UIComponent {
     }
 
     @Override
-    public Group show() {
+    public Group getRoot() {
         return root;
     }
 }

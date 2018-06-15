@@ -21,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.breakthecore.CoreSmash;
 import com.breakthecore.RoundEndListener;
 import com.breakthecore.UserAccount;
@@ -101,7 +102,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         Container<WidgetGroup> container = new Container<>(grp);
         container.prefSize(WIDTH, ySpace + levelButtons.length * ySpace);
 
-        container.debug();
         return container;
     }
 
@@ -261,8 +261,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         public UIOverlay(Table root) {
             this.root = root;
             ImageButton.ImageButtonStyle userButtonStyle = new ImageButton.ImageButtonStyle();
-            userButtonStyle.up = skin.getDrawable("box_white_5");
-            userButtonStyle.down = skin.newDrawable("box_white_5", Color.GRAY);
+            userButtonStyle.up = skin.getDrawable("borderTrans");
+            userButtonStyle.down = skin.newDrawable("borderTrans", Color.GRAY);
             userButtonStyle.imageUp = skin.newDrawable("userDefIcon");
 
             ImageButton btnUser = new ImageButton(userButtonStyle);
@@ -297,22 +297,23 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             Table tblInfo = new Table();
             Table tblAccount = new Table();
 
+            Viewport uiVp = stage.getViewport();
+            float btnUserSize = uiVp.getWorldWidth() * (uiVp.getWorldHeight() > uiVp.getWorldWidth() ? .15f : .1f);
+            btnUser.getImageCell().grow().pad(5);
+
+            tblAccount.pad(lblLevel.getPrefHeight() / 3);
             tblAccount.columnDefaults(0).padRight(5);
             tblAccount.row().padBottom(5);
-            tblAccount.background(skin.newDrawable("box_white_5", 30 / 255f, 30 / 255f, 30 / 255f, 1));
+            tblAccount.background(skin.newDrawable("flatColor", 20 / 255f, 20 / 255f, 20 / 255f, 1));
             tblAccount.add(btnUser)
-                    .size(60);
+                    .size(btnUserSize);
             tblAccount.add(tblInfo).fill().row();
             tblAccount.add(hgLevel).padBottom(5).left();
             tblAccount.add(hgExp).padBottom(5).right().row();
             tblAccount.add(pbAccountExp).grow().colspan(tblAccount.getColumns());
 
-            root.top().left().pad(5);
+            root.top().left().pad(lblLevel.getPrefHeight() / 2);
             root.add(tblAccount);
-            tblAccount.pack();
-            btnUser.invalidateHierarchy();
-            tblAccount.validate();
-
             updateValues();
         }
 
@@ -329,7 +330,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         }
 
         @Override
-        public Group show() {
+        public Group getRoot() {
             return root;
         }
     }
