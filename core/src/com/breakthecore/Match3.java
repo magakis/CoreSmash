@@ -1,77 +1,71 @@
 package com.breakthecore;
 
-import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.tilemap.TilemapTile;
+import com.breakthecore.tiles.TileContainer.Side;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class Match3 {
     private ArrayList<TilemapTile> matched = new ArrayList<TilemapTile>();
     private ArrayList<TilemapTile> closed = new ArrayList<TilemapTile>();
 
-    public ArrayList<TilemapTile> getColorMatchesFromTile(TilemapTile tile, Tilemap tm) {
+    public ArrayList<TilemapTile> getColorMatchesFromTile(TilemapTile tile) {
         matched.clear();
         closed.clear();
-        addSurroundingColorMatches(tm, tile);
+        addSurroundingColorMatches(tile);
         return matched;
     }
 
-    private void addSurroundingColorMatches(Tilemap tm, TilemapTile tile) {
-        Coords2D tpos = tile.getRelativePosition();
-        int tx = tpos.x;
-        int ty = tpos.y;
+    private void addSurroundingColorMatches(TilemapTile tmTile) {
+        matched.add(tmTile);
+        closed.add(tmTile);
 
-        TilemapTile tt;
-
-        matched.add(tile);
-        closed.add(tile);
-
+        TilemapTile neighbour;
         //top_left
-        tt = tm.getRelativeTile(tx - 1, ty + 1);
-        if (tt != null && !closed.contains(tt)) {
-            if (tt.getTileID() == tile.getTileID()) {
-                addSurroundingColorMatches(tm, tt);
+        neighbour = tmTile.getNeighbour(Side.TOP_LEFT);
+        if (neighbour != null && !closed.contains(neighbour)) {
+            if (neighbour.getTileID() == tmTile.getTileID()) {
+                addSurroundingColorMatches(neighbour);
             }
         }
 
         //top_right
-        tt = tm.getRelativeTile(tx, ty + 1);
-        if (tt != null && !closed.contains(tt)) {
-            if (tt.getTileID() == tile.getTileID()) {
-                addSurroundingColorMatches(tm, tt);
+        neighbour = tmTile.getNeighbour(Side.TOP_RIGHT);
+        if (neighbour != null && !closed.contains(neighbour)) {
+            if (neighbour.getTileID() == tmTile.getTileID()) {
+                addSurroundingColorMatches(neighbour);
             }
         }
 
         //right
-        tt = tm.getRelativeTile(tx + 1, ty);
-        if (tt != null && !closed.contains(tt)) {
-            if (tt.getTileID() == tile.getTileID()) {
-                addSurroundingColorMatches(tm, tt);
+        neighbour = tmTile.getNeighbour(Side.RIGHT);
+        if (neighbour != null && !closed.contains(neighbour)) {
+            if (neighbour.getTileID() == tmTile.getTileID()) {
+                addSurroundingColorMatches(neighbour);
             }
         }
 
         //bottom_right
-        tt = tm.getRelativeTile(tx + 1, ty - 1);
-        if (tt != null && !closed.contains(tt)) {
-            if (tt.getTileID() == tile.getTileID()) {
-                addSurroundingColorMatches(tm, tt);
+        neighbour = tmTile.getNeighbour(Side.BOTTOM_RIGHT);
+        if (neighbour != null && !closed.contains(neighbour)) {
+            if (neighbour.getTileID() == tmTile.getTileID()) {
+                addSurroundingColorMatches(neighbour);
             }
         }
 
         //bottom_left
-        tt = tm.getRelativeTile(tx, ty - 1);
-        if (tt != null && !closed.contains(tt)) {
-            if (tt.getTileID() == tile.getTileID()) {
-                addSurroundingColorMatches(tm, tt);
+        neighbour = tmTile.getNeighbour(Side.BOTTOM_LEFT);
+        if (neighbour != null && !closed.contains(neighbour)) {
+            if (neighbour.getTileID() == tmTile.getTileID()) {
+                addSurroundingColorMatches(neighbour);
             }
         }
 
         //left
-        tt = tm.getRelativeTile(tx - 1, ty);
-        if (tt != null && !closed.contains(tt)) {
-            if (tt.getTileID() == tile.getTileID()) {
-                addSurroundingColorMatches(tm, tt);
+        neighbour = tmTile.getNeighbour(Side.LEFT);
+        if (neighbour != null && !closed.contains(neighbour)) {
+            if (neighbour.getTileID() == tmTile.getTileID()) {
+                addSurroundingColorMatches(neighbour);
             }
         }
     }

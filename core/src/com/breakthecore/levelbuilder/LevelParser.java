@@ -79,8 +79,8 @@ public final class LevelParser {
                 for (TilemapTile tile : tilemapManager.getTileList(mapIndex)) {
                     serializer.startTag(NO_NAMESPACE, TAG_BALL);
                     serializer.attribute(NO_NAMESPACE, "id", String.valueOf(tile.getTile().getID()));
-                    serializer.attribute(NO_NAMESPACE, "x", String.valueOf(tile.getRelativePosition().x));
-                    serializer.attribute(NO_NAMESPACE, "y", String.valueOf(tile.getRelativePosition().y));
+                    serializer.attribute(NO_NAMESPACE, "x", String.valueOf(tile.getCoords().x));
+                    serializer.attribute(NO_NAMESPACE, "y", String.valueOf(tile.getCoords().y));
                     serializer.endTag(NO_NAMESPACE, TAG_BALL);
                 }
                 serializer.endTag(NO_NAMESPACE, TAG_CONTENT);

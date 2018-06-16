@@ -1,11 +1,12 @@
 package com.breakthecore.managers;
 
 import com.badlogic.gdx.math.Vector2;
+import com.breakthecore.WorldSettings;
 import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.tilemap.TilemapManager;
+import com.breakthecore.tilemap.TilemapTile;
 import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.tiles.TileContainer;
-import com.breakthecore.tilemap.TilemapTile;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,25 +36,16 @@ public class CollisionDetector {
     }
 
     public TilemapTile findCollision(Tilemap tm, MovingBall moveTile) {
-        float minDist;
-        int sideHalf = tm.getTileSize() / 2;
-        int tilesPerSide = tm.getTilemapSize();
-        Vector2 movhexPos;
-
-        movhexPos = moveTile.getPositionInWorld();
-
+        int sideHalf = WorldSettings.getTileSize() / 2;
         //XXX(HACK): Arbitrary value to decrease range and match better the texture
-        minDist = sideHalf + sideHalf * moveTile.getScale() * 0.8f;
+        float minDist = sideHalf + sideHalf * moveTile.getScale() * 0.8f;
 
-        TilemapTile tile;
-        for (int y = 0; y < tilesPerSide; ++y) {
-            for (int x = 0; x < tilesPerSide; ++x) {
-                tile = tm.getAbsoluteTile(x, y);
-                if (tile != null) {
-                    if (movhexPos.dst(tile.getPositionInWorld()) < minDist) {
-                        return tile;
-                    }
-                }
+        Vector2 movhexPos = moveTile.getPositionInWorld();
+
+
+        for (TilemapTile tile : tm.getTileList()) {
+            if (movhexPos.dst(tile.getPositionInWorld()) < minDist) {
+                return tile;
             }
         }
         return null;
@@ -113,7 +105,7 @@ public class CollisionDetector {
 
     public TilemapTile checkIfBallCollides(MovingBall mb, TilemapManager tmm) {
         TilemapTile result = null;
-        for (int i = tmm.getMaxTilemapCount()-1; i >= 0; --i) {
+        for (int i = tmm.getMaxTilemapCount() - 1; i >= 0; --i) {
             result = findCollision(tmm.getTilemap(i), mb);
 
             if (result != null) break;

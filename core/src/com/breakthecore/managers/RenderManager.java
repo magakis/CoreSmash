@@ -22,7 +22,6 @@ import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.tiles.Tile;
 
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Created by Michail on 24/3/2018.
@@ -103,80 +102,73 @@ public class RenderManager {
     }
 
     public void draw(Tilemap tm) {
-        int tilesPerSide = tm.getTilemapSize();
+        for (TilemapTile tile : tm.getTileList()) {
+            Vector2 pos = tile.getPositionInWorld();
+            Texture texture = theme.getTexture(tile.getTileID());
 
-        for (int y = 0; y < tilesPerSide; ++y) {
-            for (int x = 0; x < tilesPerSide; ++x) {
-                TilemapTile tile = tm.getAbsoluteTile(x, y);
-                if (tile != null) {
-                    Vector2 pos = tile.getPositionInWorld();
-                    Texture texture = theme.getTexture(tile.getTileID());
+            batch.draw(texture, pos.x - sideLengthHalf, pos.y - sideLengthHalf,
+                    sideLengthHalf, sideLengthHalf, sideLength, sideLength,
+                    1, 1, -tm.getRotation(), 0, 0, texture.getWidth(), texture.getHeight(), false, false);
 
-                    batch.draw(texture, pos.x - sideLengthHalf, pos.y - sideLengthHalf,
-                            sideLengthHalf, sideLengthHalf, sideLength, sideLength,
-                            1, 1, -tm.getRotation(), 0, 0, texture.getWidth(), texture.getHeight(), false, false);
-
-                }
-            }
         }
     }
+//
+//    public void DBdraw(CollisionDetector cm, Tilemap tm) {
+//        Vector2 pos;
+//        int tilesPerSide = tm.getTilemapSize();
+//        int sideLen = tm.getTileSize() / 2;
+//
+//        shapeRenderer.setColor(Color.WHITE);
+//        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+//        float[] vetices = cm.getVerticesOnMiddleEdges(tm.getCos(), tm.getSin());
+//
+//        TilemapTile tile;
+//        for (int y = 0; y < tilesPerSide; ++y) {
+//            for (int x = 0; x < tilesPerSide; ++x) {
+//                tile = tm.getAbsoluteTile(x, y);
+//                if (tile != null) {
+//                    pos = tile.getPositionInWorld();
+//
+//                    for (int i = 0; i < 12; i += 2) {
+//                        shapeRenderer.circle(vetices[i] * sideLen + pos.x, vetices[i + 1] * sideLen + pos.y, 3);
+//                    }
+//                }
+//            }
+//        }
+//        shapeRenderer.end();
+//    }
 
-    public void DBdraw(CollisionDetector cm, Tilemap tm) {
-        Vector2 pos;
-        int tilesPerSide = tm.getTilemapSize();
-        int sideLen = tm.getTileSize() / 2;
+//    public void DBTileColor(Tilemap tm) {
+//        int tilesPerSide = tm.getTilemapSize();
+//        TilemapTile tile;
+//
+//        for (int y = 0; y < tilesPerSide; ++y) {
+//            for (int x = 0; x < tilesPerSide; ++x) {
+//                tile = tm.getAbsoluteTile(x, y);
+//                if (tile != null) {
+//                    Vector2 pos = tile.getPositionInWorld();
+//                    batch.setColor(Color.BLACK);
+//                    defaultFont.draw(batch, String.valueOf(tile.getTileID()), pos.x - sideLengthHalf / 2, pos.y);
+//                }
+//            }
+//        }
+//    }
 
-        shapeRenderer.setColor(Color.WHITE);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        float[] vetices = cm.getVerticesOnMiddleEdges(tm.getCos(), tm.getSin());
-
-        TilemapTile tile;
-        for (int y = 0; y < tilesPerSide; ++y) {
-            for (int x = 0; x < tilesPerSide; ++x) {
-                tile = tm.getAbsoluteTile(x, y);
-                if (tile != null) {
-                    pos = tile.getPositionInWorld();
-
-                    for (int i = 0; i < 12; i += 2) {
-                        shapeRenderer.circle(vetices[i] * sideLen + pos.x, vetices[i + 1] * sideLen + pos.y, 3);
-                    }
-                }
-            }
-        }
-        shapeRenderer.end();
-    }
-
-    public void DBTileColor(Tilemap tm) {
-        int tilesPerSide = tm.getTilemapSize();
-        TilemapTile tile;
-
-        for (int y = 0; y < tilesPerSide; ++y) {
-            for (int x = 0; x < tilesPerSide; ++x) {
-                tile = tm.getAbsoluteTile(x, y);
-                if (tile != null) {
-                    Vector2 pos = tile.getPositionInWorld();
-                    batch.setColor(Color.BLACK);
-                    defaultFont.draw(batch, String.valueOf(tile.getTileID()), pos.x - sideLengthHalf / 2, pos.y);
-                }
-            }
-        }
-    }
-
-    public void DBTileDistances(Tilemap map) {
-        Vector2 pos;
-        Coords2D post;
-        for (int y = 0; y < map.getTilemapSize(); ++y) {
-            for (int x = 0; x < map.getTilemapSize(); ++x) {
-                TilemapTile tile = map.getAbsoluteTile(x, y);
-                if (tile != null) {
-                    pos = tile.getPositionInWorld();
-                    post = tile.getRelativePosition();
-                    batch.setColor(Color.BLACK);
-                    defaultFont.draw(batch, String.format(Locale.ENGLISH,"%d,%d", post.x, post.y), pos.x - sideLengthHalf / 2, pos.y);
-                }
-            }
-        }
-    }
+//    public void DBTileDistances(Tilemap map) {
+//        Vector2 pos;
+//        Coords2D post;
+//        for (int y = 0; y < map.getTilemapSize(); ++y) {
+//            for (int x = 0; x < map.getTilemapSize(); ++x) {
+//                TilemapTile tile = map.getAbsoluteTile(x, y);
+//                if (tile != null) {
+//                    pos = tile.getPositionInWorld();
+//                    post = tile.getCoords();
+//                    batch.setColor(Color.BLACK);
+//                    defaultFont.draw(batch, String.format(Locale.ENGLISH, "%d,%d", post.x, post.y), pos.x - sideLengthHalf / 2, pos.y);
+//                }
+//            }
+//        }
+//    }
 
     public void drawLauncher(Queue<MovingBall> launcher, Vector2 atPos) {
 //        float scale;

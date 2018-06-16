@@ -7,23 +7,27 @@ import com.breakthecore.NotificationType;
 import com.breakthecore.Observable;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.tiles.Tile;
+import com.breakthecore.tiles.TileContainer.Side;
 import com.breakthecore.tiles.TileType;
 
-import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
+import static com.breakthecore.tiles.TileContainer.getOppositeSide;
 
 /**
  * Created by Michail on 18/3/2018.
  */
 
 public class Tilemap extends Observable {
-    private int ID;
-    private int tilesPerSide;
+    private int groupID;
     private int tileSize;
-    private int maxTileDistanceFromCenter;
-    private int centerTile;
+    private int maxDistanceFromCenter;
     private Coords2D screenPosition;
     private WorldToTilemap worldToTilemap;
-    private TilemapTile[][] tilemapTileList;
+    private List<TilemapTile> tilemapTiles;
     private int[] colorsAvailable;
 
     private boolean hadTilesDestroyed;
@@ -40,18 +44,21 @@ public class Tilemap extends Observable {
     private float sin;
 
     private int initTileCount;
-    private int tileCount;
+    private TilemapTile dummyTile;
 
     private Tilemap(int id) {
-        ID = id;
-        tilesPerSide = 30; // NOTE: If this is changed, change it also in pathfinder!
+        groupID = id;
         tileSize = WorldSettings.getTileSize();
-        centerTile = tilesPerSide / 2;
-        tilemapTileList = new TilemapTile[tilesPerSide][tilesPerSide];
         colorsAvailable = new int[10]; // XXX(22/4/2018): Magic Value 10!
         cos = 1;
-        sin = 0;
         worldToTilemap = new WorldToTilemap();
+        dummyTile = new TilemapTile(null);
+        tilemapTiles = new ArrayList<>();
+    }
+
+    public Tilemap(int id, Coords2D screenPos) {
+        this(id);
+        screenPosition = screenPos;
     }
 
     public int getMinRotationSpeed() {
@@ -62,28 +69,8 @@ public class Tilemap extends Observable {
         return maxRotationSpeed;
     }
 
-    public Tilemap(int id, int posX, int posY) {
-        this(id);
-        screenPosition = new Coords2D(posX, posY);
-    }
-
-    public Tilemap(int id, Coords2D screenPos) {
-        this(id);
-        screenPosition = screenPos;
-    }
-
-    public TilemapTile[] getTileList() {
-        TilemapTile[] list = new TilemapTile[tileCount];
-        int listIndex = 0;
-
-        for (int y = 0; y < tilesPerSide; ++y) {
-            for (int x = 0; x < tilesPerSide; ++x) {
-                if (tilemapTileList[y][x] != null) {
-                    list[listIndex++] = tilemapTileList[y][x];
-                }
-            }
-        }
-        return list;
+    public List<TilemapTile> getTileList() {
+        return tilemapTiles;
     }
 
     public int[] getColorAmountsAvailable() {
@@ -91,20 +78,13 @@ public class Tilemap extends Observable {
             colorsAvailable[i] = 0;
         }
 
-        for (TilemapTile[] arr : tilemapTileList) {
-            for (TilemapTile t : arr) {
-                if (t == null) continue;
-                if (t.getTile().getTileType() == TileType.REGULAR) {
-                    colorsAvailable[t.getTileID()]++;
-                }
+        for (TilemapTile t : tilemapTiles) {
+            if (t.getTile().getTileType() == TileType.REGULAR) {
+                colorsAvailable[t.getTileID()]++;
             }
         }
 
         return colorsAvailable;
-    }
-
-    public int getCenterTilePos() {
-        return centerTile;
     }
 
     public boolean isCCWRotationEnabled() {
@@ -112,19 +92,11 @@ public class Tilemap extends Observable {
     }
 
     public int getId() {
-        return ID;
-    }
-
-    public int getTilemapSize() {
-        return tilesPerSide;
-    }
-
-    public int getTileSize() {
-        return tileSize;
+        return groupID;
     }
 
     public int getTileCount() {
-        return tileCount;
+        return tilemapTiles.size();
     }
 
     public float getRotation() {
@@ -143,18 +115,11 @@ public class Tilemap extends Observable {
         return worldToTilemap.convert(worldCoords);
     }
 
-    public Coords2D getPositionInWorld() {
-        return new Coords2D(screenPosition);
-    }
-
-    public TilemapTile getAbsoluteTile(int x, int y) {
-        if (indexSafeGuard(x, y)) return null;
-        return tilemapTileList[y][x];
-    }
-
-    public TilemapTile getRelativeTile(int x, int y) {
-        if (indexSafeGuard(centerTile + x, centerTile + y)) return null;
-        return tilemapTileList[centerTile + y][centerTile + x];
+    public TilemapTile getTilemapTile(int x, int y) {
+        dummyTile.setCoordinates(x, y);
+        Collections.sort(tilemapTiles);
+        int index = Collections.binarySearch(tilemapTiles, dummyTile);
+        return index >= 0 ? tilemapTiles.get(index) : null;
     }
 
     public void setCounterClockwiseRotation(boolean counterClockwise) {
@@ -171,34 +136,60 @@ public class Tilemap extends Observable {
         speedDiff = max - min;
     }
 
-    public int getMaxTileDistanceFromCenter() {
-        return maxTileDistanceFromCenter;
+    public int getMaxDistanceFromCenter() {
+        return maxDistanceFromCenter;
     }
 
-    public void setRelativeTile(int x, int y, Tile tile) {
-        if (tile == null) throw new InvalidParameterException();
-        if (indexSafeGuard(centerTile + x, centerTile + y)) return;
+    public void putTilemapTile(int x, int y, Tile tile) {
+        TilemapTile slot = getTilemapTile(x, y);
 
-        TilemapTile tilemapTile = new TilemapTile(tile);
-        tilemapTile.setPositionInTilemap(ID, x, y, centerTile);
-        tilemapTile.setDistanceFromCenter(this);
-        updateTilemapTile(tilemapTile);
+        if (slot == null) {
+            TilemapTile newTile = new TilemapTile(tile);
+            newTile.setPositionInTilemap(groupID, x, y);
+            attachNeighbours(newTile);
 
-
-        if (getRelativeTile(x, y) == null) {
             if (!isTilemapInitilized) {
                 ++initTileCount;
-                if (tilemapTile.getDistanceFromCenter() > maxTileDistanceFromCenter) {
-                    maxTileDistanceFromCenter = tilemapTile.getDistanceFromCenter();
+                if (newTile.getDistanceFromCenter() > maxDistanceFromCenter) {
+                    maxDistanceFromCenter = newTile.getDistanceFromCenter();
                 }
             }
-            ++tileCount;
+
+            if (tile.getTileType() == TileType.REGULAR) {
+                ++colorsAvailable[tile.getID()];
+            }
+
+            tilemapTiles.add(newTile);
+        } else {
+            throw new RuntimeException("I was too bored to implement but looks like I have to..");
         }
+    }
 
-        tilemapTileList[centerTile + y][centerTile + x] = tilemapTile;
-
-        if (tile.getID() < 8) {
-            ++colorsAvailable[tile.getID()];
+    public void attachTile(TilemapTile tmTile, Tile tile, Side side) {
+        Coords2D coords = tmTile.getCoords();
+        if (tmTile.getNeighbour(side) == null) {
+            switch (side) {
+                case TOP_RIGHT:
+                    putTilemapTile(coords.x, coords.y + 1, tile);
+                    break;
+                case TOP_LEFT:
+                    putTilemapTile(coords.x - 1, coords.y + 1, tile);
+                    break;
+                case RIGHT:
+                    putTilemapTile(coords.x + 1, coords.y, tile);
+                    break;
+                case LEFT:
+                    putTilemapTile(coords.x - 1, coords.y, tile);
+                    break;
+                case BOTTOM_LEFT:
+                    putTilemapTile(coords.x, coords.y - 1, tile);
+                    break;
+                case BOTTOM_RIGHT:
+                    putTilemapTile(coords.x + 1, coords.y - 1, tile);
+                    break;
+            }
+        } else {
+            throw new RuntimeException("PFFF... JUST HOW?!");
         }
     }
 
@@ -211,18 +202,13 @@ public class Tilemap extends Observable {
         return Math.max(x, Math.max(y, Math.abs(dx + dy)));
     }
 
-    public void setRotation(float deg) {
-        rotation = deg;
+    private void updateRotation(float deg) {
         float rotRad = (float) Math.toRadians(deg);
         cos = (float) Math.cos(rotRad);
         sin = (float) Math.sin(rotRad);
 
-        for (TilemapTile[] arr : tilemapTileList) {
-            for (TilemapTile hex : arr) {
-                if (hex != null) {
-                    updateTilemapTile(hex);
-                }
-            }
+        for (TilemapTile tmTile : tilemapTiles) {
+            updateTilemapTile(tmTile);
         }
     }
 
@@ -230,21 +216,13 @@ public class Tilemap extends Observable {
         isTilemapInitilized = true;
     }
 
-    public void destroyAbsoluteTile(int x, int y) {
-        if (indexSafeGuard(x, y)) return;
+    public void destroyTilemapTile(int x, int y) {
+        TilemapTile tmTile = getTilemapTile(x, y);
+        if (tmTile == null) return;
 
-        destroyRelativeTile(x - centerTile, y - centerTile);
-    }
-
-    public void destroyRelativeTile(int x, int y) {
-        if (indexSafeGuard(centerTile + x, centerTile + y)) return;
-
-        TilemapTile t = getRelativeTile(x, y);
-        if (t == null) return;
-        notifyObservers(NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED, t);
-        t.clear();
-        emptyRelativeTile(x, y);
-        --tileCount;
+        notifyObservers(NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED, tmTile);
+        tmTile.clear();
+        tilemapTiles.remove(tmTile);
         hadTilesDestroyed = true;
     }
 
@@ -253,18 +231,16 @@ public class Tilemap extends Observable {
             rotation -= deg;
         else
             rotation += deg;
-        setRotation(rotation);
+        updateRotation(rotation);
     }
 
     public void reset() {
-        for (int y = 0; y < tilesPerSide; ++y) {
-            for (int x = 0; x < tilesPerSide; ++x) {
-                TilemapTile t = getAbsoluteTile(x, y);
-                if (t == null) continue;
-                t.clear();
-                emptyAbsoluteTile(x, y);
-                --tileCount;
-            }
+        Iterator<TilemapTile> iter = tilemapTiles.iterator();
+        while (iter.hasNext()) {
+            TilemapTile t = iter.next();
+            if (t == null) continue;
+            t.clear();
+            iter.remove();
         }
 
         for (int i = 0; i < colorsAvailable.length; ++i) {
@@ -273,11 +249,10 @@ public class Tilemap extends Observable {
 
         minRotationSpeed = 0;
         maxRotationSpeed = 0;
-        maxTileDistanceFromCenter = 0;
+        maxDistanceFromCenter = 0;
         isTilemapInitilized = false;
         speedDiff = 0;
         initTileCount = 0;
-        tileCount = 0;
         rotation = 0;
         cos = 1;
         sin = 0;
@@ -286,17 +261,12 @@ public class Tilemap extends Observable {
     public void update(float delta) {
         hadTilesDestroyed = false;
         if (autoRotationEnabled) {
-            rotate(MathUtils.clamp(maxRotationSpeed - speedDiff * ((float) tileCount / initTileCount), minRotationSpeed, maxRotationSpeed) * delta);
+            rotate(MathUtils.clamp(maxRotationSpeed - speedDiff * ((float) tilemapTiles.size() / initTileCount), minRotationSpeed, maxRotationSpeed) * delta);
         }
     }
 
     public boolean hadTilesDestroyed() {
         return hadTilesDestroyed;
-    }
-
-    private boolean indexSafeGuard(int x, int y) {
-        return x < 0 || x >= tilesPerSide ||
-                y < 0 || y >= tilesPerSide;
     }
 
     private int roundClosestInt(float n) {
@@ -305,8 +275,27 @@ public class Tilemap extends Observable {
         return (int) Math.ceil(n - .5f);
     }
 
-    private void updateTilemapTile(TilemapTile hex) {
-        Coords2D tilePos = hex.getRelativePosition();
+    private void attachNeighbours(TilemapTile tmTile) {
+        Coords2D coord = tmTile.getCoords();
+
+        attachNeighbourFor(tmTile, Side.TOP_LEFT, coord.x - 1, coord.y + 1);
+        attachNeighbourFor(tmTile, Side.TOP_RIGHT, coord.x, coord.y + 1);
+        attachNeighbourFor(tmTile, Side.RIGHT, coord.x + 1, coord.y);
+        attachNeighbourFor(tmTile, Side.BOTTOM_RIGHT, coord.x + 1, coord.y - 1);
+        attachNeighbourFor(tmTile, Side.BOTTOM_LEFT, coord.x, coord.y - 1);
+        attachNeighbourFor(tmTile, Side.LEFT, coord.x - 1, coord.y);
+    }
+
+    private void attachNeighbourFor(TilemapTile tmTile, Side side, int x, int y) {
+        TilemapTile neighbour = getTilemapTile(x, y);
+        if (neighbour != null) {
+            neighbour.setNeighbour(getOppositeSide(side), tmTile);
+        }
+        tmTile.setNeighbour(side, neighbour);
+    }
+
+    private void updateTilemapTile(TilemapTile tmTile) {
+        Coords2D tilePos = tmTile.getCoords();
         float x = tilePos.x;
         float y = tilePos.y;
 
@@ -323,15 +312,7 @@ public class Tilemap extends Observable {
                 (x * tileXDistance + y * tileXDistanceHalf) * -sin +
                 (y * tileYDistance) * cos;
 
-        hex.setPositionInWorld(X_world, Y_world);
-    }
-
-    private void emptyRelativeTile(int x, int y) {
-        tilemapTileList[y + centerTile][x + centerTile] = null;
-    }
-
-    private void emptyAbsoluteTile(int x, int y) {
-        tilemapTileList[y][x] = null;
+        tmTile.setPositionInWorld(X_world, Y_world);
     }
 
     private class WorldToTilemap {

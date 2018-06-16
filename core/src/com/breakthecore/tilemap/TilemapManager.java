@@ -6,16 +6,16 @@ import com.breakthecore.Match3;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observable;
 import com.breakthecore.Observer;
-import com.breakthecore.Pathfinder;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.managers.CollisionDetector;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.tiles.Tile;
-import com.breakthecore.tiles.TileContainer;
+import com.breakthecore.tiles.TileContainer.Side;
 import com.breakthecore.tiles.TileFactory;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -47,7 +47,7 @@ public class TilemapManager extends Observable implements Observer {
     @Deprecated
     private int tilemapCount;
 
-    private Pathfinder pathfinder = new Pathfinder(30);
+    private TilemapPathfinder pathfinder = new TilemapPathfinder();
     private TilemapBuilder tilemapBuilder = new TilemapBuilder();
     private Match3 match3 = new Match3();
     private int[] colorsAvailable = new int[10]; // XXX(22/4/2018): MagicValue 10
@@ -63,10 +63,10 @@ public class TilemapManager extends Observable implements Observer {
 
     public TilemapTile getTilemapTile(int layer, int x, int y) {
         assertLayerIndex(layer);
-        return tilemap[layer].getRelativeTile(x, y);
+        return tilemap[layer].getTilemapTile(x, y);
     }
 
-    public TilemapTile[] getTileList(int layer) {
+    public List<TilemapTile> getTileList(int layer) {
         return tilemap[layer].getTileList();
     }
 
@@ -109,7 +109,7 @@ public class TilemapManager extends Observable implements Observer {
 
     public boolean isTileEmpty(int layer, int x, int y) {
         assertLayerIndex(layer);
-        return tilemap[layer].getRelativeTile(x, y) == null;
+        return tilemap[layer].getTilemapTile(x, y) == null;
     }
 
     public Coords2D getTilemapPosition() {
@@ -145,23 +145,23 @@ public class TilemapManager extends Observable implements Observer {
 
     public void placeTile(int layer, int x, int y, int tileID) {
         assertLayerIndex(layer);
-        tilemap[layer].setRelativeTile(x, y, TileFactory.getTileFromID(tileID));
+        tilemap[layer].putTilemapTile(x, y, TileFactory.getTileFromID(tileID));
     }
 
     public void removeTile(int layer, int x, int y) {
         assertLayerIndex(layer);
-        tilemap[layer].destroyRelativeTile(x, y);
+        tilemap[layer].destroyTilemapTile(x, y);
     }
 
     public int getCenterTileID() {
-        return tilemap[0].getRelativeTile(0, 0).getTileID();
+        return tilemap[0].getTilemapTile(0, 0).getTileID();
     }
 
     public TilemapTile attachBall(MovingBall ball, TilemapTile tileHit, CollisionDetector collisionDetector) {
-        Tilemap layer = tilemap[tileHit.getTilemapId()];
-        TileContainer.Side[] sides = collisionDetector.getClosestSides(layer.getCos(), layer.getSin(), collisionDetector.getDirection(ball.getPositionInWorld(), tileHit.getPositionInWorld()));
+        Tilemap layer = tilemap[tileHit.getGroupId()];
+        Side[] sides = collisionDetector.getClosestSides(layer.getCos(), layer.getSin(), collisionDetector.getDirection(ball.getPositionInWorld(), tileHit.getPositionInWorld()));
 
-        return attachTile(tileHit.getTilemapId(), ball.extractTile(), tileHit, sides);
+        return attachTile(tileHit.getGroupId(), ball.extractTile(), tileHit, sides);
     }
 
 
@@ -172,67 +172,20 @@ public class TilemapManager extends Observable implements Observer {
      *
      * @returns Returns whether it placed the tile.
      */
-    private TilemapTile attachTile(int layer, Tile tile, TilemapTile tileHit, TileContainer.Side[] listSides) {
-        TilemapTile placedTile = null;
-        for (int i = 0; i < 6; ++i) {
-            placedTile = attachTile(layer, tile, tileHit, listSides[i]);
-            if (placedTile == null) continue;
-            break;
+    private TilemapTile attachTile(int layer, Tile tile, TilemapTile tileHit, Side[] listSides) {
+        for (Side side : listSides) {
+            if (tileHit.getNeighbour(side) == null) {
+                tilemap[layer].attachTile(tileHit, tile, side);
+                return tileHit.getNeighbour(side);
+            }
         }
-        return placedTile;
-    }
-
-    private TilemapTile attachTile(int layer, Tile tile, TilemapTile tileHit, TileContainer.Side side) {
-        Tilemap tm = tilemap[layer];
-        Coords2D tileHitPos = tileHit.getRelativePosition();
-        TilemapTile createdTilemapTile = null;
-
-        switch (side) {
-            case TOP_RIGHT:
-                if (tm.getRelativeTile(tileHitPos.x, tileHitPos.y + 1) == null) {
-                    tm.setRelativeTile(tileHitPos.x, tileHitPos.y + 1, tile);
-                    createdTilemapTile = tm.getRelativeTile(tileHitPos.x, tileHitPos.y + 1);
-                }
-                break;
-            case TOP_LEFT:
-                if (tm.getRelativeTile(tileHitPos.x - 1, tileHitPos.y + 1) == null) {
-                    tm.setRelativeTile(tileHitPos.x - 1, tileHitPos.y + 1, tile);
-                    createdTilemapTile = tm.getRelativeTile(tileHitPos.x - 1, tileHitPos.y + 1);
-                }
-                break;
-            case RIGHT:
-                if (tm.getRelativeTile(tileHitPos.x + 1, tileHitPos.y) == null) {
-                    tm.setRelativeTile(tileHitPos.x + 1, tileHitPos.y, tile);
-                    createdTilemapTile = tm.getRelativeTile(tileHitPos.x + 1, tileHitPos.y);
-                }
-                break;
-            case LEFT:
-                if (tm.getRelativeTile(tileHitPos.x - 1, tileHitPos.y) == null) {
-                    tm.setRelativeTile(tileHitPos.x - 1, tileHitPos.y, tile);
-                    createdTilemapTile = tm.getRelativeTile(tileHitPos.x - 1, tileHitPos.y);
-                }
-                break;
-            case BOTTOM_LEFT:
-                if (tm.getRelativeTile(tileHitPos.x, tileHitPos.y - 1) == null) {
-                    tm.setRelativeTile(tileHitPos.x, tileHitPos.y - 1, tile);
-                    createdTilemapTile = tm.getRelativeTile(tileHitPos.x, tileHitPos.y - 1);
-                }
-                break;
-            case BOTTOM_RIGHT:
-                if (tm.getRelativeTile(tileHitPos.x + 1, tileHitPos.y - 1) == null) {
-                    tm.setRelativeTile(tileHitPos.x + 1, tileHitPos.y - 1, tile);
-                    createdTilemapTile = tm.getRelativeTile(tileHitPos.x + 1, tileHitPos.y - 1);
-                }
-                break;
-        }
-
-        return createdTilemapTile;
+        throw new RuntimeException("No empty side on collided tile");
     }
 
     public void handleColorMatchesFor(TilemapTile newTile) {
         Objects.requireNonNull(newTile);
-        Tilemap tm = tilemap[newTile.getTilemapId()];
-        ArrayList<TilemapTile> match = match3.getColorMatchesFromTile(newTile, tm);
+        Tilemap tm = tilemap[newTile.getGroupId()];
+        ArrayList<TilemapTile> match = match3.getColorMatchesFromTile(newTile);
 
         if (match.size() < 3) {
             if (match.size() == 1) {
@@ -241,18 +194,13 @@ public class TilemapManager extends Observable implements Observer {
             return;
         }
 
-        boolean centerTileDestroyed = false;
-        for (TilemapTile t : match) {
-            Coords2D pos = t.getRelativePosition();
+        List<TilemapTile> disconnected = pathfinder.getDisconnectedTiles(match);
+        for (TilemapTile t : disconnected) {
+            Coords2D pos = t.getCoords();
             if (pos.x == 0 && pos.y == 0) {
                 notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
-                centerTileDestroyed = true;
             }
-            tm.destroyRelativeTile(pos.x, pos.y);
-        }
-
-        if (!centerTileDestroyed) {
-            removeDisconnectedTiles();
+            tm.destroyTilemapTile(pos.x, pos.y);
         }
 
         notifyObservers(NotificationType.SAME_COLOR_MATCH, match.size());
@@ -313,24 +261,4 @@ public class TilemapManager extends Observable implements Observer {
         tilemap[layer].rotate(degrees);
     }
 
-    /**
-     * Destroys tiles that are not connected to the center tile.
-     * This check is only done on the 0 layer cause that is the only one that requires tiles to be connected to the center tile.
-     */
-    private void removeDisconnectedTiles() {
-        TilemapTile tilemapTile;
-        Tilemap tm = tilemap[0];
-        for (int y = 0; y < tm.getTilemapSize(); ++y) {
-            for (int x = 0; x < tm.getTilemapSize(); ++x) {
-                tilemapTile = tm.getAbsoluteTile(x, y);
-                if (tilemapTile != null) {
-                    if (!tilemapTile.getTile().isBreakable()) continue; //skip unbreakable
-                    if (pathfinder.getPathToCenter(tilemapTile, tm) == null) {
-                        // TODO(13/4/2018): I should put TilemapTiles in an Object pool
-                        tm.destroyAbsoluteTile(x, y);
-                    }
-                }
-            }
-        }
-    }
 }

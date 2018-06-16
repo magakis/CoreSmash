@@ -1,7 +1,6 @@
 package com.breakthecore.tiles;
 
 import com.badlogic.gdx.math.Vector2;
-import com.breakthecore.Observable;
 
 /**
  * Created by Michail on 18/3/2018.
@@ -52,6 +51,25 @@ public abstract class TileContainer {
     public int getTileID() {
         if (tile == null) throw new NullPointerException();
         return tile.getID();
+    }
+
+    public static Side getOppositeSide(Side side) {
+        switch (side) {
+            case BOTTOM_RIGHT:
+                return Side.TOP_LEFT;
+            case BOTTOM_LEFT:
+                return Side.TOP_RIGHT;
+            case LEFT:
+                return Side.RIGHT;
+            case TOP_LEFT:
+                return Side.BOTTOM_RIGHT;
+            case TOP_RIGHT:
+                return Side.BOTTOM_LEFT;
+            case RIGHT:
+                return Side.LEFT;
+            default:
+                throw new RuntimeException("Wrong side?(" + side + ")");
+        }
     }
 
     public enum Side {BOTTOM_RIGHT, BOTTOM_LEFT, LEFT, TOP_LEFT, TOP_RIGHT, RIGHT}

@@ -616,9 +616,9 @@ public class TilemapBuilder {
             for (BlueprintTile tile : arr) {
                 if (tile == null) continue;
                 if (debugEnabled && tile.ID == randomTileID)
-                    tilemap.setRelativeTile(tile.x, tile.y, TileFactory.getTileFromID(randomTileID));
+                    tilemap.putTilemapTile(tile.x, tile.y, TileFactory.getTileFromID(randomTileID));
                 else
-                    tilemap.setRelativeTile(tile.x, tile.y, TileFactory.getTileFromID(tile.ID));
+                    tilemap.putTilemapTile(tile.x, tile.y, TileFactory.getTileFromID(tile.ID));
             }
         }
 

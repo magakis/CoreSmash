@@ -13,7 +13,7 @@ public class BombTile extends Tile {
 
     @Override
     public void onCollide(MovingBall movingBall, TilemapTile tileHit, GameController.BehaviourPowerPack pack) {
-        Coords2D posT = tileHit.getRelativePosition();
+        Coords2D posT = tileHit.getCoords();
 
         int collidedTileX = posT.x;
         int collidedTileY = posT.y;
@@ -21,7 +21,7 @@ public class BombTile extends Tile {
         for (int y = collidedTileY - 2; y < collidedTileY + 3; ++y) {
             for (int x = collidedTileX - 2; x < collidedTileX + 3; ++x) {
                 if (Tilemap.getTileDistance(x, y, collidedTileX, collidedTileY) < 2) {
-                    pack.tilemapManager.removeTile(tileHit.getTilemapId(), x, y);
+                    pack.tilemapManager.removeTile(tileHit.getGroupId(), x, y);
                 }
             }
         }
