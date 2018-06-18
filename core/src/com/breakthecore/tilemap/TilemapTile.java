@@ -10,14 +10,20 @@ public class TilemapTile extends TileContainer implements Comparable<TilemapTile
     private int distanceFromCenter;
     private int groupID;
 
+    // PUBLIC
+
     public TilemapTile(Tile tile) {
         setTile(tile);
         coords = new Coords2D();
         neighbourTiles = new NeighbourTiles();
     }
 
-    public Coords2D getCoords() {
-        return coords;
+    public int getX() {
+        return coords.x;
+    }
+
+    public int getY() {
+        return coords.y;
     }
 
     public int getGroupId() {
@@ -26,29 +32,6 @@ public class TilemapTile extends TileContainer implements Comparable<TilemapTile
 
     public int getDistanceFromCenter() {
         return distanceFromCenter;
-    }
-
-    public void setNeighbour(TileContainer.Side side, TilemapTile neighbour) {
-        switch (side) {
-            case BOTTOM_RIGHT:
-                neighbourTiles.bottomRight = neighbour;
-                break;
-            case BOTTOM_LEFT:
-                neighbourTiles.bottomLeft = neighbour;
-                break;
-            case LEFT:
-                neighbourTiles.left = neighbour;
-                break;
-            case TOP_LEFT:
-                neighbourTiles.topLeft = neighbour;
-                break;
-            case TOP_RIGHT:
-                neighbourTiles.topRight = neighbour;
-                break;
-            case RIGHT:
-                neighbourTiles.right = neighbour;
-                break;
-        }
     }
 
     public TilemapTile getNeighbour(TileContainer.Side side) {
@@ -76,11 +59,16 @@ public class TilemapTile extends TileContainer implements Comparable<TilemapTile
         distanceFromCenter = Tilemap.getTileDistance(coords.x, coords.y, 0, 0);
     }
 
-    public void setPositionInTilemap(int tilemapID, int x, int y) {
-        coords.set(x, y);
-        groupID = tilemapID;
-        distanceFromCenter = Tilemap.getTileDistance(coords.x, coords.y, 0, 0);
+    /**
+     * Compares first their X values and if found equal compares their Y values
+     */
+    @Override
+    public int compareTo(TilemapTile tilemapTile) {
+        int result = Integer.compare(coords.x, tilemapTile.coords.x);
+        return result == 0 ? Integer.compare(coords.y, tilemapTile.coords.y) : result;
     }
+
+    // PRIVATE
 
     private void detachNeighbours() {
         clearNeighbour(Side.TOP_LEFT);
@@ -99,20 +87,44 @@ public class TilemapTile extends TileContainer implements Comparable<TilemapTile
         setNeighbour(side, null);
     }
 
+    // PROTECTED
 
-    public void clear() {
+    void setPositionInTilemap(int tilemapID, int x, int y) {
+        coords.set(x, y);
+        groupID = tilemapID;
+        distanceFromCenter = Tilemap.getTileDistance(coords.x, coords.y, 0, 0);
+    }
+
+    void setNeighbour(TileContainer.Side side, TilemapTile neighbour) {
+        switch (side) {
+            case BOTTOM_RIGHT:
+                neighbourTiles.bottomRight = neighbour;
+                break;
+            case BOTTOM_LEFT:
+                neighbourTiles.bottomLeft = neighbour;
+                break;
+            case LEFT:
+                neighbourTiles.left = neighbour;
+                break;
+            case TOP_LEFT:
+                neighbourTiles.topLeft = neighbour;
+                break;
+            case TOP_RIGHT:
+                neighbourTiles.topRight = neighbour;
+                break;
+            case RIGHT:
+                neighbourTiles.right = neighbour;
+                break;
+        }
+    }
+
+    void clear() {
         coords.set(999, 999);
         detachNeighbours();
     }
 
-    @Override
-    /** Compares first their X values and if found equal compares their Y values */
-    public int compareTo(TilemapTile tilemapTile) {
-        int result = Integer.compare(coords.x, tilemapTile.coords.x);
-        return result == 0 ? Integer.compare(coords.y, tilemapTile.coords.y) : result;
-    }
-
     private static class NeighbourTiles {
+
         TilemapTile left;
         TilemapTile topLeft;
         TilemapTile topRight;

@@ -119,7 +119,6 @@ public class LevelBuilderScreen extends ScreenBase {
     @Override
     public void render(float delta) {
         draw();
-
         stage.act();
         stage.draw();
     }
@@ -302,7 +301,6 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 }
             };
-
 
             testLevel = new Level() {
                 @Override

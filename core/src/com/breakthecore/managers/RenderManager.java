@@ -34,8 +34,6 @@ public class RenderManager {
     private final float sideLengthHalf = sideLength / 2.f;
     private AbstractTheme theme;
 
-    private BitmapFont defaultFont;
-
     public RenderManager(AssetManager am) {
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
@@ -49,7 +47,6 @@ public class RenderManager {
 
         am.load("gidole_96.fnt", BitmapFont.class);
         am.finishLoading();
-        defaultFont = assetManager.get("gidole_96.fnt", BitmapFont.class);
     }
 
     public void start(Matrix4 combined) {

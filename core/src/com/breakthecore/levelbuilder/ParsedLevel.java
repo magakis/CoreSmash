@@ -1,31 +1,36 @@
 package com.breakthecore.levelbuilder;
 
-import com.breakthecore.tilemap.TilemapManager;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class ParsedLevel {
     LevelSettings levelSettings;
-    MapSettings mapSettings[];
-    List<ParsedTile>[] mapTiles;
+    List<MapSettings> mapSettings;
+    List<List<ParsedTile>> mapTiles;
+    int mapCount;
 
     ParsedLevel() {
         levelSettings = new LevelSettings();
-        mapSettings = new MapSettings[TilemapManager.MAX_TILEMAP_COUNT];
-        mapTiles = new List[TilemapManager.MAX_TILEMAP_COUNT];
-
-        for (int i = 0; i < mapSettings.length; ++i) {
-            mapSettings[i] = new MapSettings();
-        }
-        for (int i = 0; i < mapTiles.length; ++i) {
-            mapTiles[i] = new ArrayList<>();
-        }
+        mapSettings = new ArrayList<>();
+        mapTiles = new ArrayList<>();
     }
 
-    public LevelSettings getLevelSettings() {return levelSettings;}
-    public MapSettings getMapSettings(int layer) {return mapSettings[layer];}
-    public List<ParsedTile> getTiles(int layer) {return mapTiles[layer];}
+    public int getMapCount() {
+        return mapSettings.size();
+    }
+
+    public LevelSettings getLevelSettings() {
+        return levelSettings;
+    }
+
+    public MapSettings getMapSettings(int layer) {
+        if (layer >= mapSettings.size()) throw new RuntimeException();
+        return mapSettings.get(layer);
+    }
+
+    public List<ParsedTile> getTiles(int layer) {
+        return mapTiles.get(layer);
+    }
 
     void reset() {
         levelSettings.ballSpeed = 0;

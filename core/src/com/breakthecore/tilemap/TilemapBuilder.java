@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Random;
 
 public class TilemapBuilder {
+    private final TilemapBuilderInfo builderInfo = new TilemapBuilderInfo();
     private final int maxColorCount = 16;// XXX(4/5/2018): MAGIC VALUE 16
     private final int blueprintSize = 30;// XXX(4/5/2018): MAGIC VALUE 30
     private final int centerTile = blueprintSize / 2;
@@ -36,11 +37,8 @@ public class TilemapBuilder {
     private BlueprintTile[][] blueprintMap;
     private Matcher matcher;
 
-    private boolean balanceColorAmountsFilter;
-    private boolean reduceColorMatchesFilter;
-    private boolean reduceCenterTileMatchesFilter;
-    private boolean balanceColorsOnEachRadius;
 
+    private boolean isChained;
     private int minRotSpeed;
     private int maxRotSpeed;
     private boolean isRotating;
@@ -100,6 +98,11 @@ public class TilemapBuilder {
         reset();
         tm.reset();
         tilemap = tm;
+    }
+
+    public TilemapBuilder setChained(boolean chained) {
+        isChained = chained;
+        return this;
     }
 
     public TilemapBuilder placeMiddleTile() {
@@ -622,11 +625,7 @@ public class TilemapBuilder {
             }
         }
 
-        tilemap.setMinMaxSpeed(minRotSpeed, maxRotSpeed);
-        tilemap.setAutoRotation(isRotating);
-        tilemap.setCounterClockwiseRotation(rotateCounterClockwise);
-
-        tilemap.initialized();
+        tilemap.initialize(builderInfo);
         isBuilt = true;
     }
 
@@ -717,6 +716,7 @@ public class TilemapBuilder {
         fixedTilesArray.clear();
         tilemap = null;
         isBuilt = false;
+        isChained = false;
         colorCount = 0;
         maxDistance = 0;
         maxMatchCount = 0;
@@ -859,4 +859,28 @@ public class TilemapBuilder {
                 y >= 0 && y < blueprintSize;
     }
 
+    public class TilemapBuilderInfo {
+        private TilemapBuilderInfo() {
+        }
+
+        public int getMaxRotSpeed() {
+            return maxRotSpeed;
+        }
+
+        public int getMinRotSpeed() {
+            return minRotSpeed;
+        }
+
+        public boolean isChained() {
+            return isChained;
+        }
+
+        public boolean isRotating() {
+            return isRotating;
+        }
+
+        public boolean isRotatingCCW() {
+            return rotateCounterClockwise;
+        }
+    }
 }

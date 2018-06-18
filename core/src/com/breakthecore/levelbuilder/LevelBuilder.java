@@ -7,13 +7,16 @@ import com.breakthecore.Coords2D;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.tilemap.TilemapManager;
 
+import java.util.ArrayList;
+import java.util.List;
+
 final public class LevelBuilder {
     private OrthographicCamera camera;
     private ScreenToWorld screenToWorld;
     private TilemapManager tilemapManager;
 
     private LevelSettings levelSettings;
-    private MapSettings mapSettings[];
+    private List<MapSettings> mapSettings;
 
     private int layer;
     private int tileID;
@@ -25,10 +28,10 @@ final public class LevelBuilder {
         this.tilemapManager = tilemapManager;
         screenToWorld = new ScreenToWorld();
         levelSettings = new LevelSettings();
-        mapSettings = new MapSettings[tilemapManager.getMaxTilemapCount()];
-        for(int i = 0; i < mapSettings.length; ++i) {
-            mapSettings[i] = new MapSettings();
-        }
+        mapSettings = new ArrayList<MapSettings>();
+
+        tilemapManager.newLayer();
+        mapSettings.add(new MapSettings());
     }
 
     public void setTileID(int id) {
@@ -43,15 +46,15 @@ final public class LevelBuilder {
      * Draws at the given screen coordinates
      */
     public void paintAt(float x, float y) {
-        Coords2D relative = tilemapManager.getWorldToLayerCoords(layer, screenToWorld.convert(x, y));
-        if (tilemapManager.isTileEmpty(layer, relative.x, relative.y)) {
-            tilemapManager.placeTile(layer, relative.x, relative.y, tileID);
+        Vector3 relative = tilemapManager.getWorldToLayerCoords(layer, screenToWorld.convert(x, y));
+        if (tilemapManager.isTileEmpty(layer, (int) relative.x, (int) relative.y)) {
+            tilemapManager.placeTile(layer, (int) relative.x, (int) relative.y, tileID);
         }
     }
 
     public void eraseAt(float x, float y) {
-        Coords2D relative = tilemapManager.getWorldToLayerCoords(layer, screenToWorld.convert(x, y));
-        tilemapManager.removeTile(layer, relative.x, relative.y);
+        Vector3 relative = tilemapManager.getWorldToLayerCoords(layer, screenToWorld.convert(x, y));
+        tilemapManager.removeTile(layer, (int) relative.x, (int) relative.y);
     }
 
     public void setLayerIndicator(boolean enabled) {
@@ -59,19 +62,19 @@ final public class LevelBuilder {
     }
 
     public void setCCWRotation (boolean ccw) {
-        mapSettings[layer].rotateCCW = ccw;
+        mapSettings.get(layer).rotateCCW = ccw;
     }
 
     public void setMinSpeed(int min) {
-        mapSettings[layer].minSpeed = min;
+        mapSettings.get(layer).minSpeed = min;
     }
 
     public void setMaxSpeed(int max) {
-        mapSettings[layer].maxSpeed = max;
+        mapSettings.get(layer).maxSpeed = max;
     }
 
     public void setColorCount(int amount) {
-        mapSettings[layer].colorCount = amount;
+        mapSettings.get(layer).colorCount = amount;
     }
 
     public void setLives(int lives) {
@@ -123,19 +126,19 @@ final public class LevelBuilder {
     }
 
     public int getMinSpeed() {
-        return mapSettings[layer].minSpeed;
+        return mapSettings.get(layer).minSpeed;
     }
 
     public int getMaxSpeed() {
-        return mapSettings[layer].maxSpeed;
+        return mapSettings.get(layer).maxSpeed;
     }
 
     public int getColorCount() {
-        return mapSettings[layer].colorCount;
+        return mapSettings.get(layer).colorCount;
     }
 
     public boolean isCCWRotationEnabled() {
-        return mapSettings[layer].rotateCCW;
+        return mapSettings.get(layer).rotateCCW;
     }
 
     public Coords2D getLayerPosition() {
@@ -144,7 +147,7 @@ final public class LevelBuilder {
 
     public void draw(RenderManager renderManager) {
         if (layerIndicatorEnabled) {
-            int maxTilemaps = tilemapManager.getMaxTilemapCount();
+            int maxTilemaps = tilemapManager.getTilemapCount();
             renderManager.setColorTint(Color.DARK_GRAY);
             for (int i = 0; i < maxTilemaps; ++i) {
                 if (i == layer) continue;
@@ -158,7 +161,8 @@ final public class LevelBuilder {
     }
 
     public boolean saveAs(String name) {
-        return LevelParser.saveAs(name, tilemapManager, levelSettings, mapSettings);
+        // XXX(16/6/2018): Fix this array shit
+        return LevelParser.saveAs(name, tilemapManager, levelSettings, mapSettings.toArray(new MapSettings[mapSettings.size()]));
     }
 
     public boolean load(String name) {
@@ -169,22 +173,34 @@ final public class LevelBuilder {
 
         levelSettings.copy(parsedLevel.levelSettings);
 
-        for (int i = 0; i < mapSettings.length; ++i) {
-            mapSettings[i].copy(parsedLevel.mapSettings[i]);
+        for (int i = 0; i < parsedLevel.getMapCount(); ++i) {
+            if (i < mapSettings.size()) {
+                mapSettings.get(i).copy(parsedLevel.mapSettings.get(i));
+            } else {
+                MapSettings ms = new MapSettings();
+                ms.copy(parsedLevel.mapSettings.get(i));
+                mapSettings.add(ms);
+            }
         }
 
-        for (int layer = 0; layer < parsedLevel.mapTiles.length; ++layer) {
-            for (ParsedTile tile : parsedLevel.mapTiles[layer]) {
+        for (int layer = 0; layer < parsedLevel.getMapCount(); ++layer) {
+            if (!tilemapManager.layerExists(layer)) {
+                tilemapManager.newLayer();
+            }
+            for (ParsedTile tile : parsedLevel.mapTiles.get(layer)) {
                 tilemapManager.placeTile(layer, tile.x, tile.y, tile.tileID);
             }
         }
+
 
         return true;
     }
 
     public int upLayer() {
-        if (layer != tilemapManager.getMaxTilemapCount() - 1) {
-            ++layer;
+        ++layer;
+        if (!tilemapManager.layerExists(layer)) {
+            tilemapManager.newLayer();
+            mapSettings.add(new MapSettings());
         }
         return layer;
     }

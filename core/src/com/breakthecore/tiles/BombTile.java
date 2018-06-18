@@ -1,6 +1,5 @@
 package com.breakthecore.tiles;
 
-import com.breakthecore.Coords2D;
 import com.breakthecore.GameController;
 import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.tilemap.TilemapTile;
@@ -13,10 +12,8 @@ public class BombTile extends Tile {
 
     @Override
     public void onCollide(MovingBall movingBall, TilemapTile tileHit, GameController.BehaviourPowerPack pack) {
-        Coords2D posT = tileHit.getCoords();
-
-        int collidedTileX = posT.x;
-        int collidedTileY = posT.y;
+        int collidedTileX = tileHit.getX();
+        int collidedTileY = tileHit.getY();
 
         for (int y = collidedTileY - 2; y < collidedTileY + 3; ++y) {
             for (int x = collidedTileX - 2; x < collidedTileX + 3; ++x) {

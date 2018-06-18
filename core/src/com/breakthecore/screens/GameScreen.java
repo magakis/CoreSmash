@@ -640,16 +640,17 @@ public class GameScreen extends ScreenBase implements Observer {
 
             movingBallManager.setDefaultBallSpeed(levelSettings.ballSpeed);
 
-            for (int i = 0; i < TilemapManager.MAX_TILEMAP_COUNT; ++i) {
+            for (int i = 0; i < parsedLevel.getMapCount(); ++i) {
                 List<ParsedTile> tileList = parsedLevel.getTiles(i);
                 MapSettings settings = parsedLevel.getMapSettings(i);
 
-                if (tileList.size() == 0) break;
+                if (tileList.size() == 0) continue;
 
                 TilemapBuilder builder = tilemapManager.newLayer();
                 builder.setColorCount(settings.getColorCount())
                         .setMinMaxRotationSpeed(settings.getMinSpeed(), settings.getMaxSpeed(), settings.isRotateCCW())
                         .populateFrom(tileList)
+                        .setChained(i == 0)
                         .build();
             }
 

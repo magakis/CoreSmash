@@ -3,7 +3,6 @@ package com.breakthecore.managers;
 import com.badlogic.gdx.math.Vector2;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.tilemap.Tilemap;
-import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
 import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.tiles.TileContainer;
@@ -51,8 +50,9 @@ public class CollisionDetector {
         return null;
     }
 
-    public TileContainer.Side[] getClosestSides(float cosT, float sinT, Vector2 point) {
-        float[] vertices = getVerticesOnMiddleEdges(cosT, sinT);
+    public TileContainer.Side[] getClosestSides(float rotation, Vector2 point) {
+
+        float[] vertices = getVerticesOnMiddleEdges(rotation);
         DistanceSideStruct curr;
 
         float topLeft = Vector2.dst(vertices[0], vertices[1], point.x, point.y);
@@ -94,21 +94,14 @@ public class CollisionDetector {
         return m_closestSidesOutput;
     }
 
-    public float[] getVerticesOnMiddleEdges(float cosT, float sinT) {
+    public float[] getVerticesOnMiddleEdges(float rotRad) {
+        float cosT = (float) Math.cos(rotRad);
+        float sinT = (float) Math.sin(rotRad);
+
         float[] result = new float[12];
         for (int i = 0; i < 12; i += 2) {
             result[i] = TileContainer.s_vertices[i] * cosT + TileContainer.s_vertices[i + 1] * sinT;
             result[i + 1] = TileContainer.s_vertices[i] * -sinT + TileContainer.s_vertices[i + 1] * cosT;
-        }
-        return result;
-    }
-
-    public TilemapTile checkIfBallCollides(MovingBall mb, TilemapManager tmm) {
-        TilemapTile result = null;
-        for (int i = tmm.getMaxTilemapCount() - 1; i >= 0; --i) {
-            result = findCollision(tmm.getTilemap(i), mb);
-
-            if (result != null) break;
         }
         return result;
     }

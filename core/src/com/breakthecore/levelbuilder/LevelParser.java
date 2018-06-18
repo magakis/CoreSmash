@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Pool;
 import com.breakthecore.tilemap.TilemapManager;
-import com.breakthecore.tilemap.TilemapTile;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -13,6 +12,7 @@ import org.xmlpull.v1.XmlSerializer;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,7 +47,7 @@ public final class LevelParser {
 
     public static boolean saveAs(String name, TilemapManager tilemapManager, LevelSettings levelSettings, MapSettings[] mapSettings) {
         FileHandle file = Gdx.files.external("/CoreSmash/levels/" + name + ".xml");
-        int maxTilemaps = tilemapManager.getMaxTilemapCount();
+        int maxTilemaps = tilemapManager.getTilemapCount();
         XmlSerializer serializer = XmlManager.getSerializer();
 
         try (Writer writer = file.writer(false)) {
@@ -65,24 +65,19 @@ public final class LevelParser {
             serializer.endTag(NO_NAMESPACE, TAG_LEVEL_SETTINGS);
 
             serializer.startTag(NO_NAMESPACE, TAG_MAP_SETTINGS);
+            int groupID = 0;
             for (int mapIndex = 0; mapIndex < maxTilemaps; ++mapIndex) {
-                if (tilemapManager.getTileCountFrom(mapIndex) == 0) break;
+                if (tilemapManager.getTileCountFrom(mapIndex) == 0) continue;
                 MapSettings map = mapSettings[mapIndex];
 
                 serializer.startTag(NO_NAMESPACE, TAG_MAP);
-                serializer.attribute(NO_NAMESPACE, "id", String.valueOf(mapIndex));
+                serializer.attribute(NO_NAMESPACE, "id", String.valueOf(groupID++));
                 createElement(TAG_MINSPEED, map.minSpeed);
                 createElement(TAG_MAXSPEED, map.maxSpeed);
                 createElement(TAG_ROTATECCW, map.rotateCCW);
                 createElement(TAG_COLORCOUNT, map.colorCount);
                 serializer.startTag(NO_NAMESPACE, TAG_CONTENT);
-                for (TilemapTile tile : tilemapManager.getTileList(mapIndex)) {
-                    serializer.startTag(NO_NAMESPACE, TAG_BALL);
-                    serializer.attribute(NO_NAMESPACE, "id", String.valueOf(tile.getTile().getID()));
-                    serializer.attribute(NO_NAMESPACE, "x", String.valueOf(tile.getCoords().x));
-                    serializer.attribute(NO_NAMESPACE, "y", String.valueOf(tile.getCoords().y));
-                    serializer.endTag(NO_NAMESPACE, TAG_BALL);
-                }
+                tilemapManager.serializeBalls(mapIndex, serializer, NO_NAMESPACE, TAG_BALL);
                 serializer.endTag(NO_NAMESPACE, TAG_CONTENT);
                 serializer.endTag(NO_NAMESPACE, TAG_MAP);
             }
@@ -108,9 +103,10 @@ public final class LevelParser {
             parser.setInput(reader);
             int type = parser.getEventType();
             do {
+                String name = parser.getName();
                 switch (type) {
                     case XmlPullParser.START_TAG:
-                        switch (parser.getName()) {
+                        switch (name) {
                             case TAG_LEVEL_SETTINGS:
                                 parseLevelSettings(parser);
                                 break;
@@ -120,6 +116,7 @@ public final class LevelParser {
                         }
                         break;
                     case XmlPullParser.TEXT:
+                        String dbText = parser.getText();
                         break;
                 }
                 type = parser.next();
@@ -138,8 +135,10 @@ public final class LevelParser {
         int type;
         String name;
         do {
-            type = parser.next();
-            name = parser.getName();
+            do {
+                type = parser.next();
+                name = parser.getName();
+            } while (type == XmlPullParser.TEXT);
 
             if (type == XmlPullParser.START_TAG) {
                 String text;
@@ -180,11 +179,17 @@ public final class LevelParser {
 
         int mapIndex = 0;
         do {
-            type = parser.next();
-            name = parser.getName();
+            do {
+                type = parser.next();
+                name = parser.getName();
+            } while (type == XmlPullParser.TEXT);
 
             if (type == XmlPullParser.START_TAG) {
                 if (name.equals(TAG_MAP)) {
+                    if (parsedLevel.mapSettings.size() == mapIndex) {
+                        parsedLevel.mapSettings.add(new MapSettings());
+                        parsedLevel.mapTiles.add(new ArrayList<ParsedTile>());
+                    }
                     parseMap(parser, mapIndex++);
                 }
             }
@@ -192,15 +197,18 @@ public final class LevelParser {
     }
 
     private static void parseMap(XmlPullParser parser, int index) throws IOException, XmlPullParserException {
-        if (index == parsedLevel.mapSettings.length) throw new IndexOutOfBoundsException("Index was: "+index);
+        if (index == parsedLevel.mapSettings.size())
+            throw new IndexOutOfBoundsException("Index was: " + index);
 
         int type;
         String name;
-        MapSettings map = parsedLevel.mapSettings[index];
+        MapSettings map = parsedLevel.mapSettings.get(index);
 
         do {
-            type = parser.next();
-            name = parser.getName();
+            do {
+                type = parser.next();
+                name = parser.getName();
+            } while (type == XmlPullParser.TEXT);
 
             if (type == XmlPullParser.START_TAG) {
                 String text;
@@ -222,10 +230,12 @@ public final class LevelParser {
                         map.colorCount = text.isEmpty() ? 0 : Integer.parseInt(text);
                         break;
                     case TAG_CONTENT:
-                        List<ParsedTile> tiles = parsedLevel.mapTiles[index];
+                        List<ParsedTile> tiles = parsedLevel.mapTiles.get(index);
                         do {
-                            type = parser.next();
-                            name = parser.getName();
+                            do {
+                                type = parser.next();
+                                name = parser.getName();
+                            } while (type == XmlPullParser.TEXT);
 
                             if (type == XmlPullParser.START_TAG) {
                                 if (name.equals(TAG_BALL)) {

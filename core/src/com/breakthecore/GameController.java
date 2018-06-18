@@ -31,11 +31,12 @@ public class GameController {
         behaviourPowerPack = new BehaviourPowerPack(tilemapManager,movingBallManager, collisionDetector);
     }
 
+    // XXX(18/6/2018): Take a look in at this method
     public void update(float delta) {
         List<MovingBall> activeBalls = movingBallManager.getActiveList();
 
         for (MovingBall mb : activeBalls) {
-            TilemapTile tileHit = collisionDetector.checkIfBallCollides(mb, tilemapManager);
+            TilemapTile tileHit = tilemapManager.checkForCollision(collisionDetector, mb);
             if (tileHit == null) continue;
 
             mb.getTile().onCollide(mb, tileHit, behaviourPowerPack);
