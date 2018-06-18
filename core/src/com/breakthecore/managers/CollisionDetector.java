@@ -19,7 +19,7 @@ public class CollisionDetector {
 
     public CollisionDetector() {
         direction = new Vector2();
-        m_collisionDisSide = new ArrayList<DistanceSideStruct>(6);
+        m_collisionDisSide = new ArrayList<>(6);
         for (int i = 0; i < 6; ++i) {
             m_collisionDisSide.add(new DistanceSideStruct());
         }
@@ -27,7 +27,7 @@ public class CollisionDetector {
         m_disSideComp = new Comparator<DistanceSideStruct>() {
             @Override
             public int compare(DistanceSideStruct o1, DistanceSideStruct o2) {
-                return o1.distance > o2.distance ? 1 : -1;
+                return Float.compare(o1.distance, o2.distance);
             }
         };
 

@@ -127,7 +127,7 @@ public class LevelBuilderScreen extends ScreenBase {
         renderManager.start(camera.combined);
         levelBuilder.draw(renderManager);
         renderManager.end();
-        renderManager.renderCenterDot(tilemapManager.getTilemapPosition(), camera.combined);
+        renderManager.renderCenterDot(tilemapManager.getDefTilemapPosition(), camera.combined);
     }
 
     private Stage setupStage() {

@@ -33,7 +33,6 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
     private int[] colorsAvailable;
 
     private boolean isTilemapInitilized;
-
     private boolean isChained;
     private boolean rotateCounterClockwise;
     private boolean autoRotationEnabled;
@@ -63,18 +62,6 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         origin.set(screenPos.x, screenPos.y);
     }
 
-    public int getMinRotationSpeed() {
-        return minRotationSpeed;
-    }
-
-    public int getMaxRotationSpeed() {
-        return maxRotationSpeed;
-    }
-
-    public int getGroupId() {
-        return groupID;
-    }
-
     public int getTileCount() {
         return tilemapTiles.size();
     }
@@ -85,10 +72,6 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
 
     public boolean isChained() {
         return isChained;
-    }
-
-    public boolean isCCWRotationEnabled() {
-        return rotateCounterClockwise;
     }
 
     public static int getTileDistance(int aX1, int aY1, int aX2, int aY2) {
@@ -115,7 +98,7 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
     }
 
     public List<TilemapTile> getTileList() {
-        return tilemapTiles;
+        return Collections.unmodifiableList(tilemapTiles);
     }
 
     public Vector3 getWorldToTilemapCoords(Vector3 world) {
@@ -276,7 +259,6 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
 
         }
     }
-
 
     private int roundClosestInt(float n) {
         if (n > 0)

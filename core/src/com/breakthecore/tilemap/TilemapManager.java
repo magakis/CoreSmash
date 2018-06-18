@@ -39,7 +39,7 @@ import java.util.Objects;
 public class TilemapManager extends Observable implements Observer {
     private List<Tilemap> tilemaps;
     private int activeTilemaps;
-    private final Coords2D tilemapPosition = new Coords2D(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
+    private final Coords2D defTilemapPosition;
 
     private TilemapPathfinder pathfinder = new TilemapPathfinder();
     private TilemapBuilder tilemapBuilder = new TilemapBuilder();
@@ -48,6 +48,7 @@ public class TilemapManager extends Observable implements Observer {
 
     public TilemapManager() {
         tilemaps = new ArrayList<>();
+        defTilemapPosition = new Coords2D(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
     }
 
     public TilemapTile getTilemapTile(int layer, int x, int y) {
@@ -87,8 +88,8 @@ public class TilemapManager extends Observable implements Observer {
         return tilemaps.get(layer).getTilemapTile(x, y) == null;
     }
 
-    public Coords2D getTilemapPosition() {
-        return tilemapPosition;
+    public Coords2D getDefTilemapPosition() {
+        return defTilemapPosition;
     }
 
     public TilemapTile checkForCollision(CollisionDetector detector, MovingBall mball) {
@@ -152,7 +153,6 @@ public class TilemapManager extends Observable implements Observer {
         return attachTile(tileHit.getGroupId(), ball.extractTile(), tileHit, sides);
     }
 
-
     //////////////////| GET RID OF |//////////////////
 
     /**
@@ -208,7 +208,7 @@ public class TilemapManager extends Observable implements Observer {
         if (activeTilemaps < tilemaps.size()) {
             tm = tilemaps.get(activeTilemaps++);
         } else {
-            tm = new Tilemap(activeTilemaps++, tilemapPosition);
+            tm = new Tilemap(activeTilemaps++, defTilemapPosition);
             tm.addObserver(this);
             tilemaps.add(tm);
         }

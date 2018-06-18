@@ -23,7 +23,7 @@ final public class LevelBuilder {
 
     boolean layerIndicatorEnabled = true;
 
-    public LevelBuilder(TilemapManager tilemapManager, OrthographicCamera cam) {
+    LevelBuilder(TilemapManager tilemapManager, OrthographicCamera cam) {
         camera = cam;
         this.tilemapManager = tilemapManager;
         screenToWorld = new ScreenToWorld();
@@ -142,7 +142,7 @@ final public class LevelBuilder {
     }
 
     public Coords2D getLayerPosition() {
-        return tilemapManager.getTilemapPosition(); //should return per layer
+        return tilemapManager.getDefTilemapPosition(); //should return per layer
     }
 
     public void draw(RenderManager renderManager) {

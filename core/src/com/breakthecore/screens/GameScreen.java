@@ -142,7 +142,7 @@ public class GameScreen extends ScreenBase implements Observer {
         movingBallManager.draw(renderManager);
         renderManager.end();
 
-        renderManager.renderCenterDot(tilemapManager.getTilemapPosition(), camera.combined);
+        renderManager.renderCenterDot(tilemapManager.getDefTilemapPosition(), camera.combined);
         stage.draw();
     }
 
@@ -242,7 +242,7 @@ public class GameScreen extends ScreenBase implements Observer {
         private Vector2 currPoint;
 
         public GameInputListener() {
-            tmPos = tilemapManager.getTilemapPosition();
+            tmPos = tilemapManager.getDefTilemapPosition();
             scrPos = new Vector3();
             currPoint = new Vector2();
         }
@@ -433,14 +433,13 @@ public class GameScreen extends ScreenBase implements Observer {
             tblCenter = new Table(skin);
             tblCenter.background("gameScreenTopRound");
             tblCenter.bottom();
-            tblCenter.columnDefaults(0).padRight(Value.percentHeight(.2f, lblLives));
+            tblCenter.columnDefaults(0).padRight(Value.percentHeight(.1f, lblLives));
             tblCenter.columnDefaults(1).width(lblLives.getPrefHeight() * 1.5f).right();
             tblCenter.add(imgMovesIcon).size(lblLives.getPrefHeight());
             tblCenter.add(lblMoves).left();
             tblCenter.row().padTop(Value.percentHeight(.2f, lblLives));
             tblCenter.add(imgLivesIcon).size(lblLives.getPrefHeight());
             tblCenter.add(lblLives).left();
-            tblCenter.debug();
 
             imgRound = new Image(skin, "gameScreenTopRound");
             imgRound.setScaling(Scaling.fit);
@@ -462,7 +461,6 @@ public class GameScreen extends ScreenBase implements Observer {
                     .size(lblLives.getPrefHeight() * 5);
             tblTop.add(tblScore)
                     .width(fontLayout.width);
-            tblTop.debug();
 
 
             tblPowerUps.setTouchable(Touchable.enabled);
@@ -629,7 +627,7 @@ public class GameScreen extends ScreenBase implements Observer {
         public GameScreenController loadLevelMap(String fileName) {
             ParsedLevel parsedLevel = LevelParser.loadFrom(fileName);
 
-            LevelSettings levelSettings = parsedLevel.getLevelSettings();
+            LevelSettings levelSettings = Objects.requireNonNull(parsedLevel).getLevelSettings();
             statsManager.setGameMode(GameMode.CLASSIC);
             statsManager.setLives(levelSettings.lives);
             statsManager.setMoves(levelSettings.moves);
@@ -657,5 +655,4 @@ public class GameScreen extends ScreenBase implements Observer {
             return this;
         }
     }
-
 }
