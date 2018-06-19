@@ -1,5 +1,6 @@
 package com.breakthecore.tilemap;
 
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.breakthecore.levelbuilder.ParsedTile;
@@ -38,10 +39,16 @@ public class TilemapBuilder {
     private Matcher matcher;
 
 
+    private Vector2 origin;
+    private Vector2 offset;
+
     private boolean isChained;
+    private int minMapRotationSpeed;
+    private int maxMapRotationSpeed;
+    private boolean rotateMapCounterClockwise;
+
     private int minRotSpeed;
     private int maxRotSpeed;
-    private boolean isRotating;
     private boolean rotateCounterClockwise;
 
     public TilemapBuilder() {
@@ -56,6 +63,8 @@ public class TilemapBuilder {
                 return new BlueprintTile();
             }
         };
+        origin = new Vector2();
+        offset = new Vector2();
 
         for (int i = 0; i < maxColorCount; ++i) { // XXX(4/5/2018): Magic value,
             colorGroupList[i] = new ColorGroupContainer(i);
@@ -96,7 +105,6 @@ public class TilemapBuilder {
     public void startNewTilemap(Tilemap tm) {
         if (tm == null) throw new NullPointerException();
         reset();
-        tm.reset();
         tilemap = tm;
     }
 
@@ -264,11 +272,27 @@ public class TilemapBuilder {
         return this;
     }
 
+    public TilemapBuilder setOrigin(Vector2 orig) {
+        origin.set(orig);
+        return this;
+    }
+
+    public TilemapBuilder setOffset(Vector2 offs) {
+        offset.set(offs);
+        return this;
+    }
+
     public TilemapBuilder setMinMaxRotationSpeed(int min, int max, boolean counterClockwise) {
         maxRotSpeed = max;
         minRotSpeed = min;
-        isRotating = true;
         rotateCounterClockwise = counterClockwise;
+        return this;
+    }
+
+    public TilemapBuilder setMapMinMaxRotationSpeed(int min, int max, boolean counterClockwise) {
+        maxMapRotationSpeed = max;
+        minMapRotationSpeed = min;
+        rotateMapCounterClockwise = counterClockwise;
         return this;
     }
 
@@ -713,6 +737,8 @@ public class TilemapBuilder {
             }
         }
 
+        origin.setZero();
+        offset.setZero();
         fixedTilesArray.clear();
         tilemap = null;
         isBuilt = false;
@@ -722,9 +748,11 @@ public class TilemapBuilder {
         maxMatchCount = 0;
         blueprintTileCount = 0;
         debugEnabled = false;
+        minMapRotationSpeed = 0;
+        maxMapRotationSpeed = 0;
         minRotSpeed = 0;
         maxRotSpeed = 0;
-        isRotating = false;
+        rotateMapCounterClockwise = false;
         rotateCounterClockwise = false;
     }
 
@@ -863,6 +891,30 @@ public class TilemapBuilder {
         private TilemapBuilderInfo() {
         }
 
+        public float getOriginX() {
+            return origin.x;
+        }
+
+        public float getOriginY() {
+            return origin.y;
+        }
+
+        public float getOffsetX() {
+            return offset.x;
+        }
+
+        public float getOffsetY() {
+            return offset.y;
+        }
+
+        public int getMapMaxRotSpeed() {
+            return maxMapRotationSpeed;
+        }
+
+        public int getMapMinRotSpeed() {
+            return minMapRotationSpeed;
+        }
+
         public int getMaxRotSpeed() {
             return maxRotSpeed;
         }
@@ -873,10 +925,6 @@ public class TilemapBuilder {
 
         public boolean isChained() {
             return isChained;
-        }
-
-        public boolean isRotating() {
-            return isRotating;
         }
 
         public boolean isRotatingCCW() {

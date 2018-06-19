@@ -75,7 +75,7 @@ public class TilemapManager extends Observable implements Observer {
     }
 
     public int getTilemapCount() {
-        return tilemaps.size();
+        return activeTilemaps;
     }
 
     public Vector3 getWorldToLayerCoords(int layer, Vector3 world) {
@@ -130,6 +130,41 @@ public class TilemapManager extends Observable implements Observer {
     private void assertLayerIndex(int layer) {
         if (layer < 0 || layer >= activeTilemaps)
             throw new IndexOutOfBoundsException("Layer '" + layer + "' doesn't exist");
+    }
+
+    public float getLayerPositionX(int layer) {
+        assertLayerIndex(layer);
+        return tilemaps.get(layer).getWorldPosition().x;
+    }
+
+    public float getLayerPositionY(int layer) {
+        assertLayerIndex(layer);
+        return tilemaps.get(layer).getWorldPosition().y;
+    }
+
+    public float getLayerOriginX(int layer) {
+        assertLayerIndex(layer);
+        return tilemaps.get(layer).getOrigin().x;
+    }
+
+    public float getLayerOriginY(int layer) {
+        assertLayerIndex(layer);
+        return tilemaps.get(layer).getOrigin().y;
+    }
+
+    public float getLayerOffsetX(int layer) {
+        assertLayerIndex(layer);
+        return tilemaps.get(layer).getOffset().x;
+    }
+
+    public float getLayerOffsetY(int layer) {
+        assertLayerIndex(layer);
+        return tilemaps.get(layer).getOffset().y;
+    }
+
+    public void setMapPosition(int layer, int x, int y) {
+        assertLayerIndex(layer);
+        tilemaps.get(layer).setMapPosition(x, y);
     }
 
     public void placeTile(int layer, int x, int y, int tileID) {
@@ -206,12 +241,14 @@ public class TilemapManager extends Observable implements Observer {
     public TilemapBuilder newLayer() {
         Tilemap tm;
         if (activeTilemaps < tilemaps.size()) {
-            tm = tilemaps.get(activeTilemaps++);
+            tm = tilemaps.get(activeTilemaps);
         } else {
-            tm = new Tilemap(activeTilemaps++, defTilemapPosition);
+            tm = new Tilemap(activeTilemaps, defTilemapPosition);
             tm.addObserver(this);
             tilemaps.add(tm);
         }
+
+        ++activeTilemaps;
         tilemapBuilder.startNewTilemap(tm);
         return tilemapBuilder;
     }
@@ -230,9 +267,8 @@ public class TilemapManager extends Observable implements Observer {
     }
 
     public void draw(RenderManager renderManager) {
-        for (Tilemap tilemap : tilemaps) {
-            if (tilemap.getTileCount() == 0) continue;
-            renderManager.draw(tilemap);
+        for (int i = 0; i < activeTilemaps; ++i) {
+            renderManager.draw(tilemaps.get(i));
         }
     }
 

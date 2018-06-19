@@ -19,6 +19,7 @@ import com.breakthecore.WorldSettings;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class LoadFileDialog extends Dialog {
     private final List<String> levelsFound;
@@ -119,7 +120,7 @@ public class LoadFileDialog extends Dialog {
     public Dialog show(Stage stage) {
         levelsFound.clearItems();
         String[] files = Gdx.files.external("/CoreSmash/levels/").file().list(levelBuilderFilter);
-        Arrays.sort(files);
+        Arrays.sort(Objects.requireNonNull(files));
         levelsFound.setItems(files);
         super.show(stage);
         return this;

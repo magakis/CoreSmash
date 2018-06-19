@@ -1,6 +1,7 @@
 package com.breakthecore.tilemap;
 
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.breakthecore.Coords2D;
 import com.breakthecore.NotificationType;
@@ -28,8 +29,10 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
     private int groupID;
     private int maxDistanceFromCenter;
     private List<TilemapTile> tilemapTiles;
-    private Coords2D screenPosition;
-    private Coords2D origin;
+    private Coords2D defPosition;
+    private Vector2 worldPosition;
+    private Vector2 offset;
+    private Vector2 origin;
     private int[] colorsAvailable;
 
     private boolean isTilemapInitilized;
@@ -37,6 +40,11 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
     private boolean rotateCounterClockwise;
     private boolean autoRotationEnabled;
     private float rotation;
+
+    private int minMapRotationSpeed;
+    private int maxMapRotationSpeed;
+    private float mapSpeedDiff;
+
     private int minRotationSpeed;
     private int maxRotationSpeed;
     private float speedDiff;
@@ -53,13 +61,15 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         cos = 1;
         dummyTile = new TilemapTile(null);
         tilemapTiles = new ArrayList<>();
-        origin = new Coords2D();
+        worldPosition = new Vector2();
+        origin = new Vector2();
+        offset = new Vector2();
     }
 
-    public Tilemap(int id, Coords2D screenPos) {
+    public Tilemap(int id, Coords2D defPosition) {
         this(id);
-        screenPosition = screenPos;
-        origin.set(screenPos.x, screenPos.y);
+        this.defPosition = defPosition;
+        worldPosition.set(defPosition.x, defPosition.y);
     }
 
     public int getTileCount() {
@@ -102,8 +112,8 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
     }
 
     public Vector3 getWorldToTilemapCoords(Vector3 world) {
-        world.x -= screenPosition.x;
-        world.y -= screenPosition.y;
+        world.x -= worldPosition.x;
+        world.y -= worldPosition.y;
 
         int tileSize = WorldSettings.getTileSize();
         // XXX(11/5/2018): MAGIC VALUES .8f , .95f
@@ -213,15 +223,25 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         minRotationSpeed = settings.getMinRotSpeed();
         maxRotationSpeed = settings.getMaxRotSpeed();
         speedDiff = maxRotationSpeed - minRotationSpeed;
-        autoRotationEnabled = settings.isRotating();
+        autoRotationEnabled = maxRotationSpeed != 0;
         isTilemapInitilized = true;
+        origin.set(settings.getOriginX(), settings.getOriginY());
+        offset.set(settings.getOffsetX(), settings.getOffsetY());
+        updateWorldPosition();
 
+        for (TilemapTile tmTile : tilemapTiles) {
+            updateTilemapTile(tmTile);
+        }
     }
 
     public void update(float delta) {
         if (autoRotationEnabled) {
             rotate(MathUtils.clamp(maxRotationSpeed - speedDiff * ((float) tilemapTiles.size() / initTileCount), minRotationSpeed, maxRotationSpeed) * delta);
         }
+    }
+
+    private void updateWorldPosition() {
+        worldPosition.set(defPosition.x, defPosition.y).add(origin).add(offset);
     }
 
     void reset() {
@@ -237,6 +257,10 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
             colorsAvailable[i] = 0;
         }
 
+        worldPosition.set(defPosition.x, defPosition.y);
+        origin.setZero();
+        offset.setZero();
+
         minRotationSpeed = 0;
         maxRotationSpeed = 0;
         maxDistanceFromCenter = 0;
@@ -248,6 +272,33 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         cos = 1;
         sin = 0;
     }
+
+    void setMapPosition(float x, float y) {
+        worldPosition.set(x, y);
+        offset.set(x - (defPosition.x + origin.x), y - (defPosition.y + origin.y));
+    }
+
+    Vector2 getWorldPosition() {
+        return worldPosition;
+    }
+
+    Vector2 getOffset() {
+        return offset;
+    }
+
+    Vector2 getOrigin() {
+        return origin;
+    }
+
+    //    void setOrigin(float x, float y) {
+//        origin.set(x, y);
+//        updateWorldPosition();
+//    }
+//
+//    void setOffset(float x, float y) {
+//        offset.set(x, y);
+//        updateWorldPosition();
+//    }
 
     void serializeBalls(XmlSerializer serializer, String namespace, String tagBall) throws IOException {
         for (TilemapTile tile : tilemapTiles) {
@@ -296,11 +347,11 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         float tileXDistanceHalf = tileXDistance / 2;
         float tileYDistance = tileSize * .80f;
 
-        X_world = screenPosition.x +
+        X_world = worldPosition.x +
                 (x * tileXDistance + y * tileXDistanceHalf) * cos +
                 (y * tileYDistance) * sin;
 
-        Y_world = screenPosition.y +
+        Y_world = worldPosition.y +
                 (x * tileXDistance + y * tileXDistanceHalf) * -sin +
                 (y * tileYDistance) * cos;
 

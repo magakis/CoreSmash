@@ -7,7 +7,6 @@ public class ParsedLevel {
     LevelSettings levelSettings;
     List<MapSettings> mapSettings;
     List<List<ParsedTile>> mapTiles;
-    int mapCount;
 
     ParsedLevel() {
         levelSettings = new LevelSettings();
@@ -40,10 +39,7 @@ public class ParsedLevel {
         levelSettings.launcherCooldown = 0f;
 
         for (MapSettings map : mapSettings) {
-            map.colorCount = 1;
-            map.minSpeed = 0;
-            map.maxSpeed = 0;
-            map.rotateCCW = false;
+            map.reset();
         }
 
         for (List tileList : mapTiles) {

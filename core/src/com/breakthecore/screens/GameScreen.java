@@ -433,7 +433,7 @@ public class GameScreen extends ScreenBase implements Observer {
             tblCenter = new Table(skin);
             tblCenter.background("gameScreenTopRound");
             tblCenter.bottom();
-            tblCenter.columnDefaults(0).padRight(Value.percentHeight(.1f, lblLives));
+            tblCenter.columnDefaults(0).padRight(Value.percentHeight(.1f, lblLives)).padLeft(Value.percentHeight(.2f, lblLives));
             tblCenter.columnDefaults(1).width(lblLives.getPrefHeight() * 1.5f).right();
             tblCenter.add(imgMovesIcon).size(lblLives.getPrefHeight());
             tblCenter.add(lblMoves).left();
@@ -646,6 +646,8 @@ public class GameScreen extends ScreenBase implements Observer {
 
                 TilemapBuilder builder = tilemapManager.newLayer();
                 builder.setColorCount(settings.getColorCount())
+                        .setOffset(settings.getOffset())
+                        .setOrigin(settings.getOrigin())
                         .setMinMaxRotationSpeed(settings.getMinSpeed(), settings.getMaxSpeed(), settings.isRotateCCW())
                         .populateFrom(tileList)
                         .setChained(i == 0)

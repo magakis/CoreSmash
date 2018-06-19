@@ -142,7 +142,7 @@ public class LoadingScreen extends ScreenBase {
         generateBitmapFont(36, "h2.ttf");
     }
 
-    private void loadAllBalls() {
+    public static void loadAllBalls() {
         TileAttributes ballAttr;
 
         TileIndex tileIndex = TileIndex.get();

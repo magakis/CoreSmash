@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector3;
 import com.breakthecore.Coords2D;
 import com.breakthecore.managers.RenderManager;
+import com.breakthecore.tilemap.TilemapBuilder;
 import com.breakthecore.tilemap.TilemapManager;
 
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ final public class LevelBuilder {
         this.tilemapManager = tilemapManager;
         screenToWorld = new ScreenToWorld();
         levelSettings = new LevelSettings();
-        mapSettings = new ArrayList<MapSettings>();
+        mapSettings = new ArrayList<>();
 
         tilemapManager.newLayer();
         mapSettings.add(new MapSettings());
@@ -46,7 +47,15 @@ final public class LevelBuilder {
      * Draws at the given screen coordinates
      */
     public void paintAt(float x, float y) {
-        Vector3 relative = tilemapManager.getWorldToLayerCoords(layer, screenToWorld.convert(x, y));
+        Vector3 worldPos = screenToWorld.convert(x, y);
+
+        if (tilemapManager.getTileCountFrom(layer) == 0) {
+            tilemapManager.setMapPosition(layer, (int) worldPos.x, (int) worldPos.y);
+            mapSettings.get(layer).offset.set(tilemapManager.getLayerOffsetX(layer), tilemapManager.getLayerOffsetY(layer));
+        }
+
+        Vector3 relative = tilemapManager.getWorldToLayerCoords(layer, worldPos);
+
         if (tilemapManager.isTileEmpty(layer, (int) relative.x, (int) relative.y)) {
             tilemapManager.placeTile(layer, (int) relative.x, (int) relative.y, tileID);
         }
@@ -61,7 +70,7 @@ final public class LevelBuilder {
         layerIndicatorEnabled = enabled;
     }
 
-    public void setCCWRotation (boolean ccw) {
+    public void setCCWRotation(boolean ccw) {
         mapSettings.get(layer).rotateCCW = ccw;
     }
 
@@ -153,8 +162,10 @@ final public class LevelBuilder {
                 if (i == layer) continue;
                 tilemapManager.draw(renderManager, i);
             }
-            renderManager.setColorTint(Color.WHITE);
-            tilemapManager.draw(renderManager, layer);
+            if (tilemapManager.layerExists(layer)) {
+                renderManager.setColorTint(Color.WHITE);
+                tilemapManager.draw(renderManager, layer);
+            }
         } else {
             tilemapManager.draw(renderManager);
         }
@@ -184,12 +195,16 @@ final public class LevelBuilder {
         }
 
         for (int layer = 0; layer < parsedLevel.getMapCount(); ++layer) {
-            if (!tilemapManager.layerExists(layer)) {
-                tilemapManager.newLayer();
-            }
+            TilemapBuilder builder = tilemapManager.newLayer()
+//                    .debug() //XXX:Is this totaly useless?
+                    .setOrigin(mapSettings.get(layer).getOrigin())
+                    .setOffset(mapSettings.get(layer).getOffset());
+
             for (ParsedTile tile : parsedLevel.mapTiles.get(layer)) {
                 tilemapManager.placeTile(layer, tile.x, tile.y, tile.tileID);
             }
+
+            builder.build();
         }
 
 

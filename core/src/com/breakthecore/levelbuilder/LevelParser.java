@@ -27,6 +27,8 @@ public final class LevelParser {
     static final String TAG_MOVES = "moves";
     static final String TAG_TIME = "time";
     static final String TAG_MAP = "map";
+    static final String TAG_MAP_OFFSET = "offset";
+    static final String TAG_MAP_ORIGIN = "origin";
     static final String TAG_MINSPEED = "minSpeed";
     static final String TAG_MAXSPEED = "maxSpeed";
     static final String TAG_ROTATECCW = "rotateCCW";
@@ -72,6 +74,14 @@ public final class LevelParser {
 
                 serializer.startTag(NO_NAMESPACE, TAG_MAP);
                 serializer.attribute(NO_NAMESPACE, "id", String.valueOf(groupID++));
+                serializer.startTag(NO_NAMESPACE, TAG_MAP_ORIGIN);
+                serializer.attribute(NO_NAMESPACE, "x", String.valueOf(map.origin.x));
+                serializer.attribute(NO_NAMESPACE, "y", String.valueOf(map.origin.y));
+                serializer.endTag(NO_NAMESPACE, TAG_MAP_ORIGIN);
+                serializer.startTag(NO_NAMESPACE, TAG_MAP_OFFSET);
+                serializer.attribute(NO_NAMESPACE, "x", String.valueOf(map.offset.x));
+                serializer.attribute(NO_NAMESPACE, "y", String.valueOf(map.offset.y));
+                serializer.endTag(NO_NAMESPACE, TAG_MAP_OFFSET);
                 createElement(TAG_MINSPEED, map.minSpeed);
                 createElement(TAG_MAXSPEED, map.maxSpeed);
                 createElement(TAG_ROTATECCW, map.rotateCCW);
@@ -213,6 +223,16 @@ public final class LevelParser {
             if (type == XmlPullParser.START_TAG) {
                 String text;
                 switch (name) {
+                    case TAG_MAP_ORIGIN:
+                        text = parser.getAttributeValue(NO_NAMESPACE, "x");
+                        map.origin.x = text == null || text.isEmpty() ? 0 : Float.parseFloat(text);
+                        text = parser.getAttributeValue(NO_NAMESPACE, "y");
+                        map.origin.y = text == null || text.isEmpty() ? 0 : Float.parseFloat(text);
+                    case TAG_MAP_OFFSET:
+                        text = parser.getAttributeValue(NO_NAMESPACE, "x");
+                        map.offset.x = text == null || text.isEmpty() ? 0 : Float.parseFloat(text);
+                        text = parser.getAttributeValue(NO_NAMESPACE, "y");
+                        map.offset.y = text == null || text.isEmpty() ? 0 : Float.parseFloat(text);
                     case TAG_MINSPEED:
                         text = parser.nextText();
                         map.minSpeed = text.isEmpty() ? 0 : Integer.parseInt(text);
