@@ -38,7 +38,6 @@ public class TilemapBuilder {
     private BlueprintTile[][] blueprintMap;
     private Matcher matcher;
 
-
     private Vector2 origin;
     private Vector2 offset;
 

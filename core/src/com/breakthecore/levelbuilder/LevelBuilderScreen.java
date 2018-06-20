@@ -65,7 +65,6 @@ public class LevelBuilderScreen extends ScreenBase {
     private ExtendViewport viewport;
     private OrthographicCamera camera;
     private RenderManager renderManager;
-    private TilemapManager tilemapManager;
 
     private GameScreen gameScreen; // XXX:TODO: GET THIS SHIT OUT OF HERE Q.Q
 
@@ -93,10 +92,9 @@ public class LevelBuilderScreen extends ScreenBase {
         camera.position.set(viewport.getMinWorldWidth() / 2, viewport.getMinWorldHeight() / 2, 0);
         camera.update();
 
-        tilemapManager = new TilemapManager();
         renderManager = game.getRenderManager();
 
-        levelBuilder = new LevelBuilder(tilemapManager, camera);
+        levelBuilder = new LevelBuilder(camera);
         stage = setupStage();
 
         drawMode = new DrawMode();
@@ -124,10 +122,7 @@ public class LevelBuilderScreen extends ScreenBase {
     }
 
     public void draw() {
-        renderManager.start(camera.combined);
         levelBuilder.draw(renderManager);
-        renderManager.end();
-        renderManager.renderCenterDot(tilemapManager.getDefTilemapPosition(), camera.combined);
     }
 
     private Stage setupStage() {
@@ -391,7 +386,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
             main.setBackground("box_white_5");
             main.pad(5);
-            main.defaults().pad(Value.percentWidth(.1f,tbRotate)).padRight(0);
+            main.defaults().pad(Value.percentWidth(.1f, tbRotate)).padRight(0);
             main.setTouchable(Touchable.enabled);
             main.addCaptureListener(new EventListener() {
                 @Override
@@ -524,7 +519,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
                 scrollPane.setOverscroll(false, false);
 
-                uiLayer = new UILayer(){
+                uiLayer = new UILayer() {
                     @Override
                     public void onLayerChange(int layer) {
 
@@ -555,7 +550,7 @@ public class LevelBuilderScreen extends ScreenBase {
         UILayer uiLayer;
 
         EraseMode() {
-            uiLayer = new UILayer(){
+            uiLayer = new UILayer() {
                 @Override
                 public void onLayerChange(int layer) {
 
@@ -616,6 +611,12 @@ public class LevelBuilderScreen extends ScreenBase {
 
         @Override
         public boolean pan(float x, float y, float deltaX, float deltaY) {
+            int layer = levelBuilder.getLayer();
+            tmPos.set(
+                    (int) levelBuilder.getPositionX(layer),
+                    (int) levelBuilder.getPositionY(layer)
+            );
+
             if (isPanning) {
                 float currAngle;
                 scrPos.set(x, y, 0);
@@ -628,7 +629,6 @@ public class LevelBuilderScreen extends ScreenBase {
                 isPanning = true;
                 scrPos.set(x, y, 0);
                 scrPos = camera.unproject(scrPos);
-                tmPos = levelBuilder.getLayerPosition();
                 currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
                 initAngle = currPoint.angle();
             }
@@ -649,7 +649,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
     private class FreeMode extends Mode {
         private OptionsMenu optionsMenu;
-        float currentZoom = 1;
+        private float currentZoom = 1;
 
         FreeMode() {
             optionsMenu = new OptionsMenu();
@@ -896,7 +896,7 @@ public class LevelBuilderScreen extends ScreenBase {
             }
 
             private void updateMovesPercent(int amount) {
-                float totalTiles = tilemapManager.getTotalTileCount();
+                float totalTiles = levelBuilder.getTotalTileCount();
                 int percent = (int) ((amount / (totalTiles == 0 ? 1 : totalTiles)) * 100f);
                 uiInfo.lbl[0].setText("Moves/Balls: " + percent + "%");
             }
@@ -933,7 +933,7 @@ public class LevelBuilderScreen extends ScreenBase {
             Container<Table> root;
             UILayer uiLayer;
             Slider sldrMinRot, sldrMaxRot, sldrColorCount;
-            Label lblMinRot, lblMaxRot, lblColorCount, lblLayer;
+            Label lblMinRot, lblMaxRot, lblColorCount;
             CheckBox cbRotateCCW;
             int activeLayer;
 

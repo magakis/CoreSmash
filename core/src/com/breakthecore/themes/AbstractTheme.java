@@ -45,7 +45,7 @@ public abstract class AbstractTheme {
 
     /**
      * Requires better implementation.
-     * Having to call this at the end of resource loading from asset manager is _very_ error prone
+     * Having to call this at the spriteBatchEnd of resource loading from asset manager is _very_ error prone
      * and should be avoided by a better design.
      */
     public void finishLoading() {

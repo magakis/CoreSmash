@@ -2,11 +2,10 @@ package com.breakthecore.levelbuilder;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
-import com.breakthecore.Coords2D;
 import com.breakthecore.managers.RenderManager;
-import com.breakthecore.tilemap.TilemapBuilder;
-import com.breakthecore.tilemap.TilemapManager;
+import com.breakthecore.tilemap.Map;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +13,7 @@ import java.util.List;
 final public class LevelBuilder {
     private OrthographicCamera camera;
     private ScreenToWorld screenToWorld;
-    private TilemapManager tilemapManager;
+    private Map map;
 
     private LevelSettings levelSettings;
     private List<MapSettings> mapSettings;
@@ -24,14 +23,14 @@ final public class LevelBuilder {
 
     boolean layerIndicatorEnabled = true;
 
-    LevelBuilder(TilemapManager tilemapManager, OrthographicCamera cam) {
+    LevelBuilder(OrthographicCamera cam) {
         camera = cam;
-        this.tilemapManager = tilemapManager;
         screenToWorld = new ScreenToWorld();
         levelSettings = new LevelSettings();
         mapSettings = new ArrayList<>();
+        map = new Map();
 
-        tilemapManager.newLayer();
+        map.newLayer();
         mapSettings.add(new MapSettings());
     }
 
@@ -40,7 +39,7 @@ final public class LevelBuilder {
     }
 
     public void rotateLayer(float degrees) {
-        tilemapManager.forceRotateLayer(layer, degrees);
+        map.forceRotateLayer(layer, degrees);
     }
 
     /**
@@ -49,21 +48,33 @@ final public class LevelBuilder {
     public void paintAt(float x, float y) {
         Vector3 worldPos = screenToWorld.convert(x, y);
 
-        if (tilemapManager.getTileCountFrom(layer) == 0) {
-            tilemapManager.setMapPosition(layer, (int) worldPos.x, (int) worldPos.y);
-            mapSettings.get(layer).offset.set(tilemapManager.getLayerOffsetX(layer), tilemapManager.getLayerOffsetY(layer));
+        if (map.getTileCountFrom(layer) == 0) {
+            map.setMapPosition(layer, (int) worldPos.x, (int) worldPos.y);
+            mapSettings.get(layer).offset.set(map.getLayerOffsetX(layer), map.getLayerOffsetY(layer));
         }
 
-        Vector3 relative = tilemapManager.getWorldToLayerCoords(layer, worldPos);
+        Vector3 relative = map.getWorldToLayerCoords(layer, worldPos);
 
-        if (tilemapManager.isTileEmpty(layer, (int) relative.x, (int) relative.y)) {
-            tilemapManager.placeTile(layer, (int) relative.x, (int) relative.y, tileID);
+        if (map.isTileEmpty(layer, (int) relative.x, (int) relative.y)) {
+            map.placeTile(layer, (int) relative.x, (int) relative.y, tileID);
         }
     }
 
+    public float getPositionX(int layer) {
+        return map.getLayerPositionX(layer);
+    }
+
+    public int getTotalTileCount() {
+        return map.getTotalTileCount();
+    }
+
+    public float getPositionY(int layer) {
+        return map.getLayerPositionY(layer);
+    }
+
     public void eraseAt(float x, float y) {
-        Vector3 relative = tilemapManager.getWorldToLayerCoords(layer, screenToWorld.convert(x, y));
-        tilemapManager.removeTile(layer, (int) relative.x, (int) relative.y);
+        Vector3 relative = map.getWorldToLayerCoords(layer, screenToWorld.convert(x, y));
+        map.removeTile(layer, (int) relative.x, (int) relative.y);
     }
 
     public void setLayerIndicator(boolean enabled) {
@@ -150,37 +161,48 @@ final public class LevelBuilder {
         return mapSettings.get(layer).rotateCCW;
     }
 
-    public Coords2D getLayerPosition() {
-        return tilemapManager.getDefTilemapPosition(); //should return per layer
+    public float getDefPositionX() {
+        return map.getDefPostionsX(); //should return per layer
+    }
+
+    public float getDefPositionY() {
+        return map.getDefPostionsY(); //should return per layer
     }
 
     public void draw(RenderManager renderManager) {
+        renderManager.spriteBatchBegin(camera.combined);
         if (layerIndicatorEnabled) {
-            int maxTilemaps = tilemapManager.getTilemapCount();
+            int maxTilemaps = map.getTilemapCount();
             renderManager.setColorTint(Color.DARK_GRAY);
             for (int i = 0; i < maxTilemaps; ++i) {
                 if (i == layer) continue;
-                tilemapManager.draw(renderManager, i);
+                map.draw(renderManager, i);
             }
-            if (tilemapManager.layerExists(layer)) {
+            if (map.layerExists(layer)) {
                 renderManager.setColorTint(Color.WHITE);
-                tilemapManager.draw(renderManager, layer);
+                map.draw(renderManager, layer);
             }
         } else {
-            tilemapManager.draw(renderManager);
+            map.draw(renderManager);
         }
+        renderManager.spriteBatchEnd();
+
+        ShapeRenderer shapeRenderer = renderManager.shapeRendererStart(camera.combined, ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(Color.GOLDENROD);
+        shapeRenderer.circle(getDefPositionX(), getDefPositionY(), 15);
+        renderManager.shapeRendererEnd();
     }
 
     public boolean saveAs(String name) {
         // XXX(16/6/2018): Fix this array shit
-        return LevelParser.saveAs(name, tilemapManager, levelSettings, mapSettings.toArray(new MapSettings[mapSettings.size()]));
+        return LevelParser.saveAs(name, map, levelSettings, mapSettings.toArray(new MapSettings[mapSettings.size()]));
     }
 
     public boolean load(String name) {
         ParsedLevel parsedLevel = LevelParser.loadFrom(name);
         if (parsedLevel == null) return false;
 
-        tilemapManager.reset();
+        map.reset();
 
         levelSettings.copy(parsedLevel.levelSettings);
 
@@ -195,26 +217,24 @@ final public class LevelBuilder {
         }
 
         for (int layer = 0; layer < parsedLevel.getMapCount(); ++layer) {
-            TilemapBuilder builder = tilemapManager.newLayer()
-//                    .debug() //XXX:Is this totaly useless?
-                    .setOrigin(mapSettings.get(layer).getOrigin())
-                    .setOffset(mapSettings.get(layer).getOffset());
+            map.newLayer();
+            map.setOrigin(layer, mapSettings.get(layer).getOrigin());
+            map.setOffset(layer, mapSettings.get(layer).getOffset());
 
             for (ParsedTile tile : parsedLevel.mapTiles.get(layer)) {
-                tilemapManager.placeTile(layer, tile.x, tile.y, tile.tileID);
+                map.placeTile(layer, tile.x, tile.y, tile.tileID);
             }
-
-            builder.build();
         }
 
 
+        map.validate();
         return true;
     }
 
     public int upLayer() {
         ++layer;
-        if (!tilemapManager.layerExists(layer)) {
-            tilemapManager.newLayer();
+        if (!map.layerExists(layer)) {
+            map.newLayer();
             mapSettings.add(new MapSettings());
         }
         return layer;

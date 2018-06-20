@@ -49,10 +49,11 @@ public class RenderManager {
         am.finishLoading();
     }
 
-    public void start(Matrix4 combined) {
+    public SpriteBatch spriteBatchBegin(Matrix4 combined) {
         batch.setProjectionMatrix(combined);
         batch.setColor(Color.WHITE);
         batch.begin();
+        return batch;
     }
 
     public void setColorTint(Color color) {
@@ -66,14 +67,25 @@ public class RenderManager {
         theme = newTheme;
     }
 
-    public void end() {
+    public void spriteBatchEnd() {
         batch.end();
+    }
+
+    public ShapeRenderer shapeRendererStart(Matrix4 combined, ShapeRenderer.ShapeType shapeType) {
+        shapeRenderer.setProjectionMatrix(combined);
+        shapeRenderer.setColor(Color.WHITE);
+        shapeRenderer.begin(shapeType);
+        return shapeRenderer;
+    }
+
+    public void shapeRendererEnd() {
+        shapeRenderer.end();
     }
 
     public void renderCenterDot(Coords2D pos, Matrix4 combined) {
         shapeRenderer.setProjectionMatrix(combined);
-        shapeRenderer.setColor(Color.GOLDENROD);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(Color.GOLDENROD);
         shapeRenderer.circle(pos.x, pos.y, 15);
         shapeRenderer.end();
     }
@@ -132,7 +144,7 @@ public class RenderManager {
 //                }
 //            }
 //        }
-//        shapeRenderer.end();
+//        shapeRenderer.spriteBatchEnd();
 //    }
 
 //    public void DBTileColor(Tilemap tm) {

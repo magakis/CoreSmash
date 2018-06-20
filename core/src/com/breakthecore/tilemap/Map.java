@@ -1,8 +1,8 @@
 package com.breakthecore.tilemap;
 
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.breakthecore.Coords2D;
-import com.breakthecore.Match3;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observable;
 import com.breakthecore.Observer;
@@ -10,8 +10,6 @@ import com.breakthecore.WorldSettings;
 import com.breakthecore.managers.CollisionDetector;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.tiles.MovingBall;
-import com.breakthecore.tiles.Tile;
-import com.breakthecore.tiles.TileContainer.Side;
 import com.breakthecore.tiles.TileFactory;
 
 import org.xmlpull.v1.XmlSerializer;
@@ -19,7 +17,6 @@ import org.xmlpull.v1.XmlSerializer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * The TilemapManager is responsible for every interaction with the Tilemaps and provides the
@@ -36,19 +33,15 @@ import java.util.Objects;
  * the IDs and balance the map based on them. After I have applied the filter I want, I will instantiate
  * the Tilemap with that builder and create the tiles
  */
-public class TilemapManager extends Observable implements Observer {
+public class Map extends Observable implements Observer {
     private List<Tilemap> tilemaps;
     private int activeTilemaps;
-    private final Coords2D defTilemapPosition;
-
-    private TilemapPathfinder pathfinder = new TilemapPathfinder();
-    private TilemapBuilder tilemapBuilder = new TilemapBuilder();
-    private Match3 match3 = new Match3();
+    private final Coords2D defMapPosition;
     private int[] colorsAvailable = new int[10]; // XXX(22/4/2018): MagicValue 10 (Should ask TileIndex)
 
-    public TilemapManager() {
+    public Map() {
         tilemaps = new ArrayList<>();
-        defTilemapPosition = new Coords2D(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
+        defMapPosition = new Coords2D(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
     }
 
     public TilemapTile getTilemapTile(int layer, int x, int y) {
@@ -58,8 +51,8 @@ public class TilemapManager extends Observable implements Observer {
 
     public int getTotalTileCount() {
         int res = 0;
-        for (Tilemap tilemap : tilemaps) {
-            res += tilemap.getTileCount();
+        for (int i = 0; i < activeTilemaps; ++i) {
+            res += tilemaps.get(i).getTileCount();
         }
         return res;
     }
@@ -88,10 +81,15 @@ public class TilemapManager extends Observable implements Observer {
         return tilemaps.get(layer).getTilemapTile(x, y) == null;
     }
 
-    public Coords2D getDefTilemapPosition() {
-        return defTilemapPosition;
+    public float getDefPostionsX() {
+        return defMapPosition.x;
     }
 
+    public float getDefPostionsY() {
+        return defMapPosition.y;
+    }
+
+    /* Questionable whether this should be here */
     public TilemapTile checkForCollision(CollisionDetector detector, MovingBall mball) {
         TilemapTile result = null;
         for (int i = activeTilemaps - 1; i >= 0; --i) {
@@ -122,14 +120,6 @@ public class TilemapManager extends Observable implements Observer {
         }
 
         return colorsAvailable;
-    }
-
-    /**
-     * Every method using this check assumes the layer index has been checked prior calling it
-     */
-    private void assertLayerIndex(int layer) {
-        if (layer < 0 || layer >= activeTilemaps)
-            throw new IndexOutOfBoundsException("Layer '" + layer + "' doesn't exist");
     }
 
     public float getLayerPositionX(int layer) {
@@ -181,76 +171,46 @@ public class TilemapManager extends Observable implements Observer {
         return tilemaps.get(0).getTilemapTile(0, 0).getTileID();
     }
 
-    public TilemapTile attachBall(MovingBall ball, TilemapTile tileHit, CollisionDetector collisionDetector) {
-        Tilemap layer = tilemaps.get(tileHit.getGroupId());
-        Side[] sides = collisionDetector.getClosestSides(layer.getRotation(), collisionDetector.getDirection(ball.getPositionInWorld(), tileHit.getPositionInWorld()));
-
-        return attachTile(tileHit.getGroupId(), ball.extractTile(), tileHit, sides);
-    }
-
-    //////////////////| GET RID OF |//////////////////
-
-    /**
-     * Finds an empty side from the coordinates specified and attach the tile provided.
-     *
-     * @returns Returns whether it placed the tile.
-     */
-    private TilemapTile attachTile(int layer, Tile tile, TilemapTile tileHit, Side[] listSides) {
+    public void setOffset(int layer, float x, float y) {
         assertLayerIndex(layer);
-        for (Side side : listSides) {
-            if (tileHit.getNeighbour(side) == null) {
-                tilemaps.get(layer).putTilemapTile(tileHit, tile, side);
-                return tileHit.getNeighbour(side);
-            }
-        }
-        throw new RuntimeException("No empty side on collided tile");
+        tilemaps.get(layer).setOffset(x, y);
     }
 
-    public void handleColorMatchesFor(TilemapTile newTile) {
-        Objects.requireNonNull(newTile);
-        Tilemap tm = tilemaps.get(newTile.getGroupId());
-        ArrayList<TilemapTile> match = match3.getColorMatchesFromTile(newTile);
-
-        if (match.size() < 3) {
-            if (match.size() == 1) {
-                notifyObservers(NotificationType.NO_COLOR_MATCH, null);
-            }
-            return;
-        }
-
-        List<TilemapTile> disconnected;
-        if (tilemaps.get(newTile.getGroupId()).isChained()) {
-            disconnected = pathfinder.getDisconnectedTiles(match);
-        } else {
-            disconnected = match;
-        }
-
-        for (TilemapTile t : disconnected) {
-            int x = t.getX();
-            int y = t.getY();
-            if (x == 0 && y == 0) {
-                notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
-            }
-            tm.destroyTilemapTile(x, y);
-        }
-
-        notifyObservers(NotificationType.SAME_COLOR_MATCH, match.size());
+    public void setOffset(int layer, Vector2 offset) {
+        setOffset(layer, offset.x, offset.y);
     }
 
-    //////////////////|            |//////////////////
-    public TilemapBuilder newLayer() {
-        Tilemap tm;
-        if (activeTilemaps < tilemaps.size()) {
-            tm = tilemaps.get(activeTilemaps);
-        } else {
-            tm = new Tilemap(activeTilemaps, defTilemapPosition);
+    public void setOrigin(int layer, float x, float y) {
+        assertLayerIndex(layer);
+        tilemaps.get(layer).setOrigin(x, y);
+    }
+
+    public void setOrigin(int layer, Vector2 origin) {
+        setOrigin(layer, origin.x, origin.y);
+    }
+
+    public void validate(int layer) {
+        assertLayerIndex(layer);
+        Tilemap tm = tilemaps.get(layer);
+        tm.updateWorldPosition();
+        tm.updateTilePositions();
+    }
+
+    public void validate() {
+        for (int i = 0; i < activeTilemaps; ++i) {
+            Tilemap tm = tilemaps.get(i);
+            tm.updateWorldPosition();
+            tm.updateTilePositions();
+        }
+    }
+
+    public void newLayer() {
+        if (activeTilemaps >= tilemaps.size()) {
+            Tilemap tm = new Tilemap(activeTilemaps, defMapPosition);
             tm.addObserver(this);
             tilemaps.add(tm);
         }
-
         ++activeTilemaps;
-        tilemapBuilder.startNewTilemap(tm);
-        return tilemapBuilder;
     }
 
     public void update(float delta) {
@@ -288,4 +248,12 @@ public class TilemapManager extends Observable implements Observer {
         tilemaps.get(layer).rotate(degrees);
     }
 
+    /**
+     * Every method using this check assumes the layer index has been checked prior calling it
+     */
+    private void assertLayerIndex(int layer) {
+        if (layer < 0 || layer >= activeTilemaps)
+            throw new IndexOutOfBoundsException("Layer '" + layer + "' doesn't exist");
+    }
 }
+

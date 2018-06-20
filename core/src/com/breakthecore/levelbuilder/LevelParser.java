@@ -3,7 +3,7 @@ package com.breakthecore.levelbuilder;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Pool;
-import com.breakthecore.tilemap.TilemapManager;
+import com.breakthecore.tilemap.Map;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -47,9 +47,9 @@ public final class LevelParser {
     };
     private static ParsedLevel parsedLevel = new ParsedLevel();
 
-    public static boolean saveAs(String name, TilemapManager tilemapManager, LevelSettings levelSettings, MapSettings[] mapSettings) {
+    public static boolean saveAs(String name, Map map, LevelSettings levelSettings, MapSettings[] mapSettings) {
         FileHandle file = Gdx.files.external("/CoreSmash/levels/" + name + ".xml");
-        int maxTilemaps = tilemapManager.getTilemapCount();
+        int maxTilemaps = map.getTilemapCount();
         XmlSerializer serializer = XmlManager.getSerializer();
 
         try (Writer writer = file.writer(false)) {
@@ -69,25 +69,25 @@ public final class LevelParser {
             serializer.startTag(NO_NAMESPACE, TAG_MAP_SETTINGS);
             int groupID = 0;
             for (int mapIndex = 0; mapIndex < maxTilemaps; ++mapIndex) {
-                if (tilemapManager.getTileCountFrom(mapIndex) == 0) continue;
-                MapSettings map = mapSettings[mapIndex];
+                if (map.getTileCountFrom(mapIndex) == 0) continue;
+                MapSettings setting = mapSettings[mapIndex];
 
                 serializer.startTag(NO_NAMESPACE, TAG_MAP);
                 serializer.attribute(NO_NAMESPACE, "id", String.valueOf(groupID++));
                 serializer.startTag(NO_NAMESPACE, TAG_MAP_ORIGIN);
-                serializer.attribute(NO_NAMESPACE, "x", String.valueOf(map.origin.x));
-                serializer.attribute(NO_NAMESPACE, "y", String.valueOf(map.origin.y));
+                serializer.attribute(NO_NAMESPACE, "x", String.valueOf(setting.origin.x));
+                serializer.attribute(NO_NAMESPACE, "y", String.valueOf(setting.origin.y));
                 serializer.endTag(NO_NAMESPACE, TAG_MAP_ORIGIN);
                 serializer.startTag(NO_NAMESPACE, TAG_MAP_OFFSET);
-                serializer.attribute(NO_NAMESPACE, "x", String.valueOf(map.offset.x));
-                serializer.attribute(NO_NAMESPACE, "y", String.valueOf(map.offset.y));
+                serializer.attribute(NO_NAMESPACE, "x", String.valueOf(setting.offset.x));
+                serializer.attribute(NO_NAMESPACE, "y", String.valueOf(setting.offset.y));
                 serializer.endTag(NO_NAMESPACE, TAG_MAP_OFFSET);
-                createElement(TAG_MINSPEED, map.minSpeed);
-                createElement(TAG_MAXSPEED, map.maxSpeed);
-                createElement(TAG_ROTATECCW, map.rotateCCW);
-                createElement(TAG_COLORCOUNT, map.colorCount);
+                createElement(TAG_MINSPEED, setting.minSpeed);
+                createElement(TAG_MAXSPEED, setting.maxSpeed);
+                createElement(TAG_ROTATECCW, setting.rotateCCW);
+                createElement(TAG_COLORCOUNT, setting.colorCount);
                 serializer.startTag(NO_NAMESPACE, TAG_CONTENT);
-                tilemapManager.serializeBalls(mapIndex, serializer, NO_NAMESPACE, TAG_BALL);
+                map.serializeBalls(mapIndex, serializer, NO_NAMESPACE, TAG_BALL);
                 serializer.endTag(NO_NAMESPACE, TAG_CONTENT);
                 serializer.endTag(NO_NAMESPACE, TAG_MAP);
             }

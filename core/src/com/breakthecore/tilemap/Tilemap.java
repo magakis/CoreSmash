@@ -72,6 +72,15 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         worldPosition.set(defPosition.x, defPosition.y);
     }
 
+    public static int getTileDistance(int aX1, int aY1, int aX2, int aY2) {
+        int dx = aX1 - aX2;     // signed deltas
+        int dy = aY1 - aY2;
+        int x = Math.abs(dx);  // absolute deltas
+        int y = Math.abs(dy);
+
+        return Math.max(x, Math.max(y, Math.abs(dx + dy)));
+    }
+
     public int getTileCount() {
         return tilemapTiles.size();
     }
@@ -82,29 +91,6 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
 
     public boolean isChained() {
         return isChained;
-    }
-
-    public static int getTileDistance(int aX1, int aY1, int aX2, int aY2) {
-        int dx = aX1 - aX2;     // signed deltas
-        int dy = aY1 - aY2;
-        int x = Math.abs(dx);  // absolute deltas
-        int y = Math.abs(dy);
-
-        return Math.max(x, Math.max(y, Math.abs(dx + dy)));
-    }
-
-    public int[] getColorAmountsAvailable() {
-        for (int i = 0; i < colorsAvailable.length; ++i) {
-            colorsAvailable[i] = 0;
-        }
-
-        for (TilemapTile t : tilemapTiles) {
-            if (t.getTile().getTileType() == TileType.REGULAR) {
-                colorsAvailable[t.getTileID()]++;
-            }
-        }
-
-        return colorsAvailable;
     }
 
     public List<TilemapTile> getTileList() {
@@ -130,6 +116,20 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         world.y = y;
         world.x = x;
         return world;
+    }
+
+    public int[] getColorAmountsAvailable() {
+        for (int i = 0; i < colorsAvailable.length; ++i) {
+            colorsAvailable[i] = 0;
+        }
+
+        for (TilemapTile t : tilemapTiles) {
+            if (t.getTile().getTileType() == TileType.REGULAR) {
+                colorsAvailable[t.getTileID()]++;
+            }
+        }
+
+        return colorsAvailable;
     }
 
     public TilemapTile getTilemapTile(int x, int y) {
@@ -165,7 +165,7 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         }
     }
 
-    public void attachTile(TilemapTile tmTile, Tile tile, Side side) {
+    public void putTilemapTile(TilemapTile tmTile, Tile tile, Side side) {
         int x = tmTile.getX();
         int y = tmTile.getY();
         if (tmTile.getNeighbour(side) == null) {
@@ -228,10 +228,7 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         origin.set(settings.getOriginX(), settings.getOriginY());
         offset.set(settings.getOffsetX(), settings.getOffsetY());
         updateWorldPosition();
-
-        for (TilemapTile tmTile : tilemapTiles) {
-            updateTilemapTile(tmTile);
-        }
+        updateTilePositions();
     }
 
     public void update(float delta) {
@@ -240,8 +237,15 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         }
     }
 
-    private void updateWorldPosition() {
-        worldPosition.set(defPosition.x, defPosition.y).add(origin).add(offset);
+    @Override
+    public int compareTo(Tilemap tilemap) {
+        return Integer.compare(groupID, tilemap.groupID);
+    }
+
+    void updateTilePositions() {
+        for (TilemapTile tmTile : tilemapTiles) {
+            updateTilemapTile(tmTile);
+        }
     }
 
     void reset() {
@@ -278,27 +282,15 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         offset.set(x - (defPosition.x + origin.x), y - (defPosition.y + origin.y));
     }
 
-    Vector2 getWorldPosition() {
-        return worldPosition;
+    void setOrigin(float x, float y) {
+        origin.set(x, y);
+        updateWorldPosition();
     }
 
-    Vector2 getOffset() {
-        return offset;
+    void setOffset(float x, float y) {
+        offset.set(x, y);
+        updateWorldPosition();
     }
-
-    Vector2 getOrigin() {
-        return origin;
-    }
-
-    //    void setOrigin(float x, float y) {
-//        origin.set(x, y);
-//        updateWorldPosition();
-//    }
-//
-//    void setOffset(float x, float y) {
-//        offset.set(x, y);
-//        updateWorldPosition();
-//    }
 
     void serializeBalls(XmlSerializer serializer, String namespace, String tagBall) throws IOException {
         for (TilemapTile tile : tilemapTiles) {
@@ -309,6 +301,34 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
             serializer.endTag(namespace, tagBall);
 
         }
+    }
+
+    public float getPositionX() {
+        return worldPosition.x;
+    }
+
+    public float getPositionY() {
+        return worldPosition.y;
+    }
+
+    public float getOriginX() {
+        return origin.x;
+    }
+
+    public float getOriginY() {
+        return origin.y;
+    }
+
+    public float getOffsetX() {
+        return offset.x;
+    }
+
+    public float getOffsetY() {
+        return offset.y;
+    }
+
+    void updateWorldPosition() {
+        worldPosition.set(defPosition.x, defPosition.y).add(origin).add(offset);
     }
 
     private int roundClosestInt(float n) {
@@ -356,11 +376,6 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
                 (y * tileYDistance) * cos;
 
         tmTile.setPositionInWorld(X_world, Y_world);
-    }
-
-    @Override
-    public int compareTo(Tilemap tilemap) {
-        return Integer.compare(groupID, tilemap.groupID);
     }
 
 }
