@@ -13,6 +13,7 @@ import com.breakthecore.managers.RenderManager;
 import com.breakthecore.screens.LoadingScreen;
 import com.breakthecore.screens.MainMenuScreen;
 import com.breakthecore.screens.ScreenBase;
+import com.breakthecore.ui.UIUnits;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -33,10 +34,10 @@ public class CoreSmash extends Game {
     private RenderManager renderManager;
     private AssetManager assetManager;
     private UserAccount userAccount;
-    private Skin m_skin;
-    private InputMultiplexer m_inputMultiplexer;
+    private Skin skin;
+    private InputMultiplexer inputMultiplexer;
 
-    private Stack<ScreenBase> m_screenStack;
+    private Stack<ScreenBase> screenStack;
 
     @Override
     public void create() {
@@ -56,19 +57,19 @@ public class CoreSmash extends Game {
         });
 
         WorldSettings.init();
-        m_screenStack = new Stack<>();
+        screenStack = new Stack<>();
 
 //        viewport = new ExtendViewport(768, 1024);
         viewport = new ScreenViewport();
 
-        m_inputMultiplexer = new InputMultiplexer();
-        Gdx.input.setInputProcessor(m_inputMultiplexer);
+        inputMultiplexer = new InputMultiplexer();
+        Gdx.input.setInputProcessor(inputMultiplexer);
         Gdx.input.setCatchBackKey(true);
 
         assetManager = new AssetManager();
         renderManager = new RenderManager(assetManager);
 
-        m_skin = new Skin();
+        skin = new Skin();
         userAccount = new UserAccount();
 
         setScreen(new LoadingScreen(this));
@@ -94,12 +95,12 @@ public class CoreSmash extends Game {
     }
 
     public Skin getSkin() {
-        return m_skin;
+        return skin;
     }
 
     public void setInputProcessor(InputProcessor ip) {
-        m_inputMultiplexer.clear();
-        m_inputMultiplexer.addProcessor(ip);
+        inputMultiplexer.clear();
+        inputMultiplexer.addProcessor(ip);
 
     }
 
@@ -108,13 +109,13 @@ public class CoreSmash extends Game {
     }
 
     public void setPrevScreen() {
-        ScreenBase prev = m_screenStack.pop();
+        ScreenBase prev = screenStack.pop();
         setInputProcessor(prev.getScreenInputProcessor());
         super.setScreen(prev);
     }
 
     public void setScreen(ScreenBase newScreen) {
-        m_screenStack.push((ScreenBase) screen);
+        screenStack.push((ScreenBase) screen);
         setInputProcessor(newScreen.getScreenInputProcessor());
         super.setScreen(newScreen);
     }
@@ -145,6 +146,7 @@ public class CoreSmash extends Game {
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height, true);
+        UIUnits.updateScreenActor(width, height);
         super.resize(width, height);
     }
 }

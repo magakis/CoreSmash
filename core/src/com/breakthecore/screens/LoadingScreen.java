@@ -28,6 +28,7 @@ import com.breakthecore.tiles.TileAttributes;
 import com.breakthecore.tiles.TileIndex;
 import com.breakthecore.tiles.TileType;
 import com.breakthecore.ui.Components;
+import com.breakthecore.ui.UIUnits;
 
 import java.util.Locale;
 
@@ -111,6 +112,7 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("MovesIcon.png");
         loadTexture("HourGlass.png");
         loadTexture("HeartIcon.png");
+        loadTexture("LevelBuilderButton.png");
     }
 
     private void loadAllBitmapFonts() {
@@ -322,21 +324,6 @@ public class LoadingScreen extends ScreenBase {
         tileIndex.freeze();
     }
 
-    private void loadTexture(String name) {
-        am.load(name, Texture.class, textureParam);
-    }
-
-    private void loadBitmapFont(String name) {
-        am.load(name, BitmapFont.class);
-    }
-
-    private void generateBitmapFont(int size, String name) {
-        FreetypeFontLoader.FreeTypeFontLoaderParameter fontParams = new FreetypeFontLoader.FreeTypeFontLoaderParameter();
-        fontParams.fontFileName = "Gidole-Regular.ttf";
-        fontParams.fontParameters.size = (int) (size * PPI);
-        am.load(name, BitmapFont.class, fontParams);
-    }
-
     private void setupSkin() {
         Pixmap pix;
         Texture tex;
@@ -384,6 +371,11 @@ public class LoadingScreen extends ScreenBase {
         ninePatch = new NinePatch(am.get("GameScreenTop.png", Texture.class), 24, 24, 24, 24);
         ninePatch.scale(.5f, .5f);
         skin.add("gameScreenTop", ninePatch);
+
+        ninePatch = new NinePatch(am.get("LevelBuilderButton.png", Texture.class), 15, 15, 15, 15);
+        defScale = 1f;
+        ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
+        skin.add("levelBuilderButton", ninePatch);
 
         ninePatch = new NinePatch(am.get("softGray.png", Texture.class), 31, 31, 31, 31);
         defScale = 0.5f;
@@ -458,12 +450,25 @@ public class LoadingScreen extends ScreenBase {
         skin.add("box_gray_5", stb);
 
         stb = new TextButton.TextButtonStyle();
+        stb.font = skin.getFont("h3");
+        stb.up = skin.getDrawable("box_white_5");
+        stb.down = skin.newDrawable("box_white_5", Color.GRAY);
+        skin.add("dialogButton", stb);
+
+        stb = new TextButton.TextButtonStyle();
         stb.up = skin.newDrawable("asteroid", Color.WHITE);
         stb.down = skin.newDrawable("asteroid", Color.GRAY);
         stb.disabled = skin.newDrawable("asteroid", Color.DARK_GRAY);
         stb.font = skin.getFont("h2");
         stb.fontColor = Color.BLACK;
         skin.add("levelButton", stb);
+
+        stb = new TextButton.TextButtonStyle();
+        stb.up = skin.newDrawable("levelBuilderButton");
+        stb.down = skin.newDrawable("levelBuilderButton", Color.GRAY);
+        stb.disabled = skin.newDrawable("levelBuilderButton", Color.DARK_GRAY);
+        stb.font = skin.getFont("h3");
+        skin.add("levelBuilderButton", stb);
 
         stb = new TextButton.TextButtonStyle();
         stb.up = skin.newDrawable("myBall", Color.CORAL);
@@ -495,6 +500,23 @@ public class LoadingScreen extends ScreenBase {
         tfs.fontColor = Color.WHITE;
         skin.add("default", tfs);
 
+
+        UIUnits.setUnitActor(skin.getFont("h6"));
+    }
+
+    private void loadTexture(String name) {
+        am.load(name, Texture.class, textureParam);
+    }
+
+    private void loadBitmapFont(String name) {
+        am.load(name, BitmapFont.class);
+    }
+
+    private void generateBitmapFont(int size, String name) {
+        FreetypeFontLoader.FreeTypeFontLoaderParameter fontParams = new FreetypeFontLoader.FreeTypeFontLoaderParameter();
+        fontParams.fontFileName = "Gidole-Regular.ttf";
+        fontParams.fontParameters.size = (int) (size * PPI);
+        am.load(name, BitmapFont.class, fontParams);
     }
 
     private void registerFont(Skin skin, String fntName, String path) {

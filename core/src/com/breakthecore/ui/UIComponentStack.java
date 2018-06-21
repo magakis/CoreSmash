@@ -45,7 +45,7 @@ public class UIComponentStack implements UIComponent {
     }
 
 //    public void show() {
-//        root.setActor(history.peek().getRoot());
+//        root.setUnitActor(history.peek().getRoot());
 //    }
 //
 //    public void hide() {

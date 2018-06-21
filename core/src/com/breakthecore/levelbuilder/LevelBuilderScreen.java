@@ -213,14 +213,14 @@ public class LevelBuilderScreen extends ScreenBase {
         private String filenameCache = "";
 
         UIToolbarTop() {
-            tbSave = new TextButton("Save", skin, "box_gray_5");
+            tbSave = new TextButton("Save", skin, "levelBuilderButton");
             tbSave.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     saveFileDialog.show(stage, filenameCache);
                 }
             });
-            tbLoad = new TextButton("Load", skin, "box_gray_5");
+            tbLoad = new TextButton("Load", skin, "levelBuilderButton");
             tbLoad.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -228,7 +228,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
             });
 
-            tbDeploy = new TextButton("Deploy", skin, "box_gray_5");
+            tbDeploy = new TextButton("Deploy", skin, "levelBuilderButton");
             tbDeploy.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -237,7 +237,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
             });
 
-            tbAssign = new TextButton("Assign", skin, "box_gray_5");
+            tbAssign = new TextButton("Assign", skin, "levelBuilderButton");
             tbAssign.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -339,7 +339,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
             final TextButton tbDraw, tbErase, tbRotate;
 
-            tbDraw = new TextButton("Draw", tbs);
+            tbDraw = new TextButton("Draw", skin, "levelBuilderButton");
             tbDraw.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -350,7 +350,7 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 }
             });
-            tbErase = new TextButton("Erase", tbs);
+            tbErase = new TextButton("Erase", skin, "levelBuilderButton");
             tbErase.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -361,7 +361,7 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 }
             });
-            tbRotate = new TextButton("Rotate", tbs);
+            tbRotate = new TextButton("Rotate", skin, "levelBuilderButton");
             tbRotate.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -690,13 +690,13 @@ public class LevelBuilderScreen extends ScreenBase {
         }
 
         private class OptionsMenu implements UIComponent {
-            final HorizontalGroup root;
+            private final HorizontalGroup root;
             private UILevelSettings gameSettings = new UILevelSettings();
             private UIMapSettings mapSettings = new UIMapSettings();
 
             private OptionsMenu() {
 
-                TextButton btnLevelSettings = new TextButton("Level", skin, "box_gray_5");
+                TextButton btnLevelSettings = new TextButton("Level", skin, "levelBuilderButton");
                 btnLevelSettings.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
@@ -704,7 +704,7 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 });
 
-                TextButton btnMapSettings = new TextButton("Layer", skin, "box_gray_5");
+                TextButton btnMapSettings = new TextButton("Layer", skin, "levelBuilderButton");
                 btnMapSettings.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
@@ -713,15 +713,21 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 });
 
-//                btnLevelSettings.getLabelCell().pad(10);
-//                btnMapSettings.getLabelCell().pad(10);
+
+                btnLevelSettings.pad(Value.percentHeight(1, btnLevelSettings.getLabel()));
+                btnLevelSettings.padTop(Value.percentHeight(.5f, btnLevelSettings.getLabel()));
+                btnLevelSettings.padBottom(Value.percentHeight(.5f, btnLevelSettings.getLabel()));
+
+                btnMapSettings.pad(Value.percentHeight(1, btnMapSettings.getLabel()));
+                btnMapSettings.padTop(Value.percentHeight(.5f, btnMapSettings.getLabel()));
+                btnMapSettings.padBottom(Value.percentHeight(.5f, btnMapSettings.getLabel()));
 
                 root = new HorizontalGroup();
-                root.space(5);
-                root.wrap(true);
-
                 root.addActor(btnLevelSettings);
                 root.addActor(btnMapSettings);
+                root.space(0.5f * btnLevelSettings.getLabel().getMinHeight());
+                root.wrap(true);
+
             }
 
             public void updateValues(int layer) {

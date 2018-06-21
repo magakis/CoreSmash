@@ -12,9 +12,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
-import com.breakthecore.WorldSettings;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -45,7 +45,11 @@ public class LoadFileDialog extends Dialog {
 
         levelsFound = new List<>(ls);
 
-        TextButton tbLoad = new TextButton("Load", skin);
+        TextButton tbLoad = new TextButton("Load", skin, "dialogButton");
+        tbLoad.getLabelCell()
+                .pad(Value.percentHeight(1, tbLoad.getLabel()))
+                .padTop(Value.percentHeight(.5f, tbLoad.getLabel()))
+                .padBottom(Value.percentHeight(.5f, tbLoad.getLabel()));
         tbLoad.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -55,7 +59,7 @@ public class LoadFileDialog extends Dialog {
             }
         });
 
-        TextButton tbDelete = new TextButton("Delete", skin);
+        TextButton tbDelete = new TextButton("Delete", skin, "dialogButton");
         tbDelete.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -64,8 +68,16 @@ public class LoadFileDialog extends Dialog {
                 dlgConfirmDelete.show(getStage());
             }
         });
+        tbDelete.getLabelCell()
+                .pad(Value.percentHeight(1, tbDelete.getLabel()))
+                .padTop(Value.percentHeight(.5f, tbDelete.getLabel()))
+                .padBottom(Value.percentHeight(.5f, tbDelete.getLabel()));
 
-        TextButton tbCancel = new TextButton("Cancel", skin);
+        TextButton tbCancel = new TextButton("Cancel", skin, "dialogButton");
+        tbCancel.getLabelCell()
+                .pad(Value.percentHeight(1, tbCancel.getLabel()))
+                .padTop(Value.percentHeight(.5f, tbCancel.getLabel()))
+                .padBottom(Value.percentHeight(.5f, tbCancel.getLabel()));
         tbCancel.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -77,11 +89,11 @@ public class LoadFileDialog extends Dialog {
             @Override
             protected void result(Object object) {
                 if ((boolean) object) {
-                    String chosen = (String) levelsFound.getSelected();
+                    String chosen = levelsFound.getSelected();
                     FileHandle file = Gdx.files.external("/CoreSmash/levels/" + chosen);
                     file.delete();
                     Array tmp = levelsFound.getItems();
-                    tmp.removeValue(chosen,false);
+                    tmp.removeValue(chosen, false);
                     levelsFound.setItems(tmp);
                     Components.showToast("Deleted '" + chosen + "'", this.getStage());
                 }
@@ -91,9 +103,9 @@ public class LoadFileDialog extends Dialog {
         dlgConfirmDelete.getContentTable().defaults().padBottom(20);
         dlgConfirmDelete.getButtonTable().columnDefaults(0).padRight(40);
         dlgConfirmDelete.getButtonTable().defaults().height(100).width(150);
-        dlgConfirmDelete.text(new Label("",skin, "h3"));
-        dlgConfirmDelete.button(new TextButton("Yes",skin), true);
-        dlgConfirmDelete.button(new TextButton("No",skin), false);
+        dlgConfirmDelete.text(new Label("", skin, "h3"));
+        dlgConfirmDelete.button(new TextButton("Yes", skin), true);
+        dlgConfirmDelete.button(new TextButton("No", skin), false);
 
         ScrollPane sp = new ScrollPane(levelsFound);
         sp.setScrollingDisabled(true, false);
@@ -104,17 +116,22 @@ public class LoadFileDialog extends Dialog {
         setKeepWithinStage(true);
         setModal(true);
 
-        padTop(10);
 
+        float lineHeight = levelsFound.getStyle().font.getLineHeight();
         Table content = getContentTable();
-        content.pad(20).padBottom(0).add(sp).colspan(2).fill().width(WorldSettings.getWorldWidth()/2).height(400).left().row();
+        content.pad(lineHeight)
+                .padBottom(0);
+
+        content.add(sp)
+                .grow()
+                .maxWidth(Value.percentWidth(.75f, UIUnits.getScreenActor()))
+                .maxHeight(Value.percentHeight(.5f, UIUnits.getScreenActor()));
 
         Table buttons = getButtonTable();
-        buttons.pad(10);
-        buttons.add(tbLoad).width(170).height(100).padRight(20);
-        buttons.add(tbDelete).width(170).height(100).padRight(20);
-        buttons.add(tbCancel).width(170).height(100);
-
+        buttons.pad(Value.percentHeight(.25f, tbLoad));
+        buttons.add(tbLoad).padRight(Value.percentHeight(.5f, tbLoad)).expandX().left();
+        buttons.add(tbDelete).padRight(Value.percentHeight(.5f, tbLoad)).expandX().center();
+        buttons.add(tbCancel).expandX().right();
     }
 
     public Dialog show(Stage stage) {

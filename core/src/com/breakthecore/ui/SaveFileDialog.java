@@ -11,20 +11,20 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.breakthecore.WorldSettings;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
 
-public class SaveFileDialog extends Dialog{
+public class SaveFileDialog extends Dialog {
     private final List<String> levelsFound;
     private final FilenameFilter levelBuilderFilter;
     private final TextField textField;
 
     public SaveFileDialog(Skin skin, WindowStyle windowStyle) {
-        super("",windowStyle);
+        super("", windowStyle);
 
         levelBuilderFilter = new FilenameFilter() {
             @Override
@@ -36,7 +36,7 @@ public class SaveFileDialog extends Dialog{
         List.ListStyle ls = new List.ListStyle();
         ls.fontColorSelected = Color.WHITE;
         ls.fontColorUnselected = Color.WHITE;
-        ls.selection = skin.newDrawable("box_white_5", 0,0,0,0);
+        ls.selection = skin.newDrawable("box_white_5", 0, 0, 0, 0);
         ls.font = skin.getFont("h5");
 
         levelsFound = new List<>(ls);
@@ -56,7 +56,11 @@ public class SaveFileDialog extends Dialog{
         });
         textField.setMaxLength(20);
 
-        TextButton tbSave = new TextButton("Save", skin);
+        TextButton tbSave = new TextButton("Save", skin, "dialogButton");
+        tbSave.getLabelCell()
+                .pad(Value.percentHeight(1, tbSave.getLabel()))
+                .padTop(Value.percentHeight(.5f, tbSave.getLabel()))
+                .padBottom(Value.percentHeight(.5f, tbSave.getLabel()));
         tbSave.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -70,7 +74,11 @@ public class SaveFileDialog extends Dialog{
             }
         });
 
-        TextButton tbCancel = new TextButton("Cancel", skin);
+        TextButton tbCancel = new TextButton("Cancel", skin, "dialogButton");
+        tbCancel.getLabelCell()
+                .pad(Value.percentHeight(1, tbCancel.getLabel()))
+                .padTop(Value.percentHeight(.5f, tbCancel.getLabel()))
+                .padBottom(Value.percentHeight(.5f, tbCancel.getLabel()));
         tbCancel.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -87,17 +95,21 @@ public class SaveFileDialog extends Dialog{
         setKeepWithinStage(true);
         setModal(true);
 
-        padTop(10);
-
+        float lineHeight = levelsFound.getStyle().font.getLineHeight();
         Table content = getContentTable();
-        content.pad(20).padBottom(0).add(sp).colspan(2).fill().width(WorldSettings.getWorldWidth()/2).height(400).left().row();
+        content.pad(lineHeight)
+                .padBottom(0);
+
+        content.add(sp)
+                .grow()
+                .maxWidth(Value.percentWidth(.75f, UIUnits.getScreenActor()))
+                .maxHeight(Value.percentHeight(.5f, UIUnits.getScreenActor()));
 
         Table buttons = getButtonTable();
-        buttons.pad(20);
-        buttons.add(textField).colspan(2).padBottom(20).growX().row();
-        buttons.add(tbSave).width(170).height(100).padRight(20);
-        buttons.add(tbCancel).width(170).height(100);
-
+        buttons.pad(Value.percentHeight(.25f, tbSave));
+        buttons.add(textField).colspan(2).growX().row();
+        buttons.add(tbSave).padRight(Value.percentHeight(.5f, tbSave)).expandX().left();
+        buttons.add(tbCancel).expandX().right();
     }
 
     public Dialog show(Stage stage, String defText) {
