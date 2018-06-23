@@ -5,6 +5,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
@@ -54,7 +55,7 @@ public class LoadFileDialog extends Dialog {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 hide();
-                String chosen = (String) levelsFound.getSelected();
+                String chosen = levelsFound.getSelected();
                 result(chosen.substring(0, chosen.length() - 4));
             }
         });
@@ -63,8 +64,9 @@ public class LoadFileDialog extends Dialog {
         tbDelete.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                String chosen = (String) levelsFound.getSelected();
-                ((Label) dlgConfirmDelete.getContentTable().getCells().get(0).getActor()).setText("Delete level '" + chosen + "'?");
+                String chosen = levelsFound.getSelected();
+                ((Label) dlgConfirmDelete.getContentTable().getCells().get(0).getActor())
+                        .setText("Delete level '[GREEN]" + chosen + "[]'?");
                 dlgConfirmDelete.show(getStage());
             }
         });
@@ -99,13 +101,26 @@ public class LoadFileDialog extends Dialog {
                 }
             }
         };
-        dlgConfirmDelete.pad(30);
-        dlgConfirmDelete.getContentTable().defaults().padBottom(20);
-        dlgConfirmDelete.getButtonTable().columnDefaults(0).padRight(40);
-        dlgConfirmDelete.getButtonTable().defaults().height(100).width(150);
-        dlgConfirmDelete.text(new Label("", skin, "h3"));
-        dlgConfirmDelete.button(new TextButton("Yes", skin), true);
-        dlgConfirmDelete.button(new TextButton("No", skin), false);
+        dlgConfirmDelete.text(new Label("", skin, "h3f"));
+        dlgConfirmDelete.button(new TextButton("Yes", skin, "dialogButton"), true);
+        dlgConfirmDelete.button(new TextButton("No", skin, "dialogButton"), false);
+        Cell<Label> txtCell = dlgConfirmDelete.getContentTable().getCells().get(0);
+        txtCell.pad(Value.percentHeight(.5f, txtCell.getActor()));
+        txtCell.maxWidth(Value.percentWidth(0.5f, UIUnits.getScreenActor()));
+        dlgConfirmDelete.getCell(dlgConfirmDelete.getContentTable()).padBottom(txtCell.getActor().getStyle().font.getLineHeight());
+
+        txtCell = ((TextButton) dlgConfirmDelete.getButtonTable().getCells().get(0).getActor()).getLabelCell();
+        txtCell.pad(Value.percentHeight(1f, txtCell.getActor()));
+        txtCell.padTop(Value.percentHeight(0.5f, txtCell.getActor()));
+        txtCell.padBottom(Value.percentHeight(0.5f, txtCell.getActor()));
+
+        txtCell = ((TextButton) dlgConfirmDelete.getButtonTable().getCells().get(1).getActor()).getLabelCell();
+        txtCell.pad(Value.percentHeight(1f, txtCell.getActor()));
+        txtCell.padTop(Value.percentHeight(0.5f, txtCell.getActor()));
+        txtCell.padBottom(Value.percentHeight(0.5f, txtCell.getActor()));
+        dlgConfirmDelete.getButtonTable().getCells().get(0).expandX().center();
+        dlgConfirmDelete.getButtonTable().getCells().get(1).expandX().center();
+        dlgConfirmDelete.pad(Value.percentHeight(.8f, txtCell.getActor()));
 
         ScrollPane sp = new ScrollPane(levelsFound);
         sp.setScrollingDisabled(true, false);

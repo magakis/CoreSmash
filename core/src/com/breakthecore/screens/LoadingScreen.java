@@ -81,6 +81,7 @@ public class LoadingScreen extends ScreenBase {
     public void render(float delta) {
         if (am.update()) {
             baseTheme.finishLoading();
+            setupFonts();
             setupSkin();
             Components.initialize(skin);
             gameInstance.initApp();
@@ -116,32 +117,16 @@ public class LoadingScreen extends ScreenBase {
     }
 
     private void loadAllBitmapFonts() {
-        loadBitmapFont("comic_24b.fnt");
-        loadBitmapFont("comic_32b.fnt");
-        loadBitmapFont("comic_48b.fnt");
-        loadBitmapFont("comic_96b.fnt");
-
-        loadBitmapFont("comic_72bo.fnt");
-        loadBitmapFont("comic_96bo.fnt");
-
-        loadBitmapFont("gidole_24.fnt");
-        loadBitmapFont("gidole_36.fnt");
-        loadBitmapFont("gidole_48.fnt");
-        loadBitmapFont("gidole_60.fnt");
-        loadBitmapFont("gidole_72.fnt");
-        loadBitmapFont("gidole_96.fnt");
-
-//        generateBitmapFont(12, "h6.ttf");
-//        generateBitmapFont(16, "h5.ttf");
-//        generateBitmapFont(22, "h4.ttf");
-//        generateBitmapFont(28, "h3.ttf");
-//        generateBitmapFont(36, "h2.ttf");
-
         generateBitmapFont(12, "h6.ttf");
         generateBitmapFont(14, "h5.ttf");
         generateBitmapFont(18, "h4.ttf");
         generateBitmapFont(24, "h3.ttf");
         generateBitmapFont(36, "h2.ttf");
+
+        loadBitmapFont("comic_72bo.fnt");
+        loadBitmapFont("comic_96bo.fnt");
+
+        generateBitmapFont(24, "h3f.ttf");
     }
 
     public static void loadAllBalls() {
@@ -324,6 +309,11 @@ public class LoadingScreen extends ScreenBase {
         tileIndex.freeze();
     }
 
+    public void setupFonts() {
+        BitmapFont font = am.get("h3f.ttf");
+        font.getData().markupEnabled = true;
+    }
+
     private void setupSkin() {
         Pixmap pix;
         Texture tex;
@@ -414,6 +404,9 @@ public class LoadingScreen extends ScreenBase {
         registerFont(skin, "h3", "h3.ttf");
         registerFont(skin, "h2", "h2.ttf");
         registerFont(skin, "h1", "h1.ttf");
+
+        // Markup-Enabled fonts
+        registerFont(skin, "h3f", "h3f.ttf");
 
         registerFont(skin, "comic_72bo", "comic_72bo.fnt");
         registerFont(skin, "comic_96bo", "comic_96bo.fnt");
