@@ -426,7 +426,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
 
             tblPowerUps = new Table();
-            tblPowerUps.setBackground(skin.getDrawable("box_white_5"));
+            tblPowerUps.setBackground(skin.getDrawable("boxSmall"));
             tblPowerUps.center();
             tblPowerUps.add(tbPower1).size(100, 100);
 
@@ -537,7 +537,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
         ResultUI() {
             Table main = new Table(skin);
-            main.background("box_white_5");
+            main.background("boxSmall");
             main.pad(40);
             root = new Container<>(main);
             root.setFillParent(true);
@@ -648,9 +648,10 @@ public class GameScreen extends ScreenBase implements Observer {
                 builder.setColorCount(settings.getColorCount())
                         .setOffset(settings.getOffset())
                         .setOrigin(settings.getOrigin())
+                        .setChained(settings.isChained())
                         .setMinMaxRotationSpeed(settings.getMinSpeed(), settings.getMaxSpeed(), settings.isRotateCCW())
+                        .setMapMinMaxRotationSpeed(settings.getMinMapSpeed(), settings.getMaxMapSpeed(), false)
                         .populateFrom(tileList)
-                        .setChained(i == 0)
                         .build();
             }
 

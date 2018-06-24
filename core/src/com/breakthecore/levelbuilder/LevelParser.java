@@ -31,7 +31,10 @@ public final class LevelParser {
     static final String TAG_MAP_ORIGIN = "origin";
     static final String TAG_MINSPEED = "minSpeed";
     static final String TAG_MAXSPEED = "maxSpeed";
+    static final String TAG_ORIGIN_MINSPEED = "originMinSpeed";
+    static final String TAG_ORIGIN_MAXSPEED = "originMaxSpeed";
     static final String TAG_ROTATECCW = "rotateCCW";
+    static final String TAG_CHAINED = "chained";
     static final String TAG_COLORCOUNT = "colorCount";
     static final String TAG_BALLSPEED = "ballSpeed";
     static final String TAG_LAUNCHERSIZE = "launcherSize";
@@ -49,7 +52,7 @@ public final class LevelParser {
 
     public static boolean saveAs(String name, Map map, LevelSettings levelSettings, MapSettings[] mapSettings) {
         FileHandle file = Gdx.files.external("/CoreSmash/levels/" + name + ".xml");
-        int maxTilemaps = map.getTilemapCount();
+        int maxTilemaps = map.getLayerCount();
         XmlSerializer serializer = XmlManager.getSerializer();
 
         try (Writer writer = file.writer(false)) {
@@ -82,8 +85,11 @@ public final class LevelParser {
                 serializer.attribute(NO_NAMESPACE, "x", String.valueOf(setting.offset.x));
                 serializer.attribute(NO_NAMESPACE, "y", String.valueOf(setting.offset.y));
                 serializer.endTag(NO_NAMESPACE, TAG_MAP_OFFSET);
+                createElement(TAG_ORIGIN_MINSPEED, setting.minMapSpeed);
+                createElement(TAG_ORIGIN_MAXSPEED, setting.maxMapSpeed);
                 createElement(TAG_MINSPEED, setting.minSpeed);
                 createElement(TAG_MAXSPEED, setting.maxSpeed);
+                createElement(TAG_CHAINED, setting.chained);
                 createElement(TAG_ROTATECCW, setting.rotateCCW);
                 createElement(TAG_COLORCOUNT, setting.colorCount);
                 serializer.startTag(NO_NAMESPACE, TAG_CONTENT);
@@ -240,6 +246,18 @@ public final class LevelParser {
                     case TAG_MAXSPEED:
                         text = parser.nextText();
                         map.maxSpeed = text.isEmpty() ? 0 : Integer.parseInt(text);
+                        break;
+                    case TAG_ORIGIN_MINSPEED:
+                        text = parser.nextText();
+                        map.minMapSpeed = text.isEmpty() ? 0 : Integer.parseInt(text);
+                        break;
+                    case TAG_ORIGIN_MAXSPEED:
+                        text = parser.nextText();
+                        map.maxMapSpeed = text.isEmpty() ? 0 : Integer.parseInt(text);
+                        break;
+                    case TAG_CHAINED:
+                        text = parser.nextText();
+                        map.chained = text.isEmpty() ? true : Boolean.valueOf(text);
                         break;
                     case TAG_ROTATECCW:
                         text = parser.nextText();

@@ -36,7 +36,7 @@ public class SaveFileDialog extends Dialog {
         List.ListStyle ls = new List.ListStyle();
         ls.fontColorSelected = Color.WHITE;
         ls.fontColorUnselected = Color.WHITE;
-        ls.selection = skin.newDrawable("box_white_5", 0, 0, 0, 0);
+        ls.selection = skin.newDrawable("boxSmall", 0, 0, 0, 0);
         ls.font = skin.getFont("h5");
 
         levelsFound = new List<>(ls);
@@ -44,7 +44,7 @@ public class SaveFileDialog extends Dialog {
         TextField.TextFieldStyle tfstyle = new TextField.TextFieldStyle();
         tfstyle.font = skin.getFont("h4");
         tfstyle.fontColor = Color.WHITE;
-        tfstyle.background = skin.getDrawable("box_white_5");
+        tfstyle.background = skin.getDrawable("boxSmall");
 
         textField = new TextField("", tfstyle);
         textField.setMessageText("Requires 3-20 characters");
@@ -102,8 +102,8 @@ public class SaveFileDialog extends Dialog {
 
         content.add(sp)
                 .grow()
-                .maxWidth(Value.percentWidth(.75f, UIUnits.getScreenActor()))
-                .maxHeight(Value.percentHeight(.5f, UIUnits.getScreenActor()));
+                .maxWidth(Value.percentWidth(.75f, UIUtils.getScreenActor()))
+                .maxHeight(Value.percentHeight(.5f, UIUtils.getScreenActor()));
 
         Table buttons = getButtonTable();
         buttons.pad(Value.percentHeight(.25f, tbSave));

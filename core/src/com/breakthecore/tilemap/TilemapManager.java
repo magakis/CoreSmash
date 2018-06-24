@@ -228,7 +228,7 @@ public class TilemapManager extends Observable implements Observer {
         for (TilemapTile t : disconnected) {
             int x = t.getX();
             int y = t.getY();
-            if (x == 0 && y == 0) {
+            if (t.getGroupId() == 0 && x == 0 && y == 0) {
                 notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
             }
             tm.destroyTilemapTile(x, y);

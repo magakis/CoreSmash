@@ -1,9 +1,11 @@
 package com.breakthecore.levelbuilder;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.MathUtils;
@@ -57,6 +59,7 @@ import com.breakthecore.ui.LoadFileDialog;
 import com.breakthecore.ui.SaveFileDialog;
 import com.breakthecore.ui.UIComponent;
 import com.breakthecore.ui.UIComponentStack;
+import com.breakthecore.ui.UIUtils;
 
 import java.util.List;
 import java.util.Locale;
@@ -95,6 +98,7 @@ public class LevelBuilderScreen extends ScreenBase {
         renderManager = game.getRenderManager();
 
         levelBuilder = new LevelBuilder(camera);
+        levelBuilder.load("_editor_"); // Fails silently if it doesn't exist
         stage = setupStage();
 
         drawMode = new DrawMode();
@@ -133,7 +137,7 @@ public class LevelBuilderScreen extends ScreenBase {
         uiToolbarTop = new UIToolbarTop();
 
         prefsStack = new UIComponentStack();
-        prefsStack.setBackground(skin.getDrawable("box_white_5"));
+        prefsStack.setBackground(skin.getDrawable("boxBig"));
 
         Stack mainStack = new Stack();
         mainStack.setFillParent(true);
@@ -161,8 +165,6 @@ public class LevelBuilderScreen extends ScreenBase {
 
         UILayer() {
             root = new Table();
-
-
             Button btnUp = new Button(skin.get("default", TextButton.TextButtonStyle.class));
             btnUp.addListener(new ChangeListener() {
                 @Override
@@ -209,11 +211,14 @@ public class LevelBuilderScreen extends ScreenBase {
         private SaveFileDialog saveFileDialog;
         private LoadFileDialog loadFileDialog;
         private Level testLevel;
-        private final TextButton tbSave, tbLoad, tbDeploy, tbAssign;
+        private final TextButton tbSave, tbLoad, tbDeploy;
         private String filenameCache = "";
 
         UIToolbarTop() {
             tbSave = new TextButton("Save", skin, "levelBuilderButton");
+            tbSave.getLabelCell().pad(Value.percentHeight(.5f, tbSave.getLabel()));
+            tbSave.getLabelCell().padTop(Value.percentHeight(.25f, tbSave.getLabel()));
+            tbSave.getLabelCell().padBottom(Value.percentHeight(.25f, tbSave.getLabel()));
             tbSave.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -221,6 +226,9 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
             });
             tbLoad = new TextButton("Load", skin, "levelBuilderButton");
+            tbLoad.getLabelCell().pad(Value.percentHeight(.5f, tbLoad.getLabel()));
+            tbLoad.getLabelCell().padTop(Value.percentHeight(.25f, tbLoad.getLabel()));
+            tbLoad.getLabelCell().padBottom(Value.percentHeight(.25f, tbLoad.getLabel()));
             tbLoad.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -229,6 +237,9 @@ public class LevelBuilderScreen extends ScreenBase {
             });
 
             tbDeploy = new TextButton("Deploy", skin, "levelBuilderButton");
+            tbDeploy.getLabelCell().pad(Value.percentHeight(.5f, tbDeploy.getLabel()));
+            tbDeploy.getLabelCell().padTop(Value.percentHeight(.25f, tbDeploy.getLabel()));
+            tbDeploy.getLabelCell().padBottom(Value.percentHeight(.25f, tbDeploy.getLabel()));
             tbDeploy.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -237,21 +248,12 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
             });
 
-            tbAssign = new TextButton("Assign", skin, "levelBuilderButton");
-            tbAssign.addListener(new ChangeListener() {
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-
-                }
-            });
-
             root = new Container<>();
 
             Table main = new Table(skin);
-            root.top().right().padTop(-5).padRight(-5).setActor(main);
-            main.setBackground("box_white_5");
-            main.pad(5);
-            main.defaults().pad(Value.percentWidth(.1f, tbDeploy)).padRight(0).padTop(0);
+            root.top().right().padTop(-6 * Gdx.graphics.getDensity()).padRight(-6 * Gdx.graphics.getDensity()).setActor(main);
+            main.setBackground("boxBig");
+            main.pad(10 * Gdx.graphics.getDensity());
             main.setTouchable(Touchable.enabled);
             main.addCaptureListener(new EventListener() {
                 @Override
@@ -263,12 +265,13 @@ public class LevelBuilderScreen extends ScreenBase {
 
             float minWidth = tbDeploy.getPrefWidth();
 
-            main.add(tbDeploy).width(minWidth);
-            main.add(tbSave).width(minWidth);
-            main.add(tbLoad).width(minWidth);
+            main.row().padRight(Value.percentHeight(.5f, tbDeploy)).width(minWidth);
+            main.add(tbDeploy);
+            main.add(tbSave);
+            main.add(tbLoad);
 
             Window.WindowStyle wsLoad = new Window.WindowStyle();
-            wsLoad.background = skin.getDrawable("box_white_10");
+            wsLoad.background = skin.getDrawable("boxBig");
             wsLoad.titleFont = skin.getFont("h3");
 
             loadFileDialog = new LoadFileDialog(skin, wsLoad, stage) {
@@ -331,15 +334,11 @@ public class LevelBuilderScreen extends ScreenBase {
         UITools() {
             root = new Container<>();
 
-            TextButton.TextButtonStyle tbs = new TextButton.TextButtonStyle();
-            tbs.checked = skin.newDrawable("box_white_5", Color.GREEN);
-            tbs.up = skin.newDrawable("box_white_5", Color.GRAY);
-            tbs.down = skin.newDrawable("box_white_5", Color.DARK_GRAY);
-            tbs.font = skin.getFont("h4");
-
             final TextButton tbDraw, tbErase, tbRotate;
 
-            tbDraw = new TextButton("Draw", skin, "levelBuilderButton");
+            tbDraw = new TextButton("Draw", skin, "levelBuilderButtonChecked");
+            tbDraw.getLabelCell().padTop(Value.percentHeight(.25f, tbDraw.getLabel()));
+            tbDraw.getLabelCell().padBottom(Value.percentHeight(.25f, tbDraw.getLabel()));
             tbDraw.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -350,7 +349,9 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 }
             });
-            tbErase = new TextButton("Erase", skin, "levelBuilderButton");
+            tbErase = new TextButton("Erase", skin, "levelBuilderButtonChecked");
+            tbErase.getLabelCell().padTop(Value.percentHeight(.25f, tbErase.getLabel()));
+            tbErase.getLabelCell().padBottom(Value.percentHeight(.25f, tbErase.getLabel()));
             tbErase.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -361,7 +362,11 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 }
             });
-            tbRotate = new TextButton("Rotate", skin, "levelBuilderButton");
+
+            tbRotate = new TextButton("Rotate", skin, "levelBuilderButtonChecked");
+            tbRotate.getLabelCell().pad(Value.percentHeight(.5f, tbRotate.getLabel()));
+            tbRotate.getLabelCell().padTop(Value.percentHeight(.25f, tbRotate.getLabel()));
+            tbRotate.getLabelCell().padBottom(Value.percentHeight(.25f, tbRotate.getLabel()));
             tbRotate.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -378,15 +383,9 @@ public class LevelBuilderScreen extends ScreenBase {
             btnGroup.setMaxCheckCount(1);
             btnGroup.setMinCheckCount(0);
 
-            float minWidth = tbRotate.getPrefWidth();
-
 
             Table main = new Table(skin);
-            root.center().right().padRight(-5).setActor(main);
-
-            main.setBackground("box_white_5");
-            main.pad(5);
-            main.defaults().pad(Value.percentWidth(.1f, tbRotate)).padRight(0);
+            main.setBackground("boxBig");
             main.setTouchable(Touchable.enabled);
             main.addCaptureListener(new EventListener() {
                 @Override
@@ -396,9 +395,13 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
             });
 
-            main.add(tbDraw).width(minWidth).row();
-            main.add(tbErase).width(minWidth).row();
-            main.add(tbRotate).width(minWidth).row();
+//            main.defaults().pad(Value.percentWidth(.1f, tbRotate)).padRight(0);
+
+            main.defaults().width(tbRotate.getWidth()).pad(5 * Gdx.graphics.getDensity());
+            main.add(tbDraw).row();
+            main.add(tbErase).padTop(0).row();
+            main.add(tbRotate).padTop(0).row();
+            root.center().right().padRight(-6 * Gdx.graphics.getDensity()).setActor(main);
 
         }
 
@@ -475,8 +478,8 @@ public class LevelBuilderScreen extends ScreenBase {
                 materialGroup.wrap(true);
                 materialGroup.wrapSpace(5);
 
-                Drawable checked = skin.newDrawable("box_white_5", Color.GREEN);
-                Drawable unchecked = skin.newDrawable("box_white_5", Color.GRAY);
+                Drawable checked = skin.newDrawable("boxSmall", Color.GREEN);
+                Drawable unchecked = skin.newDrawable("boxSmall", Color.GRAY);
                 ButtonGroup<ImageButton> imgbGroup = new ButtonGroup<>();
                 imgbGroup.setMinCheckCount(1);
                 imgbGroup.setMaxCheckCount(1);
@@ -650,18 +653,29 @@ public class LevelBuilderScreen extends ScreenBase {
     private class FreeMode extends Mode {
         private OptionsMenu optionsMenu;
         private float currentZoom = 1;
+        private boolean isMovingOffset;
 
         FreeMode() {
             optionsMenu = new OptionsMenu();
             setPreferencesRoot(optionsMenu);
         }
 
+
+        @Override
+        public boolean touchDown(float x, float y, int count, int button) {
+            return isMovingOffset;
+        }
+
         @Override
         public boolean pan(float x, float y, float deltaX, float deltaY) {
-            camera.position.add(-deltaX * currentZoom, deltaY * currentZoom, 0);
-
-            updateCamInfo();
-            camera.update();
+            if (isMovingOffset) {
+                levelBuilder.moveOffsetBy(deltaX, -deltaY);
+                optionsMenu.mapSettings.updatePositionValues();
+            } else {
+                camera.position.add(-deltaX * currentZoom, deltaY * currentZoom, 0);
+                updateCamInfo();
+                camera.update();
+            }
             return true;
         }
 
@@ -723,6 +737,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 btnMapSettings.padBottom(Value.percentHeight(.5f, btnMapSettings.getLabel()));
 
                 root = new HorizontalGroup();
+                root.pad(5 * Gdx.graphics.getDensity());
                 root.addActor(btnLevelSettings);
                 root.addActor(btnMapSettings);
                 root.space(0.5f * btnLevelSettings.getLabel().getMinHeight());
@@ -747,19 +762,10 @@ public class LevelBuilderScreen extends ScreenBase {
             Table root;
             Slider sldrBallSpeed, sldrLauncherCooldown, sldrLauncherSize;
             Label lblBallSpeed, lblLauncherCooldown, lblLauncherSize;
-            Label lblMoves, lblLives, lblTime;
             TextField tfMoves, tfLives, tfTime;
-
-            final int settingsPadding = 5;
 
             // XXX(14/4/2018): *TOO* many magic values
             private UILevelSettings() {
-                root = new Table();
-
-                Label dummy = new Label
-                        (":Level Setup:", skin, "h4");
-                root.padLeft(0).padRight(0).padTop(0).padBottom(0).top();
-                root.add(dummy).padBottom(0).colspan(3).row();
 
                 InputListener stopTouchDown = new InputListener() {
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -777,7 +783,6 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 };
 
-                lblLives = new Label("Lives:", skin, "h4");
                 tfLives = createTextField(returnOnNewLineListener);
                 tfLives.addListener(new ClickListener() {
                     @Override
@@ -795,7 +800,6 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 });
 
-                lblMoves = new Label("Moves:", skin, "h4");
 
                 tfMoves = createTextField(returnOnNewLineListener);
                 tfMoves.addListener(new ClickListener() {
@@ -815,7 +819,6 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 });
 
-                lblTime = new Label("Time:", skin, "h4");
 
                 tfTime = createTextField(returnOnNewLineListener);
                 tfTime.addListener(new ClickListener() {
@@ -834,8 +837,8 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 });
 
-                sldrBallSpeed = new Slider(levelBuilder.getBallSpeed(), 20, 1, false, skin);
-                lblBallSpeed = new Label(String.format(Locale.ROOT, "BallSpeed: %2d", (int) sldrBallSpeed.getValue()), skin, "h4");
+                sldrBallSpeed = new Slider(5, 20, 1, false, skin);
+                lblBallSpeed = new Label(String.format(Locale.ROOT, "BallSpeed: %2d", (int) sldrBallSpeed.getValue()), skin, "h5");
                 sldrBallSpeed.addListener(stopTouchDown);
                 sldrBallSpeed.addListener(new ChangeListener() {
                     @Override
@@ -847,7 +850,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 Table grpBallSpeed = createSliderGroup(lblBallSpeed, sldrBallSpeed);
 
                 sldrLauncherCooldown = new Slider(0f, 4.8f, .16f, false, skin);
-                lblLauncherCooldown = new Label(String.format(Locale.ENGLISH, "LauncherCD: %1.2f", sldrLauncherCooldown.getValue()), skin, "h4");
+                lblLauncherCooldown = new Label(String.format(Locale.ENGLISH, "LauncherCD: %1.2f", sldrLauncherCooldown.getValue()), skin, "h5");
                 sldrLauncherCooldown.addListener(stopTouchDown);
                 sldrLauncherCooldown.addListener(new ChangeListener() {
                     @Override
@@ -858,8 +861,8 @@ public class LevelBuilderScreen extends ScreenBase {
                 });
                 Table grpLauncherCD = createSliderGroup(lblLauncherCooldown, sldrLauncherCooldown);
 
-                sldrLauncherSize = new Slider(levelBuilder.getLauncherSize(), 5, 1, false, skin);
-                lblLauncherSize = new Label("LauncherSize: " + (int) sldrLauncherSize.getValue(), skin, "h4");
+                sldrLauncherSize = new Slider(1, 5, 1, false, skin);
+                lblLauncherSize = new Label("LauncherSize: " + (int) sldrLauncherSize.getValue(), skin, "h5");
                 sldrLauncherSize.addListener(stopTouchDown);
                 sldrLauncherSize.addListener(new ChangeListener() {
                     @Override
@@ -870,25 +873,34 @@ public class LevelBuilderScreen extends ScreenBase {
                 });
 
                 Table grpLauncherSize = createSliderGroup(lblLauncherSize, sldrLauncherSize);
+                GlyphLayout gLayout = new GlyphLayout(skin.getFont("h4"), " 999 ");
 
                 Table grpTextFields = new Table();
-                grpTextFields.columnDefaults(0).padRight(10);
-                grpTextFields.defaults().padBottom(settingsPadding);
-                grpTextFields.add(lblLives).right();
-                grpTextFields.add(tfLives).row();
-                grpTextFields.add(lblMoves).right();
-                grpTextFields.add(tfMoves).row();
-                grpTextFields.add(lblTime).padBottom(0).right();
-                grpTextFields.add(tfTime).padBottom(0).row();
+                grpTextFields.add(new Label("Lives:", skin, "h5")).padRight(Value.percentHeight(.25f, tfMoves)).right();
+                grpTextFields.add(tfLives).width(gLayout.width).padRight(Value.percentHeight(.5f, tfMoves));
+                grpTextFields.add(new Label("Moves:", skin, "h5")).padRight(Value.percentHeight(.25f, tfMoves)).right();
+                grpTextFields.add(tfMoves).width(gLayout.width).padRight(Value.percentHeight(.5f, tfMoves));
+                grpTextFields.add(new Label("Time:", skin, "h5")).padRight(Value.percentHeight(.25f, tfMoves)).right();
+                grpTextFields.add(tfTime).width(gLayout.width).row();
 
-                root.defaults().padBottom(settingsPadding);
-                root.columnDefaults(0).padRight(10);
+                root = new Table();
 
-                root.add(grpTextFields).colspan(2).left().row();
+                root.pad(0).top();
+                root.add(new Label(":Level Setup:", skin, "h4")).padBottom(Value.percentHeight(.5f, lblBallSpeed)).colspan(2).row();
+
+                root.defaults()
+                        .padBottom(Value.percentHeight(.5f, sldrBallSpeed))
+                        .padLeft(Value.percentHeight(.5f, sldrBallSpeed))
+                        .padRight(Value.percentHeight(.5f, sldrBallSpeed));
+                root.columnDefaults(0).padRight(Value.percentHeight(.25f, sldrBallSpeed));
+
+                root.add(grpTextFields).colspan(2).row();
                 root.add(grpLauncherSize).growX();
                 root.add(grpLauncherCD).growX().row();
                 root.add(grpBallSpeed).growX();
 
+                updateValues();
+                updateMovesPercent(levelBuilder.getMoves());
             }
 
             void updateValues() {
@@ -938,9 +950,10 @@ public class LevelBuilderScreen extends ScreenBase {
         private class UIMapSettings implements UIComponent {
             Container<Table> root;
             UILayer uiLayer;
-            Slider sldrMinRot, sldrMaxRot, sldrColorCount;
-            Label lblMinRot, lblMaxRot, lblColorCount;
-            CheckBox cbRotateCCW;
+            TextField tfOriginX, tfOriginY, tfOffsetX, tfOffsetY;
+            Slider sldrMinRot, sldrMaxRot, sldrColorCount, sldrOriginMinRot, sldrOriginMaxRot;
+            Label lblMinRot, lblMaxRot, lblColorCount, lblOriginMinRot, lblOriginMaxRot;
+            CheckBox cbRotateCCW, cbIsChained;
             int activeLayer;
 
             UIMapSettings() {
@@ -951,9 +964,16 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 };
 
+                InputListener stopTouchDown = new InputListener() {
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                        event.stop();
+                        return false;
+                    }
+                };
+
                 activeLayer = levelBuilder.getLayer();
                 sldrMinRot = new Slider(0, 120, 1, false, skin);
-                lblMinRot = new Label(String.format(Locale.ROOT, "Min:%3d", (int) sldrMinRot.getValue()), skin, "h4");
+                lblMinRot = new Label(String.format(Locale.ROOT, "Min:%3d", (int) sldrMinRot.getValue()), skin, "h5");
                 sldrMinRot.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
@@ -985,9 +1005,10 @@ public class LevelBuilderScreen extends ScreenBase {
 
                     }
                 });
+                sldrMinRot.addListener(stopTouchDown);
 
                 sldrMaxRot = new Slider(0, 120, 1, false, skin);
-                lblMaxRot = new Label(String.format(Locale.ROOT, "Max:%3d", (int) sldrMaxRot.getValue()), skin, "h4");
+                lblMaxRot = new Label(String.format(Locale.ROOT, "Max:%3d", (int) sldrMaxRot.getValue()), skin, "h5");
                 sldrMaxRot.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
@@ -1018,9 +1039,79 @@ public class LevelBuilderScreen extends ScreenBase {
                         levelBuilder.setMaxSpeed(max);
                     }
                 });
+                sldrMaxRot.addListener(stopTouchDown);
+
+                sldrOriginMinRot = new Slider(0, 120, 1, false, skin);
+                lblOriginMinRot = new Label(String.format(Locale.ROOT, "Min:%3d", (int) sldrOriginMinRot.getValue()), skin, "h5");
+                sldrOriginMinRot.addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
+                        int min = (int) sldrOriginMinRot.getValue();
+                        lblOriginMinRot.setText(String.format(Locale.ROOT, "Min:%3d", min));
+                        levelBuilder.setOriginMinSpeed(min);
+                    }
+                });
+                sldrOriginMinRot.addListener(new DragListener() {
+                    @Override
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                        compute();
+                        return super.touchDown(event, x, y, pointer, button);
+                    }
+
+                    @Override
+                    public void drag(InputEvent event, float x, float y, int pointer) {
+                        compute();
+                    }
+
+                    private void compute() {
+                        int min = (int) sldrOriginMinRot.getValue();
+                        int max = (int) sldrOriginMaxRot.getValue();
+                        if (Integer.compare(min, max) == 1) {
+                            sldrOriginMaxRot.setValue(min);
+                        }
+                        lblOriginMinRot.setText(String.format(Locale.ROOT, "Min:%3d", min));
+                        levelBuilder.setOriginMinSpeed(min);
+
+                    }
+                });
+                sldrOriginMinRot.addListener(stopTouchDown);
+
+                sldrOriginMaxRot = new Slider(0, 120, 1, false, skin);
+                lblOriginMaxRot = new Label(String.format(Locale.ROOT, "Max:%3d", (int) sldrOriginMaxRot.getValue()), skin, "h5");
+                sldrOriginMaxRot.addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
+                        int max = (int) sldrOriginMaxRot.getValue();
+                        lblOriginMaxRot.setText(String.format(Locale.ROOT, "Max:%3d", max));
+                        levelBuilder.setOriginMaxSpeed(max);
+                    }
+                });
+                sldrOriginMaxRot.addListener(new DragListener() {
+                    @Override
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                        compute();
+                        return super.touchDown(event, x, y, pointer, button);
+                    }
+
+                    @Override
+                    public void drag(InputEvent event, float x, float y, int pointer) {
+                        compute();
+                    }
+
+                    private void compute() {
+                        int min = (int) sldrOriginMinRot.getValue();
+                        int max = (int) sldrOriginMaxRot.getValue();
+                        if (Integer.compare(min, max) == 1) {
+                            sldrOriginMinRot.setValue(max);
+                        }
+                        lblOriginMaxRot.setText(String.format(Locale.ROOT, "Max:%3d", max));
+                        levelBuilder.setOriginMaxSpeed(max);
+                    }
+                });
+                sldrOriginMaxRot.addListener(stopTouchDown);
 
                 sldrColorCount = new Slider(levelBuilder.getColorCount(), 8, 1, false, skin);
-                lblColorCount = new Label(String.format(Locale.ROOT, "Colors:%2d", (int) sldrColorCount.getValue()), skin, "h4");
+                lblColorCount = new Label(String.format(Locale.ROOT, "Colors:%2d", (int) sldrColorCount.getValue()), skin, "h5");
                 sldrColorCount.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
@@ -1028,6 +1119,7 @@ public class LevelBuilderScreen extends ScreenBase {
                         levelBuilder.setColorCount((int) sldrColorCount.getValue());
                     }
                 });
+                sldrColorCount.addListener(stopTouchDown);
 
                 cbRotateCCW = ActorFactory.createCheckBox("Rotate CCW", skin);
                 cbRotateCCW.addListener(new ChangeListener() {
@@ -1037,6 +1129,14 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 });
 
+                cbIsChained = ActorFactory.createCheckBox("Chained", skin);
+                cbIsChained.setChecked(true);
+                cbIsChained.addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
+                        levelBuilder.setChained(cbIsChained.isChecked());
+                    }
+                });
                 Button btnUp = new Button(skin.get("default", TextButton.TextButtonStyle.class));
                 btnUp.addListener(new ChangeListener() {
                     @Override
@@ -1048,28 +1148,50 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 });
 
-                Label slblRotation = new Label(":Rotation:", skin, "h4");
+                Table positionSettings = createPositionGroup();
+
+                float labelPercent = .15f;
 
                 Table rotLabels = new Table();
-                rotLabels.defaults().expandX().padBottom(5);
-                rotLabels.columnDefaults(0).padRight(5);
-                rotLabels.add(slblRotation).colspan(2).padRight(0).padBottom(5).row();
-                rotLabels.add(lblMinRot).padBottom(5);
-                rotLabels.add(lblMaxRot).padBottom(5).row();
+                rotLabels.defaults().expandX().padBottom(Value.percentHeight(.5f, sldrMinRot));
+                rotLabels.columnDefaults(0).padRight(Value.percentHeight(1f, sldrMinRot));
+                rotLabels.add(new Label(":Position:", skin, "h5")).colspan(2).padRight(0).padBottom(Value.percentHeight(.5f, sldrMinRot)).row();
+                rotLabels.add(positionSettings).colspan(2).padBottom(Value.percentHeight(.5f, sldrMinRot)).padRight(0).row();
+                rotLabels.add(new Label(":Rotation:", skin, "h5")).colspan(2).padRight(0).padBottom(0).row();
+                rotLabels.row().padBottom(Value.percentHeight(labelPercent, sldrMinRot));
+                rotLabels.add(lblMinRot);
+                rotLabels.add(lblMaxRot).row();
                 rotLabels.add(sldrMinRot).fill();
                 rotLabels.add(sldrMaxRot).fill().row();
-                rotLabels.add(cbRotateCCW).colspan(2).padRight(0).left().row();
 
-                rotLabels.add(lblColorCount).colspan(2).padRight(0).padBottom(5).row();
+                rotLabels.add(new Label(":Origin Rotation:", skin, "h5")).colspan(2).padRight(0).padBottom(0).row();
+                rotLabels.row().padBottom(Value.percentHeight(labelPercent, sldrOriginMinRot));
+                rotLabels.add(lblOriginMinRot);
+                rotLabels.add(lblOriginMaxRot).row();
+                rotLabels.add(sldrOriginMinRot).fill();
+                rotLabels.add(sldrOriginMaxRot).fill().row();
+
+                rotLabels.add(cbRotateCCW).left().padBottom(0);
+                rotLabels.add(cbIsChained).right().padRight(0).padBottom(0).row();
+
+                rotLabels.add(lblColorCount).colspan(2).padRight(0).padBottom(Value.percentHeight(labelPercent, sldrMinRot)).row();
                 rotLabels.add(sldrColorCount).colspan(2).padRight(0).fill().row();
 
                 VerticalGroup vgroup = new VerticalGroup();
-                vgroup.grow().pad(5);
+                vgroup.grow();
                 vgroup.addActor(rotLabels);
+
+                ScrollPane scrollPane = new ScrollPane(vgroup);
+                scrollPane.setOverscroll(false, false);
+                scrollPane.setScrollingDisabled(true, false);
+                scrollPane.setCancelTouchFocus(false);
 
                 Table main = new Table();
                 main.add(uiLayer.root);
-                main.add(vgroup).grow();
+                main.add(scrollPane).grow()
+                        .maxHeight(Value.percentHeight(.35f, UIUtils.getScreenActor()))
+                        .padLeft(Value.percentHeight(.5f, lblMinRot))
+                        .padRight(Value.percentHeight(.5f, lblMinRot));
 
                 root = new Container<>(main);
                 root.fill();
@@ -1080,8 +1202,162 @@ public class LevelBuilderScreen extends ScreenBase {
                 uiLayer.updateLayer();
                 sldrMaxRot.setValue(levelBuilder.getMaxSpeed());
                 sldrMinRot.setValue(levelBuilder.getMinSpeed());
+                sldrOriginMaxRot.setValue(levelBuilder.getOriginMaxSpeed());
+                sldrOriginMinRot.setValue(levelBuilder.getOriginMinSpeed());
                 sldrColorCount.setValue(levelBuilder.getColorCount());
                 cbRotateCCW.setChecked(levelBuilder.isCCWRotationEnabled());
+                cbIsChained.setChecked(levelBuilder.isChained());
+                tfOffsetX.setText(String.valueOf((int) levelBuilder.getOffsetX()));
+                tfOffsetY.setText(String.valueOf((int) levelBuilder.getOffsetY()));
+                tfOriginX.setText(String.valueOf((int) levelBuilder.getOriginX()));
+                tfOriginY.setText(String.valueOf((int) levelBuilder.getOriginY()));
+                uiInfo.lbl[1].setText(String.format(Locale.ROOT, "Origin<->Offset Dist: %.3f", Math.hypot(levelBuilder.getOffsetX(), levelBuilder.getOffsetY())));
+            }
+
+            private void updatePositionValues() {
+                tfOffsetX.setText(String.valueOf((int) levelBuilder.getOffsetX()));
+                tfOffsetY.setText(String.valueOf((int) levelBuilder.getOffsetY()));
+                tfOriginX.setText(String.valueOf((int) levelBuilder.getOriginX()));
+                tfOriginY.setText(String.valueOf((int) levelBuilder.getOriginY()));
+                uiInfo.lbl[1].setText(String.format(Locale.ROOT, "Origin<->Offset Dist: %.3f", Math.hypot(levelBuilder.getOffsetX(), levelBuilder.getOffsetY())));
+            }
+
+            private Table createPositionGroup() {
+                final TextField.TextFieldListener returnOnNewLineListener = new TextField.TextFieldListener() {
+                    public void keyTyped(TextField textField, char key) {
+                        if (key == '\n' || key == '\r') {
+                            textField.getOnscreenKeyboard().show(false);
+                            stage.setKeyboardFocus(null);
+                        }
+                    }
+                };
+
+                tfOriginX = new TextField("0", skin);
+                tfOriginX.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
+                tfOriginX.setAlignment(Align.center);
+                tfOriginX.setMaxLength(6);
+                tfOriginX.setTextFieldListener(returnOnNewLineListener);
+                tfOriginX.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        tfOriginX.setCursorPosition(tfOriginX.getText().length());
+                    }
+                });
+
+                tfOriginY = new TextField("0", skin);
+                tfOriginY.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
+                tfOriginY.setAlignment(Align.center);
+                tfOriginY.setMaxLength(6);
+                tfOriginY.setTextFieldListener(returnOnNewLineListener);
+                tfOriginY.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        tfOriginY.setCursorPosition(tfOriginY.getText().length());
+                    }
+                });
+
+                tfOffsetX = new TextField("0", skin);
+                tfOffsetX.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
+                tfOffsetX.setAlignment(Align.center);
+                tfOffsetX.setMaxLength(6);
+                tfOffsetX.setTextFieldListener(returnOnNewLineListener);
+                tfOffsetX.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        tfOffsetX.setCursorPosition(tfOffsetX.getText().length());
+                    }
+                });
+
+                tfOffsetY = new TextField("0", skin);
+                tfOffsetY.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
+                tfOffsetY.setAlignment(Align.center);
+                tfOffsetY.setMaxLength(6);
+                tfOffsetY.setTextFieldListener(returnOnNewLineListener);
+                tfOffsetY.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        tfOffsetY.setCursorPosition(tfOffsetY.getText().length());
+                    }
+                });
+
+                TextField.TextFieldListener offsetListener = new TextField.TextFieldListener() {
+                    @Override
+                    public void keyTyped(TextField textField, char c) {
+                        try {
+                            String txt = tfOffsetX.getText();
+                            int x = txt.equals("") ? 0 : Integer.valueOf(txt);
+                            txt = tfOffsetY.getText();
+                            int y = txt.equals("") ? 0 : Integer.valueOf(txt);
+                            levelBuilder.setOffset(x, y);
+                            uiInfo.lbl[1].setText(String.format(Locale.ROOT, "Origin<->Offset Dist: %.3f", Math.hypot(x, y)));
+                        } catch (NumberFormatException ignore) {
+                            Components.showToast("[Error] " + ignore.getLocalizedMessage(), stage);
+                        }
+                    }
+                };
+
+                TextField.TextFieldListener originListener = new TextField.TextFieldListener() {
+                    @Override
+                    public void keyTyped(TextField textField, char c) {
+                        String txt = tfOriginX.getText();
+                        try {
+                            int x = txt.equals("") ? 0 : Integer.valueOf(txt);
+                            txt = tfOriginY.getText();
+                            int y = txt.equals("") ? 0 : Integer.valueOf(txt);
+                            levelBuilder.setOrigin(x, y);
+                        } catch (NumberFormatException ignore) {
+                            Components.showToast("[Error] " + ignore.getLocalizedMessage(), stage);
+                        }
+                    }
+                };
+
+//                TextButton offsetPlus = new TextButton("+", skin);
+//                TextButton offsetMinus = new TextButton("-", skin);
+//                TextButton originPlus = new TextButton("+", skin);
+//                TextButton originMinus = new TextButton("-", skin);
+
+                final TextButton freeMove = new TextButton("Move", skin, "levelBuilderButton");
+                freeMove.getLabelCell().pad(Value.percentHeight(.3f, freeMove.getLabel()));
+                freeMove.addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
+                        if (freeMode.isMovingOffset) {
+                            freeMode.isMovingOffset = false;
+                            Components.showToast("Stopped: Moving offset", stage);
+                        } else {
+                            freeMode.isMovingOffset = true;
+                            Components.showToast("Press Back Button to stop", stage);
+                        }
+                    }
+                });
+
+                tfOriginX.setTextFieldListener(originListener);
+                tfOriginY.setTextFieldListener(originListener);
+                tfOffsetX.setTextFieldListener(offsetListener);
+                tfOffsetY.setTextFieldListener(offsetListener);
+
+                GlyphLayout glayout = new GlyphLayout(skin.getFont("h4"), " 666666 ");
+
+                Table positionSettings = new Table(skin);
+                positionSettings.defaults().padRight(3 * Gdx.graphics.getDensity());
+                positionSettings.columnDefaults(1).width(glayout.width).padRight(Value.percentHeight(1, tfOffsetX));
+                positionSettings.columnDefaults(3).width(glayout.width);
+                positionSettings.row().padBottom(Value.percentHeight(.5f, tfOriginX));
+
+                positionSettings.add("Origin: X", "h5");
+                positionSettings.add(tfOriginX);
+
+                positionSettings.add("Y", "h5");
+                positionSettings.add(tfOriginY).row();
+
+                positionSettings.add("Offset: X", "h5");
+                positionSettings.add(tfOffsetX);
+
+                positionSettings.add("Y", "h5");
+                positionSettings.add(tfOffsetY);
+                positionSettings.add(freeMove).height(Value.percentHeight(1f, tfOffsetX));
+
+                return positionSettings;
             }
 
             @Override
@@ -1113,14 +1389,21 @@ public class LevelBuilderScreen extends ScreenBase {
         @Override
         public boolean keyDown(int keycode) {
             if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
-                if (prefsStack.size() == 1) {
-                    if (activeMode == freeMode) {
-                        gameInstance.setPrevScreen();
-                    } else {
-                        uiTools.btnGroup.uncheckAll();
-                    }
+                if (freeMode.isMovingOffset) {
+                    freeMode.isMovingOffset = false;
+                    Components.showToast("Stopped: Moving offset", stage);
+                    uiInfo.lbl[2].setText("");
+
                 } else {
-                    prefsStack.pop();
+                    if (prefsStack.size() == 1) {
+                        if (activeMode == freeMode) {
+                            gameInstance.setPrevScreen();
+                        } else {
+                            uiTools.btnGroup.uncheckAll();
+                        }
+                    } else {
+                        prefsStack.pop();
+                    }
                 }
             }
             return false;

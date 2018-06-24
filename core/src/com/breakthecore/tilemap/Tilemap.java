@@ -40,6 +40,7 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
     private boolean rotateCounterClockwise;
     private boolean autoRotationEnabled;
     private float rotation;
+    private float originRotation;
 
     private int minMapRotationSpeed;
     private int maxMapRotationSpeed;
@@ -211,10 +212,6 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
 
         cos = (float) Math.cos(rotation);
         sin = (float) Math.sin(rotation);
-
-        for (TilemapTile tmTile : tilemapTiles) {
-            updateTilemapTile(tmTile);
-        }
     }
 
     public void initialize(TilemapBuilder.TilemapBuilderInfo settings) {
@@ -223,6 +220,11 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         minRotationSpeed = settings.getMinRotSpeed();
         maxRotationSpeed = settings.getMaxRotSpeed();
         speedDiff = maxRotationSpeed - minRotationSpeed;
+
+        minMapRotationSpeed = settings.getMapMinRotSpeed();
+        maxMapRotationSpeed = settings.getMapMaxRotSpeed();
+        mapSpeedDiff = maxMapRotationSpeed - minMapRotationSpeed;
+
         autoRotationEnabled = maxRotationSpeed != 0;
         isTilemapInitilized = true;
         origin.set(settings.getOriginX(), settings.getOriginY());
@@ -232,9 +234,24 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
     }
 
     public void update(float delta) {
-        if (autoRotationEnabled) {
-            rotate(MathUtils.clamp(maxRotationSpeed - speedDiff * ((float) tilemapTiles.size() / initTileCount), minRotationSpeed, maxRotationSpeed) * delta);
-        }
+        rotateOrigin(MathUtils.clamp(maxMapRotationSpeed - speedDiff * ((float) tilemapTiles.size() / initTileCount), minMapRotationSpeed, maxMapRotationSpeed) * delta);
+        rotate(MathUtils.clamp(maxRotationSpeed - speedDiff * ((float) tilemapTiles.size() / initTileCount), minRotationSpeed, maxRotationSpeed) * delta);
+        updateTilePositions();
+    }
+
+    private void rotateOrigin(float deg) {
+        originRotation += Math.toRadians(deg);
+        float cos = (float) Math.cos(originRotation);
+        float sin = (float) Math.sin(originRotation);
+
+        worldPosition.x = defPosition.x + origin.x
+                + offset.x * cos
+                + offset.y * sin;
+
+        worldPosition.y = defPosition.y + origin.y +
+                offset.x * -sin +
+                offset.y * cos;
+
     }
 
     @Override
@@ -267,6 +284,10 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
 
         minRotationSpeed = 0;
         maxRotationSpeed = 0;
+        minMapRotationSpeed = 0;
+        maxMapRotationSpeed = 0;
+        mapSpeedDiff = 0;
+        originRotation = 0;
         maxDistanceFromCenter = 0;
         isChained = false;
         isTilemapInitilized = false;

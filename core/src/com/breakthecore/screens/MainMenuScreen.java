@@ -174,7 +174,7 @@ public class MainMenuScreen extends ScreenBase {
 
         public UIOverlay() {
             ImageButton.ImageButtonStyle imgbsMap = new ImageButton.ImageButtonStyle();
-            imgbsMap.up = skin.getDrawable("box_white_5");
+            imgbsMap.up = skin.getDrawable("boxSmall");
             imgbsMap.imageUp = skin.getDrawable("map");
             imgbsMap.imageDown = skin.newDrawable("map", Color.RED);
 

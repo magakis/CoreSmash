@@ -114,10 +114,11 @@ public class RenderManager {
         for (TilemapTile tile : tm.getTileList()) {
             Vector2 pos = tile.getPositionInWorld();
             Texture texture = theme.getTexture(tile.getTileID());
+            float rotation = (float) Math.toDegrees(tm.getRotation());
 
             batch.draw(texture, pos.x - sideLengthHalf, pos.y - sideLengthHalf,
                     sideLengthHalf, sideLengthHalf, sideLength, sideLength,
-                    1, 1, -tm.getRotation(), 0, 0, texture.getWidth(), texture.getHeight(), false, false);
+                    1, 1, -rotation, 0, 0, texture.getWidth(), texture.getHeight(), false, false);
 
         }
     }

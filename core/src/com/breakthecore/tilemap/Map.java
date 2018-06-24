@@ -67,7 +67,7 @@ public class Map extends Observable implements Observer {
         return layer < activeTilemaps;
     }
 
-    public int getTilemapCount() {
+    public int getLayerCount() {
         return activeTilemaps;
     }
 
@@ -79,6 +79,11 @@ public class Map extends Observable implements Observer {
     public boolean isTileEmpty(int layer, int x, int y) {
         assertLayerIndex(layer);
         return tilemaps.get(layer).getTilemapTile(x, y) == null;
+    }
+
+    public boolean isChained(int layer) {
+        assertLayerIndex(layer);
+        return tilemaps.get(layer).isChained();
     }
 
     public float getDefPostionsX() {

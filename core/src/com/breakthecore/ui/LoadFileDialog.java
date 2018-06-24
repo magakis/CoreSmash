@@ -41,7 +41,7 @@ public class LoadFileDialog extends Dialog {
         List.ListStyle ls = new List.ListStyle();
         ls.fontColorSelected = Color.GREEN;
         ls.fontColorUnselected = Color.WHITE;
-        ls.selection = skin.newDrawable("box_white_5", Color.BLACK);
+        ls.selection = skin.newDrawable("boxSmall", Color.BLACK);
         ls.font = skin.getFont("h5");
 
         levelsFound = new List<>(ls);
@@ -66,7 +66,7 @@ public class LoadFileDialog extends Dialog {
             public void changed(ChangeEvent event, Actor actor) {
                 String chosen = levelsFound.getSelected();
                 ((Label) dlgConfirmDelete.getContentTable().getCells().get(0).getActor())
-                        .setText("Delete level '[GREEN]" + chosen + "[]'?");
+                        .setText("Delete level '[GREEN]" + chosen + "[x]'?");
                 dlgConfirmDelete.show(getStage());
             }
         });
@@ -106,7 +106,7 @@ public class LoadFileDialog extends Dialog {
         dlgConfirmDelete.button(new TextButton("No", skin, "dialogButton"), false);
         Cell<Label> txtCell = dlgConfirmDelete.getContentTable().getCells().get(0);
         txtCell.pad(Value.percentHeight(.5f, txtCell.getActor()));
-        txtCell.maxWidth(Value.percentWidth(0.5f, UIUnits.getScreenActor()));
+        txtCell.maxWidth(Value.percentWidth(0.5f, UIUtils.getScreenActor()));
         dlgConfirmDelete.getCell(dlgConfirmDelete.getContentTable()).padBottom(txtCell.getActor().getStyle().font.getLineHeight());
 
         txtCell = ((TextButton) dlgConfirmDelete.getButtonTable().getCells().get(0).getActor()).getLabelCell();
@@ -139,8 +139,8 @@ public class LoadFileDialog extends Dialog {
 
         content.add(sp)
                 .grow()
-                .maxWidth(Value.percentWidth(.75f, UIUnits.getScreenActor()))
-                .maxHeight(Value.percentHeight(.5f, UIUnits.getScreenActor()));
+                .maxWidth(Value.percentWidth(.75f, UIUtils.getScreenActor()))
+                .maxHeight(Value.percentHeight(.5f, UIUtils.getScreenActor()));
 
         Table buttons = getButtonTable();
         buttons.pad(Value.percentHeight(.25f, tbLoad));

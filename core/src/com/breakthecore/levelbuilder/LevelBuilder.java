@@ -32,10 +32,15 @@ final public class LevelBuilder {
 
         map.newLayer();
         mapSettings.add(new MapSettings());
+        mapSettings.get(0).chained = true;
     }
 
     public void setTileID(int id) {
         tileID = id;
+    }
+
+    public void moveOffsetBy(float x, float y) {
+        setOffset(getOffsetX() + x, getOffsetY() + y);
     }
 
     public void rotateLayer(float degrees) {
@@ -48,7 +53,7 @@ final public class LevelBuilder {
     public void paintAt(float x, float y) {
         Vector3 worldPos = screenToWorld.convert(x, y);
 
-        if (map.getTileCountFrom(layer) == 0) {
+        if (layer != 0 && map.getTileCountFrom(layer) == 0) {
             map.setMapPosition(layer, (int) worldPos.x, (int) worldPos.y);
             mapSettings.get(layer).offset.set(map.getLayerOffsetX(layer), map.getLayerOffsetY(layer));
         }
@@ -81,8 +86,28 @@ final public class LevelBuilder {
         layerIndicatorEnabled = enabled;
     }
 
+    public void setChained(boolean chained) {
+        mapSettings.get(layer).chained = chained;
+    }
+
     public void setCCWRotation(boolean ccw) {
         mapSettings.get(layer).rotateCCW = ccw;
+    }
+
+    public void setOriginMinSpeed(int min) {
+        mapSettings.get(layer).minMapSpeed = min;
+    }
+
+    public void setOriginMaxSpeed(int max) {
+        mapSettings.get(layer).maxMapSpeed = max;
+    }
+
+    public int getOriginMinSpeed() {
+        return mapSettings.get(layer).minMapSpeed;
+    }
+
+    public int getOriginMaxSpeed() {
+        return mapSettings.get(layer).maxMapSpeed;
     }
 
     public void setMinSpeed(int min) {
@@ -121,6 +146,34 @@ final public class LevelBuilder {
         levelSettings.ballSpeed = speed;
     }
 
+    public void setOrigin(float x, float y) {
+        mapSettings.get(layer).origin.set(x, y);
+        map.setOrigin(layer, x, y);
+        map.validate(layer);
+    }
+
+    public void setOffset(float x, float y) {
+        mapSettings.get(layer).offset.set(x, y);
+        map.setOffset(layer, x, y);
+        map.validate(layer);
+    }
+
+    public float getOriginX() {
+        return map.getLayerOriginX(layer);
+    }
+
+    public float getOriginY() {
+        return map.getLayerOriginY(layer);
+    }
+
+    public float getOffsetX() {
+        return map.getLayerOffsetX(layer);
+    }
+
+    public float getOffsetY() {
+        return map.getLayerOffsetY(layer);
+    }
+
     public int getBallSpeed() {
         return levelSettings.ballSpeed;
     }
@@ -157,6 +210,10 @@ final public class LevelBuilder {
         return mapSettings.get(layer).colorCount;
     }
 
+    public boolean isChained() {
+        return mapSettings.get(layer).isChained();
+    }
+
     public boolean isCCWRotationEnabled() {
         return mapSettings.get(layer).rotateCCW;
     }
@@ -172,8 +229,8 @@ final public class LevelBuilder {
     public void draw(RenderManager renderManager) {
         renderManager.spriteBatchBegin(camera.combined);
         if (layerIndicatorEnabled) {
-            int maxTilemaps = map.getTilemapCount();
-            renderManager.setColorTint(Color.DARK_GRAY);
+            int maxTilemaps = map.getLayerCount();
+            renderManager.setColorTint(Color.GRAY);
             for (int i = 0; i < maxTilemaps; ++i) {
                 if (i == layer) continue;
                 map.draw(renderManager, i);
@@ -187,10 +244,16 @@ final public class LevelBuilder {
         }
         renderManager.spriteBatchEnd();
 
-        ShapeRenderer shapeRenderer = renderManager.shapeRendererStart(camera.combined, ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(Color.GOLDENROD);
-        shapeRenderer.circle(getDefPositionX(), getDefPositionY(), 15);
-        renderManager.shapeRendererEnd();
+        if (map.getLayerCount() > 0) {
+            ShapeRenderer shapeRenderer = renderManager.shapeRendererStart(camera.combined, ShapeRenderer.ShapeType.Line);
+            shapeRenderer.setColor(Color.GOLDENROD);
+            shapeRenderer.circle(map.getLayerOriginX(layer) + getDefPositionX(), map.getLayerOriginY(layer) + getDefPositionY(), 20);
+
+            shapeRenderer.line(getPositionX(layer) - 20, getPositionY(layer), getPositionX(layer) + 20, getPositionY(layer));
+            shapeRenderer.line(getPositionX(layer), getPositionY(layer) - 20, getPositionX(layer), getPositionY(layer) + 20);
+            shapeRenderer.circle(map.getLayerOriginX(layer) + getDefPositionX(), map.getLayerOriginY(layer) + getDefPositionY(), 20);
+            renderManager.shapeRendererEnd();
+        }
     }
 
     public boolean saveAs(String name) {
@@ -216,16 +279,19 @@ final public class LevelBuilder {
             }
         }
 
-        for (int layer = 0; layer < parsedLevel.getMapCount(); ++layer) {
+        for (int parsedLayer = 0; parsedLayer < parsedLevel.getMapCount(); ++parsedLayer) {
             map.newLayer();
-            map.setOrigin(layer, mapSettings.get(layer).getOrigin());
-            map.setOffset(layer, mapSettings.get(layer).getOffset());
+            map.setOrigin(parsedLayer, mapSettings.get(parsedLayer).getOrigin());
+            map.setOffset(parsedLayer, mapSettings.get(parsedLayer).getOffset());
 
-            for (ParsedTile tile : parsedLevel.mapTiles.get(layer)) {
-                map.placeTile(layer, tile.x, tile.y, tile.tileID);
+            for (ParsedTile tile : parsedLevel.mapTiles.get(parsedLayer)) {
+                map.placeTile(parsedLayer, tile.x, tile.y, tile.tileID);
             }
         }
 
+        if (map.getLayerCount() == 0) {
+            map.newLayer();
+        }
 
         map.validate();
         return true;

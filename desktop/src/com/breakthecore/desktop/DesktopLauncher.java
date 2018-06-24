@@ -21,7 +21,7 @@ public class DesktopLauncher {
 			config.height = height;
 			config.width = width;
 		}
-        config.overrideDensity = 160;
+        config.overrideDensity = 220;
 		config.foregroundFPS = 60;
 		config.backgroundFPS = 15;
 		config.vSyncEnabled = false;

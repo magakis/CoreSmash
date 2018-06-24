@@ -13,7 +13,7 @@ import com.breakthecore.managers.RenderManager;
 import com.breakthecore.screens.LoadingScreen;
 import com.breakthecore.screens.MainMenuScreen;
 import com.breakthecore.screens.ScreenBase;
-import com.breakthecore.ui.UIUnits;
+import com.breakthecore.ui.UIUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -146,7 +146,7 @@ public class CoreSmash extends Game {
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height, true);
-        UIUnits.updateScreenActor(width, height);
+        UIUtils.updateScreenActor(width, height);
         super.resize(width, height);
     }
 }

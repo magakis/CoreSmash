@@ -10,6 +10,7 @@ public class MapSettings {
 
     int minSpeed;
     int maxSpeed;
+    boolean chained;
     boolean rotateCCW;
     int colorCount = 1;
 
@@ -41,6 +42,10 @@ public class MapSettings {
         return colorCount;
     }
 
+    public boolean isChained() {
+        return chained;
+    }
+
     public boolean isRotateCCW() {
         return rotateCCW;
     }
@@ -52,6 +57,7 @@ public class MapSettings {
         maxMapSpeed = 0;
         minSpeed = 0;
         maxSpeed = 0;
+        chained = false;
         rotateCCW = false;
         colorCount = 1;
     }
@@ -65,6 +71,7 @@ public class MapSettings {
         colorCount = from.colorCount;
         origin.set(from.origin);
         offset.set(from.offset);
+        chained = from.isChained();
     }
 }
 

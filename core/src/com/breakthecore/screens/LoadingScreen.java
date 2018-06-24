@@ -28,7 +28,7 @@ import com.breakthecore.tiles.TileAttributes;
 import com.breakthecore.tiles.TileIndex;
 import com.breakthecore.tiles.TileType;
 import com.breakthecore.ui.Components;
-import com.breakthecore.ui.UIUnits;
+import com.breakthecore.ui.UIUtils;
 
 import java.util.Locale;
 
@@ -58,6 +58,7 @@ public class LoadingScreen extends ScreenBase {
         am.setLoader(FreeTypeFontGenerator.class, new FreeTypeFontGeneratorLoader(resolver));
         am.setLoader(BitmapFont.class, ".ttf", new FreetypeFontLoader(resolver));
 
+//        generateBitmapFont(24, "h1.ttf");
         generateBitmapFont(48, "h1.ttf");
         am.finishLoading();
 
@@ -117,11 +118,17 @@ public class LoadingScreen extends ScreenBase {
     }
 
     private void loadAllBitmapFonts() {
-        generateBitmapFont(12, "h6.ttf");
+        generateBitmapFont(10, "h6.ttf");
         generateBitmapFont(14, "h5.ttf");
         generateBitmapFont(18, "h4.ttf");
         generateBitmapFont(24, "h3.ttf");
         generateBitmapFont(36, "h2.ttf");
+//        generateBitmapFont(12, "h6.ttf");
+//        generateBitmapFont(14, "h5.ttf");
+//        generateBitmapFont(18, "h4.ttf");
+//        generateBitmapFont(24, "h3.ttf");
+//        generateBitmapFont(36, "h2.ttf");
+//        generateBitmapFont(48, "h2.ttf");
 
         loadBitmapFont("comic_72bo.fnt");
         loadBitmapFont("comic_96bo.fnt");
@@ -337,7 +344,9 @@ public class LoadingScreen extends ScreenBase {
         pix.fillRectangle(5, 5, pix.getWidth() - 10, 30 - 10);
         tex = new Texture(pix);
         ninePatch = new NinePatch(tex, 10, 10, 10, 10);
-        skin.add("box_white_5", ninePatch);
+        defScale = .4f;
+        ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
+        skin.add("boxSmall", ninePatch);
 
         pix = new Pixmap(30, 30, Pixmap.Format.RGB888);
         pix.setColor(Color.WHITE);
@@ -346,7 +355,9 @@ public class LoadingScreen extends ScreenBase {
         pix.fillRectangle(10, 10, pix.getWidth() - 20, 30 - 20);
         tex = new Texture(pix);
         ninePatch = new NinePatch(tex, 10, 10, 10, 10);
-        skin.add("box_white_10", ninePatch);
+        defScale = .6f;
+        ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
+        skin.add("boxBig", ninePatch);
 
 
         ninePatch = new NinePatch(am.get("toast1.png", Texture.class), 15, 15, 15, 15);
@@ -363,7 +374,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("gameScreenTop", ninePatch);
 
         ninePatch = new NinePatch(am.get("LevelBuilderButton.png", Texture.class), 15, 15, 15, 15);
-        defScale = 1f;
+        defScale = .5f;
         ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
         skin.add("levelBuilderButton", ninePatch);
 
@@ -415,37 +426,37 @@ public class LoadingScreen extends ScreenBase {
 
         // TextButtonStyles
         TextButton.TextButtonStyle stb = new TextButton.TextButtonStyle();
-        stb.up = skin.newDrawable("box_white_10", Color.WHITE);
-        stb.down = skin.newDrawable("box_white_10", Color.GRAY);
+        stb.up = skin.newDrawable("boxBig", Color.WHITE);
+        stb.down = skin.newDrawable("boxBig", Color.GRAY);
         stb.checked = stb.up;
         stb.font = skin.getFont("h1");
         skin.add("menuButton", stb);
 
         stb = new TextButton.TextButtonStyle();
-        stb.up = skin.newDrawable("box_white_10", Color.WHITE);
-        stb.down = skin.newDrawable("box_white_10", Color.GRAY);
+        stb.up = skin.newDrawable("boxBig", Color.WHITE);
+        stb.down = skin.newDrawable("boxBig", Color.GRAY);
         stb.checked = stb.up;
         stb.font = skin.getFont("h4");
         skin.add("modeButton", stb);
 
         stb = new TextButton.TextButtonStyle();
         stb.up = skin.newDrawable("borderTrans", Color.WHITE);
-        stb.down = skin.newDrawable("box_white_5", Color.GRAY);
+        stb.down = skin.newDrawable("boxSmall", Color.GRAY);
         stb.checked = stb.up;
         stb.font = skin.getFont("h4");
         skin.add("default", stb);
 
         stb = new TextButton.TextButtonStyle();
-        stb.up = skin.newDrawable("box_white_5", Color.GRAY);
-        stb.down = skin.newDrawable("box_white_5", Color.DARK_GRAY);
+        stb.up = skin.newDrawable("boxSmall", Color.GRAY);
+        stb.down = skin.newDrawable("boxSmall", Color.DARK_GRAY);
         stb.checked = stb.up;
         stb.font = skin.getFont("h4");
         skin.add("box_gray_5", stb);
 
         stb = new TextButton.TextButtonStyle();
-        stb.font = skin.getFont("h3");
-        stb.up = skin.getDrawable("box_white_5");
-        stb.down = skin.newDrawable("box_white_5", Color.GRAY);
+        stb.font = skin.getFont("h4");
+        stb.up = skin.getDrawable("boxSmall");
+        stb.down = skin.newDrawable("boxSmall", Color.GRAY);
         skin.add("dialogButton", stb);
 
         stb = new TextButton.TextButtonStyle();
@@ -457,11 +468,19 @@ public class LoadingScreen extends ScreenBase {
         skin.add("levelButton", stb);
 
         stb = new TextButton.TextButtonStyle();
-        stb.up = skin.newDrawable("levelBuilderButton");
-        stb.down = skin.newDrawable("levelBuilderButton", Color.GRAY);
-        stb.disabled = skin.newDrawable("levelBuilderButton", Color.DARK_GRAY);
-        stb.font = skin.getFont("h3");
+        stb.up = skin.newDrawable("boxSmall");
+        stb.down = skin.newDrawable("boxSmall", Color.GRAY);
+        stb.disabled = skin.newDrawable("boxSmall", Color.DARK_GRAY);
+        stb.font = skin.getFont("h5");
         skin.add("levelBuilderButton", stb);
+
+        stb = new TextButton.TextButtonStyle();
+        stb.up = skin.newDrawable("boxSmall");
+        stb.down = skin.newDrawable("boxSmall", Color.GRAY);
+        stb.checked = skin.newDrawable("boxSmall", Color.GREEN);
+        stb.disabled = skin.newDrawable("boxSmall", Color.DARK_GRAY);
+        stb.font = skin.getFont("h5");
+        skin.add("levelBuilderButtonChecked", stb);
 
         stb = new TextButton.TextButtonStyle();
         stb.up = skin.newDrawable("myBall", Color.CORAL);
@@ -471,30 +490,30 @@ public class LoadingScreen extends ScreenBase {
 
         // SliderStyles
         Slider.SliderStyle ss = new Slider.SliderStyle();
-        ss.background = skin.newDrawable("box_white_5");
-        ss.background.setMinHeight(20);
+        ss.background = skin.newDrawable("boxSmall");
+        ss.background.setMinHeight(15 * Gdx.graphics.getDensity());
         ss.knob = skin.getDrawable("myBall");
-        ss.knob.setMinHeight(40);
-        ss.knob.setMinWidth(40);
+        ss.knob.setMinHeight(20 * Gdx.graphics.getDensity());
+        ss.knob.setMinWidth(20 * Gdx.graphics.getDensity());
         skin.add("default-horizontal", ss);
 
         // CheckboxStyles
         CheckBox.CheckBoxStyle cbs = new CheckBox.CheckBoxStyle();
-        cbs.checkboxOff = skin.newDrawable("box_white_10", Color.RED);
-        cbs.checkboxOn = skin.newDrawable("box_white_10", Color.GREEN);
-        cbs.font = skin.getFont("h4");
+        cbs.checkboxOff = skin.newDrawable("boxBig", Color.RED);
+        cbs.checkboxOn = skin.newDrawable("boxBig", Color.GREEN);
+        cbs.font = skin.getFont("h5");
         cbs.disabledFontColor = Color.DARK_GRAY;
         skin.add("default", cbs);
 
         // Textfield
         TextField.TextFieldStyle tfs = new TextField.TextFieldStyle();
-        tfs.background = skin.getDrawable("box_white_5");
+        tfs.background = skin.getDrawable("boxSmall");
         tfs.font = skin.getFont("h4");
         tfs.fontColor = Color.WHITE;
         skin.add("default", tfs);
 
 
-        UIUnits.setUnitActor(skin.getFont("h6"));
+        UIUtils.setUnitActor(skin.getFont("h6"));
     }
 
     private void loadTexture(String name) {
