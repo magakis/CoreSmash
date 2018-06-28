@@ -2,6 +2,7 @@ package com.breakthecore.managers;
 
 import com.badlogic.gdx.utils.Pool;
 import com.breakthecore.Observable;
+import com.breakthecore.tiles.Launchable;
 import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.tiles.Tile;
 import com.breakthecore.tiles.TileFactory;
@@ -58,11 +59,15 @@ public class MovingBallManager extends Observable {
     }
 
     public MovingBall create(float x, float y, int ID) {
+        Tile tile = TileFactory.getTileFromID(ID);
+        if (!(tile instanceof Launchable))
+            throw new RuntimeException("Tile with ID:" + ID + ", is not Launchable!");
+
         MovingBall movingBall = movingTilePool.obtain();
         movingBall.setPositionInWorld(x, y);
         movingBall.setSpeed(defaultSpeed);
         movingBall.setScale(defaultScale);
-        movingBall.setTile(TileFactory.getTileFromID(ID));
+        movingBall.setTile(tile);
         return movingBall;
     }
 

@@ -1,6 +1,8 @@
 package com.breakthecore.tilemap;
 
+import com.breakthecore.tiles.Breakable;
 import com.breakthecore.tiles.TileContainer.Side;
+import com.breakthecore.tiles.TileType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,7 +41,8 @@ class TilemapPathfinder {
 
             for (Side side : Side.values()) {
                 TilemapTile neighbour = tmTile.getNeighbour(side);
-                if (neighbour != null && !altered.contains(neighbour)) {
+                if (neighbour != null && !altered.contains(neighbour) &&
+                        (neighbour.getTile().getAttributes().getTileType() == TileType.REGULAR || neighbour.getTile() instanceof Breakable)) {
                     altered.add(neighbour);
                 }
             }

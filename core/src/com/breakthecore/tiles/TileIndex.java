@@ -41,15 +41,6 @@ public class TileIndex {
         return attr.getTileType();
     }
 
-    public int getIdOf(TileType type) {
-        for (IntMap.Entry<TileAttributes> entry : attributes.entries()) {
-            if (entry.value.getTileType() == type) {
-                return entry.key;
-            }
-        }
-        throw new RuntimeException("No entry found with type: " + type);
-    }
-
     public List<Integer> getAllPlaceableIDs() {
         List<Integer> result = new ArrayList<>();
         for (IntMap.Entry<TileAttributes> entry : attributes.entries()) {

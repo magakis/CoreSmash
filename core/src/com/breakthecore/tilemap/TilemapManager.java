@@ -9,6 +9,7 @@ import com.breakthecore.Observer;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.managers.CollisionDetector;
 import com.breakthecore.managers.RenderManager;
+import com.breakthecore.tiles.Breakable;
 import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.tiles.Tile;
 import com.breakthecore.tiles.TileContainer.Side;
@@ -230,6 +231,9 @@ public class TilemapManager extends Observable implements Observer {
             int y = t.getY();
             if (t.getGroupId() == 0 && x == 0 && y == 0) {
                 notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
+            }
+            if (t.getTile() instanceof Breakable) {
+                ((Breakable) t.getTile()).onDestroy();
             }
             tm.destroyTilemapTile(x, y);
         }

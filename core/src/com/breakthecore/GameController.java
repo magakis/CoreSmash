@@ -21,14 +21,14 @@ public class GameController {
     private TilemapManager tilemapManager;
     private MovingBallManager movingBallManager;
     private CollisionDetector collisionDetector;
-    private BehaviourPowerPack behaviourPowerPack;
+    private BehaviourPack behaviourPowerPack;
 
 
     public GameController(TilemapManager tilemapManager, MovingBallManager movingBallManager) {
         collisionDetector = new CollisionDetector();
         this.movingBallManager = movingBallManager;
         this.tilemapManager = tilemapManager;
-        behaviourPowerPack = new BehaviourPowerPack(tilemapManager,movingBallManager, collisionDetector);
+        behaviourPowerPack = new BehaviourPack(tilemapManager, movingBallManager, collisionDetector);
     }
 
     // XXX(18/6/2018): Take a look in at this method
@@ -39,21 +39,18 @@ public class GameController {
             TilemapTile tileHit = tilemapManager.checkForCollision(collisionDetector, mb);
             if (tileHit == null) continue;
 
-            mb.getTile().onCollide(mb, tileHit, behaviourPowerPack);
+            mb.getLaunchable().onCollide(mb, tileHit, behaviourPowerPack);
             mb.dispose();
         }
         movingBallManager.disposeInactive();
     }
 
-    private void resolveCollisionOf(MovingBall movingBall, TilemapTile tileHit) {
-    }
-
-    public static class BehaviourPowerPack {
+    public static class BehaviourPack {
         public final TilemapManager tilemapManager;
         public final MovingBallManager movingBallManager;
         public final CollisionDetector collisionDetector;
 
-        private BehaviourPowerPack(TilemapManager manager, MovingBallManager ballManager, CollisionDetector detector) {
+        private BehaviourPack(TilemapManager manager, MovingBallManager ballManager, CollisionDetector detector) {
             tilemapManager = manager;
             movingBallManager = ballManager;
             collisionDetector = detector;

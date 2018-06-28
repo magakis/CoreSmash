@@ -5,6 +5,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.assets.loaders.TextureLoader;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
+import com.badlogic.gdx.assets.loaders.resolvers.ResolutionFileResolver;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -46,7 +47,6 @@ public class LoadingScreen extends ScreenBase {
         super(game);
 
         stage = new Stage(gameInstance.getUIViewport());
-
         am = game.getAssetManager();
 
         textureParam = new TextureLoader.TextureParameter();
@@ -54,11 +54,14 @@ public class LoadingScreen extends ScreenBase {
         textureParam.minFilter = Texture.TextureFilter.MipMapLinearNearest;
         textureParam.magFilter = Texture.TextureFilter.Nearest;
 
-        FileHandleResolver resolver = new InternalFileHandleResolver();
-        am.setLoader(FreeTypeFontGenerator.class, new FreeTypeFontGeneratorLoader(resolver));
-        am.setLoader(BitmapFont.class, ".ttf", new FreetypeFontLoader(resolver));
+        FileHandleResolver internalResolver = new InternalFileHandleResolver();
+        am.setLoader(FreeTypeFontGenerator.class, new FreeTypeFontGeneratorLoader(internalResolver));
+        am.setLoader(BitmapFont.class, ".ttf", new FreetypeFontLoader(internalResolver));
 
-//        generateBitmapFont(24, "h1.ttf");
+        ResolutionFileResolver.Resolution p1920x1080 = new ResolutionFileResolver.Resolution(1920, 1080, "p1920x1080");
+        ResolutionFileResolver textureResolver = new ResolutionFileResolver(internalResolver, p1920x1080);
+        am.setLoader(Texture.class, new TextureLoader(textureResolver));
+
         generateBitmapFont(48, "h1.ttf");
         am.finishLoading();
 
@@ -144,73 +147,57 @@ public class LoadingScreen extends ScreenBase {
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(0)
-                .setBreakable(true)
-                .setMatchable(true)
                 .setPlaceable(true)
-                .setTileType(TileType.REGULAR)
+                .setType(TileType.REGULAR)
                 .build();
         tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(1)
-                .setBreakable(true)
-                .setMatchable(true)
                 .setPlaceable(true)
-                .setTileType(TileType.REGULAR)
+                .setType(TileType.REGULAR)
                 .build();
         tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(2)
-                .setBreakable(true)
-                .setMatchable(true)
                 .setPlaceable(true)
-                .setTileType(TileType.REGULAR)
+                .setType(TileType.REGULAR)
                 .build();
         tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(3)
-                .setBreakable(true)
-                .setMatchable(true)
                 .setPlaceable(true)
-                .setTileType(TileType.REGULAR)
+                .setType(TileType.REGULAR)
                 .build();
         tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(4)
-                .setBreakable(true)
-                .setMatchable(true)
                 .setPlaceable(true)
-                .setTileType(TileType.REGULAR)
+                .setType(TileType.REGULAR)
                 .build();
         tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(5)
-                .setBreakable(true)
-                .setMatchable(true)
                 .setPlaceable(true)
-                .setTileType(TileType.REGULAR)
+                .setType(TileType.REGULAR)
                 .build();
         tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(6)
-                .setBreakable(true)
-                .setMatchable(true)
                 .setPlaceable(true)
-                .setTileType(TileType.REGULAR)
+                .setType(TileType.REGULAR)
                 .build();
         tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(7)
-                .setBreakable(true)
-                .setMatchable(true)
                 .setPlaceable(true)
-                .setTileType(TileType.REGULAR)
+                .setType(TileType.REGULAR)
                 .build();
         tileIndex.registerTile(ballAttr);
 
@@ -288,28 +275,22 @@ public class LoadingScreen extends ScreenBase {
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(17)
-                .setBreakable(false)
-                .setMatchable(false)
+                .setType(TileType.RANDOM)
                 .setPlaceable(true)
-                .setTileType(TileType.RANDOM_REGULAR)
                 .build();
         tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(18)
-                .setBreakable(false)
-                .setMatchable(false)
+                .setType(TileType.WALL)
                 .setPlaceable(true)
-                .setTileType(TileType.WALL)
                 .build();
         tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(19)
-                .setBreakable(false)
-                .setMatchable(false)
+                .setType(TileType.BOMB)
                 .setPlaceable(false)
-                .setTileType(TileType.BOMB)
                 .build();
         tileIndex.registerTile(ballAttr);
 

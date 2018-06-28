@@ -7,9 +7,9 @@ import com.breakthecore.Coords2D;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observable;
 import com.breakthecore.WorldSettings;
+import com.breakthecore.tiles.RegularTile;
 import com.breakthecore.tiles.Tile;
 import com.breakthecore.tiles.TileContainer.Side;
-import com.breakthecore.tiles.TileType;
 
 import org.xmlpull.v1.XmlSerializer;
 
@@ -125,7 +125,7 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         }
 
         for (TilemapTile t : tilemapTiles) {
-            if (t.getTile().getTileType() == TileType.REGULAR) {
+            if (t.getTile() instanceof RegularTile) {
                 colorsAvailable[t.getTileID()]++;
             }
         }
@@ -156,7 +156,7 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
                 }
             }
 
-            if (tile.getTileType() == TileType.REGULAR) {
+            if (tile instanceof RegularTile) {
                 ++colorsAvailable[tile.getID()];
             }
 

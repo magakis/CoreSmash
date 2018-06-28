@@ -1,7 +1,5 @@
 package com.breakthecore.tiles;
 
-import com.badlogic.gdx.math.Vector2;
-
 /**
  * Created by Michail on 19/3/2018.
  */
@@ -13,6 +11,13 @@ public class MovingBall extends TileContainer {
 
     public MovingBall() {
 
+    }
+
+    /*
+     * Throws exception if cast can't be done, CAN return NULL if empty
+     */
+    public Launchable getLaunchable() {
+        return (Launchable) getTile();
     }
 
     public void setScale(float scale) {

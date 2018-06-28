@@ -1,53 +1,25 @@
 package com.breakthecore.tiles;
 
 import com.breakthecore.GameController;
+import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
 
-public class RegularTile extends Tile {
-    private TileAttributes ballAttr;
+public class RegularTile extends Tile implements Launchable {
 
-    public RegularTile(int id) {
-        ballAttr = TileIndex.get().getAttributesFor(id);
+    RegularTile(int id) {
+        super(id);
     }
 
     @Override
-    public boolean isMatchable() {
-        return ballAttr.isMatchable();
+    public void onLaunch() {
+
     }
 
     @Override
-    public boolean isBreakable() {
-        return ballAttr.isBreakable();
+    public void onCollide(MovingBall ball, TilemapTile tileHit, GameController.BehaviourPack pack) {
+        TilemapManager tmm = pack.tilemapManager;
+        TilemapTile newTile = tmm.attachBall(ball, tileHit, pack.collisionDetector);
+        tmm.handleColorMatchesFor(newTile);
     }
 
-    @Override
-    public boolean isPlaceable() {
-        return ballAttr.isPlaceable();
-    }
-
-    @Override
-    public TileType getTileType() {
-        return ballAttr.getTileType();
-    }
-
-    @Override
-    public int getID() {
-        return ballAttr.getID();
-    }
-
-    @Override
-    public TileAttributes getTileAttributes() {
-        return ballAttr;
-    }
-
-    @Override
-    public void onCollide(MovingBall movingBall, TilemapTile tileHit, GameController.BehaviourPowerPack pack) {
-        TilemapTile tile = pack.tilemapManager.attachBall(movingBall, tileHit, pack.collisionDetector);
-        pack.tilemapManager.handleColorMatchesFor(tile);
-    }
-
-    @Override
-    public void update(float delta) {
-
-    }
 }

@@ -4,14 +4,19 @@ import com.breakthecore.GameController;
 import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.tilemap.TilemapTile;
 
-public class BombTile extends Tile {
-    private final TileAttributes ballAttr = TileIndex.get().getAttributesFor(19);
+public class BombTile extends Tile implements Launchable {
 
-    BombTile() {
+    BombTile(int id) {
+        super(id);
     }
 
     @Override
-    public void onCollide(MovingBall movingBall, TilemapTile tileHit, GameController.BehaviourPowerPack pack) {
+    public void onLaunch() {
+
+    }
+
+    @Override
+    public void onCollide(MovingBall movingBall, TilemapTile tileHit, GameController.BehaviourPack pack) {
         int collidedTileX = tileHit.getX();
         int collidedTileY = tileHit.getY();
 
@@ -23,40 +28,4 @@ public class BombTile extends Tile {
             }
         }
     }
-
-    @Override
-    public void update(float delta) {
-
-    }
-
-    @Override
-    public boolean isMatchable() {
-        return ballAttr.isMatchable();
-    }
-
-    @Override
-    public boolean isBreakable() {
-        return ballAttr.isBreakable();
-    }
-
-    @Override
-    public boolean isPlaceable() {
-        return ballAttr.isPlaceable();
-    }
-
-    @Override
-    public TileType getTileType() {
-        return ballAttr.getTileType();
-    }
-
-    @Override
-    public int getID() {
-        return ballAttr.getID();
-    }
-
-    @Override
-    public TileAttributes getTileAttributes() {
-        return ballAttr;
-    }
-
 }

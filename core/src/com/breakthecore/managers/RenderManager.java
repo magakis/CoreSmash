@@ -1,13 +1,8 @@
 package com.breakthecore.managers;
 
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.assets.loaders.BitmapFontLoader;
-import com.badlogic.gdx.assets.loaders.TextureLoader;
-import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
-import com.badlogic.gdx.assets.loaders.resolvers.ResolutionFileResolver;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
@@ -39,14 +34,6 @@ public class RenderManager {
         shapeRenderer = new ShapeRenderer();
         assetManager = am;
 
-        ResolutionFileResolver.Resolution p1920x1080 = new ResolutionFileResolver.Resolution(1920, 1080, "p1920x1080");
-        ResolutionFileResolver resolver = new ResolutionFileResolver(new InternalFileHandleResolver(), p1920x1080);
-
-        am.setLoader(Texture.class, new TextureLoader(resolver));
-        am.setLoader(BitmapFont.class, new BitmapFontLoader(resolver));
-
-        am.load("gidole_96.fnt", BitmapFont.class);
-        am.finishLoading();
     }
 
     public SpriteBatch spriteBatchBegin(Matrix4 combined) {

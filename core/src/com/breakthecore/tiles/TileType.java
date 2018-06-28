@@ -2,7 +2,7 @@ package com.breakthecore.tiles;
 
 public enum TileType {
     REGULAR,
-    RANDOM_REGULAR,
+    RANDOM,
     BOMB,
-    WALL
+    WALL,
 }
