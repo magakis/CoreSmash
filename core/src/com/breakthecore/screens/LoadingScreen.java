@@ -6,6 +6,7 @@ import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.assets.loaders.TextureLoader;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.assets.loaders.resolvers.ResolutionFileResolver;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -23,6 +24,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.Align;
 import com.breakthecore.CoreSmash;
+import com.breakthecore.sound.SoundManager;
 import com.breakthecore.themes.AbstractTheme;
 import com.breakthecore.themes.BaseTheme;
 import com.breakthecore.tiles.TileAttributes;
@@ -74,7 +76,9 @@ public class LoadingScreen extends ScreenBase {
         screenInputMultiplexer.addProcessor(stage);
         loadAllTextures();
         loadAllBitmapFonts();
+        loadSounds();
         loadAllBalls();
+
 
         baseTheme = new BaseTheme();
         baseTheme.queueForLoad(am);
@@ -86,6 +90,7 @@ public class LoadingScreen extends ScreenBase {
         if (am.update()) {
             baseTheme.finishLoading();
             setupFonts();
+            setupSounds();
             setupSkin();
             Components.initialize(skin);
             gameInstance.initApp();
@@ -118,6 +123,10 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("HourGlass.png");
         loadTexture("HeartIcon.png");
         loadTexture("LevelBuilderButton.png");
+    }
+
+    private void loadSounds() {
+        am.load("blop.mp3", Sound.class);
     }
 
     private void loadAllBitmapFonts() {
@@ -295,6 +304,11 @@ public class LoadingScreen extends ScreenBase {
         tileIndex.registerTile(ballAttr);
 
         tileIndex.freeze();
+    }
+
+    public void setupSounds() {
+        SoundManager soundManager = SoundManager.get();
+        soundManager.loadSound("regularBallDestroyed", am.get("blop.mp3", Sound.class));
     }
 
     public void setupFonts() {

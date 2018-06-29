@@ -33,7 +33,6 @@ public class RenderManager {
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
         assetManager = am;
-
     }
 
     public SpriteBatch spriteBatchBegin(Matrix4 combined) {

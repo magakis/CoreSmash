@@ -9,6 +9,7 @@ import com.breakthecore.Observer;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.managers.CollisionDetector;
 import com.breakthecore.managers.RenderManager;
+import com.breakthecore.sound.SoundManager;
 import com.breakthecore.tiles.Breakable;
 import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.tiles.Tile;
@@ -47,9 +48,12 @@ public class TilemapManager extends Observable implements Observer {
     private Match3 match3 = new Match3();
     private int[] colorsAvailable = new int[10]; // XXX(22/4/2018): MagicValue 10 (Should ask TileIndex)
 
+    SoundManager.SoundAsset popSound;
+
     public TilemapManager() {
         tilemaps = new ArrayList<>();
         defTilemapPosition = new Coords2D(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
+        popSound = SoundManager.get().getSoundAsset("regularBallDestroyed");
     }
 
     public TilemapTile getTilemapTile(int layer, int x, int y) {
@@ -238,6 +242,7 @@ public class TilemapManager extends Observable implements Observer {
             tm.destroyTilemapTile(x, y);
         }
 
+        popSound.play();
         notifyObservers(NotificationType.SAME_COLOR_MATCH, match.size());
     }
 
