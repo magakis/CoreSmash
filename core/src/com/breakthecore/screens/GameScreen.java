@@ -132,10 +132,10 @@ public class GameScreen extends ScreenBase implements Observer {
     @Override
     public void render(float delta) {
         update(delta);
-        draw();
+        draw(delta);
     }
 
-    private void draw() {
+    private void draw(float delta) {
         renderManager.spriteBatchBegin(camera.combined);
         launcher.draw(renderManager);
         tilemapManager.draw(renderManager);

@@ -10,7 +10,7 @@ public class MapSettings {
 
     int minSpeed;
     int maxSpeed;
-    boolean chained;
+    boolean chained = true;
     boolean rotateCCW;
     int colorCount = 1;
 
@@ -57,7 +57,7 @@ public class MapSettings {
         maxMapSpeed = 0;
         minSpeed = 0;
         maxSpeed = 0;
-        chained = false;
+        chained = true;
         rotateCCW = false;
         colorCount = 1;
     }
