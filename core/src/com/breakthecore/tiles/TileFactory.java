@@ -12,14 +12,16 @@ public class TileFactory {
         switch (type) {
             case REGULAR:
                 return new RegularTile(id);
-            case RANDOM:
+            case RANDOM_BALL:
                 return new RandomTile(id);
-            case WALL:
+            case WALL_BALL:
                 return new WallBall(id);
-            case BOMB:
+            case BOMB_BALL:
                 return new BombTile(id);
+            case SPIKY_BALL:
+                return new SpikyBall(id);
             default:
-                return null;
+                throw new RuntimeException("Not Implemented Tile!");
         }
     }
 

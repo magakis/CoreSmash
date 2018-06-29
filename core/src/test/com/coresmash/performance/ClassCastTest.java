@@ -11,7 +11,7 @@ public class ClassCastTest {
 
     @BeforeClass
     public static void init() {
-        LoadingScreen.loadAllBalls();
+        LoadingScreen.loadBalls();
     }
 
     @Test

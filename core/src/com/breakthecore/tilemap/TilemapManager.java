@@ -11,6 +11,7 @@ import com.breakthecore.managers.CollisionDetector;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.sound.SoundManager;
 import com.breakthecore.tiles.Breakable;
+import com.breakthecore.tiles.CollisionInitiator;
 import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.tiles.Tile;
 import com.breakthecore.tiles.TileContainer.Side;
@@ -190,7 +191,15 @@ public class TilemapManager extends Observable implements Observer {
         Tilemap layer = tilemaps.get(tileHit.getGroupId());
         Side[] sides = collisionDetector.getClosestSides(layer.getRotation(), collisionDetector.getDirection(ball.getPositionInWorld(), tileHit.getPositionInWorld()));
 
-        return attachTile(tileHit.getGroupId(), ball.extractTile(), tileHit, sides);
+        if (tileHit.getTile() instanceof CollisionInitiator) {
+            if (((CollisionInitiator) tileHit.getTile()).handleCollisionWith(ball, sides, this)) {
+                return null; //Collision was handled
+            } else {
+                return attachTile(tileHit.getGroupId(), ball.extractTile(), tileHit, sides);
+            }
+        } else {
+            return attachTile(tileHit.getGroupId(), ball.extractTile(), tileHit, sides);
+        }
     }
 
     //////////////////| GET RID OF |//////////////////
@@ -213,6 +222,7 @@ public class TilemapManager extends Observable implements Observer {
 
     public void handleColorMatchesFor(TilemapTile newTile) {
         Objects.requireNonNull(newTile);
+
         Tilemap tm = tilemaps.get(newTile.getGroupId());
         ArrayList<TilemapTile> match = match3.getColorMatchesFromTile(newTile);
 

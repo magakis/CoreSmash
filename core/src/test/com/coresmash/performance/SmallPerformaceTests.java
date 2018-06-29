@@ -13,7 +13,7 @@ public class SmallPerformaceTests extends TestCase {
     }
 
     public void setUp() {
-        LoadingScreen.loadAllBalls();
+        LoadingScreen.loadBalls();
         start = System.nanoTime();
     }
 

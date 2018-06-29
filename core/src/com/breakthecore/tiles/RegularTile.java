@@ -19,7 +19,9 @@ public class RegularTile extends Tile implements Launchable {
     public void onCollide(MovingBall ball, TilemapTile tileHit, GameController.BehaviourPack pack) {
         TilemapManager tmm = pack.tilemapManager;
         TilemapTile newTile = tmm.attachBall(ball, tileHit, pack.collisionDetector);
-        tmm.handleColorMatchesFor(newTile);
+        if (newTile != null) {
+            tmm.handleColorMatchesFor(newTile);
+        }
     }
 
 }

@@ -77,7 +77,7 @@ public class LoadingScreen extends ScreenBase {
         loadAllTextures();
         loadAllBitmapFonts();
         loadSounds();
-        loadAllBalls();
+        loadBalls();
 
 
         baseTheme = new BaseTheme();
@@ -123,6 +123,7 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("HourGlass.png");
         loadTexture("HeartIcon.png");
         loadTexture("LevelBuilderButton.png");
+        loadTexture("SpikyBall.png");
     }
 
     private void loadSounds() {
@@ -148,7 +149,7 @@ public class LoadingScreen extends ScreenBase {
         generateBitmapFont(24, "h3f.ttf");
     }
 
-    public static void loadAllBalls() {
+    public static void loadBalls() {
         TileAttributes ballAttr;
 
         TileIndex tileIndex = TileIndex.get();
@@ -284,22 +285,29 @@ public class LoadingScreen extends ScreenBase {
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(17)
-                .setType(TileType.RANDOM)
+                .setType(TileType.RANDOM_BALL)
                 .setPlaceable(true)
                 .build();
         tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(18)
-                .setType(TileType.WALL)
+                .setType(TileType.WALL_BALL)
                 .setPlaceable(true)
                 .build();
         tileIndex.registerTile(ballAttr);
 
         ballAttr = TileAttributes.getBuilder()
                 .setID(19)
-                .setType(TileType.BOMB)
+                .setType(TileType.BOMB_BALL)
                 .setPlaceable(false)
+                .build();
+        tileIndex.registerTile(ballAttr);
+
+        ballAttr = TileAttributes.getBuilder()
+                .setID(20)
+                .setType(TileType.SPIKY_BALL)
+                .setPlaceable(true)
                 .build();
         tileIndex.registerTile(ballAttr);
 

@@ -14,7 +14,7 @@ public class TilemapManagerTest extends ProjectTestCase {
 
     @BeforeClass
     public static void testInit() {
-        LoadingScreen.loadAllBalls();
+        LoadingScreen.loadBalls();
     }
 
     public TilemapManagerTest(String name) {

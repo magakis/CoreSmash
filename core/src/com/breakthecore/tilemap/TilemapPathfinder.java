@@ -52,7 +52,7 @@ class TilemapPathfinder {
             if (disconnected.contains(origin)) continue;
 
             if (!isConnected(origin)) {
-                disconnected.addAll(closed);
+                disconnected.add(origin);
             }
         }
 
