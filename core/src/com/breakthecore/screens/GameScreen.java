@@ -94,7 +94,7 @@ public class GameScreen extends ScreenBase implements Observer {
         launcher = new Launcher(movingBallManager);
         tilemapManager = new TilemapManager();
         statsManager = new StatsManager();
-        gameController = new GameController(tilemapManager, movingBallManager);
+        gameController = new GameController(tilemapManager, movingBallManager, statsManager);
         gameScreenController = new GameScreenController(this);
 
         skin = gameInstance.getSkin();

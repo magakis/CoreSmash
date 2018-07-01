@@ -144,7 +144,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
         Table prefs = new Table();
 //        prefsStack.setMaxHeight(Value.percentHeight(.25f, prefs));
-        prefs.center().bottom().add(prefsStack.getRoot()).growX().padBottom(-5);
+        prefs.center().bottom().add(prefsStack.getRoot()).growX().padBottom(-6 * Gdx.graphics.getDensity());
 
         mainStack.addActor(uiTools.getRoot());
         mainStack.addActor(uiToolbarTop.getRoot());

@@ -175,6 +175,13 @@ public class StatsManager extends Observable implements Observer {
         return specialBallCount;
     }
 
+    public void loseLife() {
+        if (isLivesEnabled) {
+            --lives;
+            notifyObservers(NotificationType.NOTIFICATION_TYPE_LIVES_CHANGED, null);
+        }
+    }
+
     public void setLives(int lives) {
         this.lives = lives < 0 ? 0: lives;
         isLivesEnabled = lives != 0;

@@ -10,6 +10,7 @@ public class SpikyBall extends Tile implements CollisionInitiator {
 
     @Override
     public boolean handleCollisionWith(MovingBall ball, GameController controller) {
+        controller.getBehaviourPack().statsManager.loseLife();
         return true; //Simply make the ball disappear
     }
 }

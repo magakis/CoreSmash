@@ -2,6 +2,7 @@ package com.breakthecore;
 
 import com.breakthecore.managers.CollisionDetector;
 import com.breakthecore.managers.MovingBallManager;
+import com.breakthecore.managers.StatsManager;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
 import com.breakthecore.tiles.CollisionInitiator;
@@ -22,17 +23,19 @@ public class GameController {
     private TilemapManager tilemapManager;
     private MovingBallManager movingBallManager;
     private CollisionDetector collisionDetector;
+    private StatsManager statsManager;
     private BehaviourPack behaviourPowerPack;
 
 
-    public GameController(TilemapManager tilemapManager, MovingBallManager movingBallManager) {
+    public GameController(TilemapManager tilemapManager, MovingBallManager movingBallManager, StatsManager statsManager) {
         collisionDetector = new CollisionDetector();
         this.movingBallManager = movingBallManager;
         this.tilemapManager = tilemapManager;
-        behaviourPowerPack = new BehaviourPack(tilemapManager, movingBallManager, collisionDetector);
+        this.statsManager = statsManager;
+        behaviourPowerPack = new BehaviourPack(tilemapManager, movingBallManager, collisionDetector, statsManager);
     }
 
-    // XXX(18/6/2018): Take a look in at this method
+    // XXX(18/6/2018): Take a look at this method
     public void update(float delta) {
         updateCollisions();
     }
@@ -65,11 +68,13 @@ public class GameController {
         public final TilemapManager tilemapManager;
         public final MovingBallManager movingBallManager;
         public final CollisionDetector collisionDetector;
+        public final StatsManager statsManager;
 
-        private BehaviourPack(TilemapManager manager, MovingBallManager ballManager, CollisionDetector detector) {
+        private BehaviourPack(TilemapManager manager, MovingBallManager ballManager, CollisionDetector detector, StatsManager statsManager) {
             tilemapManager = manager;
             movingBallManager = ballManager;
             collisionDetector = detector;
+            this.statsManager = statsManager;
         }
     }
 }
