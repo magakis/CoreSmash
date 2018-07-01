@@ -455,11 +455,13 @@ public class GameScreen extends ScreenBase implements Observer {
             tblTop.row()
                     .padBottom(Value.percentHeight(.2f, lblScore));
             tblTop.add(tblTime)
-                    .width(fontLayout.width);
+                    .growX()
+                    .maxWidth(fontLayout.width);
             tblTop.add(tblCenter)
                     .size(lblLives.getPrefHeight() * 5);
             tblTop.add(tblScore)
-                    .width(fontLayout.width);
+                    .growX()
+                    .maxWidth(fontLayout.width);
 
 
             tblPowerUps.setTouchable(Touchable.enabled);
