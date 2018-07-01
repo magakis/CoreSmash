@@ -3,6 +3,7 @@ package com.breakthecore.tiles;
 import com.breakthecore.GameController;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
+import com.breakthecore.tiles.TileContainer.Side;
 
 public class RegularTile extends Tile implements Launchable {
 
@@ -16,9 +17,12 @@ public class RegularTile extends Tile implements Launchable {
     }
 
     @Override
-    public void onCollide(MovingBall ball, TilemapTile tileHit, GameController.BehaviourPack pack) {
+    public void onCollide(MovingBall ball, TilemapTile tileHit, GameController controller) {
+        GameController.BehaviourPack pack = controller.getBehaviourPack();
         TilemapManager tmm = pack.tilemapManager;
-        TilemapTile newTile = tmm.attachBall(ball, tileHit, pack.collisionDetector);
+        Side[] sides = pack.collisionDetector.getClosestSides(tmm.getLayerRotation(tileHit.getLayerId()), pack.collisionDetector.getDirection(ball.getPositionInWorld(), tileHit.getPositionInWorld()));
+
+        TilemapTile newTile = tmm.attachBall(ball.extractTile(), tileHit, sides);
         if (newTile != null) {
             tmm.handleColorMatchesFor(newTile);
         }

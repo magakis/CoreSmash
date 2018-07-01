@@ -52,7 +52,7 @@ public final class LevelParser {
 
     public static boolean saveAs(String name, Map map, LevelSettings levelSettings, MapSettings[] mapSettings) {
         FileHandle file = Gdx.files.external("/CoreSmash/levels/" + name + ".xml");
-        int maxTilemaps = map.getLayerCount();
+        int maxTilemaps = map.layerCount();
         XmlSerializer serializer = XmlManager.getSerializer();
 
         try (Writer writer = file.writer(false)) {
@@ -132,7 +132,6 @@ public final class LevelParser {
                         }
                         break;
                     case XmlPullParser.TEXT:
-                        String dbText = parser.getText();
                         break;
                 }
                 type = parser.next();

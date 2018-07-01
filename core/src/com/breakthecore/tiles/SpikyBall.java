@@ -1,6 +1,6 @@
 package com.breakthecore.tiles;
 
-import com.breakthecore.tilemap.TilemapManager;
+import com.breakthecore.GameController;
 
 public class SpikyBall extends Tile implements CollisionInitiator {
     public SpikyBall(int id) {
@@ -9,7 +9,7 @@ public class SpikyBall extends Tile implements CollisionInitiator {
 
 
     @Override
-    public boolean handleCollisionWith(MovingBall ball, TileContainer.Side[] sides, TilemapManager manager) {
+    public boolean handleCollisionWith(MovingBall ball, GameController controller) {
         return true; //Simply make the ball disappear
     }
 }

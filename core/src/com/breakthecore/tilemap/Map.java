@@ -3,14 +3,12 @@ package com.breakthecore.tilemap;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.breakthecore.Coords2D;
-import com.breakthecore.NotificationType;
 import com.breakthecore.Observable;
 import com.breakthecore.Observer;
 import com.breakthecore.WorldSettings;
-import com.breakthecore.managers.CollisionDetector;
 import com.breakthecore.managers.RenderManager;
-import com.breakthecore.tiles.MovingBall;
-import com.breakthecore.tiles.TileFactory;
+import com.breakthecore.tiles.Tile;
+import com.breakthecore.tiles.TileContainer.Side;
 
 import org.xmlpull.v1.XmlSerializer;
 
@@ -24,7 +22,7 @@ import java.util.List;
  * XXX: BAD IMPLEMENTATION!
  */
 
-/* FIXME: 1/5/2018 TilemapManager should control _*EVERY*_ TilemapTile creation
+/** FIXME: 1/5/2018 TilemapManager should control _*EVERY*_ TilemapTile creation
  * TODO: Implement a better way of setting up Tilemaps and balancing them.
  *
  * The following has been implemented:
@@ -33,28 +31,27 @@ import java.util.List;
  * the IDs and balance the map based on them. After I have applied the filter I want, I will instantiate
  * the Tilemap with that builder and create the tiles
  */
-public class Map extends Observable implements Observer {
+public class Map extends Observable implements TilemapCollection {
     private List<Tilemap> tilemaps;
     private int activeTilemaps;
     private final Coords2D defMapPosition;
-    private int[] colorsAvailable = new int[10]; // XXX(22/4/2018): MagicValue 10 (Should ask TileIndex)
+
+    Observer tmObserver;
 
     public Map() {
-        tilemaps = new ArrayList<>();
-        defMapPosition = new Coords2D(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
+        this(null);
     }
 
+    public Map(Observer observer) {
+        tilemaps = new ArrayList<>();
+        defMapPosition = new Coords2D(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
+        tmObserver = observer;
+    }
+
+    @Override
     public TilemapTile getTilemapTile(int layer, int x, int y) {
         assertLayerIndex(layer);
         return tilemaps.get(layer).getTilemapTile(x, y);
-    }
-
-    public int getTotalTileCount() {
-        int res = 0;
-        for (int i = 0; i < activeTilemaps; ++i) {
-            res += tilemaps.get(i).getTileCount();
-        }
-        return res;
     }
 
     public int getTileCountFrom(int layer) {
@@ -62,13 +59,15 @@ public class Map extends Observable implements Observer {
         return tilemaps.get(layer).getTileCount();
     }
 
+    public float getLayerRotation(int layer) {
+        assertLayerIndex(layer);
+        return tilemaps.get(layer).getRotation();
+    }
+
+    @Override
     public boolean layerExists(int layer) {
         if (layer < 0) throw new IllegalArgumentException("Requested layer was: " + layer);
         return layer < activeTilemaps;
-    }
-
-    public int getLayerCount() {
-        return activeTilemaps;
     }
 
     public Vector3 getWorldToLayerCoords(int layer, Vector3 world) {
@@ -86,22 +85,12 @@ public class Map extends Observable implements Observer {
         return tilemaps.get(layer).isChained();
     }
 
-    public float getDefPostionsX() {
+    public float getDefPositionX() {
         return defMapPosition.x;
     }
 
-    public float getDefPostionsY() {
+    public float getDefPositionY() {
         return defMapPosition.y;
-    }
-
-    /* Questionable whether this should be here */
-    public TilemapTile checkForCollision(CollisionDetector detector, MovingBall mball) {
-        TilemapTile result = null;
-        for (int i = activeTilemaps - 1; i >= 0; --i) {
-            result = detector.findCollision(tilemaps.get(i), mball);
-            if (result != null) break;
-        }
-        return result;
     }
 
     public void serializeBalls(int layer, XmlSerializer serializer, String namespace, String tag) throws IOException {
@@ -109,29 +98,13 @@ public class Map extends Observable implements Observer {
         tilemaps.get(layer).serializeBalls(serializer, namespace, tag);
     }
 
-    public int[] getColorAmountsAvailable() {
-        for (int i = 0; i < colorsAvailable.length; ++i) {
-            colorsAvailable[i] = 0;
-        }
-
-        int tilemapCount = tilemaps.size();
-        for (int tmIndex = 0; tmIndex < tilemapCount; ++tmIndex) {
-            if (tilemaps.get(tmIndex).getTileCount() == 0) continue;
-
-            int[] listOfColorAmounts = tilemaps.get(tmIndex).getColorAmountsAvailable();
-            for (int i = 0; i < listOfColorAmounts.length; ++i) {
-                colorsAvailable[i] += listOfColorAmounts[i];
-            }
-        }
-
-        return colorsAvailable;
-    }
-
+    @Override
     public float getLayerPositionX(int layer) {
         assertLayerIndex(layer);
         return tilemaps.get(layer).getPositionX();
     }
 
+    @Override
     public float getLayerPositionY(int layer) {
         assertLayerIndex(layer);
         return tilemaps.get(layer).getPositionY();
@@ -147,6 +120,22 @@ public class Map extends Observable implements Observer {
         return tilemaps.get(layer).getOriginY();
     }
 
+    public TilemapTile placeTile(TilemapTile tmTile, Tile tile, Side side) {
+        TilemapTile newTile = tilemaps.get(tmTile.getLayerId()).putTilemapTile(tmTile, tile, side);
+        return newTile;
+    }
+
+    public TilemapTile placeTile(int layer, int x, int y, Tile tile) {
+        assertLayerIndex(layer);
+        TilemapTile newTile = tilemaps.get(layer).putTilemapTile(x, y, tile);
+        return newTile;
+    }
+
+    @Override
+    public int layerCount() {
+        return activeTilemaps;
+    }
+
     public float getLayerOffsetX(int layer) {
         assertLayerIndex(layer);
         return tilemaps.get(layer).getOffsetX();
@@ -157,19 +146,23 @@ public class Map extends Observable implements Observer {
         return tilemaps.get(layer).getOffsetY();
     }
 
+    public int totalBallCount() {
+        int res = 0;
+        for (int i = 0; i < activeTilemaps; ++i) {
+            res += tilemaps.get(i).getTileCount();
+        }
+        return res;
+    }
+
     public void setMapPosition(int layer, int x, int y) {
         assertLayerIndex(layer);
         tilemaps.get(layer).setMapPosition(x, y);
     }
 
-    public void placeTile(int layer, int x, int y, int tileID) {
+    public TilemapTile removeTile(int layer, int x, int y) {
         assertLayerIndex(layer);
-        tilemaps.get(layer).putTilemapTile(x, y, TileFactory.getTileFromID(tileID));
-    }
-
-    public void removeTile(int layer, int x, int y) {
-        assertLayerIndex(layer);
-        tilemaps.get(layer).destroyTilemapTile(x, y);
+        TilemapTile removed = tilemaps.get(layer).destroyTilemapTile(x, y);
+        return removed;
     }
 
     public int getCenterTileID() {
@@ -209,13 +202,16 @@ public class Map extends Observable implements Observer {
         }
     }
 
-    public void newLayer() {
+    public Tilemap newLayer() {
         if (activeTilemaps >= tilemaps.size()) {
             Tilemap tm = new Tilemap(activeTilemaps, defMapPosition);
-            tm.addObserver(this);
+            if (tmObserver != null) {
+                tm.addObserver(tmObserver);
+            }
             tilemaps.add(tm);
         }
         ++activeTilemaps;
+        return tilemaps.get(activeTilemaps - 1);
     }
 
     public void update(float delta) {
@@ -241,11 +237,6 @@ public class Map extends Observable implements Observer {
         assertLayerIndex(layer);
         if (tilemaps.get(layer).getTileCount() == 0) return;
         renderManager.draw(tilemaps.get(layer));
-    }
-
-    @Override
-    public void onNotify(NotificationType type, Object ob) {
-        notifyObservers(type, ob);
     }
 
     public void forceRotateLayer(int layer, float degrees) {

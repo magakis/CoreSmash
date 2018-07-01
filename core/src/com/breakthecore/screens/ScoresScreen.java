@@ -74,9 +74,9 @@ public class ScoresScreen extends ScreenBase {
              root.add(new Label("Score",skin, "h4")).row();
 
              lblScore = new Label[5];
-             lblTotalScore = new Label("", skin, "comic_72bo");
+             lblTotalScore = new Label("", skin, "h2o");
 
-             String style1st = "comic_72bo",
+             String style1st = "h2o",
                      style2nd = "h4",
                      styledef = "h4";
 

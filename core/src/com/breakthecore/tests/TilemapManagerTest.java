@@ -41,7 +41,7 @@ public class TilemapManagerTest extends ProjectTestCase {
         tilemapManager.newLayer();
         tilemapManager.newLayer();
 
-        assertEquals(tilemapManager.getTilemapCount(), 4);
+        assertEquals(tilemapManager.layerCount(), 4);
 
         assertTrue(tilemapManager.layerExists(0));
         assertTrue(tilemapManager.layerExists(1));

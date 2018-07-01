@@ -2,6 +2,7 @@ package com.breakthecore.tiles;
 
 import com.breakthecore.GameController;
 import com.breakthecore.tilemap.Tilemap;
+import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
 
 public class BombTile extends Tile implements Launchable {
@@ -16,14 +17,15 @@ public class BombTile extends Tile implements Launchable {
     }
 
     @Override
-    public void onCollide(MovingBall movingBall, TilemapTile tileHit, GameController.BehaviourPack pack) {
+    public void onCollide(MovingBall movingBall, TilemapTile tileHit, GameController controller) {
         int collidedTileX = tileHit.getX();
         int collidedTileY = tileHit.getY();
 
+        TilemapManager tmm = controller.getBehaviourPack().tilemapManager;
         for (int y = collidedTileY - 2; y < collidedTileY + 3; ++y) {
             for (int x = collidedTileX - 2; x < collidedTileX + 3; ++x) {
                 if (Tilemap.getTileDistance(x, y, collidedTileX, collidedTileY) < 2) {
-                    pack.tilemapManager.removeTile(tileHit.getGroupId(), x, y);
+                    tmm.removeTile(tileHit.getLayerId(), x, y);
                 }
             }
         }

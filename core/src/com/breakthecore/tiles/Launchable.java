@@ -6,5 +6,5 @@ import com.breakthecore.tilemap.TilemapTile;
 public interface Launchable {
     void onLaunch();
 
-    void onCollide(MovingBall ball, TilemapTile tileHit, GameController.BehaviourPack pack);
+    void onCollide(MovingBall ball, TilemapTile tileHit, GameController controller);
 }

@@ -284,7 +284,6 @@ public class GameScreen extends ScreenBase implements Observer {
                             scrPos = camera.unproject(scrPos);
                             currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
                             currAngle = currPoint.angle();
-                            tilemapManager.forceRotateLayer(0, (initAngle - currAngle) * 2.5f);
                             initAngle = currAngle;
                         } else {
                             isPanning = true;

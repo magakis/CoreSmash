@@ -1,8 +1,7 @@
 package com.breakthecore.tiles;
 
-import com.breakthecore.tilemap.TilemapManager;
-import com.breakthecore.tiles.TileContainer.Side;
+import com.breakthecore.GameController;
 
 public interface CollisionInitiator {
-    boolean handleCollisionWith(MovingBall ball, Side[] sides, TilemapManager manager);
+    boolean handleCollisionWith(MovingBall ball, GameController controller);
 }

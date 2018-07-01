@@ -4,6 +4,7 @@ import com.breakthecore.managers.CollisionDetector;
 import com.breakthecore.managers.MovingBallManager;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
+import com.breakthecore.tiles.CollisionInitiator;
 import com.breakthecore.tiles.MovingBall;
 
 import java.util.List;
@@ -33,16 +34,31 @@ public class GameController {
 
     // XXX(18/6/2018): Take a look in at this method
     public void update(float delta) {
+        updateCollisions();
+    }
+
+    public void updateCollisions() {
         List<MovingBall> activeBalls = movingBallManager.getActiveList();
+        List<TilemapTile> ballList = tilemapManager.getTileList();
 
         for (MovingBall mb : activeBalls) {
-            TilemapTile tileHit = tilemapManager.checkForCollision(collisionDetector, mb);
+            TilemapTile tileHit = collisionDetector.findCollision(ballList, mb);
             if (tileHit == null) continue;
 
-            mb.getLaunchable().onCollide(mb, tileHit, behaviourPowerPack);
+            if (tileHit.getTile() instanceof CollisionInitiator) {
+                if (!((CollisionInitiator) tileHit.getTile()).handleCollisionWith(mb, this)) {
+                    mb.getLaunchable().onCollide(mb, tileHit, this);
+                }
+            } else {
+                mb.getLaunchable().onCollide(mb, tileHit, this);
+            }
             mb.dispose();
         }
         movingBallManager.disposeInactive();
+    }
+
+    public BehaviourPack getBehaviourPack() {
+        return behaviourPowerPack;
     }
 
     public static class BehaviourPack {

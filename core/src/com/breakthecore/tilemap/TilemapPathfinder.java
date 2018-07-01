@@ -31,6 +31,7 @@ class TilemapPathfinder {
 
     public List<TilemapTile> getDisconnectedTiles(List<TilemapTile> matched) {
         disconnected.clear();
+        altered.clear();
         disconnected.addAll(matched);
 
         for (TilemapTile tmTile : matched) {
@@ -52,7 +53,7 @@ class TilemapPathfinder {
             if (disconnected.contains(origin)) continue;
 
             if (!isConnected(origin)) {
-                disconnected.add(origin);
+                disconnected.addAll(closed);
             }
         }
 
@@ -60,8 +61,6 @@ class TilemapPathfinder {
     }
 
     private boolean isConnected(TilemapTile tmTile) {
-        if (disconnected.contains(tmTile)) return false;
-
         closed.clear();
         opened.clear();
         opened.add(tmTile);
@@ -80,8 +79,8 @@ class TilemapPathfinder {
         for (Side side : Side.values()) {
             TilemapTile neighbour = tmTile.getNeighbour(side);
             if (neighbour != null &&
-                    !closed.contains(neighbour) && !opened.contains(neighbour) &&
-                    !disconnected.contains(neighbour)) {
+                    (!closed.contains(neighbour) && !opened.contains(neighbour) && !disconnected.contains(neighbour)) &&
+                    (neighbour.getTile().getAttributes().getTileType() == TileType.REGULAR || neighbour.getTile() instanceof Breakable)) {
                 opened.add(neighbour);
             }
         }

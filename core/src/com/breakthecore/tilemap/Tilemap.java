@@ -7,7 +7,6 @@ import com.breakthecore.Coords2D;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observable;
 import com.breakthecore.WorldSettings;
-import com.breakthecore.tiles.RegularTile;
 import com.breakthecore.tiles.Tile;
 import com.breakthecore.tiles.TileContainer.Side;
 
@@ -19,6 +18,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import static com.breakthecore.NotificationType.TILEMAP_INITIALIZED;
 import static com.breakthecore.tiles.TileContainer.getOppositeSide;
 
 /**
@@ -33,7 +33,6 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
     private Vector2 worldPosition;
     private Vector2 offset;
     private Vector2 origin;
-    private int[] colorsAvailable;
 
     private boolean isTilemapInitilized;
     private boolean isChained;
@@ -58,7 +57,6 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
 
     private Tilemap(int id) {
         groupID = id;
-        colorsAvailable = new int[10]; // XXX(22/4/2018): Magic Value 10!
         cos = 1;
         dummyTile = new TilemapTile(null);
         tilemapTiles = new ArrayList<>();
@@ -119,20 +117,6 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         return world;
     }
 
-    public int[] getColorAmountsAvailable() {
-        for (int i = 0; i < colorsAvailable.length; ++i) {
-            colorsAvailable[i] = 0;
-        }
-
-        for (TilemapTile t : tilemapTiles) {
-            if (t.getTile() instanceof RegularTile) {
-                colorsAvailable[t.getTileID()]++;
-            }
-        }
-
-        return colorsAvailable;
-    }
-
     public TilemapTile getTilemapTile(int x, int y) {
         dummyTile.setCoordinates(x, y);
         Collections.sort(tilemapTiles);
@@ -140,7 +124,7 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         return index >= 0 ? tilemapTiles.get(index) : null;
     }
 
-    public void putTilemapTile(int x, int y, Tile tile) {
+    public TilemapTile putTilemapTile(int x, int y, Tile tile) {
         TilemapTile slot = getTilemapTile(x, y);
 
         if (slot == null) {
@@ -156,52 +140,42 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
                 }
             }
 
-            if (tile instanceof RegularTile) {
-                ++colorsAvailable[tile.getID()];
-            }
 
             tilemapTiles.add(newTile);
+            return newTile;
         } else {
             throw new RuntimeException("I was too bored to implement but looks like I have to..");
         }
     }
 
-    public void putTilemapTile(TilemapTile tmTile, Tile tile, Side side) {
+    public TilemapTile putTilemapTile(TilemapTile tmTile, Tile tile, Side side) {
         int x = tmTile.getX();
         int y = tmTile.getY();
-        if (tmTile.getNeighbour(side) == null) {
-            switch (side) {
-                case TOP_RIGHT:
-                    putTilemapTile(x, y + 1, tile);
-                    break;
-                case TOP_LEFT:
-                    putTilemapTile(x - 1, y + 1, tile);
-                    break;
-                case RIGHT:
-                    putTilemapTile(x + 1, y, tile);
-                    break;
-                case LEFT:
-                    putTilemapTile(x - 1, y, tile);
-                    break;
-                case BOTTOM_LEFT:
-                    putTilemapTile(x, y - 1, tile);
-                    break;
-                case BOTTOM_RIGHT:
-                    putTilemapTile(x + 1, y - 1, tile);
-                    break;
-            }
-        } else {
-            throw new RuntimeException("PFFF... JUST HOW?!");
+        switch (side) {
+            case TOP_RIGHT:
+                return putTilemapTile(x, y + 1, tile);
+            case TOP_LEFT:
+                return putTilemapTile(x - 1, y + 1, tile);
+            case RIGHT:
+                return putTilemapTile(x + 1, y, tile);
+            case LEFT:
+                return putTilemapTile(x - 1, y, tile);
+            case BOTTOM_LEFT:
+                return putTilemapTile(x, y - 1, tile);
+            case BOTTOM_RIGHT:
+                return putTilemapTile(x + 1, y - 1, tile);
         }
+        throw new RuntimeException("PFFF... JUST HOW?!");
     }
 
-    public void destroyTilemapTile(int x, int y) {
+    public TilemapTile destroyTilemapTile(int x, int y) {
         TilemapTile tmTile = getTilemapTile(x, y);
-        if (tmTile == null) return;
+        if (tmTile == null) return null;
 
         notifyObservers(NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED, tmTile);
         tmTile.clear();
         tilemapTiles.remove(tmTile);
+        return tmTile;
     }
 
     public void rotate(float deg) {
@@ -231,6 +205,7 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         offset.set(settings.getOffsetX(), settings.getOffsetY());
         updateWorldPosition();
         updateTilePositions();
+        notifyObservers(TILEMAP_INITIALIZED, getTileList());
     }
 
     public void update(float delta) {
@@ -272,10 +247,6 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
             if (t == null) continue;
             t.clear();
             iter.remove();
-        }
-
-        for (int i = 0; i < colorsAvailable.length; ++i) {
-            colorsAvailable[i] = 0;
         }
 
         worldPosition.set(defPosition.x, defPosition.y);

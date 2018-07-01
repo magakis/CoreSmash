@@ -10,15 +10,18 @@ import com.breakthecore.tiles.TileContainer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 public class CollisionDetector {
     private ArrayList<DistanceSideStruct> m_collisionDisSide;
     private TileContainer.Side[] m_closestSidesOutput;
     private Comparator<DistanceSideStruct> m_disSideComp;
+    private Vector2 distance;
     private Vector2 direction;
 
     public CollisionDetector() {
         direction = new Vector2();
+        distance = new Vector2();
         m_collisionDisSide = new ArrayList<>(6);
         for (int i = 0; i < 6; ++i) {
             m_collisionDisSide.add(new DistanceSideStruct());
@@ -32,6 +35,20 @@ public class CollisionDetector {
         };
 
         m_closestSidesOutput = new TileContainer.Side[6];
+    }
+
+    public TilemapTile findCollision(List<TilemapTile> tilemapTileList, MovingBall ball) {
+        int sideHalf = WorldSettings.getTileSize() / 2;
+        //XXX(HACK): Arbitrary value to decrease range and match better the texture
+        float minDist = sideHalf + sideHalf * ball.getScale() * 0.8f;
+
+        for (TilemapTile tmTile : tilemapTileList) {
+            distance.set(tmTile.getPositionInWorld()).sub(ball.getPositionInWorld());
+            if (Math.abs(distance.x) <= minDist && Math.abs(distance.y) <= minDist) {
+                return tmTile;
+            }
+        }
+        return null;
     }
 
     public TilemapTile findCollision(Tilemap tm, MovingBall moveTile) {

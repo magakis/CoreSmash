@@ -26,7 +26,7 @@ public class TilemapTile extends TileContainer implements Comparable<TilemapTile
         return coords.y;
     }
 
-    public int getGroupId() {
+    public int getLayerId() {
         return groupID;
     }
 
@@ -124,7 +124,6 @@ public class TilemapTile extends TileContainer implements Comparable<TilemapTile
     }
 
     private static class NeighbourTiles {
-
         TilemapTile left;
         TilemapTile topLeft;
         TilemapTile topRight;

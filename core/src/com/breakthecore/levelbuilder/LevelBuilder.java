@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.tilemap.Map;
+import com.breakthecore.tiles.TileFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +62,7 @@ final public class LevelBuilder {
         Vector3 relative = map.getWorldToLayerCoords(layer, worldPos);
 
         if (map.isTileEmpty(layer, (int) relative.x, (int) relative.y)) {
-            map.placeTile(layer, (int) relative.x, (int) relative.y, tileID);
+            map.placeTile(layer, (int) relative.x, (int) relative.y, TileFactory.getTileFromID(tileID));
         }
     }
 
@@ -70,7 +71,7 @@ final public class LevelBuilder {
     }
 
     public int getTotalTileCount() {
-        return map.getTotalTileCount();
+        return map.totalBallCount();
     }
 
     public float getPositionY(int layer) {
@@ -219,17 +220,17 @@ final public class LevelBuilder {
     }
 
     public float getDefPositionX() {
-        return map.getDefPostionsX(); //should return per layer
+        return map.getDefPositionX(); //should return per layer
     }
 
     public float getDefPositionY() {
-        return map.getDefPostionsY(); //should return per layer
+        return map.getDefPositionY(); //should return per layer
     }
 
     public void draw(RenderManager renderManager) {
         renderManager.spriteBatchBegin(camera.combined);
         if (layerIndicatorEnabled) {
-            int maxTilemaps = map.getLayerCount();
+            int maxTilemaps = map.layerCount();
             renderManager.setColorTint(Color.GRAY);
             for (int i = 0; i < maxTilemaps; ++i) {
                 if (i == layer) continue;
@@ -244,7 +245,7 @@ final public class LevelBuilder {
         }
         renderManager.spriteBatchEnd();
 
-        if (map.getLayerCount() > 0) {
+        if (map.layerCount() > 0) {
             ShapeRenderer shapeRenderer = renderManager.shapeRendererStart(camera.combined, ShapeRenderer.ShapeType.Line);
             shapeRenderer.setColor(Color.GOLDENROD);
             shapeRenderer.circle(map.getLayerOriginX(layer) + getDefPositionX(), map.getLayerOriginY(layer) + getDefPositionY(), 20);
@@ -285,11 +286,11 @@ final public class LevelBuilder {
             map.setOffset(parsedLayer, mapSettings.get(parsedLayer).getOffset());
 
             for (ParsedTile tile : parsedLevel.mapTiles.get(parsedLayer)) {
-                map.placeTile(parsedLayer, tile.x, tile.y, tile.tileID);
+                map.placeTile(parsedLayer, tile.x, tile.y, TileFactory.getTileFromID(tile.tileID));
             }
         }
 
-        if (map.getLayerCount() == 0) {
+        if (map.layerCount() == 0) {
             map.newLayer();
         }
 

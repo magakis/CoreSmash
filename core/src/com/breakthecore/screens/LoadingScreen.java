@@ -136,17 +136,17 @@ public class LoadingScreen extends ScreenBase {
         generateBitmapFont(18, "h4.ttf");
         generateBitmapFont(24, "h3.ttf");
         generateBitmapFont(36, "h2.ttf");
-//        generateBitmapFont(12, "h6.ttf");
-//        generateBitmapFont(14, "h5.ttf");
-//        generateBitmapFont(18, "h4.ttf");
-//        generateBitmapFont(24, "h3.ttf");
-//        generateBitmapFont(36, "h2.ttf");
-//        generateBitmapFont(48, "h2.ttf");
-
-        loadBitmapFont("comic_72bo.fnt");
-        loadBitmapFont("comic_96bo.fnt");
 
         generateBitmapFont(24, "h3f.ttf");
+
+        FreetypeFontLoader.FreeTypeFontLoaderParameter fontParams = new FreetypeFontLoader.FreeTypeFontLoaderParameter();
+        fontParams.fontFileName = "Gidole-Regular.ttf";
+        fontParams.fontParameters.borderWidth = 1 * PPI;
+        fontParams.fontParameters.size = (int) (36 * PPI);
+        am.load("h2o.ttf", BitmapFont.class, fontParams);
+
+        loadBitmapFont("comic_96bo.fnt");
+
     }
 
     public static void loadBalls() {
@@ -422,7 +422,7 @@ public class LoadingScreen extends ScreenBase {
         // Markup-Enabled fonts
         registerFont(skin, "h3f", "h3f.ttf");
 
-        registerFont(skin, "comic_72bo", "comic_72bo.fnt");
+        registerFont(skin, "h2o", "h2o.ttf");
         registerFont(skin, "comic_96bo", "comic_96bo.fnt");
 
         // 96   84  72  60  48  36
@@ -466,8 +466,7 @@ public class LoadingScreen extends ScreenBase {
         stb.up = skin.newDrawable("asteroid", Color.WHITE);
         stb.down = skin.newDrawable("asteroid", Color.GRAY);
         stb.disabled = skin.newDrawable("asteroid", Color.DARK_GRAY);
-        stb.font = skin.getFont("h2");
-        stb.fontColor = Color.BLACK;
+        stb.font = skin.getFont("h2o");
         skin.add("levelButton", stb);
 
         stb = new TextButton.TextButtonStyle();
