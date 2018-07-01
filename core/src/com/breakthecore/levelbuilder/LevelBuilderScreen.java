@@ -1110,7 +1110,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 });
                 sldrOriginMaxRot.addListener(stopTouchDown);
 
-                sldrColorCount = new Slider(levelBuilder.getColorCount(), 8, 1, false, skin);
+                sldrColorCount = new Slider(1, 8, 1, false, skin);
                 lblColorCount = new Label(String.format(Locale.ROOT, "Colors:%2d", (int) sldrColorCount.getValue()), skin, "h5");
                 sldrColorCount.addListener(new ChangeListener() {
                     @Override
