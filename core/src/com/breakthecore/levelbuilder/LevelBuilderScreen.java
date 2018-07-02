@@ -86,6 +86,8 @@ public class LevelBuilderScreen extends ScreenBase {
     private RotateMode rotateMode;
     private Mode activeMode;
 
+    private GestureDetector worldInputHandler;
+
     public LevelBuilderScreen(CoreSmash game) {
         super(game);
         gameScreen = new GameScreen(game);
@@ -107,9 +109,11 @@ public class LevelBuilderScreen extends ScreenBase {
         freeMode = new FreeMode();
         freeMode.activate();
 
+        worldInputHandler = new GestureDetector(new LevelBuilderGestureListner());
+
         screenInputMultiplexer.addProcessor(new BackButtonInputHandler());
         screenInputMultiplexer.addProcessor(stage);
-        screenInputMultiplexer.addProcessor(new GestureDetector(new LevelBuilderGestureListner()));
+        screenInputMultiplexer.addProcessor(worldInputHandler);
 
     }
 
@@ -654,6 +658,7 @@ public class LevelBuilderScreen extends ScreenBase {
         private OptionsMenu optionsMenu;
         private float currentZoom = 1;
         private boolean isMovingOffset;
+        private float deviceDensity = Gdx.graphics.getDensity();
 
         FreeMode() {
             optionsMenu = new OptionsMenu();
@@ -661,18 +666,18 @@ public class LevelBuilderScreen extends ScreenBase {
         }
 
 
-        @Override
-        public boolean touchDown(float x, float y, int count, int button) {
-            return isMovingOffset;
-        }
+//        @Override
+//        public boolean touchDown(float x, float y, int count, int button) {
+//            return isMovingOffset;
+//        }
 
         @Override
         public boolean pan(float x, float y, float deltaX, float deltaY) {
             if (isMovingOffset) {
-                levelBuilder.moveOffsetBy(deltaX, -deltaY);
+                levelBuilder.moveOffsetBy(deltaX * currentZoom / deviceDensity, -deltaY * currentZoom / deviceDensity);
                 optionsMenu.mapSettings.updatePositionValues();
             } else {
-                camera.position.add(-deltaX * currentZoom, deltaY * currentZoom, 0);
+                camera.position.add(-deltaX * currentZoom / deviceDensity, deltaY * currentZoom / deviceDensity, 0);
                 updateCamInfo();
                 camera.update();
             }
@@ -949,6 +954,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
         private class UIMapSettings implements UIComponent {
             Container<Table> root;
+            InputCaptureDialog inputCaptureDialog;
             UILayer uiLayer;
             TextField tfOriginX, tfOriginY, tfOffsetX, tfOffsetY;
             Slider sldrMinRot, sldrMaxRot, sldrColorCount, sldrOriginMinRot, sldrOriginMaxRot;
@@ -963,6 +969,7 @@ public class LevelBuilderScreen extends ScreenBase {
                         updateValues(layer);
                     }
                 };
+                inputCaptureDialog = new InputCaptureDialog();
 
                 InputListener stopTouchDown = new InputListener() {
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -1316,20 +1323,51 @@ public class LevelBuilderScreen extends ScreenBase {
 //                TextButton originPlus = new TextButton("+", skin);
 //                TextButton originMinus = new TextButton("-", skin);
 
-                final TextButton freeMove = new TextButton("Move", skin, "levelBuilderButton");
+
+                final TextButton freeMove = new TextButton("Move", skin, "levelBuilderButtonChecked");
                 freeMove.getLabelCell().pad(Value.percentHeight(.3f, freeMove.getLabel()));
                 freeMove.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        if (freeMode.isMovingOffset) {
-                            freeMode.isMovingOffset = false;
+                        if (isMovingOffset) {
+                            inputCaptureDialog.hide();
+                            isMovingOffset = false;
                             Components.showToast("Stopped: Moving offset", stage);
                         } else {
-                            freeMode.isMovingOffset = true;
+                            inputCaptureDialog.show(stage);
+                            isMovingOffset = true;
                             Components.showToast("Press Back Button to stop", stage);
                         }
                     }
                 });
+
+                InputListener moveOffsetListener = new InputListener() {
+                    @Override
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                        return worldInputHandler.touchDown(x, y, pointer, button);
+                    }
+
+                    @Override
+                    public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                        worldInputHandler.touchUp(x, y, pointer, button);
+                    }
+
+                    @Override
+                    public void touchDragged(InputEvent event, float x, float y, int pointer) {
+                        worldInputHandler.touchDragged(x, y, pointer);
+                    }
+
+                    @Override
+                    public boolean keyDown(InputEvent event, int keycode) {
+                        if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
+                            freeMove.setChecked(false);
+                            return true;
+                        }
+                        return false;
+                    }
+                };
+                inputCaptureDialog.setInputListener(moveOffsetListener);
+
 
                 tfOriginX.setTextFieldListener(originListener);
                 tfOriginY.setTextFieldListener(originListener);
@@ -1389,22 +1427,18 @@ public class LevelBuilderScreen extends ScreenBase {
         @Override
         public boolean keyDown(int keycode) {
             if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
-                if (freeMode.isMovingOffset) {
-                    freeMode.isMovingOffset = false;
-                    Components.showToast("Stopped: Moving offset", stage);
-                    uiInfo.lbl[2].setText("");
+                if (freeMode.isMovingOffset) return false;
 
-                } else {
-                    if (prefsStack.size() == 1) {
-                        if (activeMode == freeMode) {
-                            gameInstance.setPrevScreen();
-                        } else {
-                            uiTools.btnGroup.uncheckAll();
-                        }
+                if (prefsStack.size() == 1) {
+                    if (activeMode == freeMode) {
+                        gameInstance.setPrevScreen();
                     } else {
-                        prefsStack.pop();
+                        uiTools.btnGroup.uncheckAll();
                     }
+                } else {
+                    prefsStack.pop();
                 }
+                return true;
             }
             return false;
         }
@@ -1457,6 +1491,34 @@ public class LevelBuilderScreen extends ScreenBase {
             if (activeMode != null) {
                 activeMode.pinchStop();
             }
+        }
+    }
+
+    private class InputCaptureDialog {
+        Container<?> screenFiller;
+        Actor prevKeyboardFocus;
+
+        public InputCaptureDialog() {
+            screenFiller = new Container<>();
+            screenFiller.setFillParent(true);
+            screenFiller.setTouchable(Touchable.enabled);
+        }
+
+        public void setInputListener(EventListener listener) {
+            screenFiller.clearListeners();
+            screenFiller.addListener(listener);
+        }
+
+        public void show(Stage stage) {
+            stage.addActor(screenFiller);
+            prevKeyboardFocus = stage.getKeyboardFocus();
+            stage.setKeyboardFocus(screenFiller);
+        }
+
+        public void hide() {
+            stage.setKeyboardFocus(prevKeyboardFocus);
+            prevKeyboardFocus = null;
+            screenFiller.remove();
         }
     }
 }
