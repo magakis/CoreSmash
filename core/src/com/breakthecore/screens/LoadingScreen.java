@@ -125,7 +125,6 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("HeartIcon.png");
         loadTexture("LevelBuilderButton.png");
         loadTexture("SpikyBall.png");
-        loadTexture("transparent.png");
     }
 
     private void loadSounds() {
@@ -399,7 +398,6 @@ public class LoadingScreen extends ScreenBase {
         tex = new Texture(pix);
         skin.add("myBall", tex);
 
-        skin.add("transparent", am.get("transparent.png"));
         skin.add("cog", am.get("cog.png"));
         skin.add("userDefIcon", am.get("DefaultUserIcon.png"));
         skin.add("ball", am.get("ball.png"));
@@ -516,13 +514,6 @@ public class LoadingScreen extends ScreenBase {
         tfs.font = skin.getFont("h4");
         tfs.fontColor = Color.WHITE;
         skin.add("default", tfs);
-
-        //WindowStyles
-        Window.WindowStyle windowStyle = new Window.WindowStyle();
-        windowStyle.background = skin.getDrawable("transparent");
-        windowStyle.titleFont = skin.getFont("h6");
-        skin.add("transparent", windowStyle);
-
 
         UIUtils.setUnitActor(skin.getFont("h6"));
     }

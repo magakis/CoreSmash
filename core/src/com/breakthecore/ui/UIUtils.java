@@ -2,8 +2,12 @@ package com.breakthecore.ui;
 
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.utils.Layout;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -12,6 +16,7 @@ import java.util.Objects;
 public class UIUtils {
     private static Actor unitActor = new Actor();
     private static Actor screenActor = new Actor();
+    private static List<Layout> observers = new ArrayList<>();
     private static TextField.TextFieldFilter numbersOnly = new TextField.TextFieldFilter() {
         @Override
         public boolean acceptChar(TextField textField, char c) {
@@ -30,9 +35,15 @@ public class UIUtils {
 
     public static void updateScreenActor(float width, float height) {
         screenActor.setSize(width, height);
+        for (Layout layout : observers) {
+            layout.invalidateHierarchy();
+        }
     }
 
-    public static Actor getScreenActor() {
+    public static Actor getScreenActor(Layout observer) {
+        if (!observers.contains(observer)) {
+            observers.add(observer);
+        }
         return screenActor;
     }
 

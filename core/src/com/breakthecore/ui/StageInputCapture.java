@@ -9,11 +9,16 @@ import com.badlogic.gdx.scenes.scene2d.ui.Container;
 public class StageInputCapture {
     Container<?> screenFiller;
     Actor prevKeyboardFocus;
+    boolean keyboardCapture;
 
     public StageInputCapture() {
         screenFiller = new Container<>();
         screenFiller.setFillParent(true);
         screenFiller.setTouchable(Touchable.enabled);
+    }
+
+    public void setKeyboardCapture(boolean captureKeyboard) {
+        keyboardCapture = captureKeyboard;
     }
 
     public void setInputListener(EventListener listener) {
@@ -23,16 +28,19 @@ public class StageInputCapture {
 
     public void capture(Stage stage) {
         stage.addActor(screenFiller);
-        prevKeyboardFocus = stage.getKeyboardFocus();
-        stage.setKeyboardFocus(screenFiller);
+        if (keyboardCapture) {
+            prevKeyboardFocus = stage.getKeyboardFocus();
+            stage.setKeyboardFocus(screenFiller);
+        }
     }
 
     public void stop() {
-        Stage stage = screenFiller.getStage();
-        if (stage == null) return;
-
-        stage.setKeyboardFocus(prevKeyboardFocus);
-        prevKeyboardFocus = null;
+        if (keyboardCapture) {
+            Stage stage = screenFiller.getStage();
+            if (stage == null) return;
+            stage.setKeyboardFocus(prevKeyboardFocus);
+            prevKeyboardFocus = null;
+        }
         screenFiller.remove();
     }
 }

@@ -102,8 +102,8 @@ public class SaveFileDialog extends Dialog {
 
         content.add(sp)
                 .grow()
-                .maxWidth(Value.percentWidth(.75f, UIUtils.getScreenActor()))
-                .maxHeight(Value.percentHeight(.5f, UIUtils.getScreenActor()));
+                .maxWidth(Value.percentWidth(.75f, UIUtils.getScreenActor(sp)))
+                .maxHeight(Value.percentHeight(.5f, UIUtils.getScreenActor(sp)));
 
         Table buttons = getButtonTable();
         buttons.pad(Value.percentHeight(.25f, tbSave));

@@ -955,7 +955,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
         private class UIMapSettings implements UIComponent {
             Container<Table> root;
-            StageInputCapture inputCaptureDialog;
+            StageInputCapture moveInputCapture, textfieldInputCapture;
             UILayer uiLayer;
             TextField tfOriginX, tfOriginY, tfOffsetX, tfOffsetY;
             Slider sldrMinRot, sldrMaxRot, sldrColorCount, sldrOriginMinRot, sldrOriginMaxRot;
@@ -970,7 +970,8 @@ public class LevelBuilderScreen extends ScreenBase {
                         updateValues(layer);
                     }
                 };
-                inputCaptureDialog = new StageInputCapture();
+                moveInputCapture = new StageInputCapture();
+                textfieldInputCapture = new StageInputCapture();
 
                 InputListener stopTouchDown = new InputListener() {
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -1162,7 +1163,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
                 Table rotLabels = new Table();
                 rotLabels.defaults().expandX().padBottom(Value.percentHeight(.5f, sldrMinRot));
-                rotLabels.columnDefaults(0).padRight(Value.percentHeight(1f, sldrMinRot));
+                rotLabels.columnDefaults(0).padRight(Value.percentHeight(.5f, sldrMinRot));
                 rotLabels.add(new Label(":Position:", skin, "h5")).colspan(2).padRight(0).padBottom(Value.percentHeight(.5f, sldrMinRot)).row();
                 rotLabels.add(positionSettings).colspan(2).padBottom(Value.percentHeight(.5f, sldrMinRot)).padRight(0).row();
                 rotLabels.add(new Label(":Rotation:", skin, "h5")).colspan(2).padRight(0).padBottom(0).row();
@@ -1197,7 +1198,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 Table main = new Table();
                 main.add(uiLayer.root);
                 main.add(scrollPane).grow()
-                        .maxHeight(Value.percentHeight(.35f, UIUtils.getScreenActor()))
+                        .maxHeight(Value.percentHeight(.35f, UIUtils.getScreenActor(scrollPane)))
                         .padLeft(Value.percentHeight(.5f, lblMinRot))
                         .padRight(Value.percentHeight(.5f, lblMinRot));
 
@@ -1231,24 +1232,17 @@ public class LevelBuilderScreen extends ScreenBase {
             }
 
             private Table createPositionGroup() {
-                final TextField.TextFieldListener returnOnNewLineListener = new TextField.TextFieldListener() {
-                    public void keyTyped(TextField textField, char key) {
-                        if (key == '\n' || key == '\r') {
-                            textField.getOnscreenKeyboard().show(false);
-                            stage.setKeyboardFocus(null);
-                        }
-                    }
-                };
-
                 tfOriginX = new TextField("0", skin);
                 tfOriginX.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
                 tfOriginX.setAlignment(Align.center);
                 tfOriginX.setMaxLength(6);
-                tfOriginX.setTextFieldListener(returnOnNewLineListener);
-                tfOriginX.addListener(new ClickListener() {
+                tfOriginX.addListener(new InputListener() {
                     @Override
-                    public void clicked(InputEvent event, float x, float y) {
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                        textfieldInputCapture.capture(stage);
                         tfOriginX.setCursorPosition(tfOriginX.getText().length());
+                        event.stop();
+                        return true;
                     }
                 });
 
@@ -1256,11 +1250,13 @@ public class LevelBuilderScreen extends ScreenBase {
                 tfOriginY.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
                 tfOriginY.setAlignment(Align.center);
                 tfOriginY.setMaxLength(6);
-                tfOriginY.setTextFieldListener(returnOnNewLineListener);
-                tfOriginY.addListener(new ClickListener() {
+                tfOriginY.addListener(new InputListener() {
                     @Override
-                    public void clicked(InputEvent event, float x, float y) {
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                        textfieldInputCapture.capture(stage);
                         tfOriginY.setCursorPosition(tfOriginY.getText().length());
+                        event.stop();
+                        return true;
                     }
                 });
 
@@ -1268,11 +1264,13 @@ public class LevelBuilderScreen extends ScreenBase {
                 tfOffsetX.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
                 tfOffsetX.setAlignment(Align.center);
                 tfOffsetX.setMaxLength(6);
-                tfOffsetX.setTextFieldListener(returnOnNewLineListener);
-                tfOffsetX.addListener(new ClickListener() {
+                tfOffsetX.addListener(new InputListener() {
                     @Override
-                    public void clicked(InputEvent event, float x, float y) {
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                        textfieldInputCapture.capture(stage);
                         tfOffsetX.setCursorPosition(tfOffsetX.getText().length());
+                        event.stop();
+                        return true;
                     }
                 });
 
@@ -1280,26 +1278,34 @@ public class LevelBuilderScreen extends ScreenBase {
                 tfOffsetY.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
                 tfOffsetY.setAlignment(Align.center);
                 tfOffsetY.setMaxLength(6);
-                tfOffsetY.setTextFieldListener(returnOnNewLineListener);
-                tfOffsetY.addListener(new ClickListener() {
+                tfOffsetY.addListener(new InputListener() {
                     @Override
-                    public void clicked(InputEvent event, float x, float y) {
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                        textfieldInputCapture.capture(stage);
                         tfOffsetY.setCursorPosition(tfOffsetY.getText().length());
+                        event.stop();
+                        return true;
                     }
                 });
 
                 TextField.TextFieldListener offsetListener = new TextField.TextFieldListener() {
                     @Override
                     public void keyTyped(TextField textField, char c) {
-                        try {
-                            String txt = tfOffsetX.getText();
-                            int x = txt.equals("") ? 0 : Integer.valueOf(txt);
-                            txt = tfOffsetY.getText();
-                            int y = txt.equals("") ? 0 : Integer.valueOf(txt);
-                            levelBuilder.setOffset(x, y);
-                            uiInfo.lbl[1].setText(String.format(Locale.ROOT, "Origin<->Offset Dist: %.3f", Math.hypot(x, y)));
-                        } catch (NumberFormatException ignore) {
-                            Components.showToast("[Error] " + ignore.getLocalizedMessage(), stage);
+                        if (c == '\n' || c == '\r') {
+                            textField.getOnscreenKeyboard().show(false);
+                            stage.unfocus(textField);
+                            textfieldInputCapture.stop();
+                        } else {
+                            try {
+                                String txt = tfOffsetX.getText();
+                                int x = txt.equals("") ? 0 : Integer.valueOf(txt);
+                                txt = tfOffsetY.getText();
+                                int y = txt.equals("") ? 0 : Integer.valueOf(txt);
+                                levelBuilder.setOffset(x, y);
+                                uiInfo.lbl[1].setText(String.format(Locale.ROOT, "Origin<->Offset Dist: %.3f", Math.hypot(x, y)));
+                            } catch (NumberFormatException ignore) {
+                                Components.showToast("[Error] " + ignore.getLocalizedMessage(), stage);
+                            }
                         }
                     }
                 };
@@ -1307,23 +1313,33 @@ public class LevelBuilderScreen extends ScreenBase {
                 TextField.TextFieldListener originListener = new TextField.TextFieldListener() {
                     @Override
                     public void keyTyped(TextField textField, char c) {
-                        String txt = tfOriginX.getText();
-                        try {
-                            int x = txt.equals("") ? 0 : Integer.valueOf(txt);
-                            txt = tfOriginY.getText();
-                            int y = txt.equals("") ? 0 : Integer.valueOf(txt);
-                            levelBuilder.setOrigin(x, y);
-                        } catch (NumberFormatException ignore) {
-                            Components.showToast("[Error] " + ignore.getLocalizedMessage(), stage);
+                        if (c == '\n' || c == '\r') {
+                            textField.getOnscreenKeyboard().show(false);
+                            stage.unfocus(textField);
+                            textfieldInputCapture.stop();
+                        } else {
+                            try {
+                                String txt = tfOriginX.getText();
+                                int x = txt.equals("") ? 0 : Integer.valueOf(txt);
+                                txt = tfOriginY.getText();
+                                int y = txt.equals("") ? 0 : Integer.valueOf(txt);
+                                levelBuilder.setOrigin(x, y);
+                            } catch (NumberFormatException ignore) {
+                                Components.showToast("[Error] " + ignore.getLocalizedMessage(), stage);
+                            }
                         }
                     }
                 };
 
-//                TextButton offsetPlus = new TextButton("+", skin);
-//                TextButton offsetMinus = new TextButton("-", skin);
-//                TextButton originPlus = new TextButton("+", skin);
-//                TextButton originMinus = new TextButton("-", skin);
-
+                textfieldInputCapture.setInputListener(new InputListener() {
+                    @Override
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                        Gdx.input.setOnscreenKeyboardVisible(false);
+                        stage.unfocusAll();
+                        textfieldInputCapture.stop();
+                        return false;
+                    }
+                });
 
                 final TextButton freeMove = new TextButton("Move", skin, "levelBuilderButtonChecked");
                 freeMove.getLabelCell().pad(Value.percentHeight(.3f, freeMove.getLabel()));
@@ -1331,11 +1347,11 @@ public class LevelBuilderScreen extends ScreenBase {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
                         if (isMovingOffset) {
-                            inputCaptureDialog.stop();
+                            moveInputCapture.stop();
                             isMovingOffset = false;
                             Components.showToast("Stopped: Moving offset", stage);
                         } else {
-                            inputCaptureDialog.capture(stage);
+                            moveInputCapture.capture(stage);
                             isMovingOffset = true;
                             Components.showToast("Press Back Button to stop", stage);
                         }
@@ -1367,7 +1383,8 @@ public class LevelBuilderScreen extends ScreenBase {
                         return false;
                     }
                 };
-                inputCaptureDialog.setInputListener(moveOffsetListener);
+                moveInputCapture.setInputListener(moveOffsetListener);
+                moveInputCapture.setKeyboardCapture(true);
 
 
                 tfOriginX.setTextFieldListener(originListener);

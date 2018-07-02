@@ -106,7 +106,7 @@ public class LoadFileDialog extends Dialog {
         dlgConfirmDelete.button(new TextButton("No", skin, "dialogButton"), false);
         Cell<Label> txtCell = dlgConfirmDelete.getContentTable().getCells().get(0);
         txtCell.pad(Value.percentHeight(.5f, txtCell.getActor()));
-        txtCell.maxWidth(Value.percentWidth(0.5f, UIUtils.getScreenActor()));
+        txtCell.maxWidth(Value.percentWidth(0.5f, UIUtils.getScreenActor(txtCell.getActor())));
         dlgConfirmDelete.getCell(dlgConfirmDelete.getContentTable()).padBottom(txtCell.getActor().getStyle().font.getLineHeight());
 
         txtCell = ((TextButton) dlgConfirmDelete.getButtonTable().getCells().get(0).getActor()).getLabelCell();
@@ -139,8 +139,8 @@ public class LoadFileDialog extends Dialog {
 
         content.add(sp)
                 .grow()
-                .maxWidth(Value.percentWidth(.75f, UIUtils.getScreenActor()))
-                .maxHeight(Value.percentHeight(.5f, UIUtils.getScreenActor()));
+                .maxWidth(Value.percentWidth(.75f, UIUtils.getScreenActor(sp)))
+                .maxHeight(Value.percentHeight(.5f, UIUtils.getScreenActor(sp)));
 
         Table buttons = getButtonTable();
         buttons.pad(Value.percentHeight(.25f, tbLoad));
