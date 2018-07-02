@@ -112,9 +112,9 @@ public class LevelBuilderScreen extends ScreenBase {
 
         worldInputHandler = new GestureDetector(new LevelBuilderGestureListner());
 
-        screenInputMultiplexer.addProcessor(new BackButtonInputHandler());
         screenInputMultiplexer.addProcessor(stage);
         screenInputMultiplexer.addProcessor(worldInputHandler);
+        screenInputMultiplexer.addProcessor(new BackButtonInputHandler());
 
     }
 
@@ -662,17 +662,22 @@ public class LevelBuilderScreen extends ScreenBase {
         private float currentZoom = 1;
         private boolean isMovingOffset;
         private float deviceDensity = Gdx.graphics.getDensity();
+        private StageInputCapture textfieldInputCapture;
 
         FreeMode() {
+            textfieldInputCapture = new StageInputCapture();
+            textfieldInputCapture.setInputListener(new InputListener() {
+                @Override
+                public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                    Gdx.input.setOnscreenKeyboardVisible(false);
+                    stage.unfocusAll();
+                    textfieldInputCapture.stop();
+                    return false;
+                }
+            });
             optionsMenu = new OptionsMenu();
             setPreferencesRoot(optionsMenu);
         }
-
-
-//        @Override
-//        public boolean touchDown(float x, float y, int count, int button) {
-//            return isMovingOffset;
-//        }
 
         @Override
         public boolean pan(float x, float y, float deltaX, float deltaY) {
@@ -786,16 +791,19 @@ public class LevelBuilderScreen extends ScreenBase {
                     public void keyTyped(TextField textField, char key) {
                         if (key == '\n' || key == '\r') {
                             textField.getOnscreenKeyboard().show(false);
-                            stage.setKeyboardFocus(null);
+                            stage.unfocusAll();
                         }
                     }
                 };
 
                 tfLives = createTextField(returnOnNewLineListener);
-                tfLives.addListener(new ClickListener() {
+                tfLives.addListener(new InputListener() {
                     @Override
-                    public void clicked(InputEvent event, float x, float y) {
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                         tfLives.setCursorPosition(tfLives.getText().length());
+                        textfieldInputCapture.capture(stage);
+                        event.stop();
+                        return true;
                     }
                 });
                 tfLives.addListener(new ChangeListener() {
@@ -810,10 +818,13 @@ public class LevelBuilderScreen extends ScreenBase {
 
 
                 tfMoves = createTextField(returnOnNewLineListener);
-                tfMoves.addListener(new ClickListener() {
+                tfMoves.addListener(new InputListener() {
                     @Override
-                    public void clicked(InputEvent event, float x, float y) {
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                         tfMoves.setCursorPosition(tfMoves.getText().length());
+                        textfieldInputCapture.capture(stage);
+                        event.stop();
+                        return true;
                     }
                 });
                 tfMoves.addListener(new ChangeListener() {
@@ -829,10 +840,13 @@ public class LevelBuilderScreen extends ScreenBase {
 
 
                 tfTime = createTextField(returnOnNewLineListener);
-                tfTime.addListener(new ClickListener() {
+                tfTime.addListener(new InputListener() {
                     @Override
-                    public void clicked(InputEvent event, float x, float y) {
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                         tfTime.setCursorPosition(tfTime.getText().length());
+                        textfieldInputCapture.capture(stage);
+                        event.stop();
+                        return true;
                     }
                 });
                 tfTime.addListener(new ChangeListener() {
@@ -957,7 +971,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
         private class UIMapSettings implements UIComponent {
             Container<Table> root;
-            StageInputCapture moveInputCapture, textfieldInputCapture;
+            StageInputCapture moveInputCapture;
             UILayer uiLayer;
             TextField tfOriginX, tfOriginY, tfOffsetX, tfOffsetY;
             Slider sldrMinRot, sldrMaxRot, sldrColorCount, sldrOriginMinRot, sldrOriginMaxRot;
@@ -973,7 +987,6 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 };
                 moveInputCapture = new StageInputCapture();
-                textfieldInputCapture = new StageInputCapture();
 
                 InputListener stopTouchDown = new InputListener() {
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -1194,6 +1207,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
                 ScrollPane scrollPane = new ScrollPane(vgroup);
                 scrollPane.setOverscroll(false, false);
+                scrollPane.setSmoothScrolling(false);
                 scrollPane.setScrollingDisabled(true, false);
                 scrollPane.setCancelTouchFocus(false);
 
@@ -1295,7 +1309,7 @@ public class LevelBuilderScreen extends ScreenBase {
                     public void keyTyped(TextField textField, char c) {
                         if (c == '\n' || c == '\r') {
                             textField.getOnscreenKeyboard().show(false);
-                            stage.unfocus(textField);
+                            stage.unfocusAll();
                             textfieldInputCapture.stop();
                         } else {
                             try {
@@ -1317,7 +1331,7 @@ public class LevelBuilderScreen extends ScreenBase {
                     public void keyTyped(TextField textField, char c) {
                         if (c == '\n' || c == '\r') {
                             textField.getOnscreenKeyboard().show(false);
-                            stage.unfocus(textField);
+                            stage.unfocusAll();
                             textfieldInputCapture.stop();
                         } else {
                             try {
@@ -1333,15 +1347,6 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 };
 
-                textfieldInputCapture.setInputListener(new InputListener() {
-                    @Override
-                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                        Gdx.input.setOnscreenKeyboardVisible(false);
-                        stage.unfocusAll();
-                        textfieldInputCapture.stop();
-                        return false;
-                    }
-                });
 
                 final TextButton freeMove = new TextButton("Move", skin, "levelBuilderButtonChecked");
                 freeMove.getLabelCell().pad(Value.percentHeight(.3f, freeMove.getLabel()));
@@ -1402,13 +1407,13 @@ public class LevelBuilderScreen extends ScreenBase {
                 positionSettings.columnDefaults(3).width(glayout.width);
                 positionSettings.row().padBottom(Value.percentHeight(.5f, tfOriginX));
 
-                positionSettings.add("Origin: X", "h5");
+                positionSettings.add("Origin:X", "h5");
                 positionSettings.add(tfOriginX);
 
                 positionSettings.add("Y", "h5");
                 positionSettings.add(tfOriginY).row();
 
-                positionSettings.add("Offset: X", "h5");
+                positionSettings.add("Offset:X", "h5");
                 positionSettings.add(tfOffsetX);
 
                 positionSettings.add("Y", "h5");
@@ -1446,21 +1451,16 @@ public class LevelBuilderScreen extends ScreenBase {
     private class BackButtonInputHandler extends InputAdapter {
         @Override
         public boolean keyDown(int keycode) {
-            if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
-                if (freeMode.isMovingOffset) return false;
-
-                if (prefsStack.size() == 1) {
-                    if (activeMode == freeMode) {
-                        gameInstance.setPrevScreen();
-                    } else {
-                        uiTools.btnGroup.uncheckAll();
-                    }
+            if (prefsStack.size() == 1) {
+                if (activeMode == freeMode) {
+                    gameInstance.setPrevScreen();
                 } else {
-                    prefsStack.pop();
+                    uiTools.btnGroup.uncheckAll();
                 }
-                return true;
+            } else {
+                prefsStack.pop();
             }
-            return false;
+            return true;
         }
     }
 
