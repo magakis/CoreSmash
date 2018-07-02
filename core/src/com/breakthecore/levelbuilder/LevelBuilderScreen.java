@@ -77,7 +77,7 @@ public class LevelBuilderScreen extends ScreenBase {
     private Skin skin;
 
     private UIComponentStack prefsStack;
-    private UIComponent uiToolbarTop;
+    private UIToolbarTop uiToolbarTop;
     private UITools uiTools;
     private UIInfo uiInfo;
 
@@ -121,6 +121,8 @@ public class LevelBuilderScreen extends ScreenBase {
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height);
+        uiToolbarTop.saveFileDialog.hide(null);
+        uiToolbarTop.loadFileDialog.hide(null);
     }
 
     @Override
@@ -1235,7 +1237,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 tfOriginX = new TextField("0", skin);
                 tfOriginX.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
                 tfOriginX.setAlignment(Align.center);
-                tfOriginX.setMaxLength(6);
+                tfOriginX.setMaxLength(5);
                 tfOriginX.addListener(new InputListener() {
                     @Override
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -1249,7 +1251,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 tfOriginY = new TextField("0", skin);
                 tfOriginY.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
                 tfOriginY.setAlignment(Align.center);
-                tfOriginY.setMaxLength(6);
+                tfOriginY.setMaxLength(5);
                 tfOriginY.addListener(new InputListener() {
                     @Override
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -1263,7 +1265,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 tfOffsetX = new TextField("0", skin);
                 tfOffsetX.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
                 tfOffsetX.setAlignment(Align.center);
-                tfOffsetX.setMaxLength(6);
+                tfOffsetX.setMaxLength(5);
                 tfOffsetX.addListener(new InputListener() {
                     @Override
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -1277,7 +1279,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 tfOffsetY = new TextField("0", skin);
                 tfOffsetY.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
                 tfOffsetY.setAlignment(Align.center);
-                tfOffsetY.setMaxLength(6);
+                tfOffsetY.setMaxLength(5);
                 tfOffsetY.addListener(new InputListener() {
                     @Override
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -1392,11 +1394,11 @@ public class LevelBuilderScreen extends ScreenBase {
                 tfOffsetX.setTextFieldListener(offsetListener);
                 tfOffsetY.setTextFieldListener(offsetListener);
 
-                GlyphLayout glayout = new GlyphLayout(skin.getFont("h4"), " 666666 ");
+                GlyphLayout glayout = new GlyphLayout(skin.getFont("h4"), " 6666 ");
 
                 Table positionSettings = new Table(skin);
                 positionSettings.defaults().padRight(3 * Gdx.graphics.getDensity());
-                positionSettings.columnDefaults(1).width(glayout.width).padRight(Value.percentHeight(1, tfOffsetX));
+                positionSettings.columnDefaults(1).width(glayout.width).padRight(10 * Gdx.graphics.getDensity());
                 positionSettings.columnDefaults(3).width(glayout.width);
                 positionSettings.row().padBottom(Value.percentHeight(.5f, tfOriginX));
 
@@ -1410,7 +1412,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 positionSettings.add(tfOffsetX);
 
                 positionSettings.add("Y", "h5");
-                positionSettings.add(tfOffsetY);
+                positionSettings.add(tfOffsetY).padRight(10 * Gdx.graphics.getDensity());
                 positionSettings.add(freeMove).height(Value.percentHeight(1f, tfOffsetX));
 
                 return positionSettings;
