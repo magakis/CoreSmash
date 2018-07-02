@@ -57,6 +57,7 @@ import com.breakthecore.ui.ActorFactory;
 import com.breakthecore.ui.Components;
 import com.breakthecore.ui.LoadFileDialog;
 import com.breakthecore.ui.SaveFileDialog;
+import com.breakthecore.ui.StageInputCapture;
 import com.breakthecore.ui.UIComponent;
 import com.breakthecore.ui.UIComponentStack;
 import com.breakthecore.ui.UIUtils;
@@ -954,7 +955,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
         private class UIMapSettings implements UIComponent {
             Container<Table> root;
-            InputCaptureDialog inputCaptureDialog;
+            StageInputCapture inputCaptureDialog;
             UILayer uiLayer;
             TextField tfOriginX, tfOriginY, tfOffsetX, tfOffsetY;
             Slider sldrMinRot, sldrMaxRot, sldrColorCount, sldrOriginMinRot, sldrOriginMaxRot;
@@ -969,7 +970,7 @@ public class LevelBuilderScreen extends ScreenBase {
                         updateValues(layer);
                     }
                 };
-                inputCaptureDialog = new InputCaptureDialog();
+                inputCaptureDialog = new StageInputCapture();
 
                 InputListener stopTouchDown = new InputListener() {
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -1330,11 +1331,11 @@ public class LevelBuilderScreen extends ScreenBase {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
                         if (isMovingOffset) {
-                            inputCaptureDialog.hide();
+                            inputCaptureDialog.stop();
                             isMovingOffset = false;
                             Components.showToast("Stopped: Moving offset", stage);
                         } else {
-                            inputCaptureDialog.show(stage);
+                            inputCaptureDialog.capture(stage);
                             isMovingOffset = true;
                             Components.showToast("Press Back Button to stop", stage);
                         }
@@ -1491,34 +1492,6 @@ public class LevelBuilderScreen extends ScreenBase {
             if (activeMode != null) {
                 activeMode.pinchStop();
             }
-        }
-    }
-
-    private class InputCaptureDialog {
-        Container<?> screenFiller;
-        Actor prevKeyboardFocus;
-
-        public InputCaptureDialog() {
-            screenFiller = new Container<>();
-            screenFiller.setFillParent(true);
-            screenFiller.setTouchable(Touchable.enabled);
-        }
-
-        public void setInputListener(EventListener listener) {
-            screenFiller.clearListeners();
-            screenFiller.addListener(listener);
-        }
-
-        public void show(Stage stage) {
-            stage.addActor(screenFiller);
-            prevKeyboardFocus = stage.getKeyboardFocus();
-            stage.setKeyboardFocus(screenFiller);
-        }
-
-        public void hide() {
-            stage.setKeyboardFocus(prevKeyboardFocus);
-            prevKeyboardFocus = null;
-            screenFiller.remove();
         }
     }
 }
