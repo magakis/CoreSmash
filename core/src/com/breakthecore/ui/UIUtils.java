@@ -33,6 +33,17 @@ public class UIUtils {
     private UIUtils() {
     }
 
+    public static void initialize() {
+        buttonSoundListener = new ChangeListener() {
+            private SoundManager.SoundAsset btnSound = SoundManager.get().getSoundAsset("buttonClick");
+
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                btnSound.play();
+            }
+        };
+    }
+
     public static void setUnitActor(BitmapFont smallestFont) {
         Objects.requireNonNull(smallestFont);
         unitActor.setSize(smallestFont.getLineHeight(), smallestFont.getLineHeight());
@@ -53,16 +64,7 @@ public class UIUtils {
     }
 
     public static ChangeListener getButtonSoundListener() {
-        if (buttonSoundListener == null) {
-            buttonSoundListener = new ChangeListener() {
-                private SoundManager.SoundAsset btnSound = SoundManager.get().getSoundAsset("buttonClick");
 
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-                    btnSound.play();
-                }
-            };
-        }
         return buttonSoundListener;
     }
 

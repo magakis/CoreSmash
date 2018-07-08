@@ -1,11 +1,14 @@
 package com.breakthecore.tiles;
 
 import com.breakthecore.GameController;
+import com.breakthecore.sound.SoundManager;
 import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
+import com.breakthecore.ui.UIUtils;
 
 public class FireBall extends Tile implements Launchable {
+    private SoundManager.SoundAsset explosionSound = SoundManager.get().getSoundAsset("bombExplosion");
 
     FireBall(int id) {
         super(id);
@@ -29,5 +32,6 @@ public class FireBall extends Tile implements Launchable {
                 }
             }
         }
+        explosionSound.play();
     }
 }

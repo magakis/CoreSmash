@@ -543,6 +543,7 @@ public class GameScreen extends ScreenBase implements Observer {
             for (int i = 0; i < enabledCount; ++i) {
                 powerupButtons[i].setPower(enabledPowerups[i], statsManager.getPowerupUsages(enabledPowerups[i]));
                 tblPowerUps.add(powerupButtons[i]).size(50 * Gdx.graphics.getDensity(), 50 * Gdx.graphics.getDensity()).row();
+                powerupButtons[i].setDisabled(false);
             }
 
             tblPowerUps.setVisible(true);

@@ -5,11 +5,13 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
@@ -457,10 +459,17 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                     return false;
                 }
             });
+
+            setMovable(false);
+            setResizable(false);
         }
 
+        @Override
+        public void hide() {
+            super.hide(null);
+        }
 
-        public Dialog show(Stage stage, int lvl) {
+        public void show(Stage stage, int lvl) {
             for (Button button : powerupButtons) {
                 int amount = powerUpsAvailable.getAmountOf(PowerupType.valueOf(button.getName()));
                 ((Label) button.getCells().get(2).getActor()).setText(amount);
@@ -470,7 +479,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             buttonGroup.uncheckAll();
             levelToLaunch = lvl;
-            return super.show(stage);
+            super.show(stage, null);
+            setPosition(Math.round((stage.getWidth() - getWidth()) / 2), Math.round((stage.getHeight() - getHeight()) / 2));
         }
 
         private ImageButton createPowerUpButton(PowerupType type) {

@@ -97,6 +97,7 @@ public class LoadingScreen extends ScreenBase {
             setupSounds();
             setupSkin();
             Components.initialize(skin);
+            UIUtils.initialize();
             gameInstance.initApp();
         }
         percent.setText(String.format(Locale.ENGLISH, "%.0f %%", am.getProgress() * 100));
@@ -134,6 +135,7 @@ public class LoadingScreen extends ScreenBase {
         am.load("blop.mp3", Sound.class);
         am.load("BackgroundLoop.mp3", Sound.class);
         am.load("click.mp3", Sound.class);
+        am.load("bombExplosion.mp3", Sound.class);
     }
 
     private void loadAllBitmapFonts() {
@@ -253,6 +255,7 @@ public class LoadingScreen extends ScreenBase {
         soundManager.loadSound("regularBallDestroy", am.get("blop.mp3", Sound.class));
         soundManager.loadSound("backgroundMusic", am.get("BackgroundLoop.mp3", Sound.class));
         soundManager.loadSound("buttonClick", am.get("click.mp3", Sound.class));
+        soundManager.loadSound("bombExplosion", am.get("bombExplosion.mp3", Sound.class));
     }
 
     private void setupFonts() {

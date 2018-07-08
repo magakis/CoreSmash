@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Preferences;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -190,6 +189,7 @@ public class MainMenuScreen extends ScreenBase {
             ImageButton imgbMap = new ImageButton(imgbsMap);
             imgbMap.getImage().setScaling(Scaling.fill);
             imgbMap.getImageCell().padLeft(5).pad(3);
+            imgbMap.addListener(UIUtils.getButtonSoundListener());
             imgbMap.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
