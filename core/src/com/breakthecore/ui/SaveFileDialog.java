@@ -56,7 +56,7 @@ public class SaveFileDialog extends Dialog {
         });
         textField.setMaxLength(20);
 
-        TextButton tbSave = new TextButton("Save", skin, "dialogButton");
+        TextButton tbSave = UIFactory.createTextButton("Save", skin, "dialogButton");
         tbSave.getLabelCell()
                 .pad(Value.percentHeight(1, tbSave.getLabel()))
                 .padTop(Value.percentHeight(.5f, tbSave.getLabel()))
@@ -74,7 +74,7 @@ public class SaveFileDialog extends Dialog {
             }
         });
 
-        TextButton tbCancel = new TextButton("Cancel", skin, "dialogButton");
+        TextButton tbCancel = UIFactory.createTextButton("Cancel", skin, "dialogButton");
         tbCancel.getLabelCell()
                 .pad(Value.percentHeight(1, tbCancel.getLabel()))
                 .padTop(Value.percentHeight(.5f, tbCancel.getLabel()))

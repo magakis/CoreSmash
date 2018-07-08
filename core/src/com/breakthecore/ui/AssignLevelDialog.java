@@ -56,7 +56,7 @@ public class AssignLevelDialog extends Dialog {
         });
         textField.setMaxLength(20);
 
-        TextButton tbSave = new TextButton("Save", skin);
+        TextButton tbSave = UIFactory.createTextButton("Save", skin);
         tbSave.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -70,7 +70,7 @@ public class AssignLevelDialog extends Dialog {
             }
         });
 
-        TextButton tbCancel = new TextButton("Cancel", skin);
+        TextButton tbCancel = UIFactory.createTextButton("Cancel", skin);
         tbCancel.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {

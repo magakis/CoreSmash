@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Preferences;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -25,7 +26,10 @@ import com.badlogic.gdx.utils.Scaling;
 import com.breakthecore.CoreSmash;
 import com.breakthecore.levelbuilder.LevelBuilderScreen;
 import com.breakthecore.levels.CampaignScreen;
+import com.breakthecore.sound.SoundManager;
 import com.breakthecore.ui.UIComponent;
+import com.breakthecore.ui.UIFactory;
+import com.breakthecore.ui.UIUtils;
 
 /**
  * Created by Michail on 16/3/2018.
@@ -40,6 +44,9 @@ public class MainMenuScreen extends ScreenBase {
     private UIComponent uiMenuOverlay;
     private UIMainMenu uiMainMenu;
 
+    /* TODO: Should be part of some options class */
+    private SoundManager.SoundAsset backgroundMusic;
+
     public MainMenuScreen(CoreSmash game) {
         super(game);
         stage = new Stage(game.getUIViewport());
@@ -49,6 +56,8 @@ public class MainMenuScreen extends ScreenBase {
 
         campaignScreen = new CampaignScreen(gameInstance);
         levelBuilderScreen = new LevelBuilderScreen(gameInstance);
+        backgroundMusic = SoundManager.get().getSoundAsset("backgroundMusic");
+        backgroundMusic.loop();
     }
 
     @Override
@@ -149,7 +158,7 @@ public class MainMenuScreen extends ScreenBase {
         }
 
         private Container<TextButton> newMenuButton(String text, String name, EventListener el) {
-            TextButton bt = new TextButton(text, skin.get("menuButton", TextButton.TextButtonStyle.class));
+            TextButton bt = UIFactory.createTextButton(text, skin.get("menuButton", TextButton.TextButtonStyle.class));
             bt.setName(name);
             bt.addListener(el);
 

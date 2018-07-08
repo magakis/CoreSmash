@@ -1,11 +1,17 @@
 package com.breakthecore.tiles;
 
 import com.breakthecore.GameController;
+import com.breakthecore.sound.SoundManager;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
 import com.breakthecore.tiles.TileContainer.Side;
 
-public class RegularTile extends Tile implements Launchable {
+public class RegularTile extends Tile implements Launchable, Breakable {
+    private static SoundManager.SoundAsset destroySound;
+
+    static {
+        destroySound = SoundManager.get().getSoundAsset("regularBallDestroy");
+    }
 
     RegularTile(int id) {
         super(id);
@@ -28,4 +34,8 @@ public class RegularTile extends Tile implements Launchable {
         }
     }
 
+    @Override
+    public void onDestroy() {
+        destroySound.play();
+    }
 }

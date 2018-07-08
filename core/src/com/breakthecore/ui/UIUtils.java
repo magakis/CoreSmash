@@ -2,9 +2,12 @@ package com.breakthecore.ui;
 
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Layout;
+import com.breakthecore.sound.SoundManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +26,8 @@ public class UIUtils {
             return Character.isDigit(c) || c == '-';
         }
     };
+
+    private static ChangeListener buttonSoundListener;
 
     // Disable constructor
     private UIUtils() {
@@ -45,6 +50,20 @@ public class UIUtils {
             observers.add(observer);
         }
         return screenActor;
+    }
+
+    public static ChangeListener getButtonSoundListener() {
+        if (buttonSoundListener == null) {
+            buttonSoundListener = new ChangeListener() {
+                private SoundManager.SoundAsset btnSound = SoundManager.get().getSoundAsset("buttonClick");
+
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    btnSound.play();
+                }
+            };
+        }
+        return buttonSoundListener;
     }
 
     public static Actor getUnitActor() {

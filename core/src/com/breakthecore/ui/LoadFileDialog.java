@@ -46,7 +46,7 @@ public class LoadFileDialog extends Dialog {
 
         levelsFound = new List<>(ls);
 
-        TextButton tbLoad = new TextButton("Load", skin, "dialogButton");
+        TextButton tbLoad = UIFactory.createTextButton("Load", skin, "dialogButton");
         tbLoad.getLabelCell()
                 .pad(Value.percentHeight(1, tbLoad.getLabel()))
                 .padTop(Value.percentHeight(.5f, tbLoad.getLabel()))
@@ -60,7 +60,7 @@ public class LoadFileDialog extends Dialog {
             }
         });
 
-        TextButton tbDelete = new TextButton("Delete", skin, "dialogButton");
+        TextButton tbDelete = UIFactory.createTextButton("Delete", skin, "dialogButton");
         tbDelete.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -75,7 +75,7 @@ public class LoadFileDialog extends Dialog {
                 .padTop(Value.percentHeight(.5f, tbDelete.getLabel()))
                 .padBottom(Value.percentHeight(.5f, tbDelete.getLabel()));
 
-        TextButton tbCancel = new TextButton("Cancel", skin, "dialogButton");
+        TextButton tbCancel = UIFactory.createTextButton("Cancel", skin, "dialogButton");
         tbCancel.getLabelCell()
                 .pad(Value.percentHeight(1, tbCancel.getLabel()))
                 .padTop(Value.percentHeight(.5f, tbCancel.getLabel()))
@@ -102,8 +102,8 @@ public class LoadFileDialog extends Dialog {
             }
         };
         dlgConfirmDelete.text(new Label("", skin, "h3f"));
-        dlgConfirmDelete.button(new TextButton("Yes", skin, "dialogButton"), true);
-        dlgConfirmDelete.button(new TextButton("No", skin, "dialogButton"), false);
+        dlgConfirmDelete.button(UIFactory.createTextButton("Yes", skin, "dialogButton"), true);
+        dlgConfirmDelete.button(UIFactory.createTextButton("No", skin, "dialogButton"), false);
         Cell<Label> txtCell = dlgConfirmDelete.getContentTable().getCells().get(0);
         txtCell.pad(Value.percentHeight(.5f, txtCell.getActor()));
         txtCell.maxWidth(Value.percentWidth(0.5f, UIUtils.getScreenActor(txtCell.getActor())));

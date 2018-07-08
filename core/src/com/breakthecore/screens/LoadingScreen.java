@@ -34,6 +34,7 @@ import com.breakthecore.tiles.PowerupType;
 import com.breakthecore.tiles.TileIndex;
 import com.breakthecore.tiles.TileType;
 import com.breakthecore.ui.Components;
+import com.breakthecore.ui.UIFactory;
 import com.breakthecore.ui.UIUtils;
 
 import java.util.Locale;
@@ -131,6 +132,8 @@ public class LoadingScreen extends ScreenBase {
 
     private void loadSounds() {
         am.load("blop.mp3", Sound.class);
+        am.load("BackgroundLoop.mp3", Sound.class);
+        am.load("click.mp3", Sound.class);
     }
 
     private void loadAllBitmapFonts() {
@@ -247,7 +250,9 @@ public class LoadingScreen extends ScreenBase {
 
     private void setupSounds() {
         SoundManager soundManager = SoundManager.get();
-        soundManager.loadSound("regularBallDestroyed", am.get("blop.mp3", Sound.class));
+        soundManager.loadSound("regularBallDestroy", am.get("blop.mp3", Sound.class));
+        soundManager.loadSound("backgroundMusic", am.get("BackgroundLoop.mp3", Sound.class));
+        soundManager.loadSound("buttonClick", am.get("click.mp3", Sound.class));
     }
 
     private void setupFonts() {

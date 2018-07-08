@@ -38,6 +38,10 @@ public class SoundManager {
             return sound.play();
         }
 
+        public long loop() {
+            return sound.loop();
+        }
+
         public void stop(int id) {
             sound.stop(id);
         }

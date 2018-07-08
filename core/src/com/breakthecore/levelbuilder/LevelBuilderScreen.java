@@ -37,7 +37,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
@@ -54,7 +53,7 @@ import com.breakthecore.screens.GameScreen;
 import com.breakthecore.screens.ScreenBase;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tiles.TileIndex;
-import com.breakthecore.ui.ActorFactory;
+import com.breakthecore.ui.UIFactory;
 import com.breakthecore.ui.Components;
 import com.breakthecore.ui.LoadFileDialog;
 import com.breakthecore.ui.SaveFileDialog;
@@ -223,7 +222,7 @@ public class LevelBuilderScreen extends ScreenBase {
         private String filenameCache = "";
 
         UIToolbarTop() {
-            tbSave = new TextButton("Save", skin, "levelBuilderButton");
+            tbSave = UIFactory.createTextButton("Save", skin, "levelBuilderButton");
             tbSave.getLabelCell().pad(Value.percentHeight(.5f, tbSave.getLabel()));
             tbSave.getLabelCell().padTop(Value.percentHeight(.25f, tbSave.getLabel()));
             tbSave.getLabelCell().padBottom(Value.percentHeight(.25f, tbSave.getLabel()));
@@ -233,7 +232,7 @@ public class LevelBuilderScreen extends ScreenBase {
                     saveFileDialog.show(stage, filenameCache);
                 }
             });
-            tbLoad = new TextButton("Load", skin, "levelBuilderButton");
+            tbLoad = UIFactory.createTextButton("Load", skin, "levelBuilderButton");
             tbLoad.getLabelCell().pad(Value.percentHeight(.5f, tbLoad.getLabel()));
             tbLoad.getLabelCell().padTop(Value.percentHeight(.25f, tbLoad.getLabel()));
             tbLoad.getLabelCell().padBottom(Value.percentHeight(.25f, tbLoad.getLabel()));
@@ -244,7 +243,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
             });
 
-            tbDeploy = new TextButton("Deploy", skin, "levelBuilderButton");
+            tbDeploy = UIFactory.createTextButton("Deploy", skin, "levelBuilderButton");
             tbDeploy.getLabelCell().pad(Value.percentHeight(.5f, tbDeploy.getLabel()));
             tbDeploy.getLabelCell().padTop(Value.percentHeight(.25f, tbDeploy.getLabel()));
             tbDeploy.getLabelCell().padBottom(Value.percentHeight(.25f, tbDeploy.getLabel()));
@@ -344,7 +343,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
             final TextButton tbDraw, tbErase, tbRotate;
 
-            tbDraw = new TextButton("Draw", skin, "levelBuilderButtonChecked");
+            tbDraw = UIFactory.createTextButton("Draw", skin, "levelBuilderButtonChecked");
             tbDraw.getLabelCell().padTop(Value.percentHeight(.25f, tbDraw.getLabel()));
             tbDraw.getLabelCell().padBottom(Value.percentHeight(.25f, tbDraw.getLabel()));
             tbDraw.addListener(new ChangeListener() {
@@ -357,7 +356,7 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 }
             });
-            tbErase = new TextButton("Erase", skin, "levelBuilderButtonChecked");
+            tbErase = UIFactory.createTextButton("Erase", skin, "levelBuilderButtonChecked");
             tbErase.getLabelCell().padTop(Value.percentHeight(.25f, tbErase.getLabel()));
             tbErase.getLabelCell().padBottom(Value.percentHeight(.25f, tbErase.getLabel()));
             tbErase.addListener(new ChangeListener() {
@@ -371,7 +370,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
             });
 
-            tbRotate = new TextButton("Rotate", skin, "levelBuilderButtonChecked");
+            tbRotate = UIFactory.createTextButton("Rotate", skin, "levelBuilderButtonChecked");
             tbRotate.getLabelCell().pad(Value.percentHeight(.5f, tbRotate.getLabel()));
             tbRotate.getLabelCell().padTop(Value.percentHeight(.25f, tbRotate.getLabel()));
             tbRotate.getLabelCell().padBottom(Value.percentHeight(.25f, tbRotate.getLabel()));
@@ -724,7 +723,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
             private OptionsMenu() {
 
-                TextButton btnLevelSettings = new TextButton("Level", skin, "levelBuilderButton");
+                TextButton btnLevelSettings = UIFactory.createTextButton("Level", skin, "levelBuilderButton");
                 btnLevelSettings.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
@@ -732,7 +731,7 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 });
 
-                TextButton btnMapSettings = new TextButton("Layer", skin, "levelBuilderButton");
+                TextButton btnMapSettings = UIFactory.createTextButton("Layer", skin, "levelBuilderButton");
                 btnMapSettings.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
@@ -1146,7 +1145,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 });
                 sldrColorCount.addListener(stopTouchDown);
 
-                cbRotateCCW = ActorFactory.createCheckBox("Rotate CCW", skin);
+                cbRotateCCW = UIFactory.createCheckBox("Rotate CCW", skin);
                 cbRotateCCW.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
@@ -1154,7 +1153,7 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 });
 
-                cbIsChained = ActorFactory.createCheckBox("Chained", skin);
+                cbIsChained = UIFactory.createCheckBox("Chained", skin);
                 cbIsChained.setChecked(true);
                 cbIsChained.addListener(new ChangeListener() {
                     @Override
@@ -1349,7 +1348,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 };
 
 
-                final TextButton freeMove = new TextButton("Move", skin, "levelBuilderButtonChecked");
+                final TextButton freeMove = UIFactory.createTextButton("Move", skin, "levelBuilderButtonChecked");
                 freeMove.getLabelCell().pad(Value.percentHeight(.3f, freeMove.getLabel()));
                 freeMove.addListener(new ChangeListener() {
                     @Override

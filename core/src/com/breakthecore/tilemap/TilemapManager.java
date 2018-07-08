@@ -43,11 +43,8 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
     private Match3 match3 = new Match3();
     private int[] colorsAvailable = new int[10]; // XXX(22/4/2018): MagicValue 10 (Should ask TileIndex)
 
-    private SoundManager.SoundAsset popSound;
-
     public TilemapManager() {
         defTilemapPosition = new Coords2D(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
-        popSound = SoundManager.get().getSoundAsset("regularBallDestroyed");
         worldMap = new Map(this);
         tileList = new ArrayList<>();
     }
@@ -94,14 +91,20 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
     }
 
     public void removeTile(int layer, int x, int y) {
-        TilemapTile removed = worldMap.removeTile(layer, x, y);
-        if (removed == null) return;
-//            throw new RuntimeException("Unexpected NULL value(Layer:" + layer + " ,X:" + x + " ,Y" + y + ")");
+        TilemapTile tmTile = worldMap.removeTile(layer, x, y);
+        if (tmTile == null) return;
+        tileList.remove(tmTile);
 
-        if (removed.getTileID() < 10) {
-            --colorsAvailable[removed.getTileID()];
+        Tile removed = tmTile.getTile();
+        //XXX : Magic Number 10
+        if (removed.getID() < 10) {
+            --colorsAvailable[removed.getID()];
         }
-        tileList.remove(removed);
+
+        if (removed instanceof Breakable) {
+            ((Breakable) removed).onDestroy();
+        }
+
     }
 
     public int getCenterTileID() {
@@ -152,14 +155,10 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
             if (t.getLayerId() == 0 && x == 0 && y == 0) {
                 notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
             }
-            if (t.getTile() instanceof Breakable) {
-                ((Breakable) t.getTile()).onDestroy();
-            }
 
             removeTile(t);
         }
 
-        popSound.play();
         notifyObservers(NotificationType.SAME_COLOR_MATCH, match.size());
     }
 

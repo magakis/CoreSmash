@@ -48,6 +48,7 @@ import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.tiles.PowerupType;
 import com.breakthecore.ui.UIComponent;
+import com.breakthecore.ui.UIFactory;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -594,7 +595,7 @@ public class GameScreen extends ScreenBase implements Observer {
             resultTextLbl = new Label("null", skin, "h2");
             lblScore = new Label("null", skin, "h3");
 
-            TextButton tbMenu = new TextButton("Menu", skin);
+            TextButton tbMenu = UIFactory.createTextButton("Menu", skin);
             tbMenu.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeListener.ChangeEvent event, Actor actor) {

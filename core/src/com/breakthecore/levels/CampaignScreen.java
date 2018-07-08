@@ -41,6 +41,7 @@ import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tiles.PowerupType;
 import com.breakthecore.ui.Components;
 import com.breakthecore.ui.UIComponent;
+import com.breakthecore.ui.UIFactory;
 import com.breakthecore.ui.UIUtils;
 
 import java.util.ArrayList;
@@ -234,7 +235,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         private TextButton button;
 
         public LevelWidget(int lvl, int x, int y) {
-            button = new TextButton(String.valueOf(lvl), skin, "levelButton");
+            button = UIFactory.createTextButton(String.valueOf(lvl), skin, "levelButton");
 
             setActor(button);
             if (CoreSmash.DEBUG_TABLET) {
@@ -401,7 +402,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             content.add(powerupsGroup)
                     .width(Value.percentWidth(.8f, UIUtils.getScreenActor(powerupsGroup)));
 
-            TextButton btnClose = new TextButton("Close", skin, "dialogButton");
+            TextButton btnClose = UIFactory.createTextButton("Close", skin, "dialogButton");
             btnClose.getLabelCell().pad(Value.percentHeight(1, btnClose.getLabel()));
             btnClose.getLabelCell().padBottom(Value.percentHeight(.5f, btnClose.getLabel()));
             btnClose.getLabelCell().padTop(Value.percentHeight(.5f, btnClose.getLabel()));
@@ -413,7 +414,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 }
             });
 
-            TextButton btnStart = new TextButton("Start", skin, "dialogButton");
+            TextButton btnStart = UIFactory.createTextButton("Start", skin, "dialogButton");
             btnStart.getLabelCell().pad(Value.percentHeight(1, btnStart.getLabel()));
             btnStart.getLabelCell().padBottom(Value.percentHeight(.5f, btnStart.getLabel()));
             btnStart.getLabelCell().padTop(Value.percentHeight(.5f, btnStart.getLabel()));
