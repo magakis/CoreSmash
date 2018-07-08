@@ -16,6 +16,7 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGeneratorLoader;
 import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -28,7 +29,8 @@ import com.breakthecore.CoreSmash;
 import com.breakthecore.sound.SoundManager;
 import com.breakthecore.themes.AbstractTheme;
 import com.breakthecore.themes.BaseTheme;
-import com.breakthecore.tiles.TileAttributes;
+import com.breakthecore.tiles.BallAttributes;
+import com.breakthecore.tiles.PowerupType;
 import com.breakthecore.tiles.TileIndex;
 import com.breakthecore.tiles.TileType;
 import com.breakthecore.ui.Components;
@@ -151,176 +153,104 @@ public class LoadingScreen extends ScreenBase {
     }
 
     public static void loadBalls() {
-        TileAttributes ballAttr;
+        BallAttributes ballAttr;
 
         TileIndex tileIndex = TileIndex.get();
         if (tileIndex.isFrozen()) return;
 
-        ballAttr = TileAttributes.getBuilder()
+        ballAttr = BallAttributes.getBuilder()
                 .setID(0)
                 .setPlaceable(true)
                 .setType(TileType.REGULAR)
                 .build();
         tileIndex.registerTile(ballAttr);
 
-        ballAttr = TileAttributes.getBuilder()
+        ballAttr = BallAttributes.getBuilder()
                 .setID(1)
                 .setPlaceable(true)
                 .setType(TileType.REGULAR)
                 .build();
         tileIndex.registerTile(ballAttr);
 
-        ballAttr = TileAttributes.getBuilder()
+        ballAttr = BallAttributes.getBuilder()
                 .setID(2)
                 .setPlaceable(true)
                 .setType(TileType.REGULAR)
                 .build();
         tileIndex.registerTile(ballAttr);
 
-        ballAttr = TileAttributes.getBuilder()
+        ballAttr = BallAttributes.getBuilder()
                 .setID(3)
                 .setPlaceable(true)
                 .setType(TileType.REGULAR)
                 .build();
         tileIndex.registerTile(ballAttr);
 
-        ballAttr = TileAttributes.getBuilder()
+        ballAttr = BallAttributes.getBuilder()
                 .setID(4)
                 .setPlaceable(true)
                 .setType(TileType.REGULAR)
                 .build();
         tileIndex.registerTile(ballAttr);
 
-        ballAttr = TileAttributes.getBuilder()
+        ballAttr = BallAttributes.getBuilder()
                 .setID(5)
                 .setPlaceable(true)
                 .setType(TileType.REGULAR)
                 .build();
         tileIndex.registerTile(ballAttr);
 
-        ballAttr = TileAttributes.getBuilder()
+        ballAttr = BallAttributes.getBuilder()
                 .setID(6)
                 .setPlaceable(true)
                 .setType(TileType.REGULAR)
                 .build();
         tileIndex.registerTile(ballAttr);
 
-        ballAttr = TileAttributes.getBuilder()
+        ballAttr = BallAttributes.getBuilder()
                 .setID(7)
                 .setPlaceable(true)
                 .setType(TileType.REGULAR)
                 .build();
         tileIndex.registerTile(ballAttr);
 
-//        ballAttr = TileAttributes.getBuilder()
-//                .setID(8)
-//                .setBreakable(true)
-//                .setMatchable(true)
-//                .setPlaceable(true)
-//                .setTileType(TileType.REGULAR)
-//                .build();
-//        TileIndex.registerTile(ballAttr);
-//
-//        ballAttr = TileAttributes.getBuilder()
-//                .setID(9)
-//                .setBreakable(true)
-//                .setMatchable(true)
-//                .setPlaceable(true)
-//                .setTileType(TileType.REGULAR)
-//                .build();
-//        TileIndex.registerTile(ballAttr);
-//
-//        ballAttr = TileAttributes.getBuilder()
-//                .setID(10)
-//                .setBreakable(true)
-//                .setMatchable(true)
-//                .setPlaceable(true)
-//                .setTileType(TileType.REGULAR)
-//                .build();
-//        TileIndex.registerTile(ballAttr);
-//
-//        ballAttr = TileAttributes.getBuilder()
-//                .setID(11)
-//                .setBreakable(true)
-//                .setMatchable(true)
-//                .setPlaceable(true)
-//                .setTileType(TileType.REGULAR)
-//                .build();
-//        TileIndex.registerTile(ballAttr);
-//
-//        ballAttr = TileAttributes.getBuilder()
-//                .setID(12)
-//                .setBreakable(true)
-//                .setMatchable(true)
-//                .setPlaceable(true)
-//                .setTileType(TileType.REGULAR)
-//                .build();
-//        TileIndex.registerTile(ballAttr);
-//
-//        ballAttr = TileAttributes.getBuilder()
-//                .setID(13)
-//                .setBreakable(true)
-//                .setMatchable(true)
-//                .setPlaceable(true)
-//                .setTileType(TileType.REGULAR)
-//                .build();
-//        TileIndex.registerTile(ballAttr);
-//
-//        ballAttr = TileAttributes.getBuilder()
-//                .setID(14)
-//                .setBreakable(true)
-//                .setMatchable(true)
-//                .setPlaceable(true)
-//                .setTileType(TileType.REGULAR)
-//                .build();
-//        TileIndex.registerTile(ballAttr);
-//
-//        ballAttr = TileAttributes.getBuilder()
-//                .setID(15)
-//                .setBreakable(true)
-//                .setMatchable(true)
-//                .setPlaceable(true)
-//                .setTileType(TileType.REGULAR)
-//                .build();
-//        TileIndex.registerTile(ballAttr);
-
-        ballAttr = TileAttributes.getBuilder()
+        ballAttr = BallAttributes.getBuilder()
                 .setID(17)
                 .setType(TileType.RANDOM_BALL)
                 .setPlaceable(true)
                 .build();
         tileIndex.registerTile(ballAttr);
 
-        ballAttr = TileAttributes.getBuilder()
+        ballAttr = BallAttributes.getBuilder()
                 .setID(18)
                 .setType(TileType.WALL_BALL)
                 .setPlaceable(true)
                 .build();
         tileIndex.registerTile(ballAttr);
 
-        ballAttr = TileAttributes.getBuilder()
-                .setID(19)
-                .setType(TileType.BOMB_BALL)
-                .setPlaceable(false)
-                .build();
-        tileIndex.registerTile(ballAttr);
-
-        ballAttr = TileAttributes.getBuilder()
+        ballAttr = BallAttributes.getBuilder()
                 .setID(20)
                 .setType(TileType.SPIKY_BALL)
                 .setPlaceable(true)
                 .build();
         tileIndex.registerTile(ballAttr);
 
+        ballAttr = BallAttributes.getBuilder()
+                .setID(101)
+                .setPowerupType(PowerupType.FIREBALL)
+                .setPlaceable(false)
+                .build();
+        tileIndex.registerTile(ballAttr);
+
         tileIndex.freeze();
     }
 
-    public void setupSounds() {
+    private void setupSounds() {
         SoundManager soundManager = SoundManager.get();
         soundManager.loadSound("regularBallDestroyed", am.get("blop.mp3", Sound.class));
     }
 
-    public void setupFonts() {
+    private void setupFonts() {
         BitmapFont font = am.get("h3f.ttf");
         font.getData().markupEnabled = true;
     }
@@ -404,6 +334,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("asteroid", am.get("asteroid.png"));
         skin.add("map", am.get("map.png"));
         skin.add("speaker", am.get("speaker.png"));
+        skin.add("FIREBALL", am.get("ballFlaming.png"));
         skin.add("timeIcon", am.get("HourGlass.png"));
         skin.add("movesIcon", am.get("MovesIcon.png"));
         skin.add("heartIcon", am.get("HeartIcon.png"));
@@ -486,10 +417,20 @@ public class LoadingScreen extends ScreenBase {
         skin.add("levelBuilderButtonChecked", stb);
 
         stb = new TextButton.TextButtonStyle();
-        stb.up = skin.newDrawable("myBall", Color.CORAL);
-        stb.down = skin.newDrawable("myBall", Color.RED);
+        stb.up = skin.getDrawable("boxSmall");
+        stb.down = skin.newDrawable("boxSmall", Color.GRAY);
+        stb.disabled = skin.newDrawable("boxSmall", Color.DARK_GRAY);
         stb.font = skin.getFont("h4");
+        stb.fontColor = Color.WHITE;
+        stb.disabledFontColor = Color.DARK_GRAY;
         skin.add("tmpPowerup", stb);
+
+        // ButtonStyles
+        Button.ButtonStyle bs = new Button.ButtonStyle();
+        bs.up = skin.getDrawable("boxSmall");
+        bs.down = skin.newDrawable("boxSmall", Color.GRAY);
+        bs.disabled = skin.newDrawable("boxSmall", Color.DARK_GRAY);
+        skin.add("default", bs);
 
         // SliderStyles
         Slider.SliderStyle ss = new Slider.SliderStyle();
@@ -514,6 +455,12 @@ public class LoadingScreen extends ScreenBase {
         tfs.font = skin.getFont("h4");
         tfs.fontColor = Color.WHITE;
         skin.add("default", tfs);
+
+        // WindowStyles
+        Window.WindowStyle ws = new Window.WindowStyle();
+        ws.background = skin.getDrawable("boxBig");
+        ws.titleFont = skin.getFont("h6");
+        skin.add("PickPowerUpDialog", ws);
 
         UIUtils.setUnitActor(skin.getFont("h6"));
     }

@@ -3,15 +3,19 @@ package com.breakthecore;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.breakthecore.managers.StatsManager;
+import com.breakthecore.tiles.PowerupType;
 
 
 public class UserAccount {
     private String name;
+    private SpecialBallsAvailable ballsAvailable;
     private int unlockedLevels;
     private int userLevel;
     private int expProgress;
     private int totalScore;
     private static final int[] expTable = new int[100];
+
+    private String SPECIAL_FIREBALL = "special_fireball";
 
     static {
         int baseExp = 500;
@@ -36,6 +40,11 @@ public class UserAccount {
             }
             scoreLeft -= expTable[i];
         }
+        ballsAvailable = new SpecialBallsAvailable(prefs);
+    }
+
+    public SpecialBallsAvailable getSpecialBallsAvailable() {
+        return ballsAvailable;
     }
 
     public int getUnlockedLevels() {
@@ -84,6 +93,46 @@ public class UserAccount {
         }
     }
 
+    public int getLevel() {
+        return userLevel;
+    }
+
+    public int getXPProgress() {
+        return expProgress;
+    }
+
+    public int getExpForNextLevel() {
+        return expTable[userLevel - 1];
+    }
+
+    public void addPowerup(PowerupType type, int amount) {
+        if (amount < 0) throw new IllegalArgumentException("Illegal amount: " + amount);
+
+        Preferences prefs = Gdx.app.getPreferences("account");
+        switch (type) {
+            case FIREBALL:
+                ballsAvailable.powerup.fireball += amount;
+                prefs.putInteger(SPECIAL_FIREBALL, prefs.getInteger(SPECIAL_FIREBALL) + amount);
+                break;
+            default:
+                throw new RuntimeException("Not implemented PowerUp: " + type);
+        }
+        prefs.flush();
+    }
+
+    public void consumePowerup(PowerupType type) {
+        Preferences prefs = Gdx.app.getPreferences("account");
+        switch (type) {
+            case FIREBALL:
+                --ballsAvailable.powerup.fireball;
+                prefs.putInteger(SPECIAL_FIREBALL, prefs.getInteger(SPECIAL_FIREBALL) - 1);
+                break;
+            default:
+                throw new RuntimeException("Not implemented PowerUp: " + type);
+        }
+        prefs.flush();
+    }
+
     private void saveScore(int score) {
         totalScore += score;
         expProgress += score;
@@ -97,15 +146,21 @@ public class UserAccount {
         prefs.flush();
     }
 
-    public int getLevel() {
-        return userLevel;
-    }
+    public static class SpecialBallsAvailable {
+        private PowerupCountGroup powerup;
 
-    public int getXPProgress() {
-        return expProgress;
-    }
+        private SpecialBallsAvailable(Preferences prefs) {
+            powerup = new PowerupCountGroup();
+            powerup.fireball = prefs.getInteger("special_fireball");
+        }
 
-    public int getExpForNextLevel() {
-        return expTable[userLevel - 1];
+        public int getAmountOf(PowerupType type) {
+            switch (type) {
+                case FIREBALL:
+                    return powerup.fireball;
+                default:
+                    throw new RuntimeException("Not implemented PowerUp: " + type);
+            }
+        }
     }
 }

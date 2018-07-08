@@ -15,6 +15,8 @@ import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -25,6 +27,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
@@ -36,21 +40,15 @@ import com.breakthecore.NotificationType;
 import com.breakthecore.Observer;
 import com.breakthecore.StreakUI;
 import com.breakthecore.WorldSettings;
-import com.breakthecore.levelbuilder.LevelParser;
-import com.breakthecore.levelbuilder.LevelSettings;
-import com.breakthecore.levelbuilder.MapSettings;
-import com.breakthecore.levelbuilder.ParsedLevel;
-import com.breakthecore.levelbuilder.ParsedTile;
 import com.breakthecore.levels.Level;
 import com.breakthecore.managers.MovingBallManager;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.managers.StatsManager;
-import com.breakthecore.tilemap.TilemapBuilder;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tiles.MovingBall;
+import com.breakthecore.tiles.PowerupType;
 import com.breakthecore.ui.UIComponent;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -62,8 +60,6 @@ public class GameScreen extends ScreenBase implements Observer {
     private ExtendViewport viewport;
     private OrthographicCamera camera;
     private RenderManager renderManager;
-
-    private GameScreenController gameScreenController;
 
     private GameController gameController;
     private TilemapManager tilemapManager;
@@ -94,8 +90,7 @@ public class GameScreen extends ScreenBase implements Observer {
         launcher = new Launcher(movingBallManager);
         tilemapManager = new TilemapManager();
         statsManager = new StatsManager();
-        gameController = new GameController(tilemapManager, movingBallManager, statsManager);
-        gameScreenController = new GameScreenController(this);
+        gameController = new GameController(tilemapManager, movingBallManager, statsManager, launcher);
 
         skin = gameInstance.getSkin();
 
@@ -194,7 +189,8 @@ public class GameScreen extends ScreenBase implements Observer {
     public void deployLevel(Level level) {
         reset();
         activeLevel = Objects.requireNonNull(level);
-        level.initialize(gameScreenController);
+        level.initialize(gameController);
+
         if (tilemapManager.getTilemapTile(0, 0, 0) == null) {
             statsManager.stopGame();
             endGame();
@@ -212,6 +208,7 @@ public class GameScreen extends ScreenBase implements Observer {
         gameInstance.setScreen(this);
     }
 
+
     @Override
     public void onNotify(NotificationType type, Object ob) {
         switch (type) {
@@ -228,10 +225,6 @@ public class GameScreen extends ScreenBase implements Observer {
                 }
                 break;
         }
-    }
-
-    public GameScreenController getGameScreenController() {
-        return gameScreenController;
     }
 
     private class GameInputListener implements GestureDetector.GestureListener {
@@ -361,7 +354,7 @@ public class GameScreen extends ScreenBase implements Observer {
         Table tblTime, tblScore;
         Table tblCenter;
         Label lblTime, lblScore, lblLives, lblMoves, lblTargetScore;
-        TextButton tbPower1;
+        PowerupButton[] powerupButtons;
         Label lblStaticLives;
         Image imgHourGlass, imgMovesIcon, imgLivesIcon, imgRound;
 
@@ -409,25 +402,30 @@ public class GameScreen extends ScreenBase implements Observer {
                     .padRight(Value.percentHeight(0.2f, lblTime));
             tblTime.add(lblTime);
 
-            tbPower1 = new TextButton("null", skin, "tmpPowerup");
-            tbPower1.getLabel().setAlignment(Align.bottomLeft);
-            tbPower1.getLabelCell().padBottom(5).padLeft(10);
-            tbPower1.addListener(new ChangeListener() {
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-                    statsManager.consumeSpecialBall(launcher);
-                    if (statsManager.getSpecialBallCount() == 0) {
-                        tbPower1.setDisabled(true);
-                    }
-                    tbPower1.setText(String.valueOf(statsManager.getSpecialBallCount()));
-                }
-            });
 
+            powerupButtons = new PowerupButton[3];
+            for (int i = 0; i < powerupButtons.length; ++i) {
+                final PowerupButton btn = new PowerupButton();
+                btn.addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
+                        statsManager.consumePowerup(btn.type, launcher);
+                        gameInstance.getUserAccount().consumePowerup(btn.type);
+                        int usagesLeft = statsManager.getPowerupUsages(btn.type);
+                        if (usagesLeft == 0) {
+                            btn.setDisabled(true);
+                            btn.image.setDrawable(skin.newDrawable(btn.type.name(), Color.DARK_GRAY));
+                            btn.text.setColor(Color.DARK_GRAY);
+                        }
+                        btn.setText(usagesLeft);
+                    }
+                });
+                powerupButtons[i] = btn;
+            }
 
             tblPowerUps = new Table();
             tblPowerUps.setBackground(skin.getDrawable("boxSmall"));
             tblPowerUps.center();
-            tblPowerUps.add(tbPower1).size(100, 100);
 
             tblCenter = new Table(skin);
             tblCenter.background("gameScreenTopRound");
@@ -477,14 +475,15 @@ public class GameScreen extends ScreenBase implements Observer {
             tblTop.validate();
             root = new Table();
             root.setFillParent(true);
-            root.top().add(tblTop).growX().height(Value.percentHeight(1.6f, tblScore)).padTop(Value.percentHeight(-.25f, tblScore));
+            root.top().add(tblTop).growX().height(Value.percentHeight(1.6f, tblScore)).padTop(Value.percentHeight(-.25f, tblScore)).row();
+            root.add(tblPowerUps).expand().center().right().padRight(-6 * Gdx.graphics.getDensity());
         }
 
         public void setup() {
             lblScore.setText(0);
             lblTargetScore.setText(statsManager.getTargetScore());
             lblLives.setText(String.valueOf(statsManager.getLives()));
-            tbPower1.setText(String.valueOf(statsManager.getSpecialBallCount()));
+
             lblMoves.setText(String.valueOf(statsManager.getMoves()));
 
             if (statsManager.isMovesEnabled() && statsManager.isLivesEnabled()) {
@@ -505,8 +504,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
             tblTime.setVisible(statsManager.isTimeEnabled());
 
-            tblPowerUps.setVisible(statsManager.getSpecialBallCount() != 0);
-            tbPower1.setDisabled(statsManager.getSpecialBallCount() == 0);
+            setupPowerups();
 
             lblMoves.invalidateHierarchy();
         }
@@ -528,6 +526,56 @@ public class GameScreen extends ScreenBase implements Observer {
                 case MOVES_AMOUNT_CHANGED:
                     lblMoves.setText(statsManager.getMoves());
                     break;
+            }
+        }
+
+        private void setupPowerups() {
+            int enabledCount = statsManager.getEnabledPowerupsCount();
+            if (enabledCount == 0) {
+                tblPowerUps.setVisible(false);
+                return;
+            }
+
+            tblPowerUps.clearChildren();
+
+            PowerupType[] enabledPowerups = statsManager.getEnabledPowerups();
+            for (int i = 0; i < enabledCount; ++i) {
+                powerupButtons[i].setPower(enabledPowerups[i], statsManager.getPowerupUsages(enabledPowerups[i]));
+                tblPowerUps.add(powerupButtons[i]).size(50 * Gdx.graphics.getDensity(), 50 * Gdx.graphics.getDensity()).row();
+            }
+
+            tblPowerUps.setVisible(true);
+        }
+
+        private class PowerupButton extends Button {
+            private PowerupType type;
+            private Image image;
+            private Label text;
+
+            public PowerupButton() {
+                super(skin, "default");
+
+                image = new Image();
+                text = new Label("null", skin, "h5");
+                text.setAlignment(Align.bottomLeft);
+                stack(image, text).grow();
+            }
+
+            public void setPower(PowerupType type, int count) {
+                this.type = type;
+                text.setText(count);
+                if (count > 0) {
+                    text.setColor(Color.WHITE);
+                    image.setDrawable(skin.getDrawable(type.name()));
+                } else {
+                    text.setColor(Color.DARK_GRAY);
+                    image.setDrawable(skin.newDrawable(type.name(), Color.DARK_GRAY));
+                    setDisabled(true);
+                }
+            }
+
+            public void setText(int value) {
+                text.setText(value);
             }
         }
     }
@@ -613,50 +661,4 @@ public class GameScreen extends ScreenBase implements Observer {
         }
     }
 
-    public class GameScreenController {
-        GameScreen gameScreen;
-
-        private GameScreenController(GameScreen screen) {
-            gameScreen = screen;
-        }
-
-        public void loadLevel(int lvl) {
-            statsManager.setLevel(lvl);
-            loadLevelMap("level" + lvl);
-        }
-
-        public GameScreenController loadLevelMap(String fileName) {
-            ParsedLevel parsedLevel = LevelParser.loadFrom(fileName);
-
-            LevelSettings levelSettings = Objects.requireNonNull(parsedLevel).getLevelSettings();
-            statsManager.setGameMode(GameMode.CLASSIC);
-            statsManager.setLives(levelSettings.lives);
-            statsManager.setMoves(levelSettings.moves);
-            statsManager.setTime(levelSettings.time);
-
-            launcher.setLauncherSize(levelSettings.launcherSize);
-            launcher.setLauncherCooldown(levelSettings.launcherCooldown);
-
-            movingBallManager.setDefaultBallSpeed(levelSettings.ballSpeed);
-
-            for (int i = 0; i < parsedLevel.getMapCount(); ++i) {
-                List<ParsedTile> tileList = parsedLevel.getTiles(i);
-                MapSettings settings = parsedLevel.getMapSettings(i);
-
-                if (tileList.size() == 0) continue;
-
-                TilemapBuilder builder = tilemapManager.newLayer();
-                builder.setColorCount(settings.getColorCount())
-                        .setOffset(settings.getOffset())
-                        .setOrigin(settings.getOrigin())
-                        .setChained(settings.isChained())
-                        .setMinMaxRotationSpeed(settings.getMinSpeed(), settings.getMaxSpeed(), settings.isRotateCCW())
-                        .setMapMinMaxRotationSpeed(settings.getMinMapSpeed(), settings.getMaxMapSpeed(), false)
-                        .populateFrom(tileList)
-                        .build();
-            }
-
-            return this;
-        }
-    }
 }

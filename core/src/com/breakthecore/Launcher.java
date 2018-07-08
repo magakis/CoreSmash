@@ -146,9 +146,9 @@ public class Launcher extends Observable {
         // TODO(21/4/2018): This function should know anything about the specialTile...
         if (!isLoadedWithSpecial) {
             switch (id) {
-                case 18:
+                case 101:
                     //TODO: WORK ON THIS
-                    launcher.addFirst(movingBallManager.create(launcherPos.x, launcherPos.y + ballSize, 18));
+                    launcher.addFirst(movingBallManager.create(launcherPos.x, launcherPos.y + ballSize, 101));
                     launcher.first().setScale(1);
                     isLoadedWithSpecial = true;
                     break;

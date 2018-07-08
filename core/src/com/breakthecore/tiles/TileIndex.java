@@ -10,7 +10,7 @@ public class TileIndex {
     private static TileIndex instance = new TileIndex();
     private boolean frozen;
 
-    private final IntMap<TileAttributes> attributes = new IntMap<>();
+    private final IntMap<BallAttributes> attributes = new IntMap<>();
 
     /* Disable constructor */
     private TileIndex() {
@@ -28,14 +28,14 @@ public class TileIndex {
         frozen = true;
     }
 
-    public TileAttributes getAttributesFor(int id) {
-        TileAttributes value = attributes.get(id);
+    public BallAttributes getAttributesFor(int id) {
+        BallAttributes value = attributes.get(id);
         if (value == null) throw new RuntimeException("Unknown id: " + id);
         return value;
     }
 
     public TileType getTypeOf(int id) {
-        TileAttributes attr = attributes.get(id);
+        BallAttributes attr = attributes.get(id);
         if (attr == null) throw new IllegalArgumentException("Error: Unknown ID(" + id + ")");
 
         return attr.getTileType();
@@ -43,7 +43,7 @@ public class TileIndex {
 
     public List<Integer> getAllPlaceableIDs() {
         List<Integer> result = new ArrayList<>();
-        for (IntMap.Entry<TileAttributes> entry : attributes.entries()) {
+        for (IntMap.Entry<BallAttributes> entry : attributes.entries()) {
             if (entry.value.isPlaceable()) {
                 result.add(entry.key);
             }
@@ -60,11 +60,11 @@ public class TileIndex {
         return result;
     }
 
-    public void registerTile(TileAttributes attributes) {
+    public void registerTile(BallAttributes attributes) {
         if (frozen) throw new IllegalStateException("TileIndex is frozen");
 
         int id = attributes.getID();
-        TileAttributes slot = this.attributes.get(id);
+        BallAttributes slot = this.attributes.get(id);
 
         if (slot == null) {
             this.attributes.put(id, attributes);

@@ -5,9 +5,9 @@ import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
 
-public class BombTile extends Tile implements Launchable {
+public class FireBall extends Tile implements Launchable {
 
-    BombTile(int id) {
+    FireBall(int id) {
         super(id);
     }
 

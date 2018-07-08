@@ -2,16 +2,19 @@ package com.breakthecore.managers;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
+import com.badlogic.gdx.utils.Array;
 import com.breakthecore.Launcher;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observable;
 import com.breakthecore.Observer;
 import com.breakthecore.screens.GameScreen;
+import com.breakthecore.tiles.PowerupType;
 
 import java.util.Random;
 
 public class StatsManager extends Observable implements Observer {
     private Random rand = new Random();
+    private PowerupCase powerupCase = new PowerupCase();
 
     private int level;
     private boolean isGameActive;
@@ -29,7 +32,6 @@ public class StatsManager extends Observable implements Observer {
     private boolean isLivesEnabled;
 
     private GameScreen.GameMode gameMode;
-    private int specialBallCount;
     private int ballsDestroyedThisFrame;
 
 
@@ -82,8 +84,8 @@ public class StatsManager extends Observable implements Observer {
         isGameActive = true;
         isRoundWon = false;
 
+        powerupCase.reset();
         ballsDestroyedThisFrame = 0;
-        specialBallCount = 0;
         isMovesEnabled = false;
         moves = 0;
         isTimeEnabled = false;
@@ -155,6 +157,22 @@ public class StatsManager extends Observable implements Observer {
         return time;
     }
 
+    public PowerupType[] getEnabledPowerups() {
+        return powerupCase.getEnabledPowerups();
+    }
+
+    public int getPowerupUsages(PowerupType type) {
+        return powerupCase.findSlot(type).amount;
+    }
+
+    public int getEnabledPowerupsCount() {
+        return powerupCase.enabledSlots;
+    }
+
+    public void enablePowerup(PowerupType type, int amount) {
+        powerupCase.putPowerup(type, amount);
+    }
+
     public boolean isMovesEnabled() {
         return isMovesEnabled;
     }
@@ -171,10 +189,6 @@ public class StatsManager extends Observable implements Observer {
         return gameMode;
     }
 
-    public int getSpecialBallCount() {
-        return specialBallCount;
-    }
-
     public void loseLife() {
         if (isLivesEnabled) {
             --lives;
@@ -183,32 +197,28 @@ public class StatsManager extends Observable implements Observer {
     }
 
     public void setLives(int lives) {
-        this.lives = lives < 0 ? 0: lives;
+        this.lives = lives < 0 ? 0 : lives;
         isLivesEnabled = lives != 0;
     }
 
     public void setTime(float time) {
-        this.time = time < 0 ? 0: time;
+        this.time = time < 0 ? 0 : time;
         isTimeEnabled = time != 0;
     }
 
     public void setMoves(int moves) {
-        this.moves = moves < 0 ? 0: moves;
+        this.moves = moves < 0 ? 0 : moves;
         isMovesEnabled = moves != 0;
-    }
-
-    public void setSpecialBallCount(int specialBallCount) {
-        this.specialBallCount = specialBallCount;
     }
 
     public void setGameMode(GameScreen.GameMode mode) {
         gameMode = mode;
     }
 
-    public void consumeSpecialBall(Launcher launcher) {
+    public void consumePowerup(PowerupType type, Launcher launcher) {
         if (!launcher.isLoadedWithSpecial()) {
-            launcher.insertSpecialTile(18);
-            --specialBallCount;
+            int id = powerupCase.consumePowerup(type);
+            launcher.insertSpecialTile(id);
         }
     }
 
@@ -239,6 +249,82 @@ public class StatsManager extends Observable implements Observer {
                 notifyObservers(NotificationType.BALL_LAUNCHED, null);
                 break;
         }
+    }
+
+    private static class PowerupCase {
+        private static int SLOT_COUNT = 3;
+        private PowerupSlot[] slots;
+        private PowerupType[] enabledPowerups;
+        private int enabledSlots;
+
+        PowerupCase() {
+            slots = new PowerupSlot[SLOT_COUNT];
+            for (int i = 0; i < slots.length; ++i) {
+                slots[i] = new PowerupSlot();
+            }
+            enabledPowerups = new PowerupType[SLOT_COUNT];
+        }
+
+        PowerupType[] getEnabledPowerups() {
+            for (int i = 0; i < enabledPowerups.length; ++i) {
+                enabledPowerups[i] = slots[i].type;
+            }
+            return enabledPowerups;
+        }
+
+        void putPowerup(PowerupType type, int amount) {
+            if (enabledSlots == slots.length) throw new RuntimeException("Not enough slots!");
+            slots[enabledSlots].put(type, amount);
+            ++enabledSlots;
+        }
+
+        int consumePowerup(PowerupType type) {
+            PowerupSlot slot = findSlot(type);
+            if (slot.amount < 1)
+                throw new RuntimeException("No amount left to consume for " + type + "(" + slot.amount + ")");
+
+            --slot.amount;
+            return slot.powerupId;
+        }
+
+        void reset() {
+            enabledSlots = 0;
+            for (PowerupSlot slot : slots) {
+                slot.reset();
+            }
+        }
+
+        private PowerupSlot findSlot(PowerupType type) {
+            for (PowerupSlot slot : slots) {
+                if (slot.type == type) {
+                    return slot;
+                }
+            }
+            throw new RuntimeException("No slot found for the specified PowerupType: " + type);
+        }
+
+        private static class PowerupSlot {
+            PowerupType type;
+            int powerupId;
+            int amount;
+
+            void put(PowerupType type, int amount) {
+                this.type = type;
+                this.amount = amount;
+                switch (type) {
+                    case FIREBALL:
+                        powerupId = 101;
+                        break;
+                }
+            }
+
+            void reset() {
+                type = null;
+                powerupId = 0;
+                amount = 0;
+            }
+        }
+
     }
 
     public static class ScoreMultiplier {

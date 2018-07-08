@@ -23,6 +23,10 @@ public final class Components {
         }
     }
 
+    public static void clearToasts() {
+        toast.hide(null);
+    }
+
     public static void showToast(String text, Stage stage) {
         showToast(text, 2.5f, stage);
     }

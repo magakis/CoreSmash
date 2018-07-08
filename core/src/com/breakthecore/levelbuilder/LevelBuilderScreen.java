@@ -46,6 +46,7 @@ import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.breakthecore.Coords2D;
 import com.breakthecore.CoreSmash;
+import com.breakthecore.GameController;
 import com.breakthecore.levels.Level;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.managers.StatsManager;
@@ -309,7 +310,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
             testLevel = new Level() {
                 @Override
-                public void initialize(GameScreen.GameScreenController gameScreenController) {
+                public void initialize(GameController gameScreenController) {
                     gameScreenController.loadLevelMap("_editor_");
                 }
 

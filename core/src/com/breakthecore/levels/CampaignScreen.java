@@ -7,8 +7,13 @@ import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -21,8 +26,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.breakthecore.CoreSmash;
+import com.breakthecore.GameController;
+import com.breakthecore.PowerupCountGroup;
 import com.breakthecore.RoundEndListener;
 import com.breakthecore.UserAccount;
 import com.breakthecore.levelbuilder.XmlManager;
@@ -30,10 +38,17 @@ import com.breakthecore.managers.StatsManager;
 import com.breakthecore.screens.GameScreen;
 import com.breakthecore.screens.ScreenBase;
 import com.breakthecore.tilemap.TilemapManager;
+import com.breakthecore.tiles.PowerupType;
+import com.breakthecore.ui.Components;
 import com.breakthecore.ui.UIComponent;
+import com.breakthecore.ui.UIUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private GameScreen gameScreen;
+    private PickPowerUpsDialog powerupPickDialog;
     private UIOverlay uiOverlay;
     private GestureDetector gd;
     private Skin skin;
@@ -45,7 +60,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         super(game);
         skin = game.getSkin();
         stage = new Stage(game.getUIViewport());
-        gd = new CustomGestureDetector(new InputListener());
+        gd = new CustomGestureDetector(new CampaignInputListener());
+
+        powerupPickDialog = new PickPowerUpsDialog(skin, gameInstance.getUserAccount().getSpecialBallsAvailable());
 
         screenInputMultiplexer.addProcessor(stage);
         screenInputMultiplexer.addProcessor(gd);
@@ -105,13 +122,17 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         return container;
     }
 
-    private void startCampaignLevel(int lvl) {
+    private void startCampaignLevel(int lvl, final List<Powerup> powerups) {
         if (!XmlManager.fileExists("level" + lvl)) return;
 
         gameScreen.deployLevel(new CampaignLevel(lvl, gameInstance.getUserAccount(), this) {
             @Override
-            public void initialize(GameScreen.GameScreenController gameScreenController) {
-                gameScreenController.loadLevel(getLevelNumber());
+            public void initialize(GameController controller) {
+                controller.loadLevel(getLevelNumber());
+                StatsManager statsManager = controller.getBehaviourPack().statsManager;
+                for (Powerup powerup : powerups) {
+                    statsManager.enablePowerup(powerup.type, powerup.count);
+                }
             }
 
             @Override
@@ -126,12 +147,17 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     }
 
     @Override
+    public void hide() {
+        Components.clearToasts();
+    }
+
+    @Override
     public void onRoundEnded(StatsManager statsManager) {
         gameInstance.getUserAccount().saveStats(statsManager);
         uiOverlay.updateValues();
     }
 
-    private class InputListener implements GestureDetector.GestureListener {
+    private class CampaignInputListener implements GestureDetector.GestureListener {
 
         @Override
         public boolean touchDown(float x, float y, int pointer, int button) {
@@ -197,15 +223,11 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         }
     }
 
-//    private void invalidateAll() {
-//        SnapshotArray<Actor> actors = ((Container<WidgetGroup>)((ScrollPane)rootStack.getChildren().get(0)).getActor()).getActor().getChildren();
-//
-//        for (Actor actor : actors){
-//            ((WidgetGroup)actor).invalidate();
-//        }
-//
-//        ((WidgetGroup)actors.get(0)).invalidateHierarchy();
-//    }
+    @Override
+    public void resize(int width, int height) {
+        powerupPickDialog.hide();
+        super.resize(width, height);
+    }
 
     private class LevelWidget extends Container<TextButton>{
         private int level;
@@ -248,7 +270,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                startCampaignLevel(m_lvl);
+                powerupPickDialog.show(stage, m_lvl);
             }
         }
     }
@@ -266,6 +288,13 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             userButtonStyle.imageUp = skin.newDrawable("userDefIcon");
 
             ImageButton btnUser = new ImageButton(userButtonStyle);
+            btnUser.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    gameInstance.getUserAccount().addPowerup(PowerupType.FIREBALL, 2);
+                    Components.showToast("You were rewarded: x2 Fireball !", stage);
+                }
+            });
 
             ProgressBar.ProgressBarStyle pbStyle = new ProgressBar.ProgressBarStyle();
             pbStyle.background = skin.newDrawable("progressbar_inner", Color.DARK_GRAY);
@@ -335,4 +364,150 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         }
     }
 
+    private class PickPowerUpsDialog extends Dialog {
+        UserAccount.SpecialBallsAvailable powerUpsAvailable;
+        List<Powerup> choosenPowerups;
+        int levelToLaunch = -1;
+        ButtonGroup<Button> buttonGroup;
+        Button[] powerupButtons;
+
+        public PickPowerUpsDialog(Skin skin, final UserAccount.SpecialBallsAvailable powerUps) {
+            super("", skin, "PickPowerUpDialog");
+            powerUpsAvailable = powerUps;
+            choosenPowerups = new ArrayList<>(3);
+
+            buttonGroup = new ButtonGroup<>();
+            buttonGroup.setMaxCheckCount(3);
+            buttonGroup.setMinCheckCount(0);
+            powerupButtons = new Button[PowerupType.values().length];
+
+            HorizontalGroup powerupsGroup = new HorizontalGroup();
+            powerupsGroup.space(10 * Gdx.graphics.getDensity());
+            powerupsGroup.wrap(true);
+            powerupsGroup.wrapSpace(10 * Gdx.graphics.getDensity());
+            powerupsGroup.align(Align.center);
+
+            int counter = 0;
+            for (PowerupType type : PowerupType.values()) {
+                powerupButtons[counter] = createPowerUpButton(type);
+                powerupsGroup.addActor(powerupButtons[counter]);
+                buttonGroup.add(powerupButtons[counter]);
+                ++counter;
+            }
+
+            Table content = getContentTable();
+            content.padBottom(10 * Gdx.graphics.getDensity());
+            content.add(new Label("Choose your POWERUPS!", skin, "h4")).row();
+            content.add(powerupsGroup)
+                    .width(Value.percentWidth(.8f, UIUtils.getScreenActor(powerupsGroup)));
+
+            TextButton btnClose = new TextButton("Close", skin, "dialogButton");
+            btnClose.getLabelCell().pad(Value.percentHeight(1, btnClose.getLabel()));
+            btnClose.getLabelCell().padBottom(Value.percentHeight(.5f, btnClose.getLabel()));
+            btnClose.getLabelCell().padTop(Value.percentHeight(.5f, btnClose.getLabel()));
+            btnClose.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    levelToLaunch = -1;
+                    hide();
+                }
+            });
+
+            TextButton btnStart = new TextButton("Start", skin, "dialogButton");
+            btnStart.getLabelCell().pad(Value.percentHeight(1, btnStart.getLabel()));
+            btnStart.getLabelCell().padBottom(Value.percentHeight(.5f, btnStart.getLabel()));
+            btnStart.getLabelCell().padTop(Value.percentHeight(.5f, btnStart.getLabel()));
+            btnStart.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    for (Button btn : buttonGroup.getAllChecked()) {
+                        Powerup powerup = null;
+
+                        for (Powerup p : choosenPowerups) {
+                            if (powerup.type == PowerupType.valueOf(btn.getName())) {
+                                powerup = p;
+                                break;
+                            }
+                        }
+
+                        if (powerup == null) {
+                            choosenPowerups.add(new Powerup(PowerupType.valueOf(btn.getName()), 1));
+                        } else {
+                            ++powerup.count;
+                        }
+                    }
+                    startCampaignLevel(levelToLaunch, choosenPowerups);
+                    hide(null);
+                }
+            });
+
+            Table buttons = getButtonTable();
+            buttons.row().padBottom(5 * Gdx.graphics.getDensity());
+            buttons.add(btnClose).expandX();
+            buttons.add(btnStart).expandX();
+
+            addListener(new InputListener() {
+                @Override
+                public boolean keyDown(InputEvent event, int keycode) {
+                    if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
+                        hide();
+                        return true;
+                    }
+                    return false;
+                }
+            });
+        }
+
+
+        public Dialog show(Stage stage, int lvl) {
+            for (Button button : powerupButtons) {
+                int amount = powerUpsAvailable.getAmountOf(PowerupType.valueOf(button.getName()));
+                ((Label) button.getCells().get(2).getActor()).setText(amount);
+                button.setDisabled(amount == 0);
+            }
+            choosenPowerups.clear();
+
+            buttonGroup.uncheckAll();
+            levelToLaunch = lvl;
+            return super.show(stage);
+        }
+
+        private ImageButton createPowerUpButton(PowerupType type) {
+            Skin skin = getSkin();
+            Label lbl = new Label("null", getSkin(), "h5");
+            ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle();
+            style.up = skin.getDrawable("boxSmall");
+            style.disabled = skin.newDrawable("boxSmall", Color.DARK_GRAY);
+            style.checked = skin.newDrawable("boxSmall", Color.GREEN);
+            style.imageUp = skin.getDrawable(type.name());
+            style.imageDisabled = skin.newDrawable(type.name(), Color.DARK_GRAY);
+
+            ImageButton tb = new ImageButton(style);
+            tb.setName(type.name());
+            tb.add().row();
+            tb.add(lbl).row();
+            tb.getImageCell().size(50 * Gdx.graphics.getDensity(), 50 * Gdx.graphics.getDensity() - lbl.getPrefHeight()).row();
+            return tb;
+        }
+    }
+
+    private static class Powerup {
+        private PowerupType type;
+        private int count;
+
+        Powerup(PowerupType type, int count) {
+            this.type = type;
+            this.count = count;
+        }
+
+        void set(PowerupType type, int count) {
+            this.type = type;
+            this.count = count;
+        }
+
+        void reset() {
+            type = null;
+            count = -1;
+        }
+    }
 }

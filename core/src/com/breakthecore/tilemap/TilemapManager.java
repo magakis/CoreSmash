@@ -95,8 +95,8 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
 
     public void removeTile(int layer, int x, int y) {
         TilemapTile removed = worldMap.removeTile(layer, x, y);
-        if (removed == null)
-            throw new RuntimeException("Unexpected NULL value(Layer:" + layer + " ,X:" + x + " ,Y" + y + ")");
+        if (removed == null) return;
+//            throw new RuntimeException("Unexpected NULL value(Layer:" + layer + " ,X:" + x + " ,Y" + y + ")");
 
         if (removed.getTileID() < 10) {
             --colorsAvailable[removed.getTileID()];
