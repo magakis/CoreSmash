@@ -18,6 +18,7 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
@@ -129,6 +130,7 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("HeartIcon.png");
         loadTexture("LevelBuilderButton.png");
         loadTexture("SpikyBall.png");
+        loadTexture("card.png");
     }
 
     private void loadSounds() {
@@ -346,6 +348,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("timeIcon", am.get("HourGlass.png"));
         skin.add("movesIcon", am.get("MovesIcon.png"));
         skin.add("heartIcon", am.get("HeartIcon.png"));
+        skin.add("cardBack", am.get("card.png"));
         skin.add("gameScreenTopRound", am.get("UIGameScreenTopRound.png"));
 
         // Fonts
@@ -432,6 +435,13 @@ public class LoadingScreen extends ScreenBase {
         stb.fontColor = Color.WHITE;
         stb.disabledFontColor = Color.DARK_GRAY;
         skin.add("tmpPowerup", stb);
+
+        //ImageButton
+        ImageButton.ImageButtonStyle imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.up = skin.newDrawable("boxSmall", 0, 0, 0, 0);
+        imgbs.down = skin.newDrawable("boxSmall", Color.DARK_GRAY);
+        imgbs.imageUp = skin.getDrawable("cardBack");
+        skin.add("lotteryCard", imgbs);
 
         // ButtonStyles
         Button.ButtonStyle bs = new Button.ButtonStyle();

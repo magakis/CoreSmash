@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
@@ -28,6 +29,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.breakthecore.CoreSmash;
@@ -52,6 +55,7 @@ import java.util.List;
 public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private GameScreen gameScreen;
     private PickPowerUpsDialog powerupPickDialog;
+    private LotteryDialog lotteryDialog;
     private UIOverlay uiOverlay;
     private GestureDetector gd;
     private Skin skin;
@@ -66,6 +70,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         gd = new CustomGestureDetector(new CampaignInputListener());
 
         powerupPickDialog = new PickPowerUpsDialog(skin, gameInstance.getUserAccount().getSpecialBallsAvailable());
+        lotteryDialog = new LotteryDialog(skin);
 
         screenInputMultiplexer.addProcessor(stage);
         screenInputMultiplexer.addProcessor(gd);
@@ -113,7 +118,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         float x;
         float y;
         for (int i = 0; i < levelButtons.length; ++i) {
-            x = WIDTH/2  + ySpace * (float) Math.cos(i * Math.PI / 2);
+            x = WIDTH / 2 + ySpace * (float) Math.cos(i * Math.PI / 2);
             y = ySpace + i * ySpace;
             levelButtons[i] = new LevelWidget(i + 1, (int) x, (int) y);
             grp.addActor(levelButtons[i]);
@@ -232,7 +237,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         super.resize(width, height);
     }
 
-    private class LevelWidget extends Container<TextButton>{
+    private class LevelWidget extends Container<TextButton> {
         private int level;
         private TextButton button;
 
@@ -246,7 +251,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 size(Value.percentHeight(.1f, rootStack));
             }
 
-            setPosition(x - getWidth()/2, y - getHeight()/2);
+            setPosition(x - getWidth() / 2, y - getHeight() / 2);
 
             addListener(new LevelLauncher(lvl));
             level = lvl;
@@ -294,8 +299,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             btnUser.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    gameInstance.getUserAccount().addPowerup(PowerupType.FIREBALL, 2);
-                    Components.showToast("You were rewarded: x2 Fireball !", stage);
+//                    gameInstance.getUserAccount().addPowerup(PowerupType.FIREBALL, 2);
+//                    Components.showToast("You were rewarded: x2 Fireball !", stage);
+                    lotteryDialog.show(stage);
                 }
             });
 
@@ -374,7 +380,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         ButtonGroup<Button> buttonGroup;
         Button[] powerupButtons;
 
-        public PickPowerUpsDialog(Skin skin, final UserAccount.SpecialBallsAvailable powerUps) {
+        PickPowerUpsDialog(Skin skin, final UserAccount.SpecialBallsAvailable powerUps) {
             super("", skin, "PickPowerUpDialog");
             powerUpsAvailable = powerUps;
             choosenPowerups = new ArrayList<>(3);
@@ -499,6 +505,103 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             tb.add(lbl).row();
             tb.getImageCell().size(50 * Gdx.graphics.getDensity(), 50 * Gdx.graphics.getDensity() - lbl.getPrefHeight()).row();
             return tb;
+        }
+    }
+
+    private class LotteryDialog extends Dialog {
+        final private Skin skin;
+        private ImageButton[] cards;
+        private TextButton btnClaim;
+
+        LotteryDialog(Skin sk) {
+            super("", sk, "PickPowerUpDialog");
+            skin = sk;
+
+            btnClaim = UIFactory.createTextButton("Claim Reward!", skin, "dialogButton");
+            btnClaim.getLabelCell().pad(Value.percentHeight(.5f, btnClaim.getLabel()));
+            btnClaim.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    gameInstance.getUserAccount().addPowerup(PowerupType.FIREBALL, 1);
+                    Components.showToast("You've claimed x1 Fireball!", stage);
+                    hide();
+                }
+            });
+
+            cards = new ImageButton[3];
+            for (int i = 0; i < cards.length; ++i) {
+                ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle();
+                style.up = skin.newDrawable("boxSmall", 0, 0, 0, 0);
+                style.down = skin.newDrawable("boxSmall", Color.DARK_GRAY);
+                style.imageUp = skin.getDrawable("cardBack");
+
+                final ImageButton imgb = new ImageButton(style);
+                cards[i] = imgb;
+                imgb.getImageCell().grow().pad(5 * Gdx.graphics.getDensity());
+                imgb.setTransform(true);
+                imgb.addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
+                        actor.addAction(Actions.sequence(
+                                Actions.run(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        for (ImageButton btn : cards) {
+                                            btn.setDisabled(true);
+                                        }
+                                        imgb.setOrigin(imgb.getImage().getWidth() / 2, imgb.getImage().getHeight() / 2);
+                                    }
+                                })
+                                , Actions.scaleBy(-1, 0, 0.5f)
+                                , Actions.run(new Runnable() {
+                                                  @Override
+                                                  public void run() {
+                                                      imgb.getStyle().imageUp = skin.getDrawable("FIREBALL");
+                                                  }
+                                              }
+                                )
+                                , Actions.scaleBy(1, 0, 0.5f)
+                                , Actions.run(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        getButtonTable().add(btnClaim).pad(5 * Gdx.graphics.getDensity());
+                                        pack();
+                                    }
+                                })
+                        ));
+                    }
+                });
+            }
+
+            Table contents = getContentTable();
+
+            for (ImageButton ib : cards) {
+                contents.add(ib).pad(5 * Gdx.graphics.getDensity()).size(Value.percentWidth(.25f, UIUtils.getScreenActor(ib)), Value.percentWidth(ib.getImage().getDrawable().getMinHeight() / ib.getImage().getDrawable().getMinWidth() * .25f, UIUtils.getScreenActor(ib)));
+                ib.pack();
+            }
+
+            setMovable(false);
+            setResizable(false);
+            addListener(new InputListener() {
+                @Override
+                public boolean keyDown(InputEvent event, int keycode) {
+                    if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
+                        hide(null);
+                        return true;
+                    }
+                    return false;
+                }
+            });
+        }
+
+        @Override
+        public Dialog show(Stage stage) {
+            for (ImageButton btn : cards) {
+                btn.setDisabled(false);
+                btn.getStyle().imageUp = skin.getDrawable("cardBack");
+            }
+            getButtonTable().clearChildren();
+            return super.show(stage);
         }
     }
 
