@@ -318,7 +318,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
 
                 @Override
-                public void end(StatsManager statsManager) {
+                public void end(StatsManager.GameStats stats) {
                 }
 
                 @Override

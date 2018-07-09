@@ -24,8 +24,8 @@ public abstract class CampaignLevel extends Level {
     }
 
     @Override
-    public void end(StatsManager statsManager) {
-        roundEndListener.onRoundEnded(statsManager);
+    public void end(StatsManager.GameStats stats) {
+        roundEndListener.onRoundEnded(stats);
     }
 
     @Override

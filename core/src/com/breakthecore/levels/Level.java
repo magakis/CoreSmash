@@ -15,7 +15,7 @@ public abstract class Level {
 
     public abstract void update(float delta, TilemapManager tilemapManager);
 
-    public abstract void end(StatsManager statsManager);
+    public abstract void end(StatsManager.GameStats stats);
 
     public abstract int getLevelNumber();
 }

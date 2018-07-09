@@ -84,7 +84,6 @@ public class GameController {
         ParsedLevel parsedLevel = LevelParser.loadFrom(fileName);
 
         LevelSettings levelSettings = Objects.requireNonNull(parsedLevel).getLevelSettings();
-        statsManager.setGameMode(GameScreen.GameMode.CLASSIC);
         statsManager.setLives(levelSettings.lives);
         statsManager.setMoves(levelSettings.moves);
         statsManager.setTime(levelSettings.time);

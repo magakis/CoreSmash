@@ -64,9 +64,9 @@ public class UserAccount {
         return totalScore;
     }
 
-    public void saveStats(StatsManager stats) {
-        int score = stats.getScore();
-        if (stats.getRoundOutcome()) { // WON
+    public void saveStats(StatsManager.GameStats stats) {
+        int score = stats.getTotalScore();
+        if (stats.isRoundWon()) { // WON
             Preferences prefs = Gdx.app.getPreferences("account");
 
             boolean levelUnlocked = false;
@@ -84,12 +84,12 @@ public class UserAccount {
                     saveScore(score / 5);
                 }
             } else {
-                saveScore(stats.getScore() / 10);
+                saveScore(stats.getTotalScore() / 10);
             }
 
             prefs.flush();
         } else { // LOST
-            saveScore(stats.getScore() / 15);
+            saveScore(stats.getTotalScore() / 15);
         }
     }
 

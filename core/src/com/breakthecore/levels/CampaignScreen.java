@@ -155,8 +155,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     }
 
     @Override
-    public void onRoundEnded(StatsManager statsManager) {
-        gameInstance.getUserAccount().saveStats(statsManager);
+    public void onRoundEnded(StatsManager.GameStats stats) {
+        gameInstance.getUserAccount().saveStats(stats);
         uiOverlay.updateValues();
     }
 

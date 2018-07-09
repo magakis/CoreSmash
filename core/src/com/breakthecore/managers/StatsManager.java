@@ -14,30 +14,25 @@ import java.util.Random;
 
 public class StatsManager extends Observable implements Observer {
     private Random rand = new Random();
-    private PowerupCase powerupCase = new PowerupCase();
+    private PowerupCase powerupCase;
+    private GameStats gameStats;
 
-    private int level;
     private boolean isGameActive;
-    private boolean isRoundWon;
-
-    private int score;
-    private int targetScore;
-
-    private int lives;
-    private float time;
-    private int moves;
-
-    private boolean isTimeEnabled;
-    private boolean isMovesEnabled;
-    private boolean isLivesEnabled;
-
-    private GameScreen.GameMode gameMode;
     private int ballsDestroyedThisFrame;
 
 
+    public StatsManager() {
+        powerupCase = new PowerupCase();
+        gameStats = new GameStats();
+    }
+
+    public void start() {
+        isGameActive = true;
+    }
+
     public void update(float delta) {
-        if (isTimeEnabled) {
-            time -= delta;
+        if (gameStats.isTimeEnabled) {
+            gameStats.timeLeft -= delta;
         }
 
         if (ballsDestroyedThisFrame != 0) {
@@ -59,13 +54,13 @@ public class StatsManager extends Observable implements Observer {
                     break;
             }
             scoreGained = (ballsDestroyedThisFrame * multiplier);
-            score += scoreGained;
+            gameStats.totalScore += scoreGained;
             notifyObservers(NotificationType.NOTIFICATION_TYPE_SCORE_INCREMENTED, scoreGained);
 
-            if (isLivesEnabled) {
+            if (gameStats.isLivesEnabled) {
                 float chanceToGainLife = ((ballsDestroyedThisFrame * ballsDestroyedThisFrame) / 9.f) / 100.f; // random algorithm I came up with
                 if (rand.nextFloat() < chanceToGainLife) {
-                    ++lives;
+                    ++gameStats.livesLeft;
                     notifyObservers(NotificationType.NOTIFICATION_TYPE_LIVES_CHANGED, null);
                 }
             }
@@ -76,22 +71,10 @@ public class StatsManager extends Observable implements Observer {
 
     /* Q: Should reset be private and provide only a function that resets but requires a user? */
     public void reset() {
-        score = 0;
-        targetScore = 0;
-        gameMode = null;
-        // If UserAccount listens to StatManager in the future,
-        // make sure I remove the current user from the StatManager observer list.
-        isGameActive = true;
-        isRoundWon = false;
-
         powerupCase.reset();
+        gameStats.reset();
+
         ballsDestroyedThisFrame = 0;
-        isMovesEnabled = false;
-        moves = 0;
-        isTimeEnabled = false;
-        time = 0;
-        isLivesEnabled = false;
-        lives = 0;
     }
 
     public boolean checkEndingConditions(MovingBallManager ballManager) {
@@ -99,15 +82,15 @@ public class StatsManager extends Observable implements Observer {
             return true;
         }
 
-        if (isTimeEnabled && time < 0) {
+        if (gameStats.isTimeEnabled && gameStats.timeLeft <= 0) {
             isGameActive = false;
             return true;
         }
-        if (isLivesEnabled && lives == 0) {
+        if (gameStats.isLivesEnabled && gameStats.livesLeft == 0) {
             isGameActive = false;
             return true;
         }
-        if (isMovesEnabled && moves == 0 && !ballManager.hasActiveBalls()) {
+        if (gameStats.isMovesEnabled && gameStats.movesLeft == 0 && !ballManager.hasActiveBalls()) {
             isGameActive = false;
             return true;
         }
@@ -115,18 +98,22 @@ public class StatsManager extends Observable implements Observer {
     }
 
     public int getLevel() {
-        return level;
+        return gameStats.level;
     }
 
     public void setLevel(int lvl) {
-        level = lvl;
+        gameStats.level = lvl;
         Preferences prefs = Gdx.app.getPreferences("account");
-        targetScore = prefs.getInteger("level" + lvl, 0);
+        gameStats.targetScore = prefs.getInteger("level" + lvl, 0);
     }
 
     public boolean getRoundOutcome() {
         if (isGameActive) throw new IllegalStateException("The game is still running?!");
-        return isRoundWon;
+        return gameStats.isRoundWon;
+    }
+
+    public GameStats getGameStats() {
+        return gameStats;
     }
 
     public boolean isGameActive() {
@@ -138,23 +125,23 @@ public class StatsManager extends Observable implements Observer {
     }
 
     public int getTargetScore() {
-        return targetScore;
+        return gameStats.targetScore;
     }
 
     public int getScore() {
-        return score;
+        return gameStats.totalScore;
     }
 
     public int getLives() {
-        return lives;
+        return gameStats.livesLeft;
     }
 
     public int getMoves() {
-        return moves;
+        return gameStats.movesLeft;
     }
 
     public float getTime() {
-        return time;
+        return gameStats.timeLeft;
     }
 
     public PowerupType[] getEnabledPowerups() {
@@ -174,45 +161,37 @@ public class StatsManager extends Observable implements Observer {
     }
 
     public boolean isMovesEnabled() {
-        return isMovesEnabled;
+        return gameStats.isMovesEnabled;
     }
 
     public boolean isLivesEnabled() {
-        return isLivesEnabled;
+        return gameStats.isLivesEnabled;
     }
 
     public boolean isTimeEnabled() {
-        return isTimeEnabled;
-    }
-
-    public GameScreen.GameMode getGameMode() {
-        return gameMode;
+        return gameStats.isTimeEnabled;
     }
 
     public void loseLife() {
-        if (isLivesEnabled) {
-            --lives;
+        if (gameStats.isLivesEnabled) {
+            --gameStats.livesLeft;
             notifyObservers(NotificationType.NOTIFICATION_TYPE_LIVES_CHANGED, null);
         }
     }
 
     public void setLives(int lives) {
-        this.lives = lives < 0 ? 0 : lives;
-        isLivesEnabled = lives != 0;
+        gameStats.livesLeft = lives < 0 ? 0 : lives;
+        gameStats.isLivesEnabled = lives != 0;
     }
 
-    public void setTime(float time) {
-        this.time = time < 0 ? 0 : time;
-        isTimeEnabled = time != 0;
+    public void setTime(int time) {
+        gameStats.timeLeft = time < 0 ? 0 : time;
+        gameStats.isTimeEnabled = time != 0;
     }
 
     public void setMoves(int moves) {
-        this.moves = moves < 0 ? 0 : moves;
-        isMovesEnabled = moves != 0;
-    }
-
-    public void setGameMode(GameScreen.GameMode mode) {
-        gameMode = mode;
+        gameStats.movesLeft = moves < 0 ? 0 : moves;
+        gameStats.isMovesEnabled = moves != 0;
     }
 
     public void consumePowerup(PowerupType type, Launcher launcher) {
@@ -226,7 +205,7 @@ public class StatsManager extends Observable implements Observer {
     public void onNotify(NotificationType type, Object ob) {
         switch (type) {
             case NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED:
-                isRoundWon = true;
+                gameStats.isRoundWon = true;
                 isGameActive = false;
                 break;
 
@@ -235,15 +214,15 @@ public class StatsManager extends Observable implements Observer {
                 break;
 
             case NO_COLOR_MATCH:
-                if (isLivesEnabled) {
-                    --lives;
+                if (gameStats.isLivesEnabled) {
+                    --gameStats.livesLeft;
                     notifyObservers(NotificationType.NOTIFICATION_TYPE_LIVES_CHANGED, null);
                 }
                 break;
 
             case BALL_LAUNCHED:
-                if (isMovesEnabled) {
-                    --moves;
+                if (gameStats.isMovesEnabled) {
+                    --gameStats.movesLeft;
                     notifyObservers(NotificationType.MOVES_AMOUNT_CHANGED, null);
                 }
                 notifyObservers(NotificationType.BALL_LAUNCHED, null);
@@ -327,109 +306,53 @@ public class StatsManager extends Observable implements Observer {
 
     }
 
-    public static class ScoreMultiplier {
-        private float multiplier = 1;
+    public static class GameStats {
+        private int level;
+        private boolean isRoundWon;
 
-        public ScoreMultiplier() {
+        private int minScore;
+        private int totalScore;
+        private int targetScore;
+
+        private boolean isMovesEnabled;
+        private boolean isLivesEnabled;
+        private boolean isTimeEnabled;
+
+        private int movesLeft;
+        private float timeLeft;
+        private int livesLeft;
+
+        private void reset() {
+            level = -1;
+            isRoundWon = false;
+
+            minScore = 0;
+            totalScore = 0;
+            targetScore = 0;
+
+            isLivesEnabled = false;
+            isMovesEnabled = false;
+            isTimeEnabled = false;
+
+            movesLeft = 0;
+            timeLeft = 0;
+            livesLeft = 0;
         }
 
-        public void setup(int colorCount,
-                          boolean livesEnabled, int lives,
-                          boolean movesEnabled, int moves,
-                          boolean timeEnabled, int timeAmount,
-                          int amountOfTiles) {
-            if (!livesEnabled && !movesEnabled) {
-                multiplier = 0;
-                return;
-            }
-
-            switch (colorCount) {
-                case 1:
-                    multiplier = 0.05f;
-                    break;
-                case 2:
-                    multiplier = 0.1f;
-                    break;
-                case 3:
-                    multiplier = 0.2f;
-                    break;
-                case 4:
-                    multiplier = 0.6f;
-                    break;
-                case 5:
-                    multiplier = 0.8f;
-                    break;
-                case 6:
-                    multiplier = 1f;
-                    break;
-                case 7:
-                    multiplier = 1.2f;
-                    break;
-                case 8:
-                    multiplier = 1.4f;
-                    break;
-            }
-
-            if (livesEnabled) {
-                float multiplierFromLives;
-                switch (lives) {
-                    case 1:
-                        multiplierFromLives = 2;
-                        break;
-                    case 2:
-                        multiplierFromLives = 1.5f;
-                        break;
-                    case 3:
-                        multiplierFromLives = 1;
-                        break;
-                    case 4:
-                        multiplierFromLives = .8f;
-                        break;
-                    case 5:
-                        multiplierFromLives = .6f;
-                        break;
-                    default:
-                        multiplierFromLives = .4f;
-                        break;
-                }
-                multiplier *= multiplierFromLives;
-            }
-
-            if (movesEnabled) {
-                float multiplierFromMoves;
-                float percentOfTotalTiles = (float) moves / amountOfTiles;
-                if (percentOfTotalTiles <= .2f) {
-                    multiplierFromMoves = 2;
-                } else if (percentOfTotalTiles <= .4f) {
-                    multiplierFromMoves = 1.5f;
-                } else if (percentOfTotalTiles <= .6f) {
-                    multiplierFromMoves = 1f;
-                } else if (percentOfTotalTiles <= .8f) {
-                    multiplierFromMoves = .8f;
-                } else {
-                    multiplierFromMoves = .6f;
-                }
-                multiplier *= multiplierFromMoves;
-            }
+        public boolean isRoundWon() {
+            return isRoundWon;
         }
 
-        public float get() {
-            return multiplier;
+        public int getLevel() {
+            return level;
         }
 
-
-        public int getTotalTilesFromRadius(int radius) {
-            /* Maybe this shouldn't be here..*/
-            int total = 1;
-
-            for (int i = 1; i <= radius; ++i) {
-                total += i * 6;
-            }
-            return total;
+        public int getTargetScore() {
+            return targetScore;
         }
 
-        public void reset() {
-            multiplier = 1;
+        public int getTotalScore() {
+            return totalScore;
         }
     }
 }

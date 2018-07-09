@@ -169,7 +169,7 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     private void endGame() {
-        activeLevel.end(statsManager);
+        activeLevel.end(statsManager.getGameStats());
 
         resultUI.update();
         rootUIStack.clear();
@@ -207,8 +207,8 @@ public class GameScreen extends ScreenBase implements Observer {
         rootUIStack.addActor(debugUI.getRoot());
 
         gameInstance.setScreen(this);
+        statsManager.start();
     }
-
 
     @Override
     public void onNotify(NotificationType type, Object ob) {
@@ -248,11 +248,8 @@ public class GameScreen extends ScreenBase implements Observer {
 
         @Override
         public boolean tap(float x, float y, int count, int button) {
-            switch (statsManager.getGameMode()) {
-                case CLASSIC:
-                    launcher.eject();
-                    break;
-            }
+            if (statsManager.isGameActive())
+                launcher.eject();
             return true;
         }
 
@@ -268,46 +265,46 @@ public class GameScreen extends ScreenBase implements Observer {
 
         @Override
         public boolean pan(float x, float y, float deltaX, float deltaY) {
-            switch (statsManager.getGameMode()) {
-                case SPIN_THE_CORE:
-                    // FIXME (21/4/2018) : There is a very evident bug here if you try the gamemode and spin it
-                    if (statsManager.isGameActive()) {
-                        if (isPanning) {
-                            float currAngle;
-                            scrPos.set(x, y, 0);
-                            scrPos = camera.unproject(scrPos);
-                            currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
-                            currAngle = currPoint.angle();
-                            initAngle = currAngle;
-                        } else {
-                            isPanning = true;
-                            scrPos.set(x, y, 0);
-                            scrPos = camera.unproject(scrPos);
-                            currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
-                            initAngle = currPoint.angle();
-                        }
-                    }
-                    break;
-
-                case SHOOT_EM_UP:
-                    MovingBall mt = movingBallManager.getFirstActiveTile();
-                    if (mt == null) {
-                        launcher.eject();
-                        mt = movingBallManager.getFirstActiveTile();
-                    }
-                    mt.moveBy(deltaX, -deltaY);
-                    break;
-            }
+//            switch (statsManager.getGameMode()) {
+//                case SPIN_THE_CORE:
+//                    // FIXME (21/4/2018) : There is a very evident bug here if you try the gamemode and spin it
+//                    if (statsManager.isGameActive()) {
+//                        if (isPanning) {
+//                            float currAngle;
+//                            scrPos.set(x, y, 0);
+//                            scrPos = camera.unproject(scrPos);
+//                            currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
+//                            currAngle = currPoint.angle();
+//                            initAngle = currAngle;
+//                        } else {
+//                            isPanning = true;
+//                            scrPos.set(x, y, 0);
+//                            scrPos = camera.unproject(scrPos);
+//                            currPoint.set(scrPos.x - tmPos.x, scrPos.y - tmPos.y);
+//                            initAngle = currPoint.angle();
+//                        }
+//                    }
+//                    break;
+//
+//                case SHOOT_EM_UP:
+//                    MovingBall mt = movingBallManager.getFirstActiveTile();
+//                    if (mt == null) {
+//                        launcher.eject();
+//                        mt = movingBallManager.getFirstActiveTile();
+//                    }
+//                    mt.moveBy(deltaX, -deltaY);
+//                    break;
+//            }
             return true;
         }
 
         @Override
         public boolean panStop(float x, float y, int pointer, int button) {
-            switch (statsManager.getGameMode()) {
-                case SPIN_THE_CORE:
-                    isPanning = false;
-                    break;
-            }
+//            switch (statsManager.getGameMode()) {
+//                case SPIN_THE_CORE:
+//                    isPanning = false;
+//                    break;
+//            }
             return false;
         }
 
@@ -504,6 +501,8 @@ public class GameScreen extends ScreenBase implements Observer {
             lblLives.setVisible(statsManager.isLivesEnabled());
 
             tblTime.setVisible(statsManager.isTimeEnabled());
+            float time = statsManager.getTime();
+            lblTime.setText(String.format(Locale.ENGLISH, "%d:%02d", (int) time / 60, (int) time % 60));
 
             setupPowerups();
 
