@@ -1,6 +1,6 @@
 package com.breakthecore.tiles;
 
-public class Tile {
+abstract public class Tile {
     final private TileType type;
 
     public Tile(TileType type) {

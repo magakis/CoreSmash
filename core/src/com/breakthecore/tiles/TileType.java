@@ -5,24 +5,24 @@ import java.util.Collections;
 import java.util.List;
 
 public enum TileType {
-    REGULAR_BALL1(0, true, Type.REGULAR),
-    REGULAR_BALL2(1, true, Type.REGULAR),
-    REGULAR_BALL3(2, true, Type.REGULAR),
-    REGULAR_BALL4(3, true, Type.REGULAR),
-    REGULAR_BALL5(4, true, Type.REGULAR),
-    REGULAR_BALL6(5, true, Type.REGULAR),
-    REGULAR_BALL7(6, true, Type.REGULAR),
-    REGULAR_BALL8(7, true, Type.REGULAR),
-    RANDOM_REGULAR(17, true, Type.EDITOR_ONLY),
-    WALL_BALL(18, true, Type.SPECIAL),
-    SPIKY_BALL(20, true, Type.SPECIAL),
-    FIREBALL(101, false, Type.POWERUP),
-    COLORBOMB(102, false, Type.POWERUP),;
+    REGULAR_BALL1(0, true, MajorType.REGULAR),
+    REGULAR_BALL2(1, true, MajorType.REGULAR),
+    REGULAR_BALL3(2, true, MajorType.REGULAR),
+    REGULAR_BALL4(3, true, MajorType.REGULAR),
+    REGULAR_BALL5(4, true, MajorType.REGULAR),
+    REGULAR_BALL6(5, true, MajorType.REGULAR),
+    REGULAR_BALL7(6, true, MajorType.REGULAR),
+    REGULAR_BALL8(7, true, MajorType.REGULAR),
+    RANDOM_REGULAR(17, true, MajorType.EDITOR_ONLY),
+    WALL_BALL(18, true, MajorType.SPECIAL),
+    SPIKY_BALL(20, true, MajorType.SPECIAL),
+    FIREBALL(101, false, MajorType.POWERUP),
+    COLORBOMB(102, false, MajorType.POWERUP),;
 
-    TileType(int id, boolean placeable, Type type) {
+    TileType(int id, boolean placeable, MajorType majorType) {
         this.tileID = id;
         this.isPlaceable = placeable;
-        this.type = type;
+        this.majorType = majorType;
         if (isPlaceable) {
             Placeables.list.add(this);
         }
@@ -30,10 +30,10 @@ public enum TileType {
 
     private int tileID;
     private boolean isPlaceable;
-    private Type type;
+    private MajorType majorType;
 
-    public Type getType() {
-        return type;
+    public MajorType getMajorType() {
+        return majorType;
     }
 
     public static List<TileType> getAllPlaceables() {
@@ -66,7 +66,7 @@ public enum TileType {
         }
     }
 
-    public enum Type {
+    public enum MajorType {
         REGULAR,
         EDITOR_ONLY,
         POWERUP,
