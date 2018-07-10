@@ -407,15 +407,17 @@ public class GameScreen extends ScreenBase implements Observer {
                 btn.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        statsManager.consumePowerup(btn.type, launcher);
-                        gameInstance.getUserAccount().consumePowerup(btn.type);
-                        int usagesLeft = statsManager.getPowerupUsages(btn.type);
-                        if (usagesLeft == 0) {
-                            btn.setDisabled(true);
-                            btn.image.setDrawable(skin.newDrawable(btn.type.name(), Color.DARK_GRAY));
-                            btn.text.setColor(Color.DARK_GRAY);
+                        if (statsManager.consumePowerup(btn.type, launcher)) {
+                            gameInstance.getUserAccount().consumePowerup(btn.type);
+                            int usagesLeft = statsManager.getPowerupUsages(btn.type);
+                            if (usagesLeft == 0) {
+                                btn.setDisabled(true);
+                                btn.image.setDrawable(skin.newDrawable(btn.type.name(), Color.DARK_GRAY));
+                                btn.text.setColor(Color.DARK_GRAY);
+                            }
+                            btn.setText(usagesLeft);
+
                         }
-                        btn.setText(usagesLeft);
                     }
                 });
                 powerupButtons[i] = btn;

@@ -194,11 +194,13 @@ public class StatsManager extends Observable implements Observer {
         gameStats.isMovesEnabled = moves != 0;
     }
 
-    public void consumePowerup(PowerupType type, Launcher launcher) {
+    public boolean consumePowerup(PowerupType type, Launcher launcher) {
         if (!launcher.isLoadedWithSpecial()) {
             int id = powerupCase.consumePowerup(type);
             launcher.insertSpecialTile(id);
+            return true;
         }
+        return false;
     }
 
     @Override

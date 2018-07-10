@@ -130,11 +130,15 @@ public class UserAccount {
         switch (type) {
             case FIREBALL:
                 --ballsAvailable.powerup.fireball;
-                prefs.putInteger(SPECIAL_FIREBALL, prefs.getInteger(SPECIAL_FIREBALL) - 1);
+                if (ballsAvailable.powerup.fireball < 0)
+                    throw new RuntimeException("FUCK:" + ballsAvailable.powerup.fireball);
+                prefs.putInteger(SPECIAL_FIREBALL, ballsAvailable.powerup.fireball);
                 break;
             case COLORBOMB:
                 --ballsAvailable.powerup.colorbomb;
-                prefs.putInteger(SPECIAL_COLORBOMB, prefs.getInteger(SPECIAL_COLORBOMB) - 1);
+                if (ballsAvailable.powerup.colorbomb < 0)
+                    throw new RuntimeException("FUCK:" + ballsAvailable.powerup.colorbomb);
+                prefs.putInteger(SPECIAL_COLORBOMB, ballsAvailable.powerup.colorbomb);
                 break;
             default:
                 throw new RuntimeException("Not implemented PowerUp: " + type);
