@@ -6,7 +6,7 @@ import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
 import com.breakthecore.tiles.TileContainer.Side;
 
-public class RegularTile extends Tile implements Launchable, Breakable {
+public class RegularTile extends Tile implements Launchable, Matchable, Breakable {
     private SoundManager.SoundAsset destroySound;
 
     RegularTile(int id) {
@@ -34,5 +34,10 @@ public class RegularTile extends Tile implements Launchable, Breakable {
     @Override
     public void onDestroy() {
         destroySound.play();
+    }
+
+    @Override
+    public boolean matchesWith(int id) {
+        return id == getID();
     }
 }

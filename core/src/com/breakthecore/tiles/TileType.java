@@ -5,5 +5,9 @@ public enum TileType {
     REGULAR,
     RANDOM_BALL,
     WALL_BALL,
-    SPIKY_BALL,
+    SPIKY_BALL;
+
+    public enum Type {
+
+    }
 }
