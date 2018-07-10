@@ -60,6 +60,31 @@ class TilemapPathfinder {
         return disconnected;
     }
 
+    public List<TilemapTile> getDisconnectedTiles(TilemapTile destroyed) {
+        disconnected.clear();
+        altered.clear();
+        disconnected.add(destroyed);
+
+        for (Side side : Side.values()) {
+            TilemapTile neighbour = destroyed.getNeighbour(side);
+            if (neighbour != null && !altered.contains(neighbour) &&
+                    (neighbour.getTile().getAttributes().getTileType() == TileType.REGULAR || neighbour.getTile() instanceof Breakable)) {
+                altered.add(neighbour);
+            }
+        }
+
+
+        for (TilemapTile origin : altered) {
+            if (disconnected.contains(origin)) continue;
+
+            if (!isConnected(origin)) {
+                disconnected.addAll(closed);
+            }
+        }
+
+        return disconnected;
+    }
+
     private boolean isConnected(TilemapTile tmTile) {
         closed.clear();
         opened.clear();

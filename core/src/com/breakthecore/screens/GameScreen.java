@@ -423,6 +423,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
             tblPowerUps = new Table();
             tblPowerUps.setBackground(skin.getDrawable("boxSmall"));
+            tblPowerUps.defaults().size(50 * Gdx.graphics.getDensity(), 50 * Gdx.graphics.getDensity()).pad(3 * Gdx.graphics.getDensity());
             tblPowerUps.center();
 
             tblCenter = new Table(skin);
@@ -541,7 +542,7 @@ public class GameScreen extends ScreenBase implements Observer {
             PowerupType[] enabledPowerups = statsManager.getEnabledPowerups();
             for (int i = 0; i < enabledCount; ++i) {
                 powerupButtons[i].setPower(enabledPowerups[i], statsManager.getPowerupUsages(enabledPowerups[i]));
-                tblPowerUps.add(powerupButtons[i]).size(50 * Gdx.graphics.getDensity(), 50 * Gdx.graphics.getDensity()).row();
+                tblPowerUps.add(powerupButtons[i]).row();
                 powerupButtons[i].setDisabled(false);
             }
 

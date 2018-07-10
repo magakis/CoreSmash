@@ -130,6 +130,19 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
         throw new RuntimeException("No empty side on collided tile");
     }
 
+    public void destroyDisconnectedTiles(TilemapTile tile) {
+        List<TilemapTile> disconnected = pathfinder.getDisconnectedTiles(tile);
+
+        for (TilemapTile t : disconnected) {
+            int x = t.getX();
+            int y = t.getY();
+            if (t.getLayerId() == 0 && x == 0 && y == 0) {
+                notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
+            }
+            removeTile(t);
+        }
+    }
+
     public void handleColorMatchesFor(TilemapTile newTile) {
         Objects.requireNonNull(newTile);
 
@@ -155,7 +168,6 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
             if (t.getLayerId() == 0 && x == 0 && y == 0) {
                 notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
             }
-
             removeTile(t);
         }
 

@@ -294,6 +294,11 @@ public class StatsManager extends Observable implements Observer {
                     case FIREBALL:
                         powerupId = 101;
                         break;
+                    case COLORBOMB:
+                        powerupId = 102;
+                        break;
+                    default:
+                        throw new RuntimeException("FUCK YOU FOR DESIGNING IT THIS WAY!!!");
                 }
             }
 

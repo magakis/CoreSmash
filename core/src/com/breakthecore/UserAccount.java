@@ -16,6 +16,7 @@ public class UserAccount {
     private static final int[] expTable = new int[100];
 
     private String SPECIAL_FIREBALL = "special_fireball";
+    private String SPECIAL_COLORBOMB = "special_colorbomb";
 
     static {
         int baseExp = 500;
@@ -114,6 +115,10 @@ public class UserAccount {
                 ballsAvailable.powerup.fireball += amount;
                 prefs.putInteger(SPECIAL_FIREBALL, prefs.getInteger(SPECIAL_FIREBALL) + amount);
                 break;
+            case COLORBOMB:
+                ballsAvailable.powerup.colorbomb += amount;
+                prefs.putInteger(SPECIAL_COLORBOMB, prefs.getInteger(SPECIAL_COLORBOMB) + amount);
+                break;
             default:
                 throw new RuntimeException("Not implemented PowerUp: " + type);
         }
@@ -126,6 +131,10 @@ public class UserAccount {
             case FIREBALL:
                 --ballsAvailable.powerup.fireball;
                 prefs.putInteger(SPECIAL_FIREBALL, prefs.getInteger(SPECIAL_FIREBALL) - 1);
+                break;
+            case COLORBOMB:
+                --ballsAvailable.powerup.colorbomb;
+                prefs.putInteger(SPECIAL_COLORBOMB, prefs.getInteger(SPECIAL_COLORBOMB) - 1);
                 break;
             default:
                 throw new RuntimeException("Not implemented PowerUp: " + type);
@@ -152,12 +161,15 @@ public class UserAccount {
         private SpecialBallsAvailable(Preferences prefs) {
             powerup = new PowerupCountGroup();
             powerup.fireball = prefs.getInteger("special_fireball");
+            powerup.colorbomb = prefs.getInteger("special_colorbomb");
         }
 
         public int getAmountOf(PowerupType type) {
             switch (type) {
                 case FIREBALL:
                     return powerup.fireball;
+                case COLORBOMB:
+                    return powerup.colorbomb;
                 default:
                     throw new RuntimeException("Not implemented PowerUp: " + type);
             }

@@ -22,6 +22,8 @@ public class TileFactory {
                 switch (ballAttr.getPowerupType()) {
                     case FIREBALL:
                         return new FireBall(id);
+                    case COLORBOMB:
+                        return new ColorBomb(id);
                 }
         }
 

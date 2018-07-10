@@ -435,7 +435,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                         Powerup powerup = null;
 
                         for (Powerup p : choosenPowerups) {
-                            if (powerup.type == PowerupType.valueOf(btn.getName())) {
+                            if (p.type == PowerupType.valueOf(btn.getName())) {
                                 powerup = p;
                                 break;
                             }

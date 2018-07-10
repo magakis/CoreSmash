@@ -21,6 +21,9 @@ public class Lottery {
         items.add(new Item(PowerupType.FIREBALL, 1, 7));
         items.add(new Item(PowerupType.FIREBALL, 2, 2));
         items.add(new Item(PowerupType.FIREBALL, 3, 1));
+        items.add(new Item(PowerupType.COLORBOMB, 1, 7));
+        items.add(new Item(PowerupType.COLORBOMB, 2, 2));
+        items.add(new Item(PowerupType.COLORBOMB, 3, 1));
 
         Collections.sort(items, new Comparator<Item>() {
             @Override

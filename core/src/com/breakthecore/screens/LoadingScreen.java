@@ -250,6 +250,13 @@ public class LoadingScreen extends ScreenBase {
                 .build();
         tileIndex.registerTile(ballAttr);
 
+        ballAttr = BallAttributes.getBuilder()
+                .setID(102)
+                .setPowerupType(PowerupType.COLORBOMB)
+                .setPlaceable(false)
+                .build();
+        tileIndex.registerTile(ballAttr);
+
         tileIndex.freeze();
     }
 
@@ -345,7 +352,6 @@ public class LoadingScreen extends ScreenBase {
         skin.add("asteroid", am.get("asteroid.png"));
         skin.add("map", am.get("map.png"));
         skin.add("speaker", am.get("speaker.png"));
-        skin.add("FIREBALL", am.get("ballFlaming.png"));
         skin.add("timeIcon", am.get("HourGlass.png"));
         skin.add("movesIcon", am.get("MovesIcon.png"));
         skin.add("heartIcon", am.get("HeartIcon.png"));
@@ -353,6 +359,9 @@ public class LoadingScreen extends ScreenBase {
         skin.add("cardShade", am.get("CardRewardShade.png"));
         skin.add("gameScreenTopRound", am.get("UIGameScreenTopRound.png"));
 
+        for (PowerupType type : PowerupType.values()) {
+            skin.add(type.name(), baseTheme.getTexture(type.getId()));
+        }
         // Fonts
 //        registerFont(skin, "h5", "comic_32.fnt");
 //        registerFont(skin, "h4", "comic_48.fnt");

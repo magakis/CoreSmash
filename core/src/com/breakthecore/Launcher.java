@@ -150,9 +150,17 @@ public class Launcher extends Observable {
                 case 101:
                     //TODO: WORK ON THIS
                     launcher.addFirst(movingBallManager.create(launcherPos.x, launcherPos.y + ballSize, 101));
-                    launcher.first().setScale(1);
+                    launcher.first().setScale(.8f);
                     isLoadedWithSpecial = true;
                     break;
+                case 102:
+                    //TODO: WORK ON THIS
+                    launcher.addFirst(movingBallManager.create(launcherPos.x, launcherPos.y + ballSize, 102));
+                    launcher.first().setScale(.8f);
+                    isLoadedWithSpecial = true;
+                    break;
+                default:
+                    throw new RuntimeException("FUCK YOU FOR DESIGNING IT THIS WAY!!!");
             }
         }
     }
