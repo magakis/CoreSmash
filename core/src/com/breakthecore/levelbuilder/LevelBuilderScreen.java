@@ -341,7 +341,7 @@ public class LevelBuilderScreen extends ScreenBase {
         UITools() {
             root = new Container<>();
 
-            final TextButton tbDraw, tbErase, tbRotate;
+            final TextButton tbDraw, tbErase;
 
             tbDraw = UIFactory.createTextButton("Draw", skin, "levelBuilderButtonChecked");
             tbDraw.getLabelCell().padTop(Value.percentHeight(.25f, tbDraw.getLabel()));
@@ -370,23 +370,23 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
             });
 
-            tbRotate = UIFactory.createTextButton("Rotate", skin, "levelBuilderButtonChecked");
-            tbRotate.getLabelCell().pad(Value.percentHeight(.5f, tbRotate.getLabel()));
-            tbRotate.getLabelCell().padTop(Value.percentHeight(.25f, tbRotate.getLabel()));
-            tbRotate.getLabelCell().padBottom(Value.percentHeight(.25f, tbRotate.getLabel()));
-            tbRotate.addListener(new ChangeListener() {
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-                    if (tbRotate.isChecked()) {
-                        rotateMode.activate();
-                    } else {
-                        freeMode.activate();
-                    }
-                }
-            });
+//            tbRotate = UIFactory.createTextButton("Rotate", skin, "levelBuilderButtonChecked");
+//            tbRotate.getLabelCell().pad(Value.percentHeight(.5f, tbRotate.getLabel()));
+//            tbRotate.getLabelCell().padTop(Value.percentHeight(.25f, tbRotate.getLabel()));
+//            tbRotate.getLabelCell().padBottom(Value.percentHeight(.25f, tbRotate.getLabel()));
+//            tbRotate.addListener(new ChangeListener() {
+//                @Override
+//                public void changed(ChangeEvent event, Actor actor) {
+//                    if (tbRotate.isChecked()) {
+//                        rotateMode.activate();
+//                    } else {
+//                        freeMode.activate();
+//                    }
+//                }
+//            });
 
 
-            btnGroup = new ButtonGroup<>(tbDraw, tbErase, tbRotate);
+            btnGroup = new ButtonGroup<>(tbDraw, tbErase);
             btnGroup.setMaxCheckCount(1);
             btnGroup.setMinCheckCount(0);
 
@@ -402,12 +402,9 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
             });
 
-//            main.defaults().pad(Value.percentWidth(.1f, tbRotate)).padRight(0);
-
-            main.defaults().width(tbRotate.getWidth()).pad(5 * Gdx.graphics.getDensity());
+            main.defaults().width(tbErase.getWidth()).pad(5 * Gdx.graphics.getDensity());
             main.add(tbDraw).row();
             main.add(tbErase).padTop(0).row();
-            main.add(tbRotate).padTop(0).row();
             root.center().right().padRight(-6 * Gdx.graphics.getDensity()).setActor(main);
 
         }
