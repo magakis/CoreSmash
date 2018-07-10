@@ -6,28 +6,39 @@ public class TileFactory {
     private TileFactory() {
     }
 
-    public static Tile getTileFromID(int id) {
-        BallAttributes ballAttr = TileIndex.get().getAttributesFor(id);
-
-        switch (ballAttr.getTileType()) {
-            case REGULAR:
-                return new RegularTile(id);
-            case RANDOM_BALL:
-                return new RandomTile(id);
+    public static Tile createTile(TileType type) {
+        switch (type) {
+            case REGULAR_BALL1:
+                return new RegularTile(type);
+            case REGULAR_BALL2:
+                return new RegularTile(type);
+            case REGULAR_BALL3:
+                return new RegularTile(type);
+            case REGULAR_BALL4:
+                return new RegularTile(type);
+            case REGULAR_BALL5:
+                return new RegularTile(type);
+            case REGULAR_BALL6:
+                return new RegularTile(type);
+            case REGULAR_BALL7:
+                return new RegularTile(type);
+            case REGULAR_BALL8:
+                return new RegularTile(type);
+            case RANDOM_REGULAR:
+                return new RandomTile(type);
             case WALL_BALL:
-                return new WallBall(id);
+                return new WallBall(type);
             case SPIKY_BALL:
-                return new SpikyBall(id);
-            case POWERUP:
-                switch (ballAttr.getPowerupType()) {
-                    case FIREBALL:
-                        return new FireBall(id);
-                    case COLORBOMB:
-                        return new ColorBomb(id);
-                }
+                return new SpikyBall(type);
+            case FIREBALL:
+                return new FireBall(type);
+            case COLORBOMB:
+                return new ColorBomb(type);
         }
-
-        throw new RuntimeException("Not Implemented Tile!(id:" + id + ", TileType:" + ballAttr.getTileType() + ", PowerupType:" + ballAttr.getPowerupType());
+        throw new RuntimeException("Not Implemented Tile!(" + type.name() + ")");
     }
 
+    public static Tile getTileFromID(int id) {
+        return createTile(TileType.getTileTypeFromID(id));
+    }
 }

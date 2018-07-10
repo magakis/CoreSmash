@@ -10,8 +10,8 @@ import com.breakthecore.ui.UIUtils;
 public class FireBall extends Tile implements Launchable {
     private SoundManager.SoundAsset explosionSound = SoundManager.get().getSoundAsset("bombExplosion");
 
-    FireBall(int id) {
-        super(id);
+    FireBall(TileType type) {
+        super(type);
     }
 
     @Override

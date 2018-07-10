@@ -10,8 +10,8 @@ import java.util.Random;
 public class ColorBomb extends Tile implements Launchable {
     private static Random rand = new Random();
 
-    public ColorBomb(int id) {
-        super(id);
+    public ColorBomb(TileType type) {
+        super(type);
     }
 
     @Override

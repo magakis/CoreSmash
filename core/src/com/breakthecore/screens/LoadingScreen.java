@@ -30,12 +30,8 @@ import com.breakthecore.CoreSmash;
 import com.breakthecore.sound.SoundManager;
 import com.breakthecore.themes.AbstractTheme;
 import com.breakthecore.themes.BaseTheme;
-import com.breakthecore.tiles.BallAttributes;
 import com.breakthecore.tiles.PowerupType;
-import com.breakthecore.tiles.TileIndex;
-import com.breakthecore.tiles.TileType;
 import com.breakthecore.ui.Components;
-import com.breakthecore.ui.UIFactory;
 import com.breakthecore.ui.UIUtils;
 
 import java.util.Locale;
@@ -82,8 +78,6 @@ public class LoadingScreen extends ScreenBase {
         loadAllTextures();
         loadAllBitmapFonts();
         loadSounds();
-        loadBalls();
-
 
         baseTheme = new BaseTheme();
         baseTheme.queueForLoad(am);
@@ -158,106 +152,6 @@ public class LoadingScreen extends ScreenBase {
 
         loadBitmapFont("comic_96bo.fnt");
 
-    }
-
-    public static void loadBalls() {
-        BallAttributes ballAttr;
-
-        TileIndex tileIndex = TileIndex.get();
-        if (tileIndex.isFrozen()) return;
-
-        ballAttr = BallAttributes.getBuilder()
-                .setID(0)
-                .setPlaceable(true)
-                .setType(TileType.REGULAR)
-                .build();
-        tileIndex.registerTile(ballAttr);
-
-        ballAttr = BallAttributes.getBuilder()
-                .setID(1)
-                .setPlaceable(true)
-                .setType(TileType.REGULAR)
-                .build();
-        tileIndex.registerTile(ballAttr);
-
-        ballAttr = BallAttributes.getBuilder()
-                .setID(2)
-                .setPlaceable(true)
-                .setType(TileType.REGULAR)
-                .build();
-        tileIndex.registerTile(ballAttr);
-
-        ballAttr = BallAttributes.getBuilder()
-                .setID(3)
-                .setPlaceable(true)
-                .setType(TileType.REGULAR)
-                .build();
-        tileIndex.registerTile(ballAttr);
-
-        ballAttr = BallAttributes.getBuilder()
-                .setID(4)
-                .setPlaceable(true)
-                .setType(TileType.REGULAR)
-                .build();
-        tileIndex.registerTile(ballAttr);
-
-        ballAttr = BallAttributes.getBuilder()
-                .setID(5)
-                .setPlaceable(true)
-                .setType(TileType.REGULAR)
-                .build();
-        tileIndex.registerTile(ballAttr);
-
-        ballAttr = BallAttributes.getBuilder()
-                .setID(6)
-                .setPlaceable(true)
-                .setType(TileType.REGULAR)
-                .build();
-        tileIndex.registerTile(ballAttr);
-
-        ballAttr = BallAttributes.getBuilder()
-                .setID(7)
-                .setPlaceable(true)
-                .setType(TileType.REGULAR)
-                .build();
-        tileIndex.registerTile(ballAttr);
-
-        ballAttr = BallAttributes.getBuilder()
-                .setID(17)
-                .setType(TileType.RANDOM_BALL)
-                .setPlaceable(true)
-                .build();
-        tileIndex.registerTile(ballAttr);
-
-        ballAttr = BallAttributes.getBuilder()
-                .setID(18)
-                .setType(TileType.WALL_BALL)
-                .setPlaceable(true)
-                .build();
-        tileIndex.registerTile(ballAttr);
-
-        ballAttr = BallAttributes.getBuilder()
-                .setID(20)
-                .setType(TileType.SPIKY_BALL)
-                .setPlaceable(true)
-                .build();
-        tileIndex.registerTile(ballAttr);
-
-        ballAttr = BallAttributes.getBuilder()
-                .setID(101)
-                .setPowerupType(PowerupType.FIREBALL)
-                .setPlaceable(false)
-                .build();
-        tileIndex.registerTile(ballAttr);
-
-        ballAttr = BallAttributes.getBuilder()
-                .setID(102)
-                .setPowerupType(PowerupType.COLORBOMB)
-                .setPlaceable(false)
-                .build();
-        tileIndex.registerTile(ballAttr);
-
-        tileIndex.freeze();
     }
 
     private void setupSounds() {

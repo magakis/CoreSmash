@@ -25,7 +25,7 @@ public class MovingBallManager extends Observable {
     private boolean isActive;
 
     public MovingBallManager() {
-        activeList = new LinkedList<MovingBall>();
+        activeList = new LinkedList<>();
 
         isActive = true;
         defaultSpeed = 15;

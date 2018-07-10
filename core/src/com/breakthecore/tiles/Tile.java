@@ -1,19 +1,17 @@
 package com.breakthecore.tiles;
 
 public class Tile {
-    final private int ballID;
-    final private BallAttributes attributes;
+    final private TileType type;
 
-    public Tile(int id) {
-        ballID = id;
-        attributes = TileIndex.get().getAttributesFor(id);
+    public Tile(TileType type) {
+        this.type = type;
     }
 
     public int getID() {
-        return ballID;
+        return type.getID();
     }
 
-    public BallAttributes getAttributes() {
-        return attributes;
+    public TileType getTileType() {
+        return type;
     }
 }

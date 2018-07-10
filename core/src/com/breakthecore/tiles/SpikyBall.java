@@ -3,8 +3,8 @@ package com.breakthecore.tiles;
 import com.breakthecore.GameController;
 
 public class SpikyBall extends Tile implements CollisionInitiator {
-    public SpikyBall(int id) {
-        super(id);
+    public SpikyBall(TileType type) {
+        super(type);
     }
 
 

@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.tilemap.Map;
 import com.breakthecore.tiles.TileFactory;
+import com.breakthecore.tiles.TileType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ final public class LevelBuilder {
     private List<MapSettings> mapSettings;
 
     private int layer;
-    private int tileID;
+    private TileType tileType;
 
     boolean layerIndicatorEnabled = true;
 
@@ -36,8 +37,8 @@ final public class LevelBuilder {
         mapSettings.get(0).chained = true;
     }
 
-    public void setTileID(int id) {
-        tileID = id;
+    public void setTileType(TileType type) {
+        tileType = type;
     }
 
     public void moveOffsetBy(float x, float y) {
@@ -62,7 +63,7 @@ final public class LevelBuilder {
         Vector3 relative = map.getWorldToLayerCoords(layer, worldPos);
 
         if (map.isTileEmpty(layer, (int) relative.x, (int) relative.y)) {
-            map.placeTile(layer, (int) relative.x, (int) relative.y, TileFactory.getTileFromID(tileID));
+            map.placeTile(layer, (int) relative.x, (int) relative.y, TileFactory.createTile(tileType));
         }
     }
 
@@ -318,8 +319,8 @@ final public class LevelBuilder {
         return layer;
     }
 
-    public int getCurrentTileID() {
-        return tileID;
+    public TileType getCurrentTileType() {
+        return tileType;
     }
 
     private class ScreenToWorld {

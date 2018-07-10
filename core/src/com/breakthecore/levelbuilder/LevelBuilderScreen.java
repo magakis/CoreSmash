@@ -52,7 +52,7 @@ import com.breakthecore.managers.StatsManager;
 import com.breakthecore.screens.GameScreen;
 import com.breakthecore.screens.ScreenBase;
 import com.breakthecore.tilemap.TilemapManager;
-import com.breakthecore.tiles.TileIndex;
+import com.breakthecore.tiles.TileType;
 import com.breakthecore.ui.UIFactory;
 import com.breakthecore.ui.Components;
 import com.breakthecore.ui.LoadFileDialog;
@@ -491,15 +491,15 @@ public class LevelBuilderScreen extends ScreenBase {
                 imgbGroup.setMinCheckCount(1);
                 imgbGroup.setMaxCheckCount(1);
 
-                final List<Integer> knownIds = TileIndex.get().getAllPlaceableIDs();
+                final List<TileType> placeables = TileType.getAllPlaceables();
 
-                materialButtons = new ImageButton[knownIds.size()];
+                materialButtons = new ImageButton[placeables.size()];
                 int buttonIndex = 0;
                 float ballSize = skin.get("h2", Label.LabelStyle.class).font.getLineHeight();
-                for (int i = 0; i < knownIds.size(); ++i) {
+                for (int i = 0; i < placeables.size(); ++i) {
                     ImageButton.ImageButtonStyle imgbs;
                     imgbs = new ImageButton.ImageButtonStyle();
-                    imgbs.imageUp = new TextureRegionDrawable(new TextureRegion(renderManager.getTextureFor(knownIds.get(i))));
+                    imgbs.imageUp = new TextureRegionDrawable(new TextureRegion(renderManager.getTextureFor(placeables.get(i).getID())));
                     imgbs.checked = checked;
                     imgbs.up = unchecked;
 
@@ -513,7 +513,7 @@ public class LevelBuilderScreen extends ScreenBase {
                         @Override
                         public void changed(ChangeEvent event, Actor actor) {
                             if (materialButtons[finalButtonIndex].isChecked()) {
-                                levelBuilder.setTileID(knownIds.get(finalButtonIndex));
+                                levelBuilder.setTileType(placeables.get(finalButtonIndex));
                                 updateTileID();
                             }
                         }
@@ -551,7 +551,7 @@ public class LevelBuilderScreen extends ScreenBase {
             }
 
             private void updateTileID() {
-                uiInfo.lbl[0].setText("TileID: " + levelBuilder.getCurrentTileID());
+                uiInfo.lbl[0].setText("TileID: " + levelBuilder.getCurrentTileType().getID());
             }
         }
     }

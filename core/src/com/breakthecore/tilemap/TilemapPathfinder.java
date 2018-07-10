@@ -43,7 +43,7 @@ class TilemapPathfinder {
             for (Side side : Side.values()) {
                 TilemapTile neighbour = tmTile.getNeighbour(side);
                 if (neighbour != null && !altered.contains(neighbour) &&
-                        (neighbour.getTile().getAttributes().getTileType() == TileType.REGULAR || neighbour.getTile() instanceof Breakable)) {
+                        (neighbour.getTile().getTileType().getType() == TileType.Type.REGULAR || neighbour.getTile() instanceof Breakable)) {
                     altered.add(neighbour);
                 }
             }
@@ -68,7 +68,7 @@ class TilemapPathfinder {
         for (Side side : Side.values()) {
             TilemapTile neighbour = destroyed.getNeighbour(side);
             if (neighbour != null && !altered.contains(neighbour) &&
-                    (neighbour.getTile().getAttributes().getTileType() == TileType.REGULAR || neighbour.getTile() instanceof Breakable)) {
+                    (neighbour.getTile().getTileType().getType() == TileType.Type.REGULAR || neighbour.getTile() instanceof Breakable)) {
                 altered.add(neighbour);
             }
         }
@@ -105,7 +105,7 @@ class TilemapPathfinder {
             TilemapTile neighbour = tmTile.getNeighbour(side);
             if (neighbour != null &&
                     (!closed.contains(neighbour) && !opened.contains(neighbour) && !disconnected.contains(neighbour)) &&
-                    (neighbour.getTile().getAttributes().getTileType() == TileType.REGULAR || neighbour.getTile() instanceof Breakable)) {
+                    (neighbour.getTile().getTileType().getType() == TileType.Type.REGULAR || neighbour.getTile() instanceof Breakable)) {
                 opened.add(neighbour);
             }
         }

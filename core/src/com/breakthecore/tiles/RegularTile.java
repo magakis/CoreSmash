@@ -9,8 +9,8 @@ import com.breakthecore.tiles.TileContainer.Side;
 public class RegularTile extends Tile implements Launchable, Matchable, Breakable {
     private SoundManager.SoundAsset destroySound;
 
-    RegularTile(int id) {
-        super(id);
+    RegularTile(TileType type) {
+        super(type);
         destroySound = SoundManager.get().getSoundAsset("regularBallDestroy");
     }
 
