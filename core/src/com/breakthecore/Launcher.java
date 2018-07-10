@@ -6,6 +6,7 @@ import com.breakthecore.managers.MovingBallManager;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tiles.MovingBall;
+import com.breakthecore.tiles.RegularTile;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -214,6 +215,8 @@ public class Launcher extends Observable {
             int maxIndex = totalAmount;
 
             for (MovingBall mt : movingBallManager.getActiveList()) {
+                if (!(mt.getTile() instanceof RegularTile)) continue;
+
                 int color = mt.getTileID();
                 int amount = colorGroups[color].amount;
                 if (amount == 2) {
