@@ -29,25 +29,10 @@ class TilemapPathfinder {
         };
     }
 
-    public List<TilemapTile> getDisconnectedTiles(List<TilemapTile> matched) {
+    public List<TilemapTile> getDisconnectedTiles(List<TilemapTile> changed) {
         disconnected.clear();
         altered.clear();
-        disconnected.addAll(matched);
-
-        for (TilemapTile tmTile : matched) {
-            // If the center tile is matched return only the matches as the disconnected tiles
-            if (tmTile.getDistanceFromCenter() == 0) {
-                return disconnected;
-            }
-
-            for (Side side : Side.values()) {
-                TilemapTile neighbour = tmTile.getNeighbour(side);
-                if (neighbour != null && !altered.contains(neighbour) &&
-                        (neighbour.getTile().getTileType().getMajorType() == TileType.MajorType.REGULAR || neighbour.getTile() instanceof Breakable)) {
-                    altered.add(neighbour);
-                }
-            }
-        }
+        altered.addAll(changed);
 
         for (TilemapTile origin : altered) {
             if (disconnected.contains(origin)) continue;

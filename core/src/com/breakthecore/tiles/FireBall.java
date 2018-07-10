@@ -7,8 +7,12 @@ import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
 import com.breakthecore.ui.UIUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class FireBall extends Tile implements Launchable {
     private SoundManager.SoundAsset explosionSound = SoundManager.get().getSoundAsset("bombExplosion");
+    private static List<TilemapTile> alteredTiles = new ArrayList<>();
 
     FireBall(TileType type) {
         super(type);
@@ -24,14 +28,25 @@ public class FireBall extends Tile implements Launchable {
         int collidedTileX = tileHit.getX();
         int collidedTileY = tileHit.getY();
 
+        alteredTiles.clear();
+
         TilemapManager tmm = controller.getBehaviourPack().tilemapManager;
         for (int y = collidedTileY - 2; y < collidedTileY + 3; ++y) {
             for (int x = collidedTileX - 2; x < collidedTileX + 3; ++x) {
                 if (Tilemap.getTileDistance(x, y, collidedTileX, collidedTileY) < 2) {
-                    tmm.removeTile(tileHit.getLayerId(), x, y);
+                    TilemapTile tmTile = tmm.getTilemapTile(tileHit.getLayerId(), x, y);
+                    if (tmTile != null) {
+                        tmTile.addNeighboursToList(alteredTiles);
+                        tmm.removeTile(tmTile);
+                    }
                 }
             }
         }
+
+        if (controller.getBehaviourPack().statsManager.isGameActive()) {
+            tmm.destroyDisconnectedTiles(alteredTiles);
+        }
+
         explosionSound.play();
     }
 }

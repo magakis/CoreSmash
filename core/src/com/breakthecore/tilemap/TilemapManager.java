@@ -38,6 +38,7 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
     private final Map worldMap;
 
     private List<TilemapTile> tileList;
+    private List<TilemapTile> alteredTiles;
     private TilemapPathfinder pathfinder = new TilemapPathfinder();
     private TilemapBuilder tilemapBuilder = new TilemapBuilder();
     private Match3 match3 = new Match3();
@@ -47,6 +48,7 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
         defTilemapPosition = new Coords2D(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
         worldMap = new Map(this);
         tileList = new ArrayList<>();
+        alteredTiles = new ArrayList<>();
     }
 
     public TilemapTile getTilemapTile(int layer, int x, int y) {
@@ -105,6 +107,9 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
             ((Breakable) removed).onDestroy();
         }
 
+        if (layer == 0 && x == 0 && y == 0) {
+            notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
+        }
     }
 
     public int getCenterTileID() {
@@ -134,44 +139,40 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
         List<TilemapTile> disconnected = pathfinder.getDisconnectedTiles(tile);
 
         for (TilemapTile t : disconnected) {
-            int x = t.getX();
-            int y = t.getY();
-            if (t.getLayerId() == 0 && x == 0 && y == 0) {
-                notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
-            }
             removeTile(t);
         }
     }
 
-    public void handleColorMatchesFor(TilemapTile newTile) {
-        Objects.requireNonNull(newTile);
+    public void destroyDisconnectedTiles(List<TilemapTile> altered) {
+        List<TilemapTile> disconnected = pathfinder.getDisconnectedTiles(altered);
 
+        for (TilemapTile t : disconnected) {
+            removeTile(t);
+        }
+    }
+
+    public List<TilemapTile> handleColorMatchesFor(TilemapTile newTile) {
+        assert newTile != null;
         ArrayList<TilemapTile> match = match3.getColorMatchesFromTile(newTile);
 
         if (match.size() < 3) {
             if (match.size() == 1) {
                 notifyObservers(NotificationType.NO_COLOR_MATCH, null);
             }
-            return;
+            return Collections.EMPTY_LIST;
         }
 
-        List<TilemapTile> disconnected;
-        if (worldMap.isChained(newTile.getLayerId())) {
-            disconnected = pathfinder.getDisconnectedTiles(match);
-        } else {
-            disconnected = match;
-        }
-
-        for (TilemapTile t : disconnected) {
-            int x = t.getX();
-            int y = t.getY();
-            if (t.getLayerId() == 0 && x == 0 && y == 0) {
-                notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
+        alteredTiles.clear();
+        for (TilemapTile t : match) {
+            for (Side side : Side.values()) {
+                TilemapTile tmTile = t.getNeighbour(side);
+                if (tmTile != null) {
+                    alteredTiles.add(tmTile);
+                }
             }
             removeTile(t);
         }
-
-        notifyObservers(NotificationType.SAME_COLOR_MATCH, match.size());
+        return alteredTiles;
     }
 
     //////////////////|            |//////////////////

@@ -4,6 +4,8 @@ import com.breakthecore.Coords2D;
 import com.breakthecore.tiles.Tile;
 import com.breakthecore.tiles.TileContainer;
 
+import java.util.List;
+
 public class TilemapTile extends TileContainer implements Comparable<TilemapTile> {
     final private Coords2D coords;
     final private NeighbourTiles neighbourTiles;
@@ -32,6 +34,12 @@ public class TilemapTile extends TileContainer implements Comparable<TilemapTile
 
     public int getDistanceFromCenter() {
         return distanceFromCenter;
+    }
+
+    public void addNeighboursToList(List<TilemapTile> list) {
+        for (Side side : Side.values()) {
+            list.add(getNeighbour(side));
+        }
     }
 
     public TilemapTile getNeighbour(TileContainer.Side side) {

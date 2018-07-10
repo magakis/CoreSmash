@@ -6,6 +6,8 @@ import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
 import com.breakthecore.tiles.TileContainer.Side;
 
+import java.util.List;
+
 public class RegularTile extends Tile implements Launchable, Matchable, Breakable {
     private SoundManager.SoundAsset destroySound;
 
@@ -27,7 +29,10 @@ public class RegularTile extends Tile implements Launchable, Matchable, Breakabl
 
         TilemapTile newTile = tmm.attachBall(ball.extractTile(), tileHit, sides);
         if (newTile != null) {
-            tmm.handleColorMatchesFor(newTile);
+            List<TilemapTile> altered = tmm.handleColorMatchesFor(newTile);
+            if (pack.statsManager.isGameActive()) {
+                tmm.destroyDisconnectedTiles(altered);
+            }
         }
     }
 
