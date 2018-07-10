@@ -8,13 +8,11 @@ import com.breakthecore.levelbuilder.ParsedTile;
 import com.breakthecore.managers.CollisionDetector;
 import com.breakthecore.managers.MovingBallManager;
 import com.breakthecore.managers.StatsManager;
-import com.breakthecore.screens.GameScreen;
 import com.breakthecore.tilemap.TilemapBuilder;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
 import com.breakthecore.tiles.CollisionInitiator;
 import com.breakthecore.tiles.MovingBall;
-import com.breakthecore.tiles.PowerupType;
 
 import java.util.List;
 import java.util.Objects;

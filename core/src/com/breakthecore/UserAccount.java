@@ -3,7 +3,7 @@ package com.breakthecore;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.breakthecore.managers.StatsManager;
-import com.breakthecore.tiles.PowerupType;
+import com.breakthecore.tiles.TileType;
 
 
 public class UserAccount {
@@ -106,7 +106,7 @@ public class UserAccount {
         return expTable[userLevel - 1];
     }
 
-    public void addPowerup(PowerupType type, int amount) {
+    public void addPowerup(TileType.PowerupType type, int amount) {
         if (amount < 0) throw new IllegalArgumentException("Illegal amount: " + amount);
 
         Preferences prefs = Gdx.app.getPreferences("account");
@@ -125,7 +125,7 @@ public class UserAccount {
         prefs.flush();
     }
 
-    public void consumePowerup(PowerupType type) {
+    public void consumePowerup(TileType.PowerupType type) {
         Preferences prefs = Gdx.app.getPreferences("account");
         switch (type) {
             case FIREBALL:
@@ -168,7 +168,7 @@ public class UserAccount {
             powerup.colorbomb = prefs.getInteger("special_colorbomb");
         }
 
-        public int getAmountOf(PowerupType type) {
+        public int getAmountOf(TileType.PowerupType type) {
             switch (type) {
                 case FIREBALL:
                     return powerup.fireball;

@@ -1,6 +1,6 @@
 package com.breakthecore;
 
-import com.breakthecore.tiles.PowerupType;
+import com.breakthecore.tiles.TileType.PowerupType;
 
 import java.util.ArrayList;
 import java.util.Collections;

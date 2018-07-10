@@ -45,8 +45,7 @@ import com.breakthecore.managers.MovingBallManager;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.managers.StatsManager;
 import com.breakthecore.tilemap.TilemapManager;
-import com.breakthecore.tiles.MovingBall;
-import com.breakthecore.tiles.PowerupType;
+import com.breakthecore.tiles.TileType.PowerupType;
 import com.breakthecore.ui.UIComponent;
 import com.breakthecore.ui.UIFactory;
 

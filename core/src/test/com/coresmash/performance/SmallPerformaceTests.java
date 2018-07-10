@@ -4,6 +4,7 @@ import com.breakthecore.screens.LoadingScreen;
 
 import junit.framework.TestCase;
 
+@Deprecated //BROKEN
 public class SmallPerformaceTests extends TestCase {
     long start;
     long result;
@@ -13,7 +14,6 @@ public class SmallPerformaceTests extends TestCase {
     }
 
     public void setUp() {
-        LoadingScreen.loadBalls();
         start = System.nanoTime();
     }
 

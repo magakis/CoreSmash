@@ -9,12 +9,12 @@ import com.breakthecore.tilemap.TilemapManager;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+@Deprecated//("INVALID TEST .. IT'S BROKEN!")
 public class TilemapManagerTest extends ProjectTestCase {
     TilemapManager tilemapManager;
 
     @BeforeClass
     public static void testInit() {
-        LoadingScreen.loadBalls();
     }
 
     public TilemapManagerTest(String name) {

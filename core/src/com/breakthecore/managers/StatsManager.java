@@ -2,13 +2,12 @@ package com.breakthecore.managers;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
-import com.badlogic.gdx.utils.Array;
 import com.breakthecore.Launcher;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observable;
 import com.breakthecore.Observer;
-import com.breakthecore.screens.GameScreen;
-import com.breakthecore.tiles.PowerupType;
+import com.breakthecore.tiles.TileType;
+import com.breakthecore.tiles.TileType.PowerupType;
 
 import java.util.Random;
 

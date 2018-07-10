@@ -20,7 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.breakthecore.Lottery;
-import com.breakthecore.tiles.PowerupType;
+import com.breakthecore.tiles.TileType.PowerupType;
 
 public class LotteryDialog extends Dialog {
     final private Skin skin;

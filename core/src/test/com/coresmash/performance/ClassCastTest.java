@@ -7,11 +7,12 @@ import com.breakthecore.tiles.TileFactory;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+@Deprecated //BROKEN
 public class ClassCastTest {
 
     @BeforeClass
     public static void init() {
-        LoadingScreen.loadBalls();
+//        LoadingScreen.loadBalls();
     }
 
     @Test

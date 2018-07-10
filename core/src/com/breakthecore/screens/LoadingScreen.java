@@ -30,7 +30,8 @@ import com.breakthecore.CoreSmash;
 import com.breakthecore.sound.SoundManager;
 import com.breakthecore.themes.AbstractTheme;
 import com.breakthecore.themes.BaseTheme;
-import com.breakthecore.tiles.PowerupType;
+import com.breakthecore.tiles.TileType;
+import com.breakthecore.tiles.TileType.PowerupType;
 import com.breakthecore.ui.Components;
 import com.breakthecore.ui.UIUtils;
 
@@ -254,7 +255,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("gameScreenTopRound", am.get("UIGameScreenTopRound.png"));
 
         for (PowerupType type : PowerupType.values()) {
-            skin.add(type.name(), baseTheme.getTexture(type.getId()));
+            skin.add(type.name(), baseTheme.getTexture(type.getType().getID()));
         }
         // Fonts
 //        registerFont(skin, "h5", "comic_32.fnt");

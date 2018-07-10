@@ -51,6 +51,21 @@ public enum TileType {
         return tileID;
     }
 
+    public enum PowerupType {
+        FIREBALL(TileType.FIREBALL),
+        COLORBOMB(TileType.COLORBOMB);
+
+        private TileType type;
+
+        PowerupType(TileType type) {
+            this.type = type;
+        }
+
+        public TileType getType() {
+            return type;
+        }
+    }
+
     public enum Type {
         REGULAR,
         EDITOR_ONLY,
