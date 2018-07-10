@@ -131,6 +131,7 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("LevelBuilderButton.png");
         loadTexture("SpikyBall.png");
         loadTexture("card.png");
+        loadTexture("CardRewardShade.png");
     }
 
     private void loadSounds() {
@@ -349,6 +350,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("movesIcon", am.get("MovesIcon.png"));
         skin.add("heartIcon", am.get("HeartIcon.png"));
         skin.add("cardBack", am.get("card.png"));
+        skin.add("cardShade", am.get("CardRewardShade.png"));
         skin.add("gameScreenTopRound", am.get("UIGameScreenTopRound.png"));
 
         // Fonts
