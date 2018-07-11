@@ -27,9 +27,9 @@ public class ColorBomb extends Tile implements Launchable {
 
         TilemapManager tmm = controller.getBehaviourPack().tilemapManager;
 
-        for (int y = collidedTileY - 2; y < collidedTileY + 3; ++y) {
-            for (int x = collidedTileX - 2; x < collidedTileX + 3; ++x) {
-                if ((Tilemap.getTileDistance(x, y, collidedTileX, collidedTileY) < 3)) {
+        for (int y = collidedTileY - 4; y < collidedTileY + 5; ++y) {
+            for (int x = collidedTileX - 4; x < collidedTileX + 5; ++x) {
+                if ((Tilemap.getTileDistance(x, y, collidedTileX, collidedTileY) < 4)) {
                     TilemapTile tmTile = tmm.getTilemapTile(tileHit.getLayerId(), x, y);
                     if (tmTile == null ||
                             (tmTile.getX() == 0 && tmTile.getY() == 0)) continue;

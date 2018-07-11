@@ -100,7 +100,7 @@ public class LotteryDialog extends Dialog {
             @Override
             public boolean keyDown(InputEvent event, int keycode) {
                 if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
-                    hide(null);
+//                    hide(null);
                     return true;
                 }
                 return false;

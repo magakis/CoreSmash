@@ -37,7 +37,6 @@ import com.breakthecore.managers.StatsManager;
 import com.breakthecore.screens.GameScreen;
 import com.breakthecore.screens.ScreenBase;
 import com.breakthecore.tilemap.TilemapManager;
-import com.breakthecore.tiles.TileType;
 import com.breakthecore.tiles.TileType.PowerupType;
 import com.breakthecore.ui.Components;
 import com.breakthecore.ui.UIComponent;
@@ -168,6 +167,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     public void onRoundEnded(StatsManager.GameStats stats) {
         gameInstance.getUserAccount().saveStats(stats);
         uiOverlay.updateValues();
+        if (stats.isRoundWon()) {
+            lotteryDialog.show(stage);
+        }
     }
 
     private class CampaignInputListener implements GestureDetector.GestureListener {
@@ -304,7 +306,12 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             btnUser.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    lotteryDialog.show(stage);
+                    UserAccount acc = gameInstance.getUserAccount();
+                    for (PowerupType pr : PowerupType.values()) {
+                        acc.addPowerup(pr, 5);
+                    }
+                    Components.showToast("Added a 'few' powerups...", stage);
+                    //                    lotteryDialog.show(stage);
                 }
             });
 
@@ -377,13 +384,13 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     }
 
     private class PickPowerUpsDialog extends Dialog {
-        UserAccount.SpecialBallsAvailable powerUpsAvailable;
+        UserAccount.PowerupManager powerUpsAvailable;
         List<Powerup> choosenPowerups;
         int levelToLaunch = -1;
         ButtonGroup<Button> buttonGroup;
         Button[] powerupButtons;
 
-        PickPowerUpsDialog(Skin skin, final UserAccount.SpecialBallsAvailable powerUps) {
+        PickPowerUpsDialog(Skin skin, final UserAccount.PowerupManager powerUps) {
             super("", skin, "PickPowerUpDialog");
             powerUpsAvailable = powerUps;
             choosenPowerups = new ArrayList<>(3);

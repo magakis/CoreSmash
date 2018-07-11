@@ -38,7 +38,10 @@ public class TilemapTile extends TileContainer implements Comparable<TilemapTile
 
     public void addNeighboursToList(List<TilemapTile> list) {
         for (Side side : Side.values()) {
-            list.add(getNeighbour(side));
+            TilemapTile t = getNeighbour(side);
+            if (t != null) {
+                list.add(t);
+            }
         }
     }
 

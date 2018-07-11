@@ -5,18 +5,19 @@ import com.badlogic.gdx.Preferences;
 import com.breakthecore.managers.StatsManager;
 import com.breakthecore.tiles.TileType;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class UserAccount {
     private String name;
-    private SpecialBallsAvailable ballsAvailable;
+    private int lotteryCoins;
+    private PowerupManager powerupsAvailable;
     private int unlockedLevels;
     private int userLevel;
     private int expProgress;
     private int totalScore;
     private static final int[] expTable = new int[100];
-
-    private String SPECIAL_FIREBALL = "special_fireball";
-    private String SPECIAL_COLORBOMB = "special_colorbomb";
 
     static {
         int baseExp = 500;
@@ -31,6 +32,7 @@ public class UserAccount {
         name = prefs.getString("username", "_error_");
         unlockedLevels = prefs.getInteger("unlocked_levels");
         totalScore = prefs.getInteger("total_score");
+        lotteryCoins = prefs.getInteger("lottery_coins");
 
         int scoreLeft = totalScore;
         for (int i = 0; i < expTable.length; ++i) {
@@ -41,11 +43,28 @@ public class UserAccount {
             }
             scoreLeft -= expTable[i];
         }
-        ballsAvailable = new SpecialBallsAvailable(prefs);
+        powerupsAvailable = new PowerupManager(prefs);
     }
 
-    public SpecialBallsAvailable getSpecialBallsAvailable() {
-        return ballsAvailable;
+    public int getLotteryCoins() {
+        return lotteryCoins;
+    }
+
+    public boolean consumeLotteryCoin() {
+        if (lotteryCoins > 0) {
+            --lotteryCoins;
+            return true;
+        }
+        return false;
+    }
+
+    public void addLotteryCoins(int amount) {
+        assert amount > 0;
+        lotteryCoins += amount;
+    }
+
+    public PowerupManager getSpecialBallsAvailable() {
+        return powerupsAvailable;
     }
 
     public int getUnlockedLevels() {
@@ -82,15 +101,15 @@ public class UserAccount {
                 if (levelUnlocked) {
                     saveScore(score);
                 } else {
-                    saveScore(score / 5);
+                    saveScore(score / 3);
                 }
             } else {
-                saveScore(stats.getTotalScore() / 10);
+                saveScore(stats.getTotalScore() / 5);
             }
 
             prefs.flush();
         } else { // LOST
-            saveScore(stats.getTotalScore() / 15);
+            saveScore(stats.getTotalScore() / 10);
         }
     }
 
@@ -109,41 +128,11 @@ public class UserAccount {
     public void addPowerup(TileType.PowerupType type, int amount) {
         if (amount < 0) throw new IllegalArgumentException("Illegal amount: " + amount);
 
-        Preferences prefs = Gdx.app.getPreferences("account");
-        switch (type) {
-            case FIREBALL:
-                ballsAvailable.powerup.fireball += amount;
-                prefs.putInteger(SPECIAL_FIREBALL, prefs.getInteger(SPECIAL_FIREBALL) + amount);
-                break;
-            case COLORBOMB:
-                ballsAvailable.powerup.colorbomb += amount;
-                prefs.putInteger(SPECIAL_COLORBOMB, prefs.getInteger(SPECIAL_COLORBOMB) + amount);
-                break;
-            default:
-                throw new RuntimeException("Not implemented PowerUp: " + type);
-        }
-        prefs.flush();
+        powerupsAvailable.addPowerup(type, amount);
     }
 
     public void consumePowerup(TileType.PowerupType type) {
-        Preferences prefs = Gdx.app.getPreferences("account");
-        switch (type) {
-            case FIREBALL:
-                --ballsAvailable.powerup.fireball;
-                if (ballsAvailable.powerup.fireball < 0)
-                    throw new RuntimeException("FUCK:" + ballsAvailable.powerup.fireball);
-                prefs.putInteger(SPECIAL_FIREBALL, ballsAvailable.powerup.fireball);
-                break;
-            case COLORBOMB:
-                --ballsAvailable.powerup.colorbomb;
-                if (ballsAvailable.powerup.colorbomb < 0)
-                    throw new RuntimeException("FUCK:" + ballsAvailable.powerup.colorbomb);
-                prefs.putInteger(SPECIAL_COLORBOMB, ballsAvailable.powerup.colorbomb);
-                break;
-            default:
-                throw new RuntimeException("Not implemented PowerUp: " + type);
-        }
-        prefs.flush();
+        powerupsAvailable.consumePowerup(type);
     }
 
     private void saveScore(int score) {
@@ -159,23 +148,43 @@ public class UserAccount {
         prefs.flush();
     }
 
-    public static class SpecialBallsAvailable {
-        private PowerupCountGroup powerup;
+    // ============| POWERUP-MANAGER |============
+    public static class PowerupManager {
+        private Map<TileType.PowerupType, PowerupAmount> powerups;
 
-        private SpecialBallsAvailable(Preferences prefs) {
-            powerup = new PowerupCountGroup();
-            powerup.fireball = prefs.getInteger("special_fireball");
-            powerup.colorbomb = prefs.getInteger("special_colorbomb");
+        private PowerupManager(Preferences prefs) {
+            powerups = new HashMap<>();
+            for (TileType.PowerupType type : TileType.PowerupType.values()) {
+                powerups.put(type, new PowerupAmount(prefs.getInteger(type.name())));
+            }
         }
 
         public int getAmountOf(TileType.PowerupType type) {
-            switch (type) {
-                case FIREBALL:
-                    return powerup.fireball;
-                case COLORBOMB:
-                    return powerup.colorbomb;
-                default:
-                    throw new RuntimeException("Not implemented PowerUp: " + type);
+            return powerups.get(type).amount;
+
+        }
+
+        public void consumePowerup(TileType.PowerupType type) {
+            PowerupAmount amount = powerups.get(type);
+            --amount.amount;
+            Gdx.app.getPreferences("account")
+                    .putInteger(type.name(), amount.amount)
+                    .flush();
+        }
+
+        public void addPowerup(TileType.PowerupType type, int amount) {
+            PowerupAmount pa = powerups.get(type);
+            pa.amount += amount;
+            Gdx.app.getPreferences("account")
+                    .putInteger(type.name(), pa.amount)
+                    .flush();
+        }
+
+        private static class PowerupAmount {
+            int amount;
+
+            PowerupAmount(int amount) {
+                this.amount = amount;
             }
         }
     }
