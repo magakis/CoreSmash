@@ -10,11 +10,13 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
@@ -26,6 +28,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.breakthecore.CoreSmash;
@@ -65,14 +68,15 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         gd = new CustomGestureDetector(new CampaignInputListener());
 
         powerupPickDialog = new PickPowerUpsDialog(skin, gameInstance.getUserAccount().getSpecialBallsAvailable());
-        lotteryDialog = new LotteryDialog(skin) {
+        lotteryDialog = new LotteryDialog(skin, gameInstance.getUserAccount()) {
             @Override
             protected void result(Object object) {
                 Reward reward = ((Reward) object);
-                if (reward.getAmount() != 0) {
+                if (reward.getAmount() > 0) {
                     gameInstance.getUserAccount().addPowerup(reward.getType(), reward.getAmount());
                     Components.showToast("You have claimed " + reward.getAmount() + "x " + reward.getType() + "!", stage);
                 }
+                uiOverlay.lblLotteryCoins.setText(gameInstance.getUserAccount().getLotteryCoins());
             }
         };
 
@@ -96,6 +100,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
         Table uiOverlayRoot = new Table();
         rootStack.addActor(uiOverlayRoot);
+
+        UILeftBar leftBar = new UILeftBar();
+        rootStack.addActor(leftBar.root);
 
         int levelsUnlocked = gameInstance.getUserAccount().getUnlockedLevels();
         for (int i = 0; i < levelsUnlocked && i < levelButtons.length; ++i) {
@@ -168,7 +175,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         gameInstance.getUserAccount().saveStats(stats);
         uiOverlay.updateValues();
         if (stats.isRoundWon()) {
-            lotteryDialog.show(stage);
+            gameInstance.getUserAccount().addLotteryCoins(1);
+            Components.showToast("~| You've been rewarded 1x Lottery Key! |~", stage);
         }
     }
 
@@ -290,10 +298,46 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         }
     }
 
+    private class UILeftBar implements UIComponent {
+        Container<Table> root;
+
+        UILeftBar() {
+            ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle();
+            style.imageUp = skin.getDrawable("slotMachine");
+            style.imageDown = skin.newDrawable("slotMachine", Color.GRAY);
+            style.up = skin.getDrawable("boxSmall");
+            style.down = skin.newDrawable("boxSmall", Color.GRAY);
+
+            ImageButton btnSlotMachine = new ImageButton(style);
+            btnSlotMachine.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    lotteryDialog.show(stage);
+                }
+            });
+
+            Viewport uiVp = stage.getViewport();
+            float btnSize = uiVp.getWorldWidth() * .1f;
+
+            Table bar = new Table();
+            bar.setBackground(skin.getDrawable("boxSmall"));
+            bar.add(btnSlotMachine).size(btnSize).pad(3 * Gdx.graphics.getDensity());
+
+            root = new Container<>(bar);
+            root.center().right();
+            root.padRight(-4 * Gdx.graphics.getDensity());
+        }
+
+        @Override
+        public Group getRoot() {
+            return root;
+        }
+    }
+
     private class UIOverlay implements UIComponent {
         private Table root;
         private ProgressBar pbAccountExp;
-        private Label lblLevel, lblExp, lblExpForLevel;
+        private Label lblLevel, lblExp, lblExpForLevel, lblLotteryCoins;
 
         public UIOverlay(Table root) {
             this.root = root;
@@ -306,11 +350,11 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             btnUser.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    UserAccount acc = gameInstance.getUserAccount();
-                    for (PowerupType pr : PowerupType.values()) {
-                        acc.addPowerup(pr, 5);
-                    }
-                    Components.showToast("Added a 'few' powerups...", stage);
+//                    UserAccount acc = gameInstance.getUserAccount();
+//                    for (PowerupType pr : PowerupType.values()) {
+//                        acc.addPowerup(pr, 5);
+//                    }
+//                    Components.showToast("Added a 'few' powerups...", stage);
                     //                    lotteryDialog.show(stage);
                 }
             });
@@ -342,7 +386,22 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             hgLevel.addActor(new Label("Level: ", skin, "h5"));
             hgLevel.addActor(lblLevel);
 
+
+            Image imgLotteryCoin = new Image(skin.getDrawable("lotteryCoin"));
+            imgLotteryCoin.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    gameInstance.getUserAccount().addLotteryCoins(1);
+                    lblLotteryCoins.setText(gameInstance.getUserAccount().getLotteryCoins());
+                }
+            });
+            lblLotteryCoins = new Label(String.valueOf(gameInstance.getUserAccount().getLotteryCoins()), skin, "h5");
+
             Table tblInfo = new Table();
+            tblInfo.top();
+            tblInfo.add(imgLotteryCoin).size(Value.percentHeight(1f, lblLotteryCoins)).padRight(Value.percentHeight(.5f, lblLotteryCoins));
+            tblInfo.add(lblLotteryCoins);
+
             Table tblAccount = new Table();
 
             Viewport uiVp = stage.getViewport();

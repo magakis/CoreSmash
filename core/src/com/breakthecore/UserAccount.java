@@ -53,6 +53,7 @@ public class UserAccount {
     public boolean consumeLotteryCoin() {
         if (lotteryCoins > 0) {
             --lotteryCoins;
+            Gdx.app.getPreferences("account").putInteger("lottery_coins", lotteryCoins).flush();
             return true;
         }
         return false;
@@ -61,6 +62,7 @@ public class UserAccount {
     public void addLotteryCoins(int amount) {
         assert amount > 0;
         lotteryCoins += amount;
+        Gdx.app.getPreferences("account").putInteger("lottery_coins", lotteryCoins).flush();
     }
 
     public PowerupManager getSpecialBallsAvailable() {

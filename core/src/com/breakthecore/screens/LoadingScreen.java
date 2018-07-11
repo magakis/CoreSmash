@@ -127,6 +127,8 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("SpikyBall.png");
         loadTexture("card.png");
         loadTexture("CardRewardShade.png");
+        loadTexture("key.png");
+        loadTexture("SlotMachine.png");
     }
 
     private void loadSounds() {
@@ -252,6 +254,8 @@ public class LoadingScreen extends ScreenBase {
         skin.add("heartIcon", am.get("HeartIcon.png"));
         skin.add("cardBack", am.get("card.png"));
         skin.add("cardShade", am.get("CardRewardShade.png"));
+        skin.add("lotteryCoin", am.get("key.png"));
+        skin.add("slotMachine", am.get("SlotMachine.png"));
         skin.add("gameScreenTopRound", am.get("UIGameScreenTopRound.png"));
 
         for (PowerupType type : PowerupType.values()) {
@@ -307,6 +311,9 @@ public class LoadingScreen extends ScreenBase {
 
         stb = new TextButton.TextButtonStyle();
         stb.font = skin.getFont("h4");
+        stb.fontColor = Color.WHITE;
+        stb.disabledFontColor = Color.DARK_GRAY;
+        stb.disabled = skin.newDrawable("boxSmall", Color.DARK_GRAY);
         stb.up = skin.getDrawable("boxSmall");
         stb.down = skin.newDrawable("boxSmall", Color.GRAY);
         skin.add("dialogButton", stb);
