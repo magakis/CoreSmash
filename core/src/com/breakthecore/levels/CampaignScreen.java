@@ -176,7 +176,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         uiOverlay.updateValues();
         if (stats.isRoundWon()) {
             gameInstance.getUserAccount().addLotteryCoins(1);
-            Components.showToast("~| You've been rewarded 1x Lottery Key! |~", stage);
+            Components.showToast("You've been rewarded 1x Lottery Key!", stage);
+            uiOverlay.lblLotteryCoins.setText(gameInstance.getUserAccount().getLotteryCoins());
         }
     }
 
@@ -317,7 +318,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             });
 
             Viewport uiVp = stage.getViewport();
-            float btnSize = uiVp.getWorldWidth() * .1f;
+            float btnSize = uiVp.getWorldWidth() * .15f;
 
             Table bar = new Table();
             bar.setBackground(skin.getDrawable("boxSmall"));
@@ -388,13 +389,13 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
 
             Image imgLotteryCoin = new Image(skin.getDrawable("lotteryCoin"));
-            imgLotteryCoin.addListener(new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    gameInstance.getUserAccount().addLotteryCoins(1);
-                    lblLotteryCoins.setText(gameInstance.getUserAccount().getLotteryCoins());
-                }
-            });
+//            imgLotteryCoin.addListener(new ClickListener() {
+//                @Override
+//                public void clicked(InputEvent event, float x, float y) {
+//                    gameInstance.getUserAccount().addLotteryCoins(1);
+//                    lblLotteryCoins.setText(gameInstance.getUserAccount().getLotteryCoins());
+//                }
+//            });
             lblLotteryCoins = new Label(String.valueOf(gameInstance.getUserAccount().getLotteryCoins()), skin, "h5");
 
             Table tblInfo = new Table();
