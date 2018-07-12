@@ -42,7 +42,7 @@ public class LotteryDialog extends Dialog {
         reward = new Reward();
 
         btnClaim = UIFactory.createTextButton("Claim Reward!", skin, "dialogButton");
-        btnClaim.getLabelCell().pad(Value.percentHeight(.5f, btnClaim.getLabel()));
+//        btnClaim.getLabelCell().pad(Value.percentHeight(.5f, btnClaim.getLabel()));
         btnClaim.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -52,7 +52,7 @@ public class LotteryDialog extends Dialog {
         });
 
         btnBegin = UIFactory.createTextButton("Start!", skin, "dialogButton");
-        btnBegin.getLabelCell().pad(Value.percentHeight(.5f, btnBegin.getLabel()));
+//        btnBegin.getLabelCell().pad(Value.percentHeight(.5f, btnBegin.getLabel()));
         btnBegin.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -69,7 +69,7 @@ public class LotteryDialog extends Dialog {
         });
 
         btnExit = UIFactory.createTextButton("Cancel", skin, "dialogButton");
-        btnExit.getLabelCell().pad(Value.percentHeight(.5f, btnExit.getLabel()));
+//        btnExit.getLabelCell().pad(Value.percentHeight(.5f, btnExit.getLabel()));
         btnExit.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -78,7 +78,7 @@ public class LotteryDialog extends Dialog {
         });
 
         btnRetry = UIFactory.createTextButton("Try Again!", skin, "dialogButton");
-        btnRetry.getLabelCell().pad(Value.percentHeight(.5f, btnRetry.getLabel()));
+//        btnRetry.getLabelCell().pad(Value.percentHeight(.5f, btnRetry.getLabel()));
         btnRetry.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {

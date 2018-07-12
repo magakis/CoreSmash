@@ -30,13 +30,11 @@ public class CoreSmash extends Game {
     public static boolean LOG_CRASHES = true;
     public static boolean DEBUG_TABLET = false;
 
-    private boolean isInitialized;
     private Viewport viewport;
     private RenderManager renderManager;
     private AssetManager assetManager;
     private UserAccount userAccount;
     private Skin skin;
-//    private InputMultiplexer inputMultiplexer;
 
     private Stack<Screen> screenStack;
 

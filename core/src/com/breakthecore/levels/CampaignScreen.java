@@ -2,6 +2,7 @@ package com.breakthecore.levels;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
@@ -55,7 +56,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private PickPowerUpsDialog powerupPickDialog;
     private LotteryDialog lotteryDialog;
     private UIOverlay uiOverlay;
-    private GestureDetector gd;
     private Skin skin;
     private Stage stage;
     private LevelWidget[] levelButtons;
@@ -65,7 +65,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         super(game);
         skin = game.getSkin();
         stage = new Stage(game.getUIViewport());
-        gd = new CustomGestureDetector(new CampaignInputListener());
 
         powerupPickDialog = new PickPowerUpsDialog(skin, gameInstance.getUserAccount().getSpecialBallsAvailable());
         lotteryDialog = new LotteryDialog(skin, gameInstance.getUserAccount()) {
@@ -81,7 +80,18 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         };
 
         screenInputMultiplexer.addProcessor(stage);
-        screenInputMultiplexer.addProcessor(gd);
+        screenInputMultiplexer.addProcessor(new InputAdapter(){
+            @Override
+            public boolean keyDown(int keycode) {
+                if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
+                    gameInstance.setPrevScreen();
+                    return false;
+                }
+                return false;
+            }
+
+        });
+
         gameScreen = new GameScreen(gameInstance);
 
         rootStack = new Stack();
@@ -182,72 +192,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         }
     }
 
-    private class CampaignInputListener implements GestureDetector.GestureListener {
-
-        @Override
-        public boolean touchDown(float x, float y, int pointer, int button) {
-            return false;
-        }
-
-        @Override
-        public boolean tap(float x, float y, int count, int button) {
-            return false;
-        }
-
-        @Override
-        public boolean longPress(float x, float y) {
-            return false;
-        }
-
-        @Override
-        public boolean fling(float velocityX, float velocityY, int button) {
-            return false;
-        }
-
-        @Override
-        public boolean pan(float x, float y, float deltaX, float deltaY) {
-            return false;
-        }
-
-        @Override
-        public boolean panStop(float x, float y, int pointer, int button) {
-            return false;
-        }
-
-        @Override
-        public boolean zoom(float initialDistance, float distance) {
-            return false;
-        }
-
-        @Override
-        public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
-            return false;
-        }
-
-        @Override
-        public void pinchStop() {
-
-        }
-    }
-
-    /**
-     * Why do I have a GestureDetector in Campaign Screen?!?
-     */
-    private class CustomGestureDetector extends GestureDetector {
-        public CustomGestureDetector(GestureListener listener) {
-            super(listener);
-        }
-
-        @Override
-        public boolean keyDown(int keycode) {
-            if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
-                gameInstance.setPrevScreen();
-                return false;
-            }
-            return false;
-        }
-    }
-
     @Override
     public void resize(int width, int height) {
         powerupPickDialog.hide();
@@ -319,7 +263,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             });
 
             Viewport uiVp = stage.getViewport();
-            float btnSize = uiVp.getWorldWidth() * .15f;
+            float btnSize = uiVp.getWorldWidth() * .12f;
 
             Table bar = new Table();
             bar.setBackground(skin.getDrawable("boxSmall"));

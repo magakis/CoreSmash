@@ -56,7 +56,7 @@ public class LoadingScreen extends ScreenBase {
         textureParam = new TextureLoader.TextureParameter();
         textureParam.genMipMaps = true;
         textureParam.minFilter = Texture.TextureFilter.MipMapLinearNearest;
-        textureParam.magFilter = Texture.TextureFilter.Nearest;
+        textureParam.magFilter = Texture.TextureFilter.MipMapLinearNearest;
 
         FileHandleResolver internalResolver = new InternalFileHandleResolver();
         am.setLoader(FreeTypeFontGenerator.class, new FreeTypeFontGeneratorLoader(internalResolver));
@@ -128,7 +128,10 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("card.png");
         loadTexture("CardRewardShade.png");
         loadTexture("key.png");
+        loadTexture("PlayButton.png");
         loadTexture("SlotMachine.png");
+        loadTexture("DialogFrame1.png");
+        loadTexture("SimpleFrameTrans.png");
     }
 
     private void loadSounds() {
@@ -208,6 +211,10 @@ public class LoadingScreen extends ScreenBase {
         ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
         skin.add("boxBig", ninePatch);
 
+        ninePatch = new NinePatch(am.get("DialogFrame1.png",Texture.class), 100,100,100,100);
+        defScale = .2f;
+        ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
+        skin.add("dialogFrame1", ninePatch);
 
         ninePatch = new NinePatch(am.get("toast1.png", Texture.class), 15, 15, 15, 15);
         skin.add("toast1", ninePatch);
@@ -232,6 +239,11 @@ public class LoadingScreen extends ScreenBase {
         ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
         skin.add("softGray", ninePatch);
 
+        ninePatch = new NinePatch(am.get("SimpleFrameTrans.png", Texture.class), 100, 100, 100, 100);
+        defScale = .25f;
+        ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
+        skin.add("simpleFrameTrans", ninePatch);
+
         // Textures
         pix = new Pixmap(41, 41, Pixmap.Format.RGBA8888);
         pix.setColor(Color.alpha(0));
@@ -255,6 +267,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("cardBack", am.get("card.png"));
         skin.add("cardShade", am.get("CardRewardShade.png"));
         skin.add("lotteryCoin", am.get("key.png"));
+        skin.add("PlayButton", am.get("PlayButton.png"));
         skin.add("slotMachine", am.get("SlotMachine.png"));
         skin.add("gameScreenTopRound", am.get("UIGameScreenTopRound.png"));
 
@@ -313,9 +326,9 @@ public class LoadingScreen extends ScreenBase {
         stb.font = skin.getFont("h4");
         stb.fontColor = Color.WHITE;
         stb.disabledFontColor = Color.DARK_GRAY;
-        stb.disabled = skin.newDrawable("boxSmall", Color.DARK_GRAY);
-        stb.up = skin.getDrawable("boxSmall");
-        stb.down = skin.newDrawable("boxSmall", Color.GRAY);
+        stb.disabled = skin.newDrawable("simpleFrameTrans", Color.DARK_GRAY);
+        stb.up = skin.getDrawable("simpleFrameTrans");
+        stb.down = skin.newDrawable("simpleFrameTrans", Color.GRAY);
         skin.add("dialogButton", stb);
 
         stb = new TextButton.TextButtonStyle();
@@ -389,7 +402,7 @@ public class LoadingScreen extends ScreenBase {
 
         // WindowStyles
         Window.WindowStyle ws = new Window.WindowStyle();
-        ws.background = skin.getDrawable("boxBig");
+        ws.background = skin.getDrawable("dialogFrame1");
         ws.titleFont = skin.getFont("h6");
         skin.add("PickPowerUpDialog", ws);
 

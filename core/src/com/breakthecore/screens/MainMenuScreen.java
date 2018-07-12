@@ -119,19 +119,20 @@ public class MainMenuScreen extends ScreenBase {
 
     private class UIMainMenu implements UIComponent {
         Table root;
-        Container<TextButton> btnPlay;
 
         public UIMainMenu() {
             root = new Table();
 
-            btnPlay = newMenuButton("Play", "btnPlay", new ChangeListener() {
+            ImageButton imgPlay = new ImageButton(skin.getDrawable("PlayButton"), skin.newDrawable("PlayButton",Color.GRAY));
+            imgPlay.getImageCell().grow();
+            imgPlay.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     campaignScreen.updateInfo(); // XXX(26/5/2018): Remove this
-
                     gameInstance.setScreen(campaignScreen);
                 }
             });
+
 
             root.defaults()
                     .width(Value.percentWidth(3 / 5f, rootStack))
@@ -141,7 +142,7 @@ public class MainMenuScreen extends ScreenBase {
             versInfo.setAlignment(Align.bottom);
 
             root.bottom();
-            root.add(btnPlay).padBottom(Value.percentHeight(1 / 14f, root)).row();
+            root.add(imgPlay).padBottom(Value.percentHeight(1 / 14f, root)).row();
             root.add(versInfo).align(Align.center).height(versInfo.getPrefHeight());
         }
 
@@ -190,7 +191,7 @@ public class MainMenuScreen extends ScreenBase {
             root.bottom().left();
             root.add(imgbMap)
                     .size(Value.percentWidth(1 / 7f, rootStack))
-                    .maxSize(Value.percentHeight(.8f, uiMainMenu.btnPlay))
+                    .maxSize(Value.percentHeight(1/8f, rootStack))
                     .padBottom(Value.percentHeight(1 / 16f, rootStack))
                     .padLeft(-10)
                     .left();
