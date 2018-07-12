@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -35,9 +36,9 @@ public class CoreSmash extends Game {
     private AssetManager assetManager;
     private UserAccount userAccount;
     private Skin skin;
-    private InputMultiplexer inputMultiplexer;
+//    private InputMultiplexer inputMultiplexer;
 
-    private Stack<ScreenBase> screenStack;
+    private Stack<Screen> screenStack;
 
     @Override
     public void create() {
@@ -62,8 +63,6 @@ public class CoreSmash extends Game {
 //        viewport = new ExtendViewport(768, 1024);
         viewport = new ScreenViewport();
 
-        inputMultiplexer = new InputMultiplexer();
-        Gdx.input.setInputProcessor(inputMultiplexer);
         Gdx.input.setCatchBackKey(true);
 
         assetManager = new AssetManager();
@@ -98,26 +97,17 @@ public class CoreSmash extends Game {
         return skin;
     }
 
-    public void setInputProcessor(InputProcessor ip) {
-        inputMultiplexer.clear();
-        inputMultiplexer.addProcessor(ip);
-
-    }
-
     public UserAccount getUserAccount() {
         return userAccount;
     }
 
     public void setPrevScreen() {
-        ScreenBase prev = screenStack.pop();
-        setInputProcessor(prev.getScreenInputProcessor());
-        super.setScreen(prev);
+        super.setScreen(screenStack.pop());
     }
 
-    public void setScreen(ScreenBase newScreen) {
-        screenStack.push((ScreenBase) screen);
-        setInputProcessor(newScreen.getScreenInputProcessor());
-        super.setScreen(newScreen);
+    public void setScreen(Screen screen) {
+        screenStack.push(screen);
+        super.setScreen(screen);
     }
 
     public Viewport getUIViewport() {
@@ -130,17 +120,6 @@ public class CoreSmash extends Game {
 
     public AssetManager getAssetManager() {
         return assetManager;
-    }
-
-    public void initApp() {
-        if (!isInitialized) {
-            setScreen(new MainMenuScreen(this));
-            isInitialized = true;
-        }
-    }
-
-    @Override
-    public void dispose() {
     }
 
     @Override

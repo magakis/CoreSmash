@@ -94,7 +94,7 @@ public class LoadingScreen extends ScreenBase {
             setupSkin();
             Components.initialize(skin);
             UIUtils.initialize();
-            gameInstance.initApp();
+            gameInstance.setScreen(new MainMenuScreen(gameInstance));
         }
         percent.setText(String.format(Locale.ENGLISH, "%.0f %%", am.getProgress() * 100));
 

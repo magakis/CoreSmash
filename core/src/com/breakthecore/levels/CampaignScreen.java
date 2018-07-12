@@ -112,6 +112,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         uiOverlay = new UIOverlay(uiOverlayRoot);
     }
 
+
     @Override
     public void render(float delta) {
         stage.act();

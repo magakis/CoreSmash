@@ -49,18 +49,25 @@ public class MainMenuScreen extends ScreenBase {
     public MainMenuScreen(CoreSmash game) {
         super(game);
         stage = new Stage(game.getUIViewport());
-        screenInputMultiplexer.addProcessor(new BackButtonInputHandler());
-        screenInputMultiplexer.addProcessor(stage);
         setupMainMenuStage(stage);
+
+        screenInputMultiplexer.addProcessor(stage);
+        screenInputMultiplexer.addProcessor(new InputAdapter() {
+            @Override
+            public boolean keyDown(int keycode) {
+                if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
+                    levelBuilderScreen.saveProgress();
+                    Gdx.app.exit();
+                    return true;
+                }
+                return false;
+            }
+        });
 
         campaignScreen = new CampaignScreen(gameInstance);
         levelBuilderScreen = new LevelBuilderScreen(gameInstance);
         backgroundMusic = SoundManager.get().getSoundAsset("backgroundMusic");
         backgroundMusic.loop();
-    }
-
-    @Override
-    public void show() {
     }
 
     @Override
@@ -107,24 +114,6 @@ public class MainMenuScreen extends ScreenBase {
                     checkForLocalAccount();
                 }
             }, "Setup Username:", "", "Min 3 - Max 20 Characters");
-        }
-    }
-
-    private class BackButtonInputHandler extends InputAdapter {
-        @Override
-        public boolean keyDown(int keycode) {
-            if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
-                if (uiMainMenu.getRoot().getParent() == rootStack) {
-                    levelBuilderScreen.saveProgress();
-                    Gdx.app.exit();
-                    return true;
-                } else {
-                    rootStack.clear();
-                    rootStack.addActor(uiMainMenu.getRoot());
-                    rootStack.addActor(uiMenuOverlay.getRoot());
-                }
-            }
-            return false;
         }
     }
 
@@ -213,26 +202,4 @@ public class MainMenuScreen extends ScreenBase {
         }
     }
 
-    private static class UIDebug implements UIComponent {
-        Table root;
-        Skin skin;
-
-        UIDebug(Skin skin) {
-            this.skin = skin;
-            root = new Table(skin);
-
-            root.top().left();
-//            root.add("Test H1", "h1").left().row();
-//            root.add("Test H2", "h2").left().row();
-//            root.add("Test H3", "h3").left().row();
-//            root.add("Test H4", "h4").left().row();
-//            root.add("Test H5", "h5").left().row();
-            root.add("Density: " + Gdx.graphics.getDensity(), "h6").left().row();
-        }
-
-        @Override
-        public Group getRoot() {
-            return root;
-        }
-    }
 }
