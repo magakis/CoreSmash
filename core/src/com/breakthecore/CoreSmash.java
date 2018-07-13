@@ -2,8 +2,6 @@ package com.breakthecore;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
@@ -12,8 +10,6 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.breakthecore.managers.RenderManager;
 import com.breakthecore.screens.LoadingScreen;
-import com.breakthecore.screens.MainMenuScreen;
-import com.breakthecore.screens.ScreenBase;
 import com.breakthecore.ui.UIUtils;
 
 import java.io.IOException;
@@ -69,7 +65,7 @@ public class CoreSmash extends Game {
         skin = new Skin();
         userAccount = new UserAccount();
 
-        setScreen(new LoadingScreen(this));
+        super.setScreen(new LoadingScreen(this));
         gl.glClearColor(30 / 255f, 30 / 255f, 30 / 255f, 1);
     }
 
@@ -100,7 +96,8 @@ public class CoreSmash extends Game {
     }
 
     public void setPrevScreen() {
-        super.setScreen(screenStack.pop());
+        screenStack.pop();
+        super.setScreen(screenStack.peek());
     }
 
     public void setScreen(Screen screen) {

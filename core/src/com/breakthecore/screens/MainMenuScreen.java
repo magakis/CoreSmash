@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -84,11 +85,16 @@ public class MainMenuScreen extends ScreenBase {
 
         uiMainMenu = new UIMainMenu();
         uiMenuOverlay = new UIOverlay();
-//        UIDebug uiDebug = new UIDebug(skin);
 
+        Image background = new Image(skin.getDrawable("MenuBackground"));
+        background.setScaling(Scaling.fill);
+        background.setAlign(Align.top);
+
+        rootStack.add(background);
         rootStack.add(uiMainMenu.getRoot());
         rootStack.add(uiMenuOverlay.getRoot());
-//        rootStack.add(uiDebug.getRoot());
+
+        ;
     }
 
     private void checkForLocalAccount() {
@@ -123,7 +129,7 @@ public class MainMenuScreen extends ScreenBase {
         public UIMainMenu() {
             root = new Table();
 
-            ImageButton imgPlay = new ImageButton(skin.getDrawable("PlayButton"), skin.newDrawable("PlayButton",Color.GRAY));
+            ImageButton imgPlay = UIFactory.createImageButton(skin.getDrawable("PlayButton"), skin.newDrawable("PlayButton", Color.GRAY));
             imgPlay.getImageCell().grow();
             imgPlay.addListener(new ChangeListener() {
                 @Override
@@ -132,6 +138,19 @@ public class MainMenuScreen extends ScreenBase {
                     gameInstance.setScreen(campaignScreen);
                 }
             });
+            imgPlay.setTransform(true);
+            imgPlay.setOrigin(imgPlay.getWidth() / 2, imgPlay.getHeight() / 2);
+            imgPlay.setRotation(-.75f);
+            imgPlay.addAction(Actions.forever(
+                    Actions.sequence(
+                            Actions.rotateBy(1.5f, 1.5f),
+                            Actions.rotateBy(-1.5f, 1.5f)
+                    )));
+            imgPlay.addAction(Actions.forever(
+                    Actions.sequence(
+                            Actions.scaleBy(.02f, .04f, 0.75f),
+                            Actions.scaleBy(-.02f, -.04f, 0.75f)
+                    )));
 
 
             root.defaults()

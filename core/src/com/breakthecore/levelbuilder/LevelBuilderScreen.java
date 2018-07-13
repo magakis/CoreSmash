@@ -143,15 +143,25 @@ public class LevelBuilderScreen extends ScreenBase {
         uiInfo = new UIInfo();
         uiToolbarTop = new UIToolbarTop();
 
+        Drawable frame = skin.getDrawable("EditorBigFrame");
+
         prefsStack = new UIComponentStack();
-        prefsStack.setBackground(skin.getDrawable("boxBig"));
+
+        Container<Group> stackContainer = new Container<>(prefsStack.getRoot());
+        stackContainer.setBackground(frame);
+        stackContainer.fill();
+        stackContainer.padTop(frame.getTopHeight() / 4).padLeft(frame.getTopHeight() / 4).padRight(frame.getTopHeight() / 4);
+
 
         Stack mainStack = new Stack();
         mainStack.setFillParent(true);
 
         Table prefs = new Table();
 //        prefsStack.setMaxHeight(Value.percentHeight(.25f, prefs));
-        prefs.center().bottom().add(prefsStack.getRoot()).growX().padBottom(-6 * Gdx.graphics.getDensity());
+        prefs.center().bottom()
+                .add(stackContainer)
+                .growX()
+                .padBottom(-frame.getBottomHeight());
 
         mainStack.addActor(uiTools.getRoot());
         mainStack.addActor(uiToolbarTop.getRoot());
@@ -257,10 +267,15 @@ public class LevelBuilderScreen extends ScreenBase {
 
             root = new Container<>();
 
+            Drawable frame = skin.getDrawable("EditorBigFrame");
+
             Table main = new Table(skin);
-            root.top().right().padTop(-6 * Gdx.graphics.getDensity()).padRight(-6 * Gdx.graphics.getDensity()).setActor(main);
-            main.setBackground("boxBig");
-            main.pad(10 * Gdx.graphics.getDensity());
+            root.top().right()
+                    .padTop(-frame.getTopHeight())
+                    .setActor(main);
+            main.setBackground(frame);
+            main.pad(frame.getTopHeight() / 2).
+                    padTop(frame.getTopHeight() * 5 / 4);
             main.setTouchable(Touchable.enabled);
             main.addCaptureListener(new EventListener() {
                 @Override
@@ -275,13 +290,9 @@ public class LevelBuilderScreen extends ScreenBase {
             main.row().padRight(Value.percentHeight(.5f, tbDeploy)).width(minWidth);
             main.add(tbDeploy);
             main.add(tbSave);
-            main.add(tbLoad);
+            main.add(tbLoad).padRight(0);
 
-            Window.WindowStyle wsLoad = new Window.WindowStyle();
-            wsLoad.background = skin.getDrawable("boxBig");
-            wsLoad.titleFont = skin.getFont("h3");
-
-            loadFileDialog = new LoadFileDialog(skin, wsLoad, stage) {
+            loadFileDialog = new LoadFileDialog(skin, stage) {
                 @Override
                 protected void result(Object object) {
                     filenameCache = (String) object;
@@ -294,7 +305,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
             };
 
-            saveFileDialog = new SaveFileDialog(skin, wsLoad) {
+            saveFileDialog = new SaveFileDialog(skin) {
                 @Override
                 protected void result(Object object) {
                     if (object == null) {
@@ -391,8 +402,10 @@ public class LevelBuilderScreen extends ScreenBase {
             btnGroup.setMinCheckCount(0);
 
 
+            Drawable frame = skin.getDrawable("EditorBigFrame");
+
             Table main = new Table(skin);
-            main.setBackground("boxBig");
+            main.setBackground(frame);
             main.setTouchable(Touchable.enabled);
             main.addCaptureListener(new EventListener() {
                 @Override
@@ -402,10 +415,11 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
             });
 
+            main.pad(frame.getTopHeight() / 3).padRight(frame.getRightWidth());
             main.defaults().width(tbErase.getWidth()).pad(5 * Gdx.graphics.getDensity());
             main.add(tbDraw).row();
             main.add(tbErase).padTop(0).row();
-            root.center().right().padRight(-6 * Gdx.graphics.getDensity()).setActor(main);
+            root.center().right().padRight(-frame.getRightWidth()).setActor(main);
 
         }
 

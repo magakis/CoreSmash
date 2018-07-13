@@ -85,7 +85,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             public boolean keyDown(int keycode) {
                 if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
                     gameInstance.setPrevScreen();
-                    return false;
+                    return true;
                 }
                 return false;
             }
@@ -423,12 +423,13 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             content.padBottom(10 * Gdx.graphics.getDensity());
             content.add(new Label("Choose your POWERUPS!", skin, "h4")).row();
             content.add(powerupsGroup)
-                    .width(Value.percentWidth(.8f, UIUtils.getScreenActor(powerupsGroup)));
+//                    .width(Value.percentWidth(.8f, UIUtils.getScreenActor(powerupsGroup)));
+                    .width(stage.getWidth() * .8f);
 
-            TextButton btnClose = UIFactory.createTextButton("Close", skin, "dialogButton");
-            btnClose.getLabelCell().pad(Value.percentHeight(1, btnClose.getLabel()));
-            btnClose.getLabelCell().padBottom(Value.percentHeight(.5f, btnClose.getLabel()));
-            btnClose.getLabelCell().padTop(Value.percentHeight(.5f, btnClose.getLabel()));
+            float buttonSize = stage.getWidth() / 3;
+
+            ImageButton btnClose = UIFactory.createImageButton(skin, "ButtonCancel");
+            btnClose.getImageCell().grow().size(buttonSize, UIUtils.getHeightFor(btnClose.getImage().getDrawable(), buttonSize));
             btnClose.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -437,10 +438,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 }
             });
 
-            TextButton btnStart = UIFactory.createTextButton("Start", skin, "dialogButton");
-            btnStart.getLabelCell().pad(Value.percentHeight(1, btnStart.getLabel()));
-            btnStart.getLabelCell().padBottom(Value.percentHeight(.5f, btnStart.getLabel()));
-            btnStart.getLabelCell().padTop(Value.percentHeight(.5f, btnStart.getLabel()));
+            ImageButton btnStart = UIFactory.createImageButton(skin, "ButtonStart");
+            btnStart.getImageCell().grow().size(buttonSize, UIUtils.getHeightFor(btnClose.getImage().getDrawable(), buttonSize));
             btnStart.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -466,9 +465,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             });
 
             Table buttons = getButtonTable();
-            buttons.row().padBottom(5 * Gdx.graphics.getDensity());
-            buttons.add(btnClose).expandX();
+            buttons.row().padBottom(4 * Gdx.graphics.getDensity());
             buttons.add(btnStart).expandX();
+            buttons.add(btnClose).expandX();
 
             addListener(new InputListener() {
                 @Override
@@ -483,6 +482,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             setMovable(false);
             setResizable(false);
+            setKeepWithinStage(true);
+            pad(10 * Gdx.graphics.getDensity());
         }
 
         @Override

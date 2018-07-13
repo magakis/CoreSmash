@@ -6,6 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.Layout;
 import com.breakthecore.sound.SoundManager;
 
@@ -66,6 +67,11 @@ public class UIUtils {
     public static ChangeListener getButtonSoundListener() {
 
         return buttonSoundListener;
+    }
+
+    public static float getHeightFor(Drawable drawable, float size) {
+        float ratio = drawable.getMinHeight() / drawable.getMinWidth();
+        return ratio * size;
     }
 
     public static Actor getUnitActor() {

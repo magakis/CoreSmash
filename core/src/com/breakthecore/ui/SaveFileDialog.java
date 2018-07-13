@@ -23,8 +23,8 @@ public class SaveFileDialog extends Dialog {
     private final FilenameFilter levelBuilderFilter;
     private final TextField textField;
 
-    public SaveFileDialog(Skin skin, WindowStyle windowStyle) {
-        super("", windowStyle);
+    public SaveFileDialog(Skin skin) {
+        super("", skin);
 
         levelBuilderFilter = new FilenameFilter() {
             @Override

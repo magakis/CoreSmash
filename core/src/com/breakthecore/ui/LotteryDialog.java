@@ -156,6 +156,7 @@ public class LotteryDialog extends Dialog {
         });
 
         getButtonTable().padBottom(4 * Gdx.graphics.getDensity());
+        pad(10 * Gdx.graphics.getDensity());
     }
 
     @Override

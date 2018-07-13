@@ -27,8 +27,8 @@ public class LoadFileDialog extends Dialog {
     private final FilenameFilter levelBuilderFilter;
     private final Dialog dlgConfirmDelete;
 
-    public LoadFileDialog(final Skin skin, final WindowStyle windowStyle, Stage stage1) {
-        super("", windowStyle);
+    public LoadFileDialog(final Skin skin, Stage stage1) {
+        super("", skin);
 
         levelBuilderFilter = new FilenameFilter() {
             @Override
@@ -66,14 +66,12 @@ public class LoadFileDialog extends Dialog {
             public void changed(ChangeEvent event, Actor actor) {
                 String chosen = levelsFound.getSelected();
                 ((Label) dlgConfirmDelete.getContentTable().getCells().get(0).getActor())
-                        .setText("Delete level '[GREEN]" + chosen + "[x]'?");
+                        .setText("Delete level '[GREEN]" + chosen + "[]'?");
                 dlgConfirmDelete.show(getStage());
             }
         });
         tbDelete.getLabelCell()
-                .pad(Value.percentHeight(1, tbDelete.getLabel()))
-                .padTop(Value.percentHeight(.5f, tbDelete.getLabel()))
-                .padBottom(Value.percentHeight(.5f, tbDelete.getLabel()));
+                .pad(Value.percentHeight(.5f, tbDelete.getLabel()));
 
         TextButton tbCancel = UIFactory.createTextButton("Cancel", skin, "dialogButton");
         tbCancel.getLabelCell()
@@ -87,7 +85,7 @@ public class LoadFileDialog extends Dialog {
             }
         });
 
-        dlgConfirmDelete = new Dialog("", windowStyle) {
+        dlgConfirmDelete = new Dialog("", skin) {
             @Override
             protected void result(Object object) {
                 if ((boolean) object) {

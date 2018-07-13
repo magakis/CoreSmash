@@ -25,6 +25,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Align;
 import com.breakthecore.CoreSmash;
 import com.breakthecore.sound.SoundManager;
@@ -128,10 +129,16 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("card.png");
         loadTexture("CardRewardShade.png");
         loadTexture("key.png");
-        loadTexture("PlayButton.png");
         loadTexture("SlotMachine.png");
         loadTexture("DialogFrame1.png");
         loadTexture("SimpleFrameTrans.png");
+        loadTexture("FrameWooden.png");
+        loadTexture("PlayButton.png");
+        loadTexture("ButtonCancel.png");
+        loadTexture("ButtonStart.png");
+        loadTexture("ButtonLevel.png");
+        loadTexture("ButtonEditor.png");
+        loadTexture("MenuBackground.png");
     }
 
     private void loadSounds() {
@@ -177,6 +184,7 @@ public class LoadingScreen extends ScreenBase {
         Pixmap pix;
         Texture tex;
         NinePatch ninePatch;
+        Color SlightGray = new Color(.9f, .9f, .9f, 1);
 
         /* Used as the Original Scale of each asset */
         float defScale = 0;
@@ -198,7 +206,7 @@ public class LoadingScreen extends ScreenBase {
         ninePatch = new NinePatch(tex, 10, 10, 10, 10);
         defScale = .4f;
         ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
-        skin.add("boxSmall", ninePatch);
+        skin.add("deleteMe", ninePatch);
 
         pix = new Pixmap(30, 30, Pixmap.Format.RGB888);
         pix.setColor(Color.WHITE);
@@ -239,10 +247,19 @@ public class LoadingScreen extends ScreenBase {
         ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
         skin.add("softGray", ninePatch);
 
-        ninePatch = new NinePatch(am.get("SimpleFrameTrans.png", Texture.class), 100, 100, 100, 100);
+        ninePatch = new NinePatch(am.get("ButtonEditor.png", Texture.class), 31, 31, 31, 31);
+        defScale = 0.25f;
+        ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
+        ninePatch.setPadding(ninePatch.getPadLeft() / 2, ninePatch.getPadRight() / 2, ninePatch.getPadTop() / 2, ninePatch.getPadBottom() / 2);
+        skin.add("boxSmall", ninePatch);
+
+        ninePatch = new NinePatch(am.get("FrameWooden.png", Texture.class), 123, 123, 123, 123);
         defScale = .25f;
         ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
         skin.add("simpleFrameTrans", ninePatch);
+
+        ninePatch = new NinePatch(ninePatch);
+        skin.add("EditorBigFrame", ninePatch);
 
         // Textures
         pix = new Pixmap(41, 41, Pixmap.Format.RGBA8888);
@@ -270,6 +287,10 @@ public class LoadingScreen extends ScreenBase {
         skin.add("PlayButton", am.get("PlayButton.png"));
         skin.add("slotMachine", am.get("SlotMachine.png"));
         skin.add("gameScreenTopRound", am.get("UIGameScreenTopRound.png"));
+        skin.add("ButtonCancel", am.get("ButtonCancel.png"));
+        skin.add("ButtonStart", am.get("ButtonStart.png"));
+        skin.add("ButtonLevel", am.get("ButtonLevel.png"));
+        skin.add("MenuBackground", am.get("MenuBackground.png"));
 
         for (PowerupType type : PowerupType.values()) {
             skin.add(type.name(), baseTheme.getTexture(type.getType().getID()));
@@ -326,16 +347,18 @@ public class LoadingScreen extends ScreenBase {
         stb.font = skin.getFont("h4");
         stb.fontColor = Color.WHITE;
         stb.disabledFontColor = Color.DARK_GRAY;
-        stb.disabled = skin.newDrawable("simpleFrameTrans", Color.DARK_GRAY);
-        stb.up = skin.getDrawable("simpleFrameTrans");
-        stb.down = skin.newDrawable("simpleFrameTrans", Color.GRAY);
+        stb.disabled = skin.newDrawable("boxSmall", Color.DARK_GRAY);
+        stb.up = skin.getDrawable("boxSmall");
+        stb.down = skin.newDrawable("boxSmall", Color.GRAY);
         skin.add("dialogButton", stb);
 
         stb = new TextButton.TextButtonStyle();
-        stb.up = skin.newDrawable("asteroid", Color.WHITE);
-        stb.down = skin.newDrawable("asteroid", Color.GRAY);
-        stb.disabled = skin.newDrawable("asteroid", Color.DARK_GRAY);
+        stb.up = skin.newDrawable("ButtonLevel", Color.WHITE);
+        stb.down = skin.newDrawable("ButtonLevel", Color.GRAY);
+        stb.disabled = skin.newDrawable("ButtonLevel", Color.DARK_GRAY);
         stb.font = skin.getFont("h2o");
+        stb.fontColor = Color.WHITE;
+        stb.disabledFontColor = Color.GRAY;
         skin.add("levelButton", stb);
 
         stb = new TextButton.TextButtonStyle();
@@ -368,6 +391,16 @@ public class LoadingScreen extends ScreenBase {
         imgbs.down = skin.newDrawable("boxSmall", Color.DARK_GRAY);
         imgbs.imageUp = skin.getDrawable("cardBack");
         skin.add("lotteryCard", imgbs);
+
+        imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.imageUp = skin.getDrawable("ButtonStart");
+        imgbs.imageDown = skin.newDrawable("ButtonStart", SlightGray);
+        skin.add("ButtonStart", imgbs);
+
+        imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.imageUp = skin.getDrawable("ButtonCancel");
+        imgbs.imageDown = skin.newDrawable("ButtonCancel", SlightGray);
+        skin.add("ButtonCancel", imgbs);
 
         // ButtonStyles
         Button.ButtonStyle bs = new Button.ButtonStyle();
@@ -402,9 +435,19 @@ public class LoadingScreen extends ScreenBase {
 
         // WindowStyles
         Window.WindowStyle ws = new Window.WindowStyle();
-        ws.background = skin.getDrawable("dialogFrame1");
+        ws.background = skin.getDrawable("simpleFrameTrans");
         ws.titleFont = skin.getFont("h6");
         skin.add("PickPowerUpDialog", ws);
+
+        ws = new Window.WindowStyle();
+        Drawable drawable = skin.newDrawable("EditorBigFrame");
+        drawable.setRightWidth(drawable.getLeftWidth() / 2);
+        drawable.setLeftWidth(drawable.getLeftWidth() / 2);
+        drawable.setTopHeight(drawable.getLeftWidth() / 2);
+        drawable.setBottomHeight(drawable.getLeftWidth() / 2);
+        ws.background = drawable;
+        ws.titleFont = skin.getFont("h6");
+        skin.add("default", ws);
 
         UIUtils.setUnitActor(skin.getFont("h6"));
     }
