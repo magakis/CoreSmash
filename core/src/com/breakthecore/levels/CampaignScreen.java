@@ -4,14 +4,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.input.GestureDetector;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
@@ -29,7 +26,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.breakthecore.CoreSmash;
@@ -43,10 +39,10 @@ import com.breakthecore.screens.ScreenBase;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tiles.TileType.PowerupType;
 import com.breakthecore.ui.Components;
+import com.breakthecore.ui.LotteryDialog;
 import com.breakthecore.ui.UIComponent;
 import com.breakthecore.ui.UIFactory;
 import com.breakthecore.ui.UIUtils;
-import com.breakthecore.ui.LotteryDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +71,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                     gameInstance.getUserAccount().addPowerup(reward.getType(), reward.getAmount());
                     Components.showToast("You have claimed " + reward.getAmount() + "x " + reward.getType() + "!", stage);
                 }
-                uiOverlay.lblLotteryCoins.setText(gameInstance.getUserAccount().getLotteryCoins());
+                uiOverlay.lblLotteryCoins.setText(String.valueOf(gameInstance.getUserAccount().getLotteryCoins()));
             }
         };
 
@@ -103,6 +99,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         WidgetGroup buttonsGroup = createButtonGroup();
         ScrollPane scrollPane = new ScrollPane(buttonsGroup);
         scrollPane.setOverscroll(false, false);
+        scrollPane.setScrollingDisabled(true, false);
         scrollPane.validate();
         scrollPane.setSmoothScrolling(false);
         scrollPane.setScrollPercentY(100);
@@ -188,7 +185,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         if (stats.isRoundWon()) {
             gameInstance.getUserAccount().addLotteryCoins(1);
             Components.showToast("You've been rewarded 1x Lottery Key!", stage);
-            uiOverlay.lblLotteryCoins.setText(gameInstance.getUserAccount().getLotteryCoins());
+            uiOverlay.lblLotteryCoins.setText(String.valueOf(gameInstance.getUserAccount().getLotteryCoins()));
         }
     }
 
@@ -372,9 +369,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
         public void updateValues() {
             UserAccount user = gameInstance.getUserAccount();
-            lblExp.setText(user.getXPProgress());
-            lblLevel.setText(user.getLevel());
-            lblExpForLevel.setText(user.getExpForNextLevel());
+            lblExp.setText(String.valueOf(user.getXPProgress()));
+            lblLevel.setText(String.valueOf(user.getLevel()));
+            lblExpForLevel.setText(String.valueOf(user.getExpForNextLevel()));
             pbAccountExp.setRange(0, user.getExpForNextLevel());
             pbAccountExp.setValue(user.getXPProgress());
             if (levelButtons[user.getUnlockedLevels()].isDisabled()) {
@@ -494,7 +491,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         public void show(Stage stage, int lvl) {
             for (Button button : powerupButtons) {
                 int amount = powerUpsAvailable.getAmountOf(PowerupType.valueOf(button.getName()));
-                ((Label) button.getCells().get(2).getActor()).setText(amount);
+                ((Label) button.getCells().get(2).getActor()).setText(String.valueOf(amount));
                 button.setDisabled(amount == 0);
             }
             choosenPowerups.clear();

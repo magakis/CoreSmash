@@ -16,7 +16,6 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
-import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -27,8 +26,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
@@ -480,8 +477,8 @@ public class GameScreen extends ScreenBase implements Observer {
         }
 
         public void setup() {
-            lblScore.setText(0);
-            lblTargetScore.setText(statsManager.getTargetScore());
+            lblScore.setText(String.valueOf(0));
+            lblTargetScore.setText(String.valueOf(statsManager.getTargetScore()));
             lblLives.setText(String.valueOf(statsManager.getLives()));
 
             lblMoves.setText(String.valueOf(statsManager.getMoves()));
@@ -520,13 +517,13 @@ public class GameScreen extends ScreenBase implements Observer {
         public void onNotify(NotificationType type, Object ob) {
             switch (type) {
                 case NOTIFICATION_TYPE_SCORE_INCREMENTED:
-                    lblScore.setText(statsManager.getScore());
+                    lblScore.setText(String.valueOf(statsManager.getScore()));
                     break;
                 case NOTIFICATION_TYPE_LIVES_CHANGED:
-                    lblLives.setText(statsManager.getLives());
+                    lblLives.setText(String.valueOf(statsManager.getLives()));
                     break;
                 case MOVES_AMOUNT_CHANGED:
-                    lblMoves.setText(statsManager.getMoves());
+                    lblMoves.setText(String.valueOf(statsManager.getMoves()));
                     break;
             }
         }
@@ -566,7 +563,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
             public void setPower(PowerupType type, int count) {
                 this.type = type;
-                text.setText(count);
+                text.setText(String.valueOf(count));
                 if (count > 0) {
                     text.setColor(Color.WHITE);
                     image.setDrawable(skin.getDrawable(type.name()));
@@ -578,7 +575,7 @@ public class GameScreen extends ScreenBase implements Observer {
             }
 
             public void setText(int value) {
-                text.setText(value);
+                text.setText(String.valueOf(value));
             }
         }
     }
