@@ -225,7 +225,7 @@ public class LotteryDialog extends Dialog {
             imgReward = new Image();
 
             cardBack = skin.getDrawable("cardBack");
-            disabledCardback = skin.newDrawable("cardBack", Color.GRAY);
+            disabledCardback = skin.newDrawable("cardBack", Color.DARK_GRAY);
 
             imgBackground = new Image(cardBack);
             imgReward = new Image();

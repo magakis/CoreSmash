@@ -24,7 +24,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
-import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -54,7 +53,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private UIOverlay uiOverlay;
     private Skin skin;
     private Stage stage;
-    private LevelWidget[] levelButtons;
+    private List<CampaignArea.LevelButton> levelButtons;
     private Stack rootStack;
 
     public CampaignScreen(CoreSmash game) {
@@ -94,15 +93,29 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         rootStack.setFillParent(true);
         stage.addActor(rootStack);
 
-        levelButtons = new LevelWidget[20];
 
-        WidgetGroup buttonsGroup = createButtonGroup();
-        ScrollPane scrollPane = new ScrollPane(buttonsGroup);
+        Area1 area1 = new Area1(skin, new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                powerupPickDialog.show(stage, Integer.valueOf(actor.getName()));
+            }
+        });
+        levelButtons = area1.getLevels();
+
+        Container<Image> container = new Container<>(area1.getBackground());
+        container.maxWidth(stage.getWidth());
+        container.maxHeight(UIUtils.getHeightFor(area1.getBackground().getDrawable(), stage.getWidth()));
+
+        Table testTable = new Table();
+        testTable.stack(container, area1.getLevelsGroup(stage)).grow();
+
+        ScrollPane scrollPane = new ScrollPane(testTable);
         scrollPane.setOverscroll(false, false);
         scrollPane.setScrollingDisabled(true, false);
         scrollPane.validate();
         scrollPane.setSmoothScrolling(false);
         scrollPane.setScrollPercentY(100);
+
         rootStack.addActor(scrollPane);
 
         Table uiOverlayRoot = new Table();
@@ -112,8 +125,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         rootStack.addActor(leftBar.root);
 
         int levelsUnlocked = gameInstance.getUserAccount().getUnlockedLevels();
-        for (int i = 0; i < levelsUnlocked && i < levelButtons.length; ++i) {
-            levelButtons[i].enable();
+        for (int i = 0; i < levelsUnlocked && i < levelButtons.size(); ++i) {
+            levelButtons.get(i).setDisabled(false);
         }
 
         uiOverlay = new UIOverlay(uiOverlayRoot);
@@ -126,28 +139,29 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         stage.draw();
     }
 
-    private Container<WidgetGroup> createButtonGroup() {
-        WidgetGroup grp = new WidgetGroup();
-
-        final int WIDTH = Gdx.graphics.getWidth();
-        final int HEIGHT = Gdx.graphics.getHeight();
-
-        float ySpace = (HEIGHT > WIDTH ? HEIGHT : WIDTH) / 8f;
-
-        float x;
-        float y;
-        for (int i = 0; i < levelButtons.length; ++i) {
-            x = WIDTH / 2 + ySpace * (float) Math.cos(i * Math.PI / 2);
-            y = ySpace + i * ySpace;
-            levelButtons[i] = new LevelWidget(i + 1, (int) x, (int) y);
-            grp.addActor(levelButtons[i]);
-        }
-
-        Container<WidgetGroup> container = new Container<>(grp);
-        container.prefSize(WIDTH, ySpace + levelButtons.length * ySpace);
-
-        return container;
-    }
+//    private Container<WidgetGroup> createButtonGroup() {
+//        WidgetGroup grp = new WidgetGroup();
+//        levelButtons = new LevelWidget[15];
+//
+//        final int WIDTH = Gdx.graphics.getWidth();
+//        final int HEIGHT = Gdx.graphics.getHeight();
+//
+//        float ySpace = (HEIGHT > WIDTH ? HEIGHT : WIDTH) / 8f;
+//
+//        float x;
+//        float y;
+//        for (int i = 0; i < levelButtons.length; ++i) {
+//            x = WIDTH / 4 + ySpace * (float) Math.cos(i * Math.PI / 2);
+//            y = ySpace + i * ySpace;
+//            levelButtons[i] = new LevelWidget(i + 1, (int) x, (int) y);
+//            grp.addActor(levelButtons[i]);
+//        }
+//
+//        Container<WidgetGroup> container = new Container<>(grp);
+//        container.prefSize(WIDTH, ySpace + levelButtons.length * ySpace);
+//
+//        return container;
+//    }
 
     private void startCampaignLevel(int lvl, final List<Powerup> powerups) {
         if (!XmlManager.fileExists("level" + lvl)) return;
@@ -374,8 +388,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             lblExpForLevel.setText(String.valueOf(user.getExpForNextLevel()));
             pbAccountExp.setRange(0, user.getExpForNextLevel());
             pbAccountExp.setValue(user.getXPProgress());
-            if (levelButtons[user.getUnlockedLevels()].isDisabled()) {
-                levelButtons[user.getUnlockedLevels()].enable();
+            if (levelButtons.get(user.getUnlockedLevels()).isDisabled()) {
+                levelButtons.get(user.getUnlockedLevels()).setDisabled(false);
             }
         }
 

@@ -31,7 +31,6 @@ import com.breakthecore.CoreSmash;
 import com.breakthecore.sound.SoundManager;
 import com.breakthecore.themes.AbstractTheme;
 import com.breakthecore.themes.BaseTheme;
-import com.breakthecore.tiles.TileType;
 import com.breakthecore.tiles.TileType.PowerupType;
 import com.breakthecore.ui.Components;
 import com.breakthecore.ui.UIUtils;
@@ -139,6 +138,7 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("ButtonLevel.png");
         loadTexture("ButtonEditor.png");
         loadTexture("MenuBackground.png");
+        loadTexture("CampaignBackground.png");
     }
 
     private void loadSounds() {
@@ -162,6 +162,12 @@ public class LoadingScreen extends ScreenBase {
         fontParams.fontParameters.borderWidth = 1 * PPI;
         fontParams.fontParameters.size = (int) (36 * PPI);
         am.load("h2o.ttf", BitmapFont.class, fontParams);
+
+        fontParams = new FreetypeFontLoader.FreeTypeFontLoaderParameter();
+        fontParams.fontFileName = "Gidole-Regular.ttf";
+        fontParams.fontParameters.borderWidth = 1 * PPI;
+        fontParams.fontParameters.size = (int) (24 * PPI);
+        am.load("h3o.ttf", BitmapFont.class, fontParams);
 
         loadBitmapFont("comic_96bo.fnt");
 
@@ -253,7 +259,7 @@ public class LoadingScreen extends ScreenBase {
         ninePatch.setPadding(ninePatch.getPadLeft() / 2, ninePatch.getPadRight() / 2, ninePatch.getPadTop() / 2, ninePatch.getPadBottom() / 2);
         skin.add("boxSmall", ninePatch);
 
-        ninePatch = new NinePatch(am.get("FrameWooden.png", Texture.class), 123, 123, 123, 123);
+        ninePatch = new NinePatch(am.get("FrameWooden.png", Texture.class), 80, 80, 80, 80);//123
         defScale = .25f;
         ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
         skin.add("simpleFrameTrans", ninePatch);
@@ -291,6 +297,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("ButtonStart", am.get("ButtonStart.png"));
         skin.add("ButtonLevel", am.get("ButtonLevel.png"));
         skin.add("MenuBackground", am.get("MenuBackground.png"));
+        skin.add("CampaignBackground", am.get("CampaignBackground.png"));
 
         for (PowerupType type : PowerupType.values()) {
             skin.add(type.name(), baseTheme.getTexture(type.getType().getID()));
@@ -310,6 +317,7 @@ public class LoadingScreen extends ScreenBase {
         registerFont(skin, "h3f", "h3f.ttf");
 
         registerFont(skin, "h2o", "h2o.ttf");
+        registerFont(skin, "h3o", "h3o.ttf");
         registerFont(skin, "comic_96bo", "comic_96bo.fnt");
 
         // 96   84  72  60  48  36
@@ -356,7 +364,7 @@ public class LoadingScreen extends ScreenBase {
         stb.up = skin.newDrawable("ButtonLevel", Color.WHITE);
         stb.down = skin.newDrawable("ButtonLevel", Color.GRAY);
         stb.disabled = skin.newDrawable("ButtonLevel", Color.DARK_GRAY);
-        stb.font = skin.getFont("h2o");
+        stb.font = skin.getFont("h3o");
         stb.fontColor = Color.WHITE;
         stb.disabledFontColor = Color.GRAY;
         skin.add("levelButton", stb);
