@@ -4,7 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -22,6 +24,7 @@ public class SaveFileDialog extends Dialog {
     private final List<String> levelsFound;
     private final FilenameFilter levelBuilderFilter;
     private final TextField textField;
+    private final Dialog dlgConfirmOverwrite;
 
     public SaveFileDialog(Skin skin) {
         super("", skin);
@@ -56,6 +59,35 @@ public class SaveFileDialog extends Dialog {
         });
         textField.setMaxLength(20);
 
+        dlgConfirmOverwrite = new Dialog("", skin) {
+            @Override
+            protected void result(Object object) {
+                if ((Boolean) object) {
+                    endDialog(textField.getText());
+                }
+            }
+        };
+        dlgConfirmOverwrite.text(new Label("", skin, "h3f"));
+        dlgConfirmOverwrite.button(UIFactory.createTextButton("Yes", skin, "dialogButton"), true);
+        dlgConfirmOverwrite.button(UIFactory.createTextButton("No", skin, "dialogButton"), false);
+        Cell<Label> txtCell = dlgConfirmOverwrite.getContentTable().getCells().get(0);
+        txtCell.pad(Value.percentHeight(.5f, txtCell.getActor()));
+        txtCell.maxWidth(Value.percentWidth(0.5f, UIUtils.getScreenActor(txtCell.getActor())));
+        dlgConfirmOverwrite.getCell(dlgConfirmOverwrite.getContentTable()).padBottom(txtCell.getActor().getStyle().font.getLineHeight());
+
+        txtCell = ((TextButton) dlgConfirmOverwrite.getButtonTable().getCells().get(0).getActor()).getLabelCell();
+        txtCell.pad(Value.percentHeight(1f, txtCell.getActor()));
+        txtCell.padTop(Value.percentHeight(0.5f, txtCell.getActor()));
+        txtCell.padBottom(Value.percentHeight(0.5f, txtCell.getActor()));
+
+        txtCell = ((TextButton) dlgConfirmOverwrite.getButtonTable().getCells().get(1).getActor()).getLabelCell();
+        txtCell.pad(Value.percentHeight(1f, txtCell.getActor()));
+        txtCell.padTop(Value.percentHeight(0.5f, txtCell.getActor()));
+        txtCell.padBottom(Value.percentHeight(0.5f, txtCell.getActor()));
+        dlgConfirmOverwrite.getButtonTable().getCells().get(0).expandX().center();
+        dlgConfirmOverwrite.getButtonTable().getCells().get(1).expandX().center();
+        dlgConfirmOverwrite.pad(Value.percentHeight(.8f, txtCell.getActor()));
+
         TextButton tbSave = UIFactory.createTextButton("Save", skin, "dialogButton");
         tbSave.getLabelCell()
                 .pad(Value.percentHeight(1, tbSave.getLabel()))
@@ -64,12 +96,18 @@ public class SaveFileDialog extends Dialog {
         tbSave.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                hide();
                 String name = textField.getText();
                 if (name.length() >= 3) {
-                    result(name);
+                    if (levelsFound.getItems().contains(name + ".xml", false)) {
+                        String chosen = textField.getText();
+                        ((Label) dlgConfirmOverwrite.getContentTable().getCells().get(0).getActor())
+                                .setText("Overwrite level '[GREEN]" + chosen + "[]'?");
+                        dlgConfirmOverwrite.show(getStage());
+                    } else {
+                        endDialog(name);
+                    }
                 } else {
-                    result(null);
+                    endDialog(null);
                 }
             }
         });
@@ -110,6 +148,11 @@ public class SaveFileDialog extends Dialog {
         buttons.add(textField).colspan(2).growX().row();
         buttons.add(tbSave).padRight(Value.percentHeight(.5f, tbSave)).expandX().left();
         buttons.add(tbCancel).expandX().right();
+    }
+
+    public void endDialog(String name) {
+        hide();
+        result(name);
     }
 
     public Dialog show(Stage stage, String defText) {
