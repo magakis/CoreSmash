@@ -73,10 +73,10 @@ public class GameController {
         return behaviourPowerPack;
     }
 
-    public void loadLevel(int lvl) {
-        statsManager.setLevel(lvl);
-        loadLevelMap("level" + lvl);
-    }
+//    public void loadLevel(int lvl) {
+//        statsManager.setLevel(lvl);
+//        loadLevelMap("level" + lvl);
+//    }
 
     public void loadLevelMap(String fileName) {
         ParsedLevel parsedLevel = LevelParser.loadFrom(fileName);

@@ -26,12 +26,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.breakthecore.CoreSmash;
 import com.breakthecore.GameController;
 import com.breakthecore.RoundEndListener;
 import com.breakthecore.UserAccount;
-import com.breakthecore.levelbuilder.XmlManager;
+import com.breakthecore.levelbuilder.LevelListParser;
+import com.breakthecore.levelbuilder.LevelListParser.RegisteredLevel;
 import com.breakthecore.managers.StatsManager;
 import com.breakthecore.screens.GameScreen;
 import com.breakthecore.screens.ScreenBase;
@@ -44,6 +46,7 @@ import com.breakthecore.ui.UIFactory;
 import com.breakthecore.ui.UIUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CampaignScreen extends ScreenBase implements RoundEndListener {
@@ -54,12 +57,19 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private Skin skin;
     private Stage stage;
     private List<CampaignArea.LevelButton> levelButtons;
+    private LevelListParser levelListParser;
+    private Array<RegisteredLevel> levels;
     private Stack rootStack;
+
+    private RegisteredLevel searchRegisteredLevel;
 
     public CampaignScreen(CoreSmash game) {
         super(game);
         skin = game.getSkin();
         stage = new Stage(game.getUIViewport());
+
+        levelListParser = new LevelListParser();
+        levels = new Array<>();
 
         powerupPickDialog = new PickPowerUpsDialog(skin, gameInstance.getUserAccount().getSpecialBallsAvailable());
         lotteryDialog = new LotteryDialog(skin, gameInstance.getUserAccount()) {
@@ -73,6 +83,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 uiOverlay.lblLotteryCoins.setText(String.valueOf(gameInstance.getUserAccount().getLotteryCoins()));
             }
         };
+
+        searchRegisteredLevel = new RegisteredLevel(0, "");
 
         screenInputMultiplexer.addProcessor(stage);
         screenInputMultiplexer.addProcessor(new InputAdapter(){
@@ -132,7 +144,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         uiOverlay = new UIOverlay(uiOverlayRoot);
     }
 
-
     @Override
     public void render(float delta) {
         stage.act();
@@ -164,13 +175,19 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 //    }
 
     private void startCampaignLevel(int lvl, final List<Powerup> powerups) {
-        if (!XmlManager.fileExists("level" + lvl)) return;
+        searchRegisteredLevel.num = lvl;
+        int index = Arrays.binarySearch(levels.toArray(), searchRegisteredLevel, LevelListParser.compLevel);
+
+        if (index < 0) return;
+
+        final RegisteredLevel level = levels.get(index);
 
         gameScreen.deployLevel(new CampaignLevel(lvl, gameInstance.getUserAccount(), this) {
             @Override
             public void initialize(GameController controller) {
-                controller.loadLevel(getLevelNumber());
+                controller.loadLevelMap(level.name);
                 StatsManager statsManager = controller.getBehaviourPack().statsManager;
+                statsManager.setLevel(level.num);
                 for (Powerup powerup : powerups) {
                     statsManager.enablePowerup(powerup.type, powerup.count);
                 }
@@ -185,6 +202,14 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
     public void updateInfo() {
         uiOverlay.updateValues();
+    }
+
+    @Override
+    public void show() {
+        levels.clear();
+        levelListParser.parseAssignedLevels(levels);
+        levels.sort(LevelListParser.compLevel);
+        super.show();
     }
 
     @Override
@@ -534,7 +559,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             return tb;
         }
     }
-
 
 
     private static class Powerup {

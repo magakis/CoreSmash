@@ -52,6 +52,7 @@ import com.breakthecore.screens.GameScreen;
 import com.breakthecore.screens.ScreenBase;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tiles.TileType;
+import com.breakthecore.ui.AssignLevelDialog;
 import com.breakthecore.ui.Components;
 import com.breakthecore.ui.LoadFileDialog;
 import com.breakthecore.ui.SaveFileDialog;
@@ -224,10 +225,11 @@ public class LevelBuilderScreen extends ScreenBase {
 
     private class UIToolbarTop implements UIComponent {
         private Container<Table> root;
-        private SaveFileDialog saveFileDialog;
-        private LoadFileDialog loadFileDialog;
+        private final AssignLevelDialog assignLevelDialog;
+        private final SaveFileDialog saveFileDialog;
+        private final LoadFileDialog loadFileDialog;
         private Level testLevel;
-        private final TextButton tbSave, tbLoad, tbDeploy;
+        private final TextButton tbSave, tbLoad, tbDeploy, tbAssign;
         private String filenameCache = "";
 
         UIToolbarTop() {
@@ -264,6 +266,17 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
             });
 
+            tbAssign = UIFactory.createTextButton("Assign", skin, "levelBuilderButton");
+            tbAssign.getLabelCell().pad(Value.percentHeight(.5f, tbAssign.getLabel()));
+            tbAssign.getLabelCell().padTop(Value.percentHeight(.25f, tbAssign.getLabel()));
+            tbAssign.getLabelCell().padBottom(Value.percentHeight(.25f, tbAssign.getLabel()));
+            tbAssign.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    assignLevelDialog.show(stage);
+                }
+            });
+
             root = new Container<>();
 
             Drawable frame = skin.getDrawable("EditorBigFrame");
@@ -289,12 +302,14 @@ public class LevelBuilderScreen extends ScreenBase {
             main.row().padRight(Value.percentHeight(.5f, tbDeploy)).width(minWidth);
             main.add(tbDeploy);
             main.add(tbSave);
-            main.add(tbLoad).padRight(0);
+            main.add(tbLoad);
+            main.add(tbAssign).padRight(0);
 
-            loadFileDialog = new LoadFileDialog(skin, stage) {
+            loadFileDialog = new LoadFileDialog(skin) {
                 @Override
                 protected void result(Object object) {
                     filenameCache = (String) object;
+
                     if (levelBuilder.load(filenameCache)) {
                         freeMode.optionsMenu.updateValues(levelBuilder.getLayer());
                         Components.showToast("File '" + filenameCache + "' loaded", stage);
@@ -316,6 +331,8 @@ public class LevelBuilderScreen extends ScreenBase {
                     }
                 }
             };
+
+            assignLevelDialog = new AssignLevelDialog(skin);
 
             testLevel = new Level() {
                 @Override

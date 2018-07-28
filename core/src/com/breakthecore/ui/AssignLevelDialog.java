@@ -1,7 +1,7 @@
 package com.breakthecore.ui;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
@@ -10,75 +10,34 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.breakthecore.WorldSettings;
+import com.badlogic.gdx.utils.Array;
+import com.breakthecore.levelbuilder.LevelListParser;
+import com.breakthecore.levelbuilder.LevelListParser.RegisteredLevel;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.util.Arrays;
 
+
 public class AssignLevelDialog extends Dialog {
-    private final List<String> levelsFound;
-    private final FilenameFilter levelBuilderFilter;
-    private final TextField textField;
+    private Array<RegisteredLevel> levels;
+    private List<RegisteredLevel> levelList;
+    private LevelListParser levelListParser;
 
-    public AssignLevelDialog(Skin skin, WindowStyle windowStyle) {
-        super("", windowStyle);
+    private AssignLevelTextInput assignLevelTextInput;
+    private InsertLevelTextInput insertLevelTextInput;
 
-        levelBuilderFilter = new FilenameFilter() {
-            @Override
-            public boolean accept(File file, String s) {
-                return !s.startsWith("_") && s.toLowerCase().endsWith(".xml");
-            }
-        };
+    public AssignLevelDialog(Skin skin) {
+        super("", skin);
 
-        List.ListStyle ls = new List.ListStyle();
-        ls.fontColorSelected = Color.WHITE;
-        ls.fontColorUnselected = Color.WHITE;
-        ls.selection = skin.newDrawable("boxSmall", 0, 0, 0, 0);
-        ls.font = skin.getFont("h5");
+        levels = new Array<>();
+        levelList = new List<>(skin);
+        levelListParser = new LevelListParser();
 
-        levelsFound = new List<>(ls);
+        assignLevelTextInput = new AssignLevelTextInput();
+        insertLevelTextInput = new InsertLevelTextInput();
 
-        TextField.TextFieldStyle tfstyle = new TextField.TextFieldStyle();
-        tfstyle.font = skin.getFont("h4");
-        tfstyle.fontColor = Color.WHITE;
-        tfstyle.background = skin.getDrawable("boxSmall");
-
-        textField = new TextField("", tfstyle);
-        textField.setMessageText("Requires 3-20 characters");
-        textField.setTextFieldFilter(new TextField.TextFieldFilter() {
-            @Override
-            public boolean acceptChar(TextField textField, char c) {
-                return Character.isLetterOrDigit(c);
-            }
-        });
-        textField.setMaxLength(20);
-
-        TextButton tbSave = UIFactory.createTextButton("Save", skin);
-        tbSave.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                hide();
-                String name = textField.getText();
-                if (name.length() >= 3) {
-                    result(name);
-                } else {
-                    result(null);
-                }
-            }
-        });
-
-        TextButton tbCancel = UIFactory.createTextButton("Cancel", skin);
-        tbCancel.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                hide();
-            }
-        });
-
-        ScrollPane sp = new ScrollPane(levelsFound);
+        ScrollPane sp = new ScrollPane(levelList);
         sp.setScrollingDisabled(true, false);
         sp.setOverscroll(false, false);
 
@@ -87,27 +46,132 @@ public class AssignLevelDialog extends Dialog {
         setKeepWithinStage(true);
         setModal(true);
 
-        padTop(10);
 
+        float lineHeight = levelList.getStyle().font.getLineHeight();
         Table content = getContentTable();
-        content.pad(20).padBottom(0).add(sp).colspan(2).fill().width(WorldSettings.getWorldWidth() / 2).height(400).left().row();
+        content.pad(lineHeight)
+                .padBottom(0);
+
+        content.add(sp)
+                .grow()
+                .maxWidth(Value.percentWidth(.75f, UIUtils.getScreenActor(sp)))
+                .maxHeight(Value.percentHeight(.5f, UIUtils.getScreenActor(sp)));
+
+        TextButton tbAssign = UIFactory.createTextButton("Assign", skin, "dialogButton");
+        tbAssign.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                RegisteredLevel chosen = levelList.getSelected();
+                assignLevelTextInput.activeLevel = chosen;
+                Gdx.input.getTextInput(assignLevelTextInput, "Assign '" + chosen.name + "' at:", String.valueOf(chosen.num), "");
+            }
+        });
+        tbAssign.getLabelCell().pad(Value.percentHeight(.5f, tbAssign.getLabel()));
+
+        TextButton tbCancel = UIFactory.createTextButton("Cancel", skin, "dialogButton");
+        tbCancel.getLabelCell()
+                .pad(Value.percentHeight(1, tbCancel.getLabel()))
+                .padTop(Value.percentHeight(.5f, tbCancel.getLabel()))
+                .padBottom(Value.percentHeight(.5f, tbCancel.getLabel()));
+        tbCancel.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                hide();
+            }
+        });
+
+        TextButton tbInsert = UIFactory.createTextButton("Insert", skin, "dialogButton");
+        tbInsert.getLabelCell()
+                .pad(Value.percentHeight(1, tbInsert.getLabel()))
+                .padTop(Value.percentHeight(.5f, tbInsert.getLabel()))
+                .padBottom(Value.percentHeight(.5f, tbInsert.getLabel()));
+        tbInsert.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                RegisteredLevel chosen = levelList.getSelected();
+                insertLevelTextInput.activeLevel = chosen;
+                Gdx.input.getTextInput(insertLevelTextInput, "Inserted '" + chosen.name + "' at:", String.valueOf(chosen.num), "");
+            }
+        });
 
         Table buttons = getButtonTable();
-        buttons.pad(20);
-        buttons.add(textField).colspan(2).padBottom(20).growX().row();
-        buttons.add(tbSave).width(170).height(100).padRight(20);
-        buttons.add(tbCancel).width(170).height(100);
-
+        buttons.pad(Value.percentHeight(.25f, tbAssign));
+        buttons.add(tbAssign).padRight(Value.percentHeight(.5f, tbAssign)).expandX().center();
+        buttons.add(tbInsert).padRight(Value.percentHeight(.5f, tbAssign)).expandX().center();
+        buttons.add(tbCancel).expandX().right();
     }
 
-    public Dialog show(Stage stage, String defText) {
-        levelsFound.clearItems();
-        String[] files = Gdx.files.external("/CoreSmash/levels/").file().list(levelBuilderFilter);
-        Arrays.sort(files);
-        levelsFound.setItems(files);
-        textField.setText(defText);
+    @Override
+    public Dialog show(Stage stage) {
+        levelList.clearItems();
+        levels.clear();
+
+        levelListParser.getLevels(levels);
+        levels.sort(LevelListParser.compLevel);
+
+        levelList.setItems(levels);
         super.show(stage);
         return this;
     }
-}
 
+    private class AssignLevelTextInput implements Input.TextInputListener {
+        protected RegisteredLevel activeLevel;
+        protected RegisteredLevel dummySearchLevel = new RegisteredLevel(0, "");
+
+        @Override
+        public void input(String text) {
+            if (activeLevel != null && !text.isEmpty() && text.matches("[0-9]+")) {
+                int assignedValue = Integer.parseInt(text);
+                if (assignedValue != activeLevel.num) {
+                    dummySearchLevel.num = assignedValue;
+                    int index = Arrays.binarySearch(levelList.getItems().toArray(), dummySearchLevel, LevelListParser.compLevel);
+
+                    if (index >= 0) {
+                        levelList.getItems().get(index).num = 0;
+                    }
+
+                    activeLevel.num = assignedValue;
+                    levelList.getItems().sort(LevelListParser.compLevel);
+                    levelList.setItems(levelList.getItems());
+                    levelListParser.serializeLevelList(levelList.getItems());
+                    Components.showToast("'" + activeLevel.name + "' was assigned to Level: " + activeLevel.num, getStage());
+                }
+            }
+            activeLevel = null;
+        }
+
+        @Override
+        public void canceled() {
+            activeLevel = null;
+        }
+    }
+
+    private class InsertLevelTextInput extends AssignLevelTextInput {
+        @Override
+        public void input(String text) {
+            if (activeLevel != null && !text.isEmpty() && text.matches("[0-9]+")) {
+                int assignedValue = Integer.parseInt(text);
+                if (assignedValue != activeLevel.num) {
+                    dummySearchLevel.num = assignedValue;
+                    int index = Arrays.binarySearch(levelList.getItems().toArray(), dummySearchLevel, LevelListParser.compLevel);
+
+                    if (index >= 0) {
+                        Array<RegisteredLevel> list = levelList.getItems();
+                        do {
+                            ++list.get(index).num;
+                            ++index;
+                        }
+                        while (index < list.size && list.get(index).num == list.get(index - 1).num);
+                    }
+
+                    activeLevel.num = assignedValue;
+                    levelList.getItems().sort(LevelListParser.compLevel);
+                    levelList.setItems(levelList.getItems());
+                    levelListParser.serializeLevelList(levelList.getItems());
+                    Components.showToast("'" + activeLevel.name + "' was assigned to Level: " + activeLevel.num, getStage());
+                }
+            }
+            activeLevel = null;
+        }
+    }
+}

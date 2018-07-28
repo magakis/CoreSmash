@@ -20,6 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -57,6 +58,8 @@ public class LoadingScreen extends ScreenBase {
         textureParam.genMipMaps = true;
         textureParam.minFilter = Texture.TextureFilter.MipMapLinearNearest;
         textureParam.magFilter = Texture.TextureFilter.MipMapLinearNearest;
+//        textureParam.minFilter = Texture.TextureFilter.Linear;
+//        textureParam.magFilter = Texture.TextureFilter.Linear;
 
         FileHandleResolver internalResolver = new InternalFileHandleResolver();
         am.setLoader(FreeTypeFontGenerator.class, new FreeTypeFontGeneratorLoader(internalResolver));
@@ -156,6 +159,7 @@ public class LoadingScreen extends ScreenBase {
         generateBitmapFont(36, "h2.ttf");
 
         generateBitmapFont(24, "h3f.ttf");
+        generateBitmapFont(18, "h4f.ttf");
 
         FreetypeFontLoader.FreeTypeFontLoaderParameter fontParams = new FreetypeFontLoader.FreeTypeFontLoaderParameter();
         fontParams.fontFileName = "Gidole-Regular.ttf";
@@ -168,6 +172,12 @@ public class LoadingScreen extends ScreenBase {
         fontParams.fontParameters.borderWidth = 1 * PPI;
         fontParams.fontParameters.size = (int) (24 * PPI);
         am.load("h3o.ttf", BitmapFont.class, fontParams);
+
+        fontParams = new FreetypeFontLoader.FreeTypeFontLoaderParameter();
+        fontParams.fontFileName = "Gidole-Regular.ttf";
+        fontParams.fontParameters.borderWidth = 1 * PPI;
+        fontParams.fontParameters.size = (int) (18 * PPI);
+        am.load("h4o.ttf", BitmapFont.class, fontParams);
 
         loadBitmapFont("comic_96bo.fnt");
 
@@ -183,6 +193,9 @@ public class LoadingScreen extends ScreenBase {
 
     private void setupFonts() {
         BitmapFont font = am.get("h3f.ttf");
+        font.getData().markupEnabled = true;
+
+        font = am.get("h4f.ttf");
         font.getData().markupEnabled = true;
     }
 
@@ -302,9 +315,6 @@ public class LoadingScreen extends ScreenBase {
         for (PowerupType type : PowerupType.values()) {
             skin.add(type.name(), baseTheme.getTexture(type.getType().getID()));
         }
-        // Fonts
-//        registerFont(skin, "h5", "comic_32.fnt");
-//        registerFont(skin, "h4", "comic_48.fnt");
 
         registerFont(skin, "h6", "h6.ttf");
         registerFont(skin, "h5", "h5.ttf");
@@ -315,9 +325,12 @@ public class LoadingScreen extends ScreenBase {
 
         // Markup-Enabled fonts
         registerFont(skin, "h3f", "h3f.ttf");
+        registerFont(skin, "h4f", "h4f.ttf");
 
+        // Outlined fonts
         registerFont(skin, "h2o", "h2o.ttf");
         registerFont(skin, "h3o", "h3o.ttf");
+        registerFont(skin, "h4o", "h4o.ttf");
         registerFont(skin, "comic_96bo", "comic_96bo.fnt");
 
         // 96   84  72  60  48  36
@@ -440,6 +453,15 @@ public class LoadingScreen extends ScreenBase {
         tfs.font = skin.getFont("h4");
         tfs.fontColor = Color.WHITE;
         skin.add("default", tfs);
+
+        //ListStyles
+        List.ListStyle ls = new List.ListStyle();
+        ls.fontColorSelected = Color.GREEN;
+        ls.fontColorUnselected = Color.WHITE;
+        ls.selection = skin.newDrawable("boxSmall", Color.BLACK);
+        ls.font = skin.getFont("h5");
+        skin.add("default", ls);
+
 
         // WindowStyles
         Window.WindowStyle ws = new Window.WindowStyle();

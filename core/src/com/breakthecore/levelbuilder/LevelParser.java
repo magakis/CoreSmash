@@ -20,7 +20,7 @@ import static com.breakthecore.levelbuilder.XmlManager.createElement;
 import static org.xmlpull.v1.XmlPullParser.NO_NAMESPACE;
 
 public final class LevelParser {
-    static final String TAG_LEVEL = "level";
+    static final String TAG_LEVEL = "num";
     static final String TAG_LEVEL_SETTINGS = "levelSettings";
     static final String TAG_MAP_SETTINGS = "mapSettings";
     static final String TAG_LIVES = "lives";

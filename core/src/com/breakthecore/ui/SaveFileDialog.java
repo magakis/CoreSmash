@@ -1,6 +1,5 @@
 package com.breakthecore.ui;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -15,34 +14,22 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-
-import java.io.File;
-import java.io.FilenameFilter;
-import java.util.Arrays;
+import com.badlogic.gdx.utils.Array;
+import com.breakthecore.levelbuilder.LevelListParser;
 
 public class SaveFileDialog extends Dialog {
-    private final List<String> levelsFound;
-    private final FilenameFilter levelBuilderFilter;
+    private final List<LevelListParser.RegisteredLevel> levelList;
+    private final Array<LevelListParser.RegisteredLevel> levels;
+    private final LevelListParser levelListParser;
     private final TextField textField;
     private final Dialog dlgConfirmOverwrite;
 
     public SaveFileDialog(Skin skin) {
         super("", skin);
 
-        levelBuilderFilter = new FilenameFilter() {
-            @Override
-            public boolean accept(File file, String s) {
-                return !s.startsWith("_editor_") && s.toLowerCase().endsWith(".xml");
-            }
-        };
-
-        List.ListStyle ls = new List.ListStyle();
-        ls.fontColorSelected = Color.WHITE;
-        ls.fontColorUnselected = Color.WHITE;
-        ls.selection = skin.newDrawable("boxSmall", 0, 0, 0, 0);
-        ls.font = skin.getFont("h5");
-
-        levelsFound = new List<>(ls);
+        levels = new Array<>();
+        levelListParser = new LevelListParser();
+        levelList = new List<>(skin);
 
         TextField.TextFieldStyle tfstyle = new TextField.TextFieldStyle();
         tfstyle.font = skin.getFont("h4");
@@ -67,12 +54,10 @@ public class SaveFileDialog extends Dialog {
                 }
             }
         };
-        dlgConfirmOverwrite.text(new Label("", skin, "h3f"));
+        dlgConfirmOverwrite.text(new Label("", skin, "h4f"));
         dlgConfirmOverwrite.button(UIFactory.createTextButton("Yes", skin, "dialogButton"), true);
         dlgConfirmOverwrite.button(UIFactory.createTextButton("No", skin, "dialogButton"), false);
         Cell<Label> txtCell = dlgConfirmOverwrite.getContentTable().getCells().get(0);
-        txtCell.pad(Value.percentHeight(.5f, txtCell.getActor()));
-        txtCell.maxWidth(Value.percentWidth(0.5f, UIUtils.getScreenActor(txtCell.getActor())));
         dlgConfirmOverwrite.getCell(dlgConfirmOverwrite.getContentTable()).padBottom(txtCell.getActor().getStyle().font.getLineHeight());
 
         txtCell = ((TextButton) dlgConfirmOverwrite.getButtonTable().getCells().get(0).getActor()).getLabelCell();
@@ -94,11 +79,14 @@ public class SaveFileDialog extends Dialog {
                 .padTop(Value.percentHeight(.5f, tbSave.getLabel()))
                 .padBottom(Value.percentHeight(.5f, tbSave.getLabel()));
         tbSave.addListener(new ChangeListener() {
+            private LevelListParser.RegisteredLevel dummySearchLevel = new LevelListParser.RegisteredLevel(0, "");
+
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 String name = textField.getText();
-                if (name.length() >= 3) {
-                    if (levelsFound.getItems().contains(name + ".xml", false)) {
+                if (name.length() >= 3 && !name.equals("_editor_")) {
+                    dummySearchLevel.name = name;
+                    if (levelList.getItems().contains(dummySearchLevel, false)) {
                         String chosen = textField.getText();
                         ((Label) dlgConfirmOverwrite.getContentTable().getCells().get(0).getActor())
                                 .setText("Overwrite level '[GREEN]" + chosen + "[]'?");
@@ -124,7 +112,7 @@ public class SaveFileDialog extends Dialog {
             }
         });
 
-        ScrollPane sp = new ScrollPane(levelsFound);
+        ScrollPane sp = new ScrollPane(levelList);
         sp.setScrollingDisabled(true, false);
         sp.setOverscroll(false, false);
 
@@ -133,7 +121,7 @@ public class SaveFileDialog extends Dialog {
         setKeepWithinStage(true);
         setModal(true);
 
-        float lineHeight = levelsFound.getStyle().font.getLineHeight();
+        float lineHeight = levelList.getStyle().font.getLineHeight();
         Table content = getContentTable();
         content.pad(lineHeight)
                 .padBottom(0);
@@ -156,10 +144,13 @@ public class SaveFileDialog extends Dialog {
     }
 
     public Dialog show(Stage stage, String defText) {
-        levelsFound.clearItems();
-        String[] files = Gdx.files.external("/CoreSmash/levels/").file().list(levelBuilderFilter);
-        Arrays.sort(files);
-        levelsFound.setItems(files);
+        levelList.clearItems();
+        levels.clear();
+
+        levelListParser.getLevels(levels);
+        levels.sort(LevelListParser.compLevel);
+
+        levelList.setItems(levels);
         textField.setText(defText);
         super.show(stage);
         return this;

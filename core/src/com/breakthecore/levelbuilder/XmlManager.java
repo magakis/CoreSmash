@@ -29,11 +29,11 @@ public final class XmlManager {
         serializer.startTag(NO_NAMESPACE, name).text(String.valueOf(value)).endTag(NO_NAMESPACE, name);
     }
 
-    static XmlSerializer getSerializer() {
+    public static XmlSerializer getSerializer() {
         return serializer;
     }
 
-    static XmlPullParser getParser() {
+    public static XmlPullParser getParser() {
         return parser;
     }
 
