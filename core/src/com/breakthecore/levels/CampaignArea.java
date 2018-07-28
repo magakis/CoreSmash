@@ -24,7 +24,8 @@ abstract class CampaignArea {
         levels = new ArrayList<>();
 
         levelGroup = new WidgetGroup();
-        background = new Image(drawable, Scaling.fit);
+        background = new Image(drawable, Scaling.fillX);
+        background.setAlign(Align.bottom);
         refWidth = drawable.getMinWidth();
     }
 
