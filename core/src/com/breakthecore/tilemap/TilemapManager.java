@@ -7,7 +7,6 @@ import com.breakthecore.Observable;
 import com.breakthecore.Observer;
 import com.breakthecore.WorldSettings;
 import com.breakthecore.managers.RenderManager;
-import com.breakthecore.sound.SoundManager;
 import com.breakthecore.tiles.Breakable;
 import com.breakthecore.tiles.RegularTile;
 import com.breakthecore.tiles.Tile;
@@ -16,7 +15,6 @@ import com.breakthecore.tiles.TileContainer.Side;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * The TilemapManager is responsible for every interaction with the Tilemaps and provides the
@@ -139,7 +137,8 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
         List<TilemapTile> disconnected = pathfinder.getDisconnectedTiles(tile);
 
         for (TilemapTile t : disconnected) {
-            removeTile(t);
+            if (worldMap.isChained(t.getLayerId()))
+                removeTile(t);
         }
     }
 
@@ -147,7 +146,8 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
         List<TilemapTile> disconnected = pathfinder.getDisconnectedTiles(altered);
 
         for (TilemapTile t : disconnected) {
-            removeTile(t);
+            if (worldMap.isChained(t.getLayerId()))
+                removeTile(t);
         }
     }
 
