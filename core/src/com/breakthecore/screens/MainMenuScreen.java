@@ -68,7 +68,7 @@ public class MainMenuScreen extends ScreenBase {
         campaignScreen = new CampaignScreen(gameInstance);
         levelBuilderScreen = new LevelBuilderScreen(gameInstance);
         backgroundMusic = SoundManager.get().getSoundAsset("backgroundMusic");
-        backgroundMusic.loop();
+//        backgroundMusic.loop();
     }
 
     @Override
@@ -93,8 +93,6 @@ public class MainMenuScreen extends ScreenBase {
         rootStack.add(background);
         rootStack.add(uiMainMenu.getRoot());
         rootStack.add(uiMenuOverlay.getRoot());
-
-        ;
     }
 
     private void checkForLocalAccount() {
