@@ -29,9 +29,9 @@ public class RegularTile extends Tile implements Launchable, Matchable, Breakabl
 
         TilemapTile newTile = tmm.attachBall(ball.extractTile(), tileHit, sides);
         if (newTile != null) {
-            List<TilemapTile> altered = tmm.handleColorMatchesFor(newTile);
+            List<TilemapTile> matched = tmm.getColorMatches(newTile);
             if (pack.statsManager.isGameActive()) {
-                tmm.destroyDisconnectedTiles(altered);
+                tmm.destroyTiles(matched);
             }
         }
     }

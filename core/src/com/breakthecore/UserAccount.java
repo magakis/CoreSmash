@@ -69,10 +69,8 @@ public class UserAccount {
         return powerupsAvailable;
     }
 
-    @TempChange
     public int getUnlockedLevels() {
-        return 0;
-//        return unlockedLevels;
+        return unlockedLevels;
     }
 
     public String getUsername() {

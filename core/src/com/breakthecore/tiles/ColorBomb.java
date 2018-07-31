@@ -34,8 +34,7 @@ public class ColorBomb extends Tile implements Launchable {
                     if (tmTile == null ||
                             (tmTile.getX() == 0 && tmTile.getY() == 0)) continue;
                     if (tmTile.getTileID() == idToDestroy) {
-                        tmm.destroyDisconnectedTiles(tmTile);
-                        tmm.removeTile(tmTile);
+                        tmm.destroyTiles(tmTile);
                     }
                 }
             }

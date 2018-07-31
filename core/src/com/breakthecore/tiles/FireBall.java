@@ -5,14 +5,13 @@ import com.breakthecore.sound.SoundManager;
 import com.breakthecore.tilemap.Tilemap;
 import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tilemap.TilemapTile;
-import com.breakthecore.ui.UIUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class FireBall extends Tile implements Launchable {
     private SoundManager.SoundAsset explosionSound = SoundManager.get().getSoundAsset("bombExplosion");
-    private static List<TilemapTile> alteredTiles = new ArrayList<>();
+    private static List<TilemapTile> toDestroy = new ArrayList<>();
 
     FireBall(TileType type) {
         super(type);
@@ -28,24 +27,23 @@ public class FireBall extends Tile implements Launchable {
         int collidedTileX = tileHit.getX();
         int collidedTileY = tileHit.getY();
 
-        alteredTiles.clear();
+        toDestroy.clear();
 
         TilemapManager tmm = controller.getBehaviourPack().tilemapManager;
-        for (int y = collidedTileY - 2; y < collidedTileY + 3; ++y) {
-            for (int x = collidedTileX - 2; x < collidedTileX + 3; ++x) {
-                if (Tilemap.getTileDistance(x, y, collidedTileX, collidedTileY) < 2) {
+        for (int y = collidedTileY - 3; y < collidedTileY + 4; ++y) {
+            for (int x = collidedTileX - 3; x < collidedTileX + 4; ++x) {
+                if (Tilemap.getTileDistance(x, y, collidedTileX, collidedTileY) < 3) {
                     TilemapTile tmTile = tmm.getTilemapTile(tileHit.getLayerId(), x, y);
                     if (tmTile != null) {
-                        tmTile.addNeighboursToList(alteredTiles);
-                        tmm.removeTile(tmTile);
+                        toDestroy.add(tmTile);
                     }
                 }
             }
         }
 
-        if (controller.getBehaviourPack().statsManager.isGameActive()) {
-            tmm.destroyDisconnectedTiles(alteredTiles);
-        }
+//        if (controller.getBehaviourPack().statsManager.isGameActive()) {
+        tmm.destroyTiles(toDestroy);
+//        }
 
         explosionSound.play();
     }

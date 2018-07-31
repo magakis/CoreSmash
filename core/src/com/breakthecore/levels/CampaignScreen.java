@@ -22,7 +22,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
@@ -34,6 +33,7 @@ import com.breakthecore.RoundEndListener;
 import com.breakthecore.UserAccount;
 import com.breakthecore.levelbuilder.LevelListParser;
 import com.breakthecore.levelbuilder.LevelListParser.RegisteredLevel;
+import com.breakthecore.levels.CampaignArea.LevelButton;
 import com.breakthecore.managers.StatsManager;
 import com.breakthecore.screens.GameScreen;
 import com.breakthecore.screens.ScreenBase;
@@ -56,7 +56,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private UIOverlay uiOverlay;
     private Skin skin;
     private Stage stage;
-    private List<CampaignArea.LevelButton> levelButtons;
+    private List<LevelButton> levelButtons;
     private LevelListParser levelListParser;
     private Array<RegisteredLevel> levels;
     private Stack rootStack;
@@ -137,8 +137,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         rootStack.addActor(leftBar.root);
 
         int levelsUnlocked = gameInstance.getUserAccount().getUnlockedLevels();
-        for (int i = 0; i < levelsUnlocked && i < levelButtons.size(); ++i) {
-            levelButtons.get(i).setDisabled(false);
+        for (int i = levelsUnlocked; i < levelButtons.size(); ++i) {
+            levelButtons.get(i).setDisabled(true);
         }
 
         uiOverlay = new UIOverlay(uiOverlayRoot);
@@ -149,30 +149,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         stage.act();
         stage.draw();
     }
-
-//    private Container<WidgetGroup> createButtonGroup() {
-//        WidgetGroup grp = new WidgetGroup();
-//        levelButtons = new LevelWidget[15];
-//
-//        final int WIDTH = Gdx.graphics.getWidth();
-//        final int HEIGHT = Gdx.graphics.getHeight();
-//
-//        float ySpace = (HEIGHT > WIDTH ? HEIGHT : WIDTH) / 8f;
-//
-//        float x;
-//        float y;
-//        for (int i = 0; i < levelButtons.length; ++i) {
-//            x = WIDTH / 4 + ySpace * (float) Math.cos(i * Math.PI / 2);
-//            y = ySpace + i * ySpace;
-//            levelButtons[i] = new LevelWidget(i + 1, (int) x, (int) y);
-//            grp.addActor(levelButtons[i]);
-//        }
-//
-//        Container<WidgetGroup> container = new Container<>(grp);
-//        container.prefSize(WIDTH, ySpace + levelButtons.length * ySpace);
-//
-//        return container;
-//    }
 
     private void startCampaignLevel(int lvl, final List<Powerup> powerups) {
         searchRegisteredLevel.num = lvl;
@@ -223,6 +199,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         uiOverlay.updateValues();
         if (stats.isRoundWon()) {
             gameInstance.getUserAccount().addLotteryCoins(1);
+            int nextLevel = gameInstance.getUserAccount().getUnlockedLevels();
+            levelButtons.get(nextLevel - 1).setDisabled(false);
             Components.showToast("You've been rewarded 1x Lottery Key!", stage);
             uiOverlay.lblLotteryCoins.setText(String.valueOf(gameInstance.getUserAccount().getLotteryCoins()));
         }
@@ -232,52 +210,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     public void resize(int width, int height) {
         powerupPickDialog.hide();
         super.resize(width, height);
-    }
-
-    private class LevelWidget extends Container<TextButton> {
-        private int level;
-        private TextButton button;
-
-        public LevelWidget(int lvl, int x, int y) {
-            button = UIFactory.createTextButton(String.valueOf(lvl), skin, "levelButton");
-
-            setActor(button);
-            if (CoreSmash.DEBUG_TABLET) {
-                size(Value.percentWidth(.1f, rootStack));
-            } else {
-                size(Value.percentHeight(.1f, rootStack));
-            }
-
-            setPosition(x - getWidth() / 2, y - getHeight() / 2);
-
-            addListener(new LevelLauncher(lvl));
-            level = lvl;
-        }
-
-        public int getLevel() {
-            return level;
-        }
-
-        public boolean isDisabled() {
-            return button.isDisabled();
-        }
-
-        public void enable() {
-            button.setDisabled(false);
-        }
-
-        private class LevelLauncher extends ChangeListener {
-            private int m_lvl;
-
-            public LevelLauncher(int lvl) {
-                m_lvl = lvl;
-            }
-
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                powerupPickDialog.show(stage, m_lvl);
-            }
-        }
     }
 
     private class UILeftBar implements UIComponent {
@@ -559,7 +491,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             return tb;
         }
     }
-
 
     private static class Powerup {
         private PowerupType type;

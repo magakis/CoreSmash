@@ -8,7 +8,6 @@ import com.breakthecore.tilemap.TilemapManager;
 import com.breakthecore.tiles.MovingBall;
 import com.breakthecore.tiles.RegularTile;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -118,6 +117,7 @@ public class Launcher extends Observable {
             iter.remove();
         }
 
+        isLoadedWithSpecial = false;
         launcherCooldownTimer = 0;
         launcherCooldown = 0;
         launcherSize = 3;

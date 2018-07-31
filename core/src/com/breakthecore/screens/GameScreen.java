@@ -404,7 +404,9 @@ public class GameScreen extends ScreenBase implements Observer {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
                         if (statsManager.consumePowerup(btn.type, launcher)) {
-                            gameInstance.getUserAccount().consumePowerup(btn.type);
+                            if (!statsManager.isDebugEnabled()) {
+                                gameInstance.getUserAccount().consumePowerup(btn.type);
+                            }
                             int usagesLeft = statsManager.getPowerupUsages(btn.type);
                             if (usagesLeft == 0) {
                                 btn.setDisabled(true);

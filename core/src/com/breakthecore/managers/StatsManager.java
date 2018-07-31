@@ -6,7 +6,6 @@ import com.breakthecore.Launcher;
 import com.breakthecore.NotificationType;
 import com.breakthecore.Observable;
 import com.breakthecore.Observer;
-import com.breakthecore.tiles.TileType;
 import com.breakthecore.tiles.TileType.PowerupType;
 
 import java.util.Random;
@@ -17,6 +16,7 @@ public class StatsManager extends Observable implements Observer {
     private GameStats gameStats;
 
     private boolean isGameActive;
+    private boolean isDebugEnabled;
     private int ballsDestroyedThisFrame;
 
 
@@ -74,6 +74,7 @@ public class StatsManager extends Observable implements Observer {
         gameStats.reset();
 
         ballsDestroyedThisFrame = 0;
+        isDebugEnabled = false;
     }
 
     public boolean checkEndingConditions(MovingBallManager ballManager) {
@@ -98,6 +99,10 @@ public class StatsManager extends Observable implements Observer {
 
     public int getLevel() {
         return gameStats.level;
+    }
+
+    public void debug() {
+        isDebugEnabled = true;
     }
 
     public void setLevel(int lvl) {
@@ -191,6 +196,10 @@ public class StatsManager extends Observable implements Observer {
     public void setMoves(int moves) {
         gameStats.movesLeft = moves < 0 ? 0 : moves;
         gameStats.isMovesEnabled = moves != 0;
+    }
+
+    public boolean isDebugEnabled() {
+        return isDebugEnabled;
     }
 
     public boolean consumePowerup(PowerupType type, Launcher launcher) {

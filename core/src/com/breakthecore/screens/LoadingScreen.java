@@ -383,9 +383,9 @@ public class LoadingScreen extends ScreenBase {
 
         stb = new TextButton.TextButtonStyle();
         stb.up = skin.newDrawable("ButtonLevel", Color.WHITE);
-        stb.down = skin.newDrawable("ButtonLevel", Color.GRAY);
-        stb.disabled = skin.newDrawable("ButtonLevel", Color.DARK_GRAY);
-        stb.font = skin.getFont("h3o");
+        stb.down = skin.newDrawable("ButtonLevel", SlightGray);
+        stb.disabled = skin.newDrawable("ButtonLevel", Color.GRAY);
+        stb.font = skin.getFont("h4o");
         stb.fontColor = Color.WHITE;
         stb.disabledFontColor = Color.GRAY;
         skin.add("levelButton", stb);

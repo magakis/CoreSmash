@@ -55,7 +55,8 @@ abstract class CampaignArea {
         public LevelButton(int level, int x, int y, Skin skin, ChangeListener listener) {
             super(String.valueOf(level), skin, "levelButton");
             addListener(listener);
-            setSize(getStyle().font.getLineHeight() * 1.5f, getStyle().font.getLineHeight() * 1.5f);
+            addListener(com.breakthecore.ui.UIUtils.getButtonSoundListener());
+            setSize(getStyle().font.getLineHeight() * 2f, getStyle().font.getLineHeight() * 2f);
             setPosition(x, y);
             setName(String.valueOf(level));
         }

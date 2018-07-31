@@ -29,26 +29,40 @@ class TilemapPathfinder {
         };
     }
 
-    public List<TilemapTile> getDisconnectedTiles(List<TilemapTile> changed) {
+    public List<TilemapTile> getDestroyableTiles(List<TilemapTile> matched) {
         disconnected.clear();
-        altered.clear();
-        altered.addAll(changed);
+        TilemapTile centerTile = null;
 
-        for (TilemapTile origin : altered) {
-            if (disconnected.contains(origin)) continue;
-
-            if (!isConnected(origin)) {
-                disconnected.addAll(closed);
+        for (TilemapTile tile : matched) {
+            if (tile.getX() == 0 && tile.getY() == 0 && tile.getLayerId() == 0) {
+                centerTile = tile;
+                continue;
             }
+            addDisconnectedTilesFrom(tile);
+        }
+
+        if (centerTile != null) {
+            addDisconnectedTilesFrom(centerTile);
         }
 
         return disconnected;
     }
 
-    public List<TilemapTile> getDisconnectedTiles(TilemapTile destroyed) {
+    public List<TilemapTile> getDestroyableTiles(TilemapTile destroyed) {
         disconnected.clear();
+
+        addDisconnectedTilesFrom(destroyed);
+
+        return disconnected;
+    }
+
+    private void addDisconnectedTilesFrom(TilemapTile destroyed) {
+        if (disconnected.contains(destroyed)) return;
+
         altered.clear();
         disconnected.add(destroyed);
+
+        if (destroyed.getX() == 0 && destroyed.getY() == 0 && destroyed.getLayerId() == 0) return;
 
         for (Side side : Side.values()) {
             TilemapTile neighbour = destroyed.getNeighbour(side);
@@ -63,11 +77,14 @@ class TilemapPathfinder {
             if (disconnected.contains(origin)) continue;
 
             if (!isConnected(origin)) {
-                disconnected.addAll(closed);
+                for (TilemapTile tile : closed) {
+                    if (tile.getTile() instanceof Breakable) {
+                        disconnected.add(tile);
+                    }
+                }
             }
         }
 
-        return disconnected;
     }
 
     private boolean isConnected(TilemapTile tmTile) {
@@ -86,13 +103,16 @@ class TilemapPathfinder {
     private void addSurroundingTiles(TilemapTile tmTile) {
         opened.remove(tmTile);
         closed.add(tmTile);
+
         for (Side side : Side.values()) {
             TilemapTile neighbour = tmTile.getNeighbour(side);
             if (neighbour != null &&
-                    (!closed.contains(neighbour) && !opened.contains(neighbour) && !disconnected.contains(neighbour)) &&
-                    (neighbour.getTile().getTileType().getMajorType() == TileType.MajorType.REGULAR || neighbour.getTile() instanceof Breakable)) {
+                    !closed.contains(neighbour) &&
+                    !opened.contains(neighbour) &&
+                    !disconnected.contains(neighbour)) {
                 opened.add(neighbour);
             }
         }
+
     }
 }

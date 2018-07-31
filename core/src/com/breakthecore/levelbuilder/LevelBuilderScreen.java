@@ -338,6 +338,11 @@ public class LevelBuilderScreen extends ScreenBase {
                 @Override
                 public void initialize(GameController gameScreenController) {
                     gameScreenController.loadLevelMap("_editor_");
+                    StatsManager stats = gameScreenController.getBehaviourPack().statsManager;
+                    stats.debug();
+                    for (TileType.PowerupType type : TileType.PowerupType.values()) {
+                        stats.enablePowerup(type, 10);
+                    }
                 }
 
                 @Override

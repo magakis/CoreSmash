@@ -133,27 +133,38 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
         throw new RuntimeException("No empty side on collided tile");
     }
 
-    public void destroyDisconnectedTiles(TilemapTile tile) {
-        List<TilemapTile> disconnected = pathfinder.getDisconnectedTiles(tile);
+    public void destroyTiles(TilemapTile tile) {
+        assert tile != null;
 
-        for (TilemapTile t : disconnected) {
-            if (worldMap.isChained(t.getLayerId()))
+        if (worldMap.isChained(tile.getLayerId())) {
+            List<TilemapTile> destroyables = pathfinder.getDestroyableTiles(tile);
+            for (TilemapTile t : destroyables) {
                 removeTile(t);
+            }
+        } else {
+            removeTile(tile);
         }
     }
 
-    public void destroyDisconnectedTiles(List<TilemapTile> altered) {
-        List<TilemapTile> disconnected = pathfinder.getDisconnectedTiles(altered);
+    /* Assumes that all destroyed tiles come from the *same* layer! */
+    public void destroyTiles(List<TilemapTile> tiles) {
+        if (tiles.size() == 0) return;
 
-        for (TilemapTile t : disconnected) {
-            if (worldMap.isChained(t.getLayerId()))
+        if (worldMap.isChained(tiles.get(0).getLayerId())) {
+            List<TilemapTile> destroyables = pathfinder.getDestroyableTiles(tiles);
+            for (TilemapTile t : destroyables) {
                 removeTile(t);
+            }
+        } else {
+            for (TilemapTile t : tiles) {
+                removeTile(t);
+            }
         }
     }
 
-    public List<TilemapTile> handleColorMatchesFor(TilemapTile newTile) {
-        assert newTile != null;
-        ArrayList<TilemapTile> match = match3.getColorMatchesFromTile(newTile);
+    public List<TilemapTile> getColorMatches(TilemapTile tile) {
+        assert tile != null;
+        ArrayList<TilemapTile> match = match3.getColorMatchesFromTile(tile);
 
         if (match.size() < 3) {
             if (match.size() == 1) {
@@ -161,19 +172,32 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
             }
             return Collections.EMPTY_LIST;
         }
-
-        alteredTiles.clear();
-        for (TilemapTile t : match) {
-            for (Side side : Side.values()) {
-                TilemapTile tmTile = t.getNeighbour(side);
-                if (tmTile != null) {
-                    alteredTiles.add(tmTile);
-                }
-            }
-            removeTile(t);
-        }
-        return alteredTiles;
+        return match;
     }
+
+//    public List<TilemapTile> handleColorMatchesFor(TilemapTile newTile) {
+//        assert newTile != null;
+//        ArrayList<TilemapTile> match = match3.getColorMatchesFromTile(newTile);
+//
+//        if (match.size() < 3) {
+//            if (match.size() == 1) {
+//                notifyObservers(NotificationType.NO_COLOR_MATCH, null);
+//            }
+//            return Collections.EMPTY_LIST;
+//        }
+//
+//        alteredTiles.clear();
+//        for (TilemapTile t : match) {
+//            for (Side side : Side.values()) {
+//                TilemapTile tmTile = t.getNeighbour(side);
+//                if (tmTile != null) {
+//                    alteredTiles.add(tmTile);
+//                }
+//            }
+//            removeTile(t);
+//        }
+//        return alteredTiles;
+//    }
 
     //////////////////|            |//////////////////
     public TilemapBuilder newLayer() {
