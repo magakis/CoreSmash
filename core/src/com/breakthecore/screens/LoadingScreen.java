@@ -139,6 +139,10 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("ButtonCancel.png");
         loadTexture("ButtonStart.png");
         loadTexture("ButtonLevel.png");
+        loadTexture("ButtonOpen.png");
+        loadTexture("ButtonClose.png");
+        loadTexture("ButtonClaim.png");
+        loadTexture("ButtonRetry.png");
         loadTexture("ButtonEditor.png");
         loadTexture("MenuBackground.png");
         loadTexture("CampaignBackground.png");
@@ -308,6 +312,10 @@ public class LoadingScreen extends ScreenBase {
         skin.add("gameScreenTopRound", am.get("UIGameScreenTopRound.png"));
         skin.add("ButtonCancel", am.get("ButtonCancel.png"));
         skin.add("ButtonStart", am.get("ButtonStart.png"));
+        skin.add("ButtonOpen", am.get("ButtonOpen.png"));
+        skin.add("ButtonClose", am.get("ButtonClose.png"));
+        skin.add("ButtonClaim", am.get("ButtonClaim.png"));
+        skin.add("ButtonRetry", am.get("ButtonRetry.png"));
         skin.add("ButtonLevel", am.get("ButtonLevel.png"));
         skin.add("MenuBackground", am.get("MenuBackground.png"));
         skin.add("CampaignBackground", am.get("CampaignBackground.png"));
@@ -408,27 +416,40 @@ public class LoadingScreen extends ScreenBase {
 
         //ImageButton
         ImageButton.ImageButtonStyle imgbs = new ImageButton.ImageButtonStyle();
-        imgbs.up = skin.newDrawable("boxSmall", 0, 0, 0, 0);
-        imgbs.down = skin.newDrawable("boxSmall", Color.DARK_GRAY);
-        imgbs.imageUp = skin.getDrawable("cardBack");
-        skin.add("lotteryCard", imgbs);
-
-        imgbs = new ImageButton.ImageButtonStyle();
         imgbs.imageUp = skin.getDrawable("ButtonStart");
         imgbs.imageDown = skin.newDrawable("ButtonStart", SlightGray);
+        imgbs.imageDisabled = skin.newDrawable("ButtonStart", Color.DARK_GRAY);
         skin.add("ButtonStart", imgbs);
 
         imgbs = new ImageButton.ImageButtonStyle();
         imgbs.imageUp = skin.getDrawable("ButtonCancel");
         imgbs.imageDown = skin.newDrawable("ButtonCancel", SlightGray);
+        imgbs.imageDisabled = skin.newDrawable("ButtonCancel", Color.DARK_GRAY);
         skin.add("ButtonCancel", imgbs);
 
-        // ButtonStyles
-        Button.ButtonStyle bs = new Button.ButtonStyle();
-        bs.up = skin.getDrawable("boxSmall");
-        bs.down = skin.newDrawable("boxSmall", Color.GRAY);
-        bs.disabled = skin.newDrawable("boxSmall", Color.DARK_GRAY);
-        skin.add("default", bs);
+        imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.imageUp = skin.getDrawable("ButtonClose");
+        imgbs.imageDown = skin.newDrawable("ButtonClose", SlightGray);
+        imgbs.imageDisabled = skin.newDrawable("ButtonClose", Color.DARK_GRAY);
+        skin.add("ButtonClose", imgbs);
+
+        imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.imageUp = skin.getDrawable("ButtonRetry");
+        imgbs.imageDown = skin.newDrawable("ButtonRetry", Color.DARK_GRAY);
+        imgbs.imageDisabled = skin.newDrawable("ButtonRetry", Color.DARK_GRAY);
+        skin.add("ButtonRetry", imgbs);
+
+        imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.imageUp = skin.getDrawable("ButtonClaim");
+        imgbs.imageDown = skin.newDrawable("ButtonClaim", SlightGray);
+        imgbs.imageDisabled = skin.newDrawable("ButtonClaim", Color.DARK_GRAY);
+        skin.add("ButtonClaim", imgbs);
+
+        imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.imageUp = skin.getDrawable("ButtonOpen");
+        imgbs.imageDown = skin.newDrawable("ButtonOpen", SlightGray);
+        imgbs.imageDisabled = skin.newDrawable("ButtonOpen", Color.DARK_GRAY);
+        skin.add("ButtonOpen", imgbs);
 
         // SliderStyles
         Slider.SliderStyle ss = new Slider.SliderStyle();
@@ -462,6 +483,18 @@ public class LoadingScreen extends ScreenBase {
         ls.font = skin.getFont("h5");
         skin.add("default", ls);
 
+        // ButtonStyles
+        Button.ButtonStyle bs = new Button.ButtonStyle();
+        bs.up = skin.getDrawable("boxSmall");
+        bs.down = skin.newDrawable("boxSmall", Color.GRAY);
+        bs.disabled = skin.newDrawable("boxSmall", Color.DARK_GRAY);
+        skin.add("default", bs);
+
+        bs = new Button.ButtonStyle();
+        bs.up = skin.newDrawable("boxSmall", 0, 0, 0, 0);
+        bs.down = skin.newDrawable("boxSmall", Color.GRAY);
+        bs.disabled = skin.newDrawable("boxSmall", 0, 0, 0, 0);
+        skin.add("TransWithHighlight", bs);
 
         // WindowStyles
         Window.WindowStyle ws = new Window.WindowStyle();

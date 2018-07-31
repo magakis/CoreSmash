@@ -11,11 +11,11 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
@@ -30,9 +30,10 @@ public class LotteryDialog extends Dialog {
     final private UserAccount user;
 
     private CardButton[] cardButtons;
-    private TextButton btnClaim, btnBegin, btnExit, btnRetry;
+    private ImageButton btnClose, btnOpen, btnClaim, btnRetry;
     private Lottery lottery;
     private Reward reward;
+
 
     public LotteryDialog(Skin sk, UserAccount userAccount) {
         super("", sk, "PickPowerUpDialog");
@@ -41,8 +42,7 @@ public class LotteryDialog extends Dialog {
         lottery = new Lottery();
         reward = new Reward();
 
-        btnClaim = UIFactory.createTextButton("Claim Reward!", skin, "dialogButton");
-//        btnClaim.getLabelCell().pad(Value.percentHeight(.5f, btnClaim.getLabel()));
+        btnClaim = UIFactory.createImageButton(skin, "ButtonClaim");
         btnClaim.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -51,9 +51,8 @@ public class LotteryDialog extends Dialog {
             }
         });
 
-        btnBegin = UIFactory.createTextButton("Start!", skin, "dialogButton");
-//        btnBegin.getLabelCell().pad(Value.percentHeight(.5f, btnBegin.getLabel()));
-        btnBegin.addListener(new ChangeListener() {
+        btnOpen = UIFactory.createImageButton(skin, "ButtonOpen");
+        btnOpen.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (user.consumeLotteryCoin()) {
@@ -68,25 +67,24 @@ public class LotteryDialog extends Dialog {
             }
         });
 
-        btnExit = UIFactory.createTextButton("Cancel", skin, "dialogButton");
-//        btnExit.getLabelCell().pad(Value.percentHeight(.5f, btnExit.getLabel()));
-        btnExit.addListener(new ChangeListener() {
+        btnClose = UIFactory.createImageButton(skin, "ButtonClose");
+        btnClose.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 hide();
             }
         });
 
-        btnRetry = UIFactory.createTextButton("Try Again!", skin, "dialogButton");
-//        btnRetry.getLabelCell().pad(Value.percentHeight(.5f, btnRetry.getLabel()));
+        btnRetry = UIFactory.createImageButton(skin, "ButtonRetry");
         btnRetry.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 result(reward);
                 restart();
-                btnBegin.setChecked(!btnBegin.isChecked());
+                btnOpen.setChecked(!btnOpen.isChecked()); // trigger ChangeListener of button
             }
         });
+
 
         cardButtons = new CardButton[3];
         for (int i = 0; i < cardButtons.length; ++i) {
@@ -121,9 +119,8 @@ public class LotteryDialog extends Dialog {
                             , Actions.run(new Runnable() {
                                 @Override
                                 public void run() {
-                                    //.pad(5 * Gdx.graphics.getDensity())
-                                    getButtonTable().add(btnClaim);
-                                    getButtonTable().add(btnRetry);
+                                    showImageButton(btnClaim);
+                                    showImageButton(btnRetry);
                                     btnRetry.setDisabled(user.getLotteryCoins() <= 0);
                                     pack();
                                 }
@@ -134,12 +131,8 @@ public class LotteryDialog extends Dialog {
         }
 
         Table contents = getContentTable();
-        contents.pad(5 * Gdx.graphics.getDensity());
-        contents.padBottom(0);
-
         for (CardButton ib : cardButtons) {
-            contents.add(ib).pad(5 * Gdx.graphics.getDensity()).size(Value.percentWidth(.25f, UIUtils.getScreenActor(ib)), Value.percentWidth(ib.heightToWidthRatio * .25f, UIUtils.getScreenActor(ib)));
-            ib.pack();
+            contents.add(ib).space(5 * Gdx.graphics.getDensity()).size(Value.percentWidth(.25f, UIUtils.getScreenActor(ib)), Value.percentWidth(ib.heightToWidthRatio * .25f, UIUtils.getScreenActor(ib)));
         }
 
         setMovable(false);
@@ -155,9 +148,9 @@ public class LotteryDialog extends Dialog {
             }
         });
 
-        getButtonTable().padBottom(4 * Gdx.graphics.getDensity());
-        pad(10 * Gdx.graphics.getDensity());
+        pad(15 * Gdx.graphics.getDensity());
     }
+
 
     @Override
     public Dialog show(Stage stage) {
@@ -170,13 +163,17 @@ public class LotteryDialog extends Dialog {
             btn.setDisabled(true);
             btn.hideReward();
         }
-        Table buttons = getButtonTable();
-        buttons.clearChildren();
-        buttons.add(btnBegin);
-        buttons.add(btnExit);
-        btnBegin.setDisabled(user.getLotteryCoins() <= 0);
+        getButtonTable().clearChildren();
+        showImageButton(btnOpen);
+        showImageButton(btnClose);
+        btnOpen.setDisabled(user.getLotteryCoins() <= 0);
         reward.reset();
-//        pack();
+    }
+
+    private void showImageButton(ImageButton button) {
+        float ratio = 0.25f;
+        Table table = getButtonTable();
+        table.add(button).height(getContentTable().getPrefHeight() * ratio).width(UIUtils.getWidthFor(button.getImage().getDrawable(), getContentTable().getPrefHeight() * ratio));
     }
 
     public static class Reward {
@@ -211,17 +208,17 @@ public class LotteryDialog extends Dialog {
     }
 
     private static class CardButton extends Button {
-        Drawable disabledCardback;
-        Drawable cardBack;
+        private Drawable disabledCardback;
+        private Drawable cardBack;
 
-        Image imgBackground;
-        Image imgReward;
-        Image shade;
-        Label lblReward;
-        float heightToWidthRatio;
+        private Image imgBackground;
+        private Image imgReward;
+        private Image shade;
+        private Label lblReward;
+        private float heightToWidthRatio;
 
         CardButton(Skin skin) {
-            super(skin);
+            super(skin, "TransWithHighlight");
             imgReward = new Image();
 
             cardBack = skin.getDrawable("cardBack");

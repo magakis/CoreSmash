@@ -2,8 +2,6 @@ package com.breakthecore.ui;
 
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
@@ -71,6 +69,11 @@ public class UIUtils {
 
     public static float getHeightFor(Drawable drawable, float size) {
         float ratio = drawable.getMinHeight() / drawable.getMinWidth();
+        return ratio * size;
+    }
+
+    public static float getWidthFor(Drawable drawable, float size) {
+        float ratio = drawable.getMinWidth() / drawable.getMinHeight();
         return ratio * size;
     }
 
