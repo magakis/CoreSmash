@@ -17,6 +17,18 @@ import com.google.android.gms.ads.reward.RewardItem;
 import com.google.android.gms.ads.reward.RewardedVideoAd;
 import com.google.android.gms.ads.reward.RewardedVideoAdListener;
 
+/* Important information to avoid confusion:
+ *      First of all this class is tied with the Android platform. With that in mind it is really
+ *  important to understand that there will be _TWO_ threads that will be working with this class.
+ *  It is the Android's Main Thread or else the 'UI Thread' and then there is the Games' Thread or the LibGdx Thread.
+ *  All the Android UI stuff (including ALL the ad types) are in the Android's thread and all the triggers
+ *  for the ads to be shown are in the Game's thread. The Game's thread _CANNOT_ directly alter the Android UI
+ *  that was initialized and is managed by the Android thread even though it *does* have access to them through this
+ *  class. In order for the two threads to communicate, they use a Handler that is initialized in the Android's thread
+ *  which works similar to the Windows loop. The Game's thread has to send messages or runnables that get queued
+ *  in the Android thread and get executed on that thread.
+ */
+
 public final class AdmobManager implements AdManager {
     private final int ADSHOW = 1;
     private final int ADHIDE = 0;
@@ -27,7 +39,6 @@ public final class AdmobManager implements AdManager {
     private ProgressDialog dialog;
     private RewardedVideoAd rewardedVideoAd;
     private Handler handler;
-    private AndroidApplication application;
 
     public AdmobManager(String id) {
         this.admobId = id;
@@ -49,7 +60,6 @@ public final class AdmobManager implements AdManager {
 
     public void init(final AndroidApplication context, final RelativeLayout layout) {
         MobileAds.initialize(context, "ca-app-pub-3940256099942544~3347511713");
-        application = context;
         rewardedVideoAd = MobileAds.getRewardedVideoAdInstance(context);
 
         dialog = new ProgressDialog(context);
@@ -62,10 +72,10 @@ public final class AdmobManager implements AdManager {
         adView.setAdSize(AdSize.BANNER);
         adView.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
         adView.setAdListener(new AdListener() {
+
             @Override
             public void onAdLoaded() {
-                adView.invalidate();
-                adView.setVisibility(View.VISIBLE);
+                adView.setVisibility(View.GONE);
                 adView.requestLayout();
                 Toast.makeText(context, "AdLoaded!", Toast.LENGTH_SHORT).show();
             }
@@ -82,13 +92,7 @@ public final class AdmobManager implements AdManager {
 
         adParams.addRule(RelativeLayout.CENTER_HORIZONTAL);// Shows Ads on Center Bottom
         adParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-        if (adView.getParent() == null) {
-//                    layout.removeView(adView);
-            layout.addView(adView, adParams);
-        }
-
-        adView.setVisibility(View.VISIBLE);
-
+        layout.addView(adView, adParams);
     }
 
     @Override
@@ -98,7 +102,8 @@ public final class AdmobManager implements AdManager {
 
     @Override
     public void showAdForReward(final AdRewardListener listener) {
-        application.runOnUiThread(new Runnable() {
+        toggle();
+        handler.postAtFrontOfQueue(new Runnable() {
             @Override
             public void run() {
                 if (rewardedVideoAd.isLoaded()) {
