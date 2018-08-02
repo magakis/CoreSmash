@@ -4,12 +4,13 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.ScreenAdapter;
+import com.coresmash.CoreSmash;
 
 public abstract class ScreenBase extends ScreenAdapter {
-    protected com.coresmash.CoreSmash gameInstance;
+    protected CoreSmash gameInstance;
     protected InputMultiplexer screenInputMultiplexer;
 
-    public ScreenBase(com.coresmash.CoreSmash game) {
+    public ScreenBase(CoreSmash game) {
         gameInstance = game;
         screenInputMultiplexer = new InputMultiplexer();
     }

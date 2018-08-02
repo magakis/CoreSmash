@@ -27,7 +27,15 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.coresmash.AdManager;
+import com.coresmash.CoreSmash;
+import com.coresmash.RoundEndListener;
+import com.coresmash.levelbuilder.LevelListParser;
+import com.coresmash.levelbuilder.LevelListParser.RegisteredLevel;
 import com.coresmash.levels.CampaignArea.LevelButton;
+import com.coresmash.managers.StatsManager.GameStats;
+import com.coresmash.screens.GameScreen;
+import com.coresmash.screens.ScreenBase;
 import com.coresmash.tiles.TileType.PowerupType;
 import com.coresmash.ui.Components;
 import com.coresmash.ui.LotteryDialog;
@@ -39,26 +47,26 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class CampaignScreen extends com.coresmash.screens.ScreenBase implements com.coresmash.RoundEndListener {
-    private com.coresmash.screens.GameScreen gameScreen;
+public class CampaignScreen extends ScreenBase implements RoundEndListener {
+    private GameScreen gameScreen;
     private PickPowerUpsDialog powerupPickDialog;
     private LotteryDialog lotteryDialog;
     private UIOverlay uiOverlay;
     private Skin skin;
     private Stage stage;
     private List<LevelButton> levelButtons;
-    private com.coresmash.levelbuilder.LevelListParser levelListParser;
-    private Array<com.coresmash.levelbuilder.LevelListParser.RegisteredLevel> levels;
+    private LevelListParser levelListParser;
+    private Array<RegisteredLevel> levels;
     private Stack rootStack;
 
-    private com.coresmash.levelbuilder.LevelListParser.RegisteredLevel searchRegisteredLevel;
+    private RegisteredLevel searchRegisteredLevel;
 
-    public CampaignScreen(com.coresmash.CoreSmash game) {
+    public CampaignScreen(CoreSmash game) {
         super(game);
         skin = game.getSkin();
         stage = new Stage(game.getUIViewport());
 
-        levelListParser = new com.coresmash.levelbuilder.LevelListParser();
+        levelListParser = new LevelListParser();
         levels = new Array<>();
 
         powerupPickDialog = new PickPowerUpsDialog(skin, gameInstance.getUserAccount().getSpecialBallsAvailable());
@@ -74,7 +82,7 @@ public class CampaignScreen extends com.coresmash.screens.ScreenBase implements 
             }
         };
 
-        searchRegisteredLevel = new com.coresmash.levelbuilder.LevelListParser.RegisteredLevel(0, "");
+        searchRegisteredLevel = new RegisteredLevel(0, "");
 
         screenInputMultiplexer.addProcessor(stage);
         screenInputMultiplexer.addProcessor(new InputAdapter(){
@@ -89,7 +97,7 @@ public class CampaignScreen extends com.coresmash.screens.ScreenBase implements 
 
         });
 
-        gameScreen = new com.coresmash.screens.GameScreen(gameInstance);
+        gameScreen = new GameScreen(gameInstance);
 
         rootStack = new Stack();
         rootStack.setFillParent(true);
@@ -142,11 +150,11 @@ public class CampaignScreen extends com.coresmash.screens.ScreenBase implements 
 
     private void startCampaignLevel(int lvl, final List<Powerup> powerups) {
         searchRegisteredLevel.num = lvl;
-        int index = Arrays.binarySearch(levels.toArray(), searchRegisteredLevel, com.coresmash.levelbuilder.LevelListParser.compLevel);
+        int index = Arrays.binarySearch(levels.toArray(), searchRegisteredLevel, LevelListParser.compLevel);
 
         if (index < 0) return;
 
-        final com.coresmash.levelbuilder.LevelListParser.RegisteredLevel level = levels.get(index);
+        final RegisteredLevel level = levels.get(index);
 
         gameScreen.deployLevel(new com.coresmash.levels.CampaignLevel(lvl, gameInstance.getUserAccount(), this) {
             @Override
@@ -174,7 +182,7 @@ public class CampaignScreen extends com.coresmash.screens.ScreenBase implements 
     public void show() {
         levels.clear();
         levelListParser.parseAssignedLevels(levels);
-        levels.sort(com.coresmash.levelbuilder.LevelListParser.compLevel);
+        levels.sort(LevelListParser.compLevel);
         super.show();
     }
 
@@ -184,7 +192,7 @@ public class CampaignScreen extends com.coresmash.screens.ScreenBase implements 
     }
 
     @Override
-    public void onRoundEnded(com.coresmash.managers.StatsManager.GameStats stats) {
+    public void onRoundEnded(GameStats stats) {
         gameInstance.getUserAccount().saveStats(stats);
         uiOverlay.updateValues();
         if (stats.isRoundWon()) {
@@ -254,14 +262,15 @@ public class CampaignScreen extends com.coresmash.screens.ScreenBase implements 
             btnUser.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-//                    UserAccount acc = gameInstance.getUserAccount();
-//                    for (PowerupType pr : PowerupType.values()) {
-//                        acc.addPowerup(pr, 5);
-//                    }
-//                    Components.showToast("Added a 'few' powerups...", stage);
-                    //                    lotteryDialog.show(stage);
+                    gameInstance.getAdManager().showAdForReward(new AdManager.AdRewardListener() {
+                        @Override
+                        public void reward(String type, int amount) {
+                            gameInstance.getUserAccount().addLotteryCoins(1);
+                            uiOverlay.lblLotteryCoins.setText(String.valueOf(gameInstance.getUserAccount().getLotteryCoins()));
+                            Components.showToast("Earned x1 Lottery Coin!", stage);
+                        }
+                    });
                 }
-
             });
 
             ProgressBar.ProgressBarStyle pbStyle = new ProgressBar.ProgressBarStyle();
