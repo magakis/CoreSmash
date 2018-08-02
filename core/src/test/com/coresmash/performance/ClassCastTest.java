@@ -1,8 +1,7 @@
 package test.com.coresmash.performance;
 
-import com.breakthecore.screens.LoadingScreen;
-import com.breakthecore.tiles.Tile;
-import com.breakthecore.tiles.TileFactory;
+import com.coresmash.tiles.Tile;
+import com.coresmash.tiles.TileFactory;
 
 import org.junit.BeforeClass;
 import org.junit.Test;

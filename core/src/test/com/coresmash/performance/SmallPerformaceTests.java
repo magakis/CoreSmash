@@ -1,7 +1,5 @@
 package test.com.coresmash.performance;
 
-import com.breakthecore.screens.LoadingScreen;
-
 import junit.framework.TestCase;
 
 @Deprecated //BROKEN

@@ -1,6 +1,6 @@
 android {
     buildToolsVersion '27.0.3'
-    compileSdkVersion 20
+    compileSdkVersion 24
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
@@ -76,7 +76,7 @@ task run(type: Exec) {
     }
 
     def adb = path + "/platform-tools/adb"
-    commandLine "$adb", 'shell', 'am', 'start', '-n', 'com.breakthecore/com.breakthecore.AndroidLauncher'
+    commandLine "$adb", 'shell', 'am', 'start', '-n', 'com.breakthecore/AndroidLauncher'
 }
 // sets up the Android Eclipse project, using the old Ant based build.
 eclipse {
