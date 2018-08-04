@@ -30,6 +30,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.coresmash.AdManager;
 import com.coresmash.CoreSmash;
 import com.coresmash.RoundEndListener;
+import com.coresmash.UserAccount;
 import com.coresmash.levelbuilder.LevelListParser;
 import com.coresmash.levelbuilder.LevelListParser.RegisteredLevel;
 import com.coresmash.levels.CampaignArea.LevelButton;
@@ -46,6 +47,7 @@ import com.coresmash.ui.UIUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private GameScreen gameScreen;
@@ -57,6 +59,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private List<LevelButton> levelButtons;
     private LevelListParser levelListParser;
     private Array<RegisteredLevel> levels;
+    private RewardsPerLevelManager rewardsManager;
     private Stack rootStack;
 
     private RegisteredLevel searchRegisteredLevel;
@@ -64,6 +67,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     public CampaignScreen(CoreSmash game) {
         super(game);
         skin = game.getSkin();
+        rewardsManager = new RewardsPerLevelManager();
         stage = new Stage(game.getUIViewport());
 
         levelListParser = new LevelListParser();
@@ -161,7 +165,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             public void initialize(com.coresmash.GameController controller) {
                 controller.loadLevelMap(level.name);
                 com.coresmash.managers.StatsManager statsManager = controller.getBehaviourPack().statsManager;
-                statsManager.setLevel(level.num);
+                statsManager.newGame(level.num, gameInstance.getUserAccount().getUnlockedLevels());
                 for (Powerup powerup : powerups) {
                     statsManager.enablePowerup(powerup.type, powerup.count);
                 }
@@ -196,11 +200,12 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         gameInstance.getUserAccount().saveStats(stats);
         uiOverlay.updateValues();
         if (stats.isRoundWon()) {
-            gameInstance.getUserAccount().addLotteryCoins(1);
-            int nextLevel = gameInstance.getUserAccount().getUnlockedLevels();
-            levelButtons.get(nextLevel - 1).setDisabled(false);
-            Components.showToast("You've been rewarded 1x Lottery Key!", stage);
-            uiOverlay.lblLotteryCoins.setText(String.valueOf(gameInstance.getUserAccount().getLotteryCoins()));
+            if (stats.isLevelUnlocked()) {
+                int nextLevel = stats.getUnlockedLevel() + 1;
+                rewardsManager.giveRewardForLevel(nextLevel, gameInstance.getUserAccount(), stage);
+                levelButtons.get(nextLevel - 1).setDisabled(false);
+                uiOverlay.lblLotteryCoins.setText(String.valueOf(gameInstance.getUserAccount().getLotteryCoins()));
+            }
         }
     }
 
@@ -345,14 +350,26 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             lblExpForLevel.setText(String.valueOf(user.getExpForNextLevel()));
             pbAccountExp.setRange(0, user.getExpForNextLevel());
             pbAccountExp.setValue(user.getXPProgress());
-            if (levelButtons.get(user.getUnlockedLevels()).isDisabled()) {
-                levelButtons.get(user.getUnlockedLevels()).setDisabled(false);
-            }
         }
 
         @Override
         public Group getRoot() {
             return root;
+        }
+    }
+
+    private static class RewardsPerLevelManager {
+        private Random rand;
+
+        public RewardsPerLevelManager() {
+            rand = new Random();
+        }
+
+        public void giveRewardForLevel(int level, UserAccount account, Stage stage) {
+            if (rand.nextBoolean()) {
+                account.addLotteryCoins(1);
+                Components.showToast("You were rewarded 1x Lottery key for your incredible victory!", stage);
+            }
         }
     }
 
