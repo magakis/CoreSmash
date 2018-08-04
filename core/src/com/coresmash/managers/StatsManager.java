@@ -1,12 +1,15 @@
 package com.coresmash.managers;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Preferences;
+import com.coresmash.Launcher;
+import com.coresmash.NotificationType;
+import com.coresmash.Observable;
+import com.coresmash.Observer;
 import com.coresmash.tiles.TileType.PowerupType;
 
 import java.util.Random;
 
-public class StatsManager extends com.coresmash.Observable implements com.coresmash.Observer {
+public class StatsManager extends Observable implements Observer {
     private Random rand = new Random();
     private PowerupCase powerupCase;
     private GameStats gameStats;
@@ -21,7 +24,18 @@ public class StatsManager extends com.coresmash.Observable implements com.coresm
         gameStats = new GameStats();
     }
 
+    public void newGame(int level, int unlockedLevel) {
+        reset();
+        gameStats.activeLevel = level;
+        gameStats.unlockedLevel = unlockedLevel;
+
+        gameStats.targetScore = Gdx.app.getPreferences("account").getInteger("level" + level);
+    }
+
     public void start() {
+        if ((gameStats.activeLevel == -1 || gameStats.unlockedLevel == -1) && !isDebugEnabled)
+            throw new RuntimeException("Game not initialized properly (Level:" + gameStats.activeLevel + ", Unlocked:" + gameStats.unlockedLevel + ")");
+
         isGameActive = true;
     }
 
@@ -50,13 +64,13 @@ public class StatsManager extends com.coresmash.Observable implements com.coresm
             }
             scoreGained = (ballsDestroyedThisFrame * multiplier);
             gameStats.totalScore += scoreGained;
-            notifyObservers(com.coresmash.NotificationType.NOTIFICATION_TYPE_SCORE_INCREMENTED, scoreGained);
+            notifyObservers(NotificationType.NOTIFICATION_TYPE_SCORE_INCREMENTED, scoreGained);
 
             if (gameStats.isLivesEnabled) {
                 float chanceToGainLife = ((ballsDestroyedThisFrame * ballsDestroyedThisFrame) / 9.f) / 100.f; // random algorithm I came up with
                 if (rand.nextFloat() < chanceToGainLife) {
                     ++gameStats.livesLeft;
-                    notifyObservers(com.coresmash.NotificationType.NOTIFICATION_TYPE_LIVES_CHANGED, null);
+                    notifyObservers(NotificationType.NOTIFICATION_TYPE_LIVES_CHANGED, null);
                 }
             }
 
@@ -73,7 +87,7 @@ public class StatsManager extends com.coresmash.Observable implements com.coresm
         isDebugEnabled = false;
     }
 
-    public boolean checkEndingConditions(com.coresmash.managers.MovingBallManager ballManager) {
+    public boolean checkEndingConditions(MovingBallManager ballManager) {
         if (!isGameActive) {
             return true;
         }
@@ -94,17 +108,11 @@ public class StatsManager extends com.coresmash.Observable implements com.coresm
     }
 
     public int getLevel() {
-        return gameStats.level;
+        return gameStats.activeLevel;
     }
 
     public void debug() {
         isDebugEnabled = true;
-    }
-
-    public void setLevel(int lvl) {
-        gameStats.level = lvl;
-        Preferences prefs = Gdx.app.getPreferences("account");
-        gameStats.targetScore = prefs.getInteger("level" + lvl, 0);
     }
 
     public boolean getRoundOutcome() {
@@ -175,7 +183,7 @@ public class StatsManager extends com.coresmash.Observable implements com.coresm
     public void loseLife() {
         if (gameStats.isLivesEnabled) {
             --gameStats.livesLeft;
-            notifyObservers(com.coresmash.NotificationType.NOTIFICATION_TYPE_LIVES_CHANGED, null);
+            notifyObservers(NotificationType.NOTIFICATION_TYPE_LIVES_CHANGED, null);
         }
     }
 
@@ -198,7 +206,7 @@ public class StatsManager extends com.coresmash.Observable implements com.coresm
         return isDebugEnabled;
     }
 
-    public boolean consumePowerup(PowerupType type, com.coresmash.Launcher launcher) {
+    public boolean consumePowerup(PowerupType type, Launcher launcher) {
         if (!launcher.isLoadedWithSpecial()) {
             int id = powerupCase.consumePowerup(type);
             launcher.insertSpecialTile(id);
@@ -208,7 +216,7 @@ public class StatsManager extends com.coresmash.Observable implements com.coresm
     }
 
     @Override
-    public void onNotify(com.coresmash.NotificationType type, Object ob) {
+    public void onNotify(NotificationType type, Object ob) {
         switch (type) {
             case NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED:
                 gameStats.isRoundWon = true;
@@ -222,16 +230,16 @@ public class StatsManager extends com.coresmash.Observable implements com.coresm
             case NO_COLOR_MATCH:
                 if (gameStats.isLivesEnabled) {
                     --gameStats.livesLeft;
-                    notifyObservers(com.coresmash.NotificationType.NOTIFICATION_TYPE_LIVES_CHANGED, null);
+                    notifyObservers(NotificationType.NOTIFICATION_TYPE_LIVES_CHANGED, null);
                 }
                 break;
 
             case BALL_LAUNCHED:
                 if (gameStats.isMovesEnabled) {
                     --gameStats.movesLeft;
-                    notifyObservers(com.coresmash.NotificationType.MOVES_AMOUNT_CHANGED, null);
+                    notifyObservers(NotificationType.MOVES_AMOUNT_CHANGED, null);
                 }
-                notifyObservers(com.coresmash.NotificationType.BALL_LAUNCHED, null);
+                notifyObservers(NotificationType.BALL_LAUNCHED, null);
                 break;
         }
     }
@@ -318,7 +326,8 @@ public class StatsManager extends com.coresmash.Observable implements com.coresm
     }
 
     public static class GameStats {
-        private int level;
+        private int activeLevel;
+        private int unlockedLevel;
         private boolean isRoundWon;
 
         private int minScore;
@@ -334,7 +343,8 @@ public class StatsManager extends com.coresmash.Observable implements com.coresm
         private int livesLeft;
 
         private void reset() {
-            level = -1;
+            activeLevel = -1;
+            unlockedLevel = -1;
             isRoundWon = false;
 
             minScore = 0;
@@ -354,8 +364,16 @@ public class StatsManager extends com.coresmash.Observable implements com.coresm
             return isRoundWon;
         }
 
-        public int getLevel() {
-            return level;
+        public int getActiveLevel() {
+            return activeLevel;
+        }
+
+        public int getUnlockedLevel() {
+            return unlockedLevel;
+        }
+
+        public boolean isLevelUnlocked() {
+            return isRoundWon && activeLevel == unlockedLevel;
         }
 
         public int getTargetScore() {

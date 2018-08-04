@@ -93,7 +93,7 @@ public class ScoresScreen extends com.coresmash.screens.ScreenBase {
              com.coresmash.UserAccount user = gameInstance.getUserAccount();
 
              for (int i = 0; i < 5; ++i) {
-                 lblTotalScore.setText("Total Score: " + user.getTotalScore());
+                 lblTotalScore.setText("Total Score: " + user.getTotalProgress());
              }
          }
 

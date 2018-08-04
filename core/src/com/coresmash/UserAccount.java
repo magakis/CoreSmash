@@ -1,22 +1,27 @@
 package com.coresmash;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Preferences;
 import com.coresmash.managers.StatsManager;
 import com.coresmash.tiles.TileType;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.coresmash.CurrencyType.HEARTS;
+import static com.coresmash.CurrencyType.LOTTERY_COINS;
+
 
 public class UserAccount {
+    private final String PREFS_NAME = "account";
+
     private String name;
-    private int lotteryCoins;
-    private PowerupManager powerupsAvailable;
-    private int unlockedLevels;
+    private CurrenciesManager currencies;
+    private PowerupManager powerups;
+    private PersistentInt unlockedLevels;
     private int userLevel;
-    private int expProgress;
-    private int totalScore;
+    private int progressForLevel;
+    private PersistentInt totalProgress;
     private static final int[] expTable = new int[100];
 
     static {
@@ -28,32 +33,35 @@ public class UserAccount {
     }
 
     public UserAccount() {
-        Preferences prefs = Gdx.app.getPreferences("account");
-        name = prefs.getString("username", "_error_");
-        unlockedLevels = prefs.getInteger("unlocked_levels");
-        totalScore = prefs.getInteger("total_score");
-        lotteryCoins = prefs.getInteger("lottery_coins");
+//        name = prefs.getString("username", "_error_");
+        unlockedLevels = new PersistentInt("unlocked_levels", PREFS_NAME, 1);
+        totalProgress = new PersistentInt("total_score", PREFS_NAME);
 
-        int scoreLeft = totalScore;
+        currencies = new CurrenciesManager(PREFS_NAME);
+
+        int scoreLeft = totalProgress.getValue();
         for (int i = 0; i < expTable.length; ++i) {
             if (scoreLeft < expTable[i]) {
                 userLevel = i + 1;
-                expProgress = scoreLeft;
+                progressForLevel = scoreLeft;
                 break;
             }
             scoreLeft -= expTable[i];
         }
-        powerupsAvailable = new PowerupManager(prefs);
+        powerups = new PowerupManager(PREFS_NAME);
     }
 
     public int getLotteryCoins() {
-        return lotteryCoins;
+        return currencies.get(LOTTERY_COINS);
+    }
+
+    public int getHearts() {
+        return currencies.get(HEARTS);
     }
 
     public boolean consumeLotteryCoin() {
-        if (lotteryCoins > 0) {
-            --lotteryCoins;
-            Gdx.app.getPreferences("account").putInteger("lottery_coins", lotteryCoins).flush();
+        if (currencies.get(LOTTERY_COINS) > 0) {
+            currencies.consume(LOTTERY_COINS, 1);
             return true;
         }
         return false;
@@ -61,16 +69,15 @@ public class UserAccount {
 
     public void addLotteryCoins(int amount) {
         assert amount > 0;
-        lotteryCoins += amount;
-        Gdx.app.getPreferences("account").putInteger("lottery_coins", lotteryCoins).flush();
+        currencies.add(LOTTERY_COINS, amount);
     }
 
     public PowerupManager getSpecialBallsAvailable() {
-        return powerupsAvailable;
+        return powerups;
     }
 
     public int getUnlockedLevels() {
-        return unlockedLevels;
+        return unlockedLevels.getValue();
     }
 
     public String getUsername() {
@@ -82,25 +89,21 @@ public class UserAccount {
         Gdx.app.getPreferences("account").putString("username", name);
     }
 
-    public int getTotalScore() {
-        return totalScore;
+    public int getTotalProgress() {
+        return totalProgress.getValue();
     }
 
     public void saveStats(StatsManager.GameStats stats) {
         int score = stats.getTotalScore();
         if (stats.isRoundWon()) { // WON
-            Preferences prefs = Gdx.app.getPreferences("account");
 
-            boolean levelUnlocked = false;
-            if (stats.getLevel() > unlockedLevels) {
-                prefs.putInteger("unlocked_levels", stats.getLevel());
-                ++unlockedLevels;
-                levelUnlocked = true;
+            if (stats.isLevelUnlocked()) {
+                unlockedLevels.addAmount(1);
             }
 
             if (score > stats.getTargetScore()) {
-                prefs.putInteger("level" + stats.getLevel(), score);
-                if (levelUnlocked) {
+                Gdx.app.getPreferences(PREFS_NAME).putInteger("level" + stats.getActiveLevel(), score).flush();
+                if (stats.isLevelUnlocked()) {
                     saveScore(score);
                 } else {
                     saveScore(score / 3);
@@ -109,7 +112,6 @@ public class UserAccount {
                 saveScore(stats.getTotalScore() / 5);
             }
 
-            prefs.flush();
         } else { // LOST
             saveScore(stats.getTotalScore() / 10);
         }
@@ -120,7 +122,7 @@ public class UserAccount {
     }
 
     public int getXPProgress() {
-        return expProgress;
+        return progressForLevel;
     }
 
     public int getExpForNextLevel() {
@@ -130,64 +132,73 @@ public class UserAccount {
     public void addPowerup(TileType.PowerupType type, int amount) {
         if (amount < 0) throw new IllegalArgumentException("Illegal amount: " + amount);
 
-        powerupsAvailable.addPowerup(type, amount);
+        powerups.addPowerup(type, amount);
     }
 
     public void consumePowerup(TileType.PowerupType type) {
-        powerupsAvailable.consumePowerup(type);
+        powerups.consumePowerup(type);
     }
 
     private void saveScore(int score) {
-        totalScore += score;
-        expProgress += score;
-        if (expProgress >= expTable[userLevel - 1]) {
-            expProgress -= expTable[userLevel - 1];
+        totalProgress.addAmount(score);
+        progressForLevel += score;
+        if (progressForLevel >= expTable[userLevel - 1]) {
+            progressForLevel -= expTable[userLevel - 1];
             ++userLevel;
         }
-
-        Preferences prefs = Gdx.app.getPreferences("account");
-        prefs.putInteger("total_score", totalScore);
-        prefs.flush();
     }
+
+    private static class CurrenciesManager {
+        private Map<CurrencyType, PersistentInt> currencies;
+
+        public CurrenciesManager(String prefsName) {
+            currencies = new EnumMap<>(CurrencyType.class);
+            currencies.put(HEARTS, new PersistentInt("currency_hearts", prefsName));
+            currencies.put(LOTTERY_COINS, new PersistentInt("currency_lottery_coins", prefsName));
+        }
+
+        public void add(CurrencyType type, int amount) {
+            assert amount > 0;
+            currencies.get(type).addAmount(amount);
+        }
+
+        public int get(CurrencyType type) {
+            return currencies.get(type).getValue();
+        }
+
+        public void consume(CurrencyType type, int amount) {
+            currencies.get(type).subAmount(amount);
+        }
+
+    }
+
 
     // ============| POWERUP-MANAGER |============
     public static class PowerupManager {
-        private Map<TileType.PowerupType, PowerupAmount> powerups;
+        private Map<TileType.PowerupType, PersistentInt> powerups;
 
-        private PowerupManager(Preferences prefs) {
+        private PowerupManager(String prefsName) {
             powerups = new HashMap<>();
             for (TileType.PowerupType type : TileType.PowerupType.values()) {
-                powerups.put(type, new PowerupAmount(prefs.getInteger(type.name())));
+                powerups.put(type, new PersistentInt(type.name(), prefsName));
             }
         }
 
         public int getAmountOf(TileType.PowerupType type) {
-            return powerups.get(type).amount;
+            return powerups.get(type).getValue();
 
         }
 
         public void consumePowerup(TileType.PowerupType type) {
-            PowerupAmount amount = powerups.get(type);
-            --amount.amount;
-            Gdx.app.getPreferences("account")
-                    .putInteger(type.name(), amount.amount)
-                    .flush();
+            PersistentInt power = powerups.get(type);
+            if (power.getValue() == 0)
+                throw new RuntimeException("Powerup not available! Amount: " + power.getValue());
+            power.subAmount(1);
         }
 
         public void addPowerup(TileType.PowerupType type, int amount) {
-            PowerupAmount pa = powerups.get(type);
-            pa.amount += amount;
-            Gdx.app.getPreferences("account")
-                    .putInteger(type.name(), pa.amount)
-                    .flush();
+            powerups.get(type).addAmount(amount);
         }
 
-        private static class PowerupAmount {
-            int amount;
-
-            PowerupAmount(int amount) {
-                this.amount = amount;
-            }
-        }
     }
 }
