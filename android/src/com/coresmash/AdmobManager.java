@@ -30,10 +30,8 @@ import com.google.android.gms.ads.reward.RewardedVideoAdListener;
  */
 
 public final class AdmobManager implements AdManager {
-    private final int ADSHOW = 1;
-    private final int ADHIDE = 0;
-    private final String admobId;
-    private final String TEST_DEVICE = "Ad Your Test Device id here";// get from log of android studio
+    private static final int ADSHOW = 1;
+    private static final int ADHIDE = 0;
 
     private AdView adView;
     private ProgressDialog dialog;
@@ -41,8 +39,6 @@ public final class AdmobManager implements AdManager {
     private Handler handler;
 
     public AdmobManager(String id) {
-        this.admobId = id;
-
         handler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -82,7 +78,6 @@ public final class AdmobManager implements AdManager {
         });
 
         AdRequest.Builder requestBuilder = new AdRequest.Builder();
-//        requestBuilder.addTestDevice(TEST_DEVICE);
         adView.loadAd(requestBuilder.build());
 
         RelativeLayout.LayoutParams adParams = new RelativeLayout.LayoutParams(
