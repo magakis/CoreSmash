@@ -184,7 +184,7 @@ public class TilemapManager extends com.coresmash.Observable implements TilemapC
 //            for (Side side : Side.values()) {
 //                TilemapTile tmTile = t.getNeighbour(side);
 //                if (tmTile != null) {
-//                    alteredTiles.add(tmTile);
+//                    alteredTiles.give(tmTile);
 //                }
 //            }
 //            removeTile(t);
