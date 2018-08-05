@@ -34,6 +34,7 @@ import com.coresmash.UserAccount;
 import com.coresmash.levelbuilder.LevelListParser;
 import com.coresmash.levelbuilder.LevelListParser.RegisteredLevel;
 import com.coresmash.levels.CampaignArea.LevelButton;
+import com.coresmash.managers.StatsManager;
 import com.coresmash.managers.StatsManager.GameStats;
 import com.coresmash.screens.GameScreen;
 import com.coresmash.screens.ScreenBase;
@@ -44,15 +45,21 @@ import com.coresmash.ui.UIComponent;
 import com.coresmash.ui.UIFactory;
 import com.coresmash.ui.UIUtils;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
+
+import static com.coresmash.CurrencyType.LOTTERY_COIN;
 
 public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private GameScreen gameScreen;
     private PickPowerUpsDialog powerupPickDialog;
     private LotteryDialog lotteryDialog;
+    private UserAccount.HeartManager heartManager;
     private UIOverlay uiOverlay;
     private Skin skin;
     private Stage stage;
@@ -69,6 +76,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         skin = game.getSkin();
         rewardsManager = new RewardsPerLevelManager();
         stage = new Stage(game.getUIViewport());
+        heartManager = gameInstance.getUserAccount().getHeartManager();
 
         levelListParser = new LevelListParser();
         levels = new Array<>();
@@ -82,14 +90,14 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                     gameInstance.getUserAccount().addPowerup(reward.getType(), reward.getAmount());
                     Components.showToast("You have claimed " + reward.getAmount() + "x " + reward.getType() + "!", stage);
                 }
-                uiOverlay.lblLotteryCoins.setText(String.valueOf(gameInstance.getUserAccount().getLotteryCoins()));
+                uiOverlay.lblLotteryCoins.setText(String.valueOf(gameInstance.getUserAccount().getAmountOf(LOTTERY_COIN)));
             }
         };
 
         searchRegisteredLevel = new RegisteredLevel(0, "");
 
         screenInputMultiplexer.addProcessor(stage);
-        screenInputMultiplexer.addProcessor(new InputAdapter(){
+        screenInputMultiplexer.addProcessor(new InputAdapter() {
             @Override
             public boolean keyDown(int keycode) {
                 if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
@@ -108,7 +116,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         stage.addActor(rootStack);
 
 
-        com.coresmash.levels.Area1 area1 = new com.coresmash.levels.Area1(skin, new ChangeListener() {
+        Area1 area1 = new Area1(skin, new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 powerupPickDialog.show(stage, Integer.valueOf(actor.getName()));
@@ -148,24 +156,35 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
     @Override
     public void render(float delta) {
+        if (!heartManager.isFull()) {
+            long timeForNextHeart = heartManager.getTimeForNextHeart();
+            if (timeForNextHeart == 0) {
+                heartManager.checkTimeForHeart();
+            } else {
+                uiOverlay.updateTimeTillNextHeart();
+            }
+        }
         stage.act();
         stage.draw();
     }
 
     private void startCampaignLevel(int lvl, final List<Powerup> powerups) {
+        if (heartManager.getHearts() == 0) {
+            Components.showToast("You have no Hearts left. Either wait for a heart to replenish or try watching a video", stage, 3);
+            return;
+        }
+
         searchRegisteredLevel.num = lvl;
         int index = Arrays.binarySearch(levels.toArray(), searchRegisteredLevel, LevelListParser.compLevel);
-
         if (index < 0) return;
 
         final RegisteredLevel level = levels.get(index);
-
         gameScreen.deployLevel(new com.coresmash.levels.CampaignLevel(lvl, gameInstance.getUserAccount(), this) {
             @Override
             public void initialize(com.coresmash.GameController controller) {
                 controller.loadLevelMap(level.name);
-                com.coresmash.managers.StatsManager statsManager = controller.getBehaviourPack().statsManager;
-                statsManager.newGame(level.num, gameInstance.getUserAccount().getUnlockedLevels());
+                StatsManager statsManager = controller.getBehaviourPack().statsManager;
+                statsManager.setLevel(level.num, gameInstance.getUserAccount().getUnlockedLevels());
                 for (Powerup powerup : powerups) {
                     statsManager.enablePowerup(powerup.type, powerup.count);
                 }
@@ -176,6 +195,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             }
         });
+        heartManager.consumeHeart();
     }
 
     public void updateInfo() {
@@ -204,7 +224,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 int nextLevel = stats.getUnlockedLevel() + 1;
                 rewardsManager.giveRewardForLevel(nextLevel, gameInstance.getUserAccount(), stage);
                 levelButtons.get(nextLevel - 1).setDisabled(false);
-                uiOverlay.lblLotteryCoins.setText(String.valueOf(gameInstance.getUserAccount().getLotteryCoins()));
+                uiOverlay.lblLotteryCoins.setText(String.valueOf(gameInstance.getUserAccount().getAmountOf(LOTTERY_COIN)));
             }
         }
     }
@@ -251,10 +271,25 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         }
     }
 
+    private static class RewardsPerLevelManager {
+        private Random rand;
+
+        public RewardsPerLevelManager() {
+            rand = new Random();
+        }
+
+        public void giveRewardForLevel(int level, UserAccount account, Stage stage) {
+            if (rand.nextBoolean()) {
+                account.giveCurrency(LOTTERY_COIN);
+                Components.showToast("You were rewarded 1x Lottery Key!", stage);
+            }
+        }
+    }
+
     private class UIOverlay implements UIComponent {
         private Table root;
         private ProgressBar pbAccountExp;
-        private Label lblLevel, lblExp, lblExpForLevel, lblLotteryCoins;
+        private Label lblLevel, lblExp, lblExpForLevel, lblLotteryCoins, lblHearts;
 
         public UIOverlay(Table root) {
             this.root = root;
@@ -270,9 +305,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                     gameInstance.getAdManager().showAdForReward(new AdManager.AdRewardListener() {
                         @Override
                         public void reward(String type, int amount) {
-                            gameInstance.getUserAccount().addLotteryCoins(1);
-                            uiOverlay.lblLotteryCoins.setText(String.valueOf(gameInstance.getUserAccount().getLotteryCoins()));
-                            Components.showToast("Earned x1 Lottery Coin!", stage);
+                            gameInstance.getUserAccount().giveCurrency(LOTTERY_COIN);
+                            uiOverlay.lblLotteryCoins.setText(String.valueOf(gameInstance.getUserAccount().getAmountOf(LOTTERY_COIN)));
+                            heartManager.restoreHeart();
                         }
                     });
                 }
@@ -305,8 +340,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             hgLevel.addActor(new Label("Level: ", skin, "h5"));
             hgLevel.addActor(lblLevel);
 
-
             Image imgLotteryCoin = new Image(skin.getDrawable("lotteryCoin"));
+            Image imgHeart = new Image(skin.getDrawable("heartIcon"));
 //            imgLotteryCoin.addListener(new ClickListener() {
 //                @Override
 //                public void clicked(InputEvent event, float x, float y) {
@@ -314,12 +349,16 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 //                    lblLotteryCoins.setText(gameInstance.getUserAccount().getLotteryCoins());
 //                }
 //            });
-            lblLotteryCoins = new Label(String.valueOf(gameInstance.getUserAccount().getLotteryCoins()), skin, "h5");
+            lblLotteryCoins = new Label(String.valueOf(gameInstance.getUserAccount().getAmountOf(LOTTERY_COIN)), skin, "h5");
+
+            lblHearts = new Label(" ", skin, "h5");
 
             Table tblInfo = new Table();
-            tblInfo.top();
+            tblInfo.top().defaults().left();
             tblInfo.add(imgLotteryCoin).size(Value.percentHeight(1f, lblLotteryCoins)).padRight(Value.percentHeight(.5f, lblLotteryCoins));
-            tblInfo.add(lblLotteryCoins);
+            tblInfo.add(lblLotteryCoins).row();
+            tblInfo.add(imgHeart).size(Value.percentHeight(1f, lblHearts)).padRight(Value.percentHeight(.5f, lblHearts));
+            tblInfo.add(lblHearts);
 
             Table tblAccount = new Table();
 
@@ -340,16 +379,38 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             root.top().left().pad(lblLevel.getPrefHeight() / 2);
             root.add(tblAccount);
+
+            heartManager.setChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent event) {
+                    updateHearts();
+                }
+            });
+
             updateValues();
         }
 
         public void updateValues() {
-            com.coresmash.UserAccount user = gameInstance.getUserAccount();
+            UserAccount user = gameInstance.getUserAccount();
             lblExp.setText(String.valueOf(user.getXPProgress()));
             lblLevel.setText(String.valueOf(user.getLevel()));
             lblExpForLevel.setText(String.valueOf(user.getExpForNextLevel()));
             pbAccountExp.setRange(0, user.getExpForNextLevel());
             pbAccountExp.setValue(user.getXPProgress());
+
+            updateHearts();
+        }
+
+        public void updateTimeTillNextHeart() {
+            lblHearts.setText(String.format(Locale.ROOT, "%d (%2$tM:%2$tS)", heartManager.getHearts(), heartManager.getTimeForNextHeart()));
+        }
+
+        public void updateHearts() {
+            if (heartManager.isFull()) {
+                lblHearts.setText(String.format(Locale.ROOT, "%d (FULL)", heartManager.getHearts()));
+            } else {
+                updateTimeTillNextHeart();
+            }
         }
 
         @Override
@@ -358,29 +419,14 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         }
     }
 
-    private static class RewardsPerLevelManager {
-        private Random rand;
-
-        public RewardsPerLevelManager() {
-            rand = new Random();
-        }
-
-        public void giveRewardForLevel(int level, UserAccount account, Stage stage) {
-            if (rand.nextBoolean()) {
-                account.addLotteryCoins(1);
-                Components.showToast("You were rewarded 1x Lottery key for your incredible victory!", stage);
-            }
-        }
-    }
-
     private class PickPowerUpsDialog extends Dialog {
-        com.coresmash.UserAccount.PowerupManager powerUpsAvailable;
+        UserAccount.PowerupManager powerUpsAvailable;
         List<Powerup> choosenPowerups;
         int levelToLaunch = -1;
         ButtonGroup<Button> buttonGroup;
         Button[] powerupButtons;
 
-        PickPowerUpsDialog(Skin skin, final com.coresmash.UserAccount.PowerupManager powerUps) {
+        PickPowerUpsDialog(Skin skin, final UserAccount.PowerupManager powerUps) {
             super("", skin, "PickPowerUpDialog");
             powerUpsAvailable = powerUps;
             choosenPowerups = new ArrayList<>(3);

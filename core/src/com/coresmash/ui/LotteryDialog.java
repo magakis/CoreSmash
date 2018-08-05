@@ -23,6 +23,8 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.coresmash.tiles.TileType;
 
+import static com.coresmash.CurrencyType.LOTTERY_COIN;
+
 public class LotteryDialog extends Dialog {
     final private Skin skin;
     final private com.coresmash.UserAccount user;
@@ -53,14 +55,17 @@ public class LotteryDialog extends Dialog {
         btnOpen.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if (user.consumeLotteryCoin()) {
+                if (user.isCurrencyAvailable(LOTTERY_COIN)) {
+                    user.consumeCurrency(LOTTERY_COIN);
+
                     for (CardButton btn : cardButtons) {
                         btn.setDisabled(false);
                     }
+
                     getButtonTable().clearChildren();
                     pack();
                 } else {
-                    throw new RuntimeException("Coins:" + user.getLotteryCoins());
+                    throw new RuntimeException("Coins:" + user.getAmountOf(LOTTERY_COIN));
                 }
             }
         });
@@ -119,7 +124,7 @@ public class LotteryDialog extends Dialog {
                                 public void run() {
                                     showImageButton(btnClaim);
                                     showImageButton(btnRetry);
-                                    btnRetry.setDisabled(user.getLotteryCoins() <= 0);
+                                    btnRetry.setDisabled(!user.isCurrencyAvailable(LOTTERY_COIN));
                                     pack();
                                 }
                             })
@@ -164,7 +169,7 @@ public class LotteryDialog extends Dialog {
         getButtonTable().clearChildren();
         showImageButton(btnOpen);
         showImageButton(btnClose);
-        btnOpen.setDisabled(user.getLotteryCoins() <= 0);
+        btnOpen.setDisabled(!user.isCurrencyAvailable(LOTTERY_COIN));
         reward.reset();
     }
 
