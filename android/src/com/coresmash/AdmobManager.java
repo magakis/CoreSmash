@@ -17,6 +17,11 @@ import com.google.android.gms.ads.reward.RewardItem;
 import com.google.android.gms.ads.reward.RewardedVideoAd;
 import com.google.android.gms.ads.reward.RewardedVideoAdListener;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 /* Important information to avoid confusion:
  *      First of all this class is tied with the Android platform. With that in mind it is really
  *  important to understand that there will be _TWO_ threads that will be working with this class.
@@ -34,6 +39,9 @@ public final class AdmobManager implements AdManager {
     private static final int ADHIDE = 0;
 
     private AdView adView;
+    private ScheduledExecutorService executorService;
+    private ScheduledFuture<?> task;
+    private Runnable dismissDialog;
     private ProgressDialog dialog;
     private RewardedVideoAd rewardedVideoAd;
     private Handler handler;
@@ -59,21 +67,36 @@ public final class AdmobManager implements AdManager {
         rewardedVideoAd = MobileAds.getRewardedVideoAdInstance(context);
 
         dialog = new ProgressDialog(context);
-        dialog.setIndeterminate(true);
         dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialog.setIndeterminate(true);
         dialog.setMessage("Loading...");
         dialog.setCanceledOnTouchOutside(false);
+
+        executorService = Executors.newSingleThreadScheduledExecutor();
+
+        dismissDialog = new Runnable() {
+            Runnable action = new Runnable() {
+                @Override
+                public void run() {
+                    dialog.dismiss();
+                    Toast.makeText(context, "Task took too long. Ensure you have Internet connection and try again!", Toast.LENGTH_LONG).show();
+                }
+            };
+
+            @Override
+            public void run() {
+                handler.post(action);
+            }
+        };
 
         adView = new AdView(context);
         adView.setAdSize(AdSize.BANNER);
         adView.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
         adView.setAdListener(new AdListener() {
-
             @Override
             public void onAdLoaded() {
                 adView.setVisibility(View.GONE);
                 adView.requestLayout();
-                Toast.makeText(context, "AdLoaded!", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -97,7 +120,7 @@ public final class AdmobManager implements AdManager {
 
     @Override
     public void showAdForReward(final AdRewardListener listener) {
-        toggle();
+//        toggle();
         handler.postAtFrontOfQueue(new Runnable() {
             @Override
             public void run() {
@@ -110,7 +133,8 @@ public final class AdmobManager implements AdManager {
                         @Override
                         public void onRewardedVideoAdLoaded() {
                             if (dialog.isShowing()) {
-                                dialog.hide();
+                                task.cancel(true);
+                                dialog.dismiss();
                                 rewardedVideoAd.show();
                             }
                         }
@@ -149,6 +173,7 @@ public final class AdmobManager implements AdManager {
                         public void onRewardedVideoCompleted() {
                         }
                     });
+                    task = executorService.schedule(dismissDialog, 30, TimeUnit.SECONDS);
                 }
             }
         });
