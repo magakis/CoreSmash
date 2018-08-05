@@ -207,7 +207,7 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
         Texture tex;
         NinePatch ninePatch;
         Color SlightGray = new Color(.9f, .9f, .9f, 1);
-
+        Color IntenseGray = new Color(0x404040ff);
         /* Used as the Original Scale of each asset */
         float defScale = 0;
 
@@ -275,8 +275,9 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
         ninePatch.setPadding(ninePatch.getPadLeft() / 2, ninePatch.getPadRight() / 2, ninePatch.getPadTop() / 2, ninePatch.getPadBottom() / 2);
         skin.add("boxSmall", ninePatch);
 
-        ninePatch = new NinePatch(am.get("FrameWooden.png", Texture.class), 80, 80, 80, 80);//123
+        ninePatch = new NinePatch(am.get("FrameWooden.png", Texture.class), 70, 70, 70, 70);//80//123
         defScale = .25f;
+//        defScale = 1f;
         ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
         skin.add("simpleFrameTrans", ninePatch);
 
@@ -383,10 +384,10 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
         stb = new TextButton.TextButtonStyle();
         stb.up = skin.newDrawable("ButtonLevel", Color.WHITE);
         stb.down = skin.newDrawable("ButtonLevel", SlightGray);
-        stb.disabled = skin.newDrawable("ButtonLevel", Color.GRAY);
+        stb.disabled = skin.newDrawable("ButtonLevel", IntenseGray);
         stb.font = skin.getFont("h4o");
         stb.fontColor = Color.WHITE;
-        stb.disabledFontColor = Color.GRAY;
+        stb.disabledFontColor = IntenseGray;
         skin.add("levelButton", stb);
 
         stb = new TextButton.TextButtonStyle();
