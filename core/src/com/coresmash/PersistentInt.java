@@ -33,6 +33,7 @@ public class PersistentInt {
     }
 
     public void setValue(int value) {
+        this.value = value;
         Gdx.app.getPreferences(prefsName).putInteger(prefKey, value).flush();
     }
 
