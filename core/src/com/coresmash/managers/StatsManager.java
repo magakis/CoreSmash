@@ -24,11 +24,9 @@ public class StatsManager extends Observable implements Observer {
         gameStats = new GameStats();
     }
 
-    public void newGame(int level, int unlockedLevel) {
-        reset();
+    public void setLevel(int level, int unlockedLevel) {
         gameStats.activeLevel = level;
         gameStats.unlockedLevel = unlockedLevel;
-
         gameStats.targetScore = Gdx.app.getPreferences("account").getInteger("level" + level);
     }
 
