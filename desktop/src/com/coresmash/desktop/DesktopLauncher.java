@@ -13,7 +13,7 @@ public class DesktopLauncher {
         int width = 768;
 
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-//		config.resizable = false;
+        config.resizable = false;
 		config.y = 0;
 		if (CoreSmash.DEBUG_TABLET) {
 			config.height = width;
