@@ -29,30 +29,39 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.coresmash.CoreSmash;
+import com.coresmash.GameController;
+import com.coresmash.Launcher;
+import com.coresmash.Observer;
+import com.coresmash.StreakUI;
+import com.coresmash.WorldSettings;
 import com.coresmash.levels.Level;
+import com.coresmash.managers.MovingBallManager;
+import com.coresmash.managers.RenderManager;
+import com.coresmash.managers.StatsManager;
+import com.coresmash.tilemap.TilemapManager;
 import com.coresmash.tiles.TileType.PowerupType;
 import com.coresmash.ui.UIComponent;
 import com.coresmash.ui.UIFactory;
 
 import java.util.Locale;
 import java.util.Objects;
-
 /**
  * Created by Michail on 17/3/2018.
  */
 
-public class GameScreen extends com.coresmash.screens.ScreenBase implements com.coresmash.Observer {
+public class GameScreen extends ScreenBase implements Observer {
     private ExtendViewport viewport;
     private OrthographicCamera camera;
-    private com.coresmash.managers.RenderManager renderManager;
+    private RenderManager renderManager;
 
-    private com.coresmash.GameController gameController;
-    private com.coresmash.tilemap.TilemapManager tilemapManager;
-    private com.coresmash.managers.MovingBallManager movingBallManager;
-    private com.coresmash.managers.StatsManager statsManager;
-    private com.coresmash.Launcher launcher;
+    private GameController gameController;
+    private TilemapManager tilemapManager;
+    private MovingBallManager movingBallManager;
+    private StatsManager statsManager;
+    private Launcher launcher;
 
-    private com.coresmash.StreakUI streakUI;
+    private StreakUI streakUI;
     private Level activeLevel;
 
     //===========
@@ -64,22 +73,22 @@ public class GameScreen extends com.coresmash.screens.ScreenBase implements com.
     private Stack rootUIStack;
     //===========
 
-    public GameScreen(com.coresmash.CoreSmash game) {
+    public GameScreen(CoreSmash game) {
         super(game);
-        viewport = new ExtendViewport(com.coresmash.WorldSettings.getWorldWidth(), com.coresmash.WorldSettings.getWorldHeight());
+        viewport = new ExtendViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight());
         camera = (OrthographicCamera) viewport.getCamera();
         camera.setToOrtho(false, viewport.getMinWorldWidth(), viewport.getMinWorldHeight());
 
         renderManager = gameInstance.getRenderManager();
-        movingBallManager = new com.coresmash.managers.MovingBallManager();
-        launcher = new com.coresmash.Launcher(movingBallManager);
-        tilemapManager = new com.coresmash.tilemap.TilemapManager();
-        statsManager = new com.coresmash.managers.StatsManager();
-        gameController = new com.coresmash.GameController(tilemapManager, movingBallManager, statsManager, launcher);
+        movingBallManager = new MovingBallManager();
+        launcher = new Launcher(movingBallManager);
+        tilemapManager = new TilemapManager();
+        statsManager = new StatsManager();
+        gameController = new GameController(tilemapManager, movingBallManager, statsManager, launcher);
 
         skin = gameInstance.getSkin();
 
-        streakUI = new com.coresmash.StreakUI(skin);
+        streakUI = new StreakUI(skin);
         gameUI = new GameUI();
         resultUI = new ResultUI();
         debugUI = new DebugUI();
@@ -141,7 +150,7 @@ public class GameScreen extends com.coresmash.screens.ScreenBase implements com.
                 endGame();
             }
         }
-        stage.act(); //Moved out of updateStage() cause it always has to convert called
+        stage.act(); // Moved out of updateStage() cause it always has to convert called
     }
 
     private void updateStage() {
@@ -331,7 +340,7 @@ public class GameScreen extends com.coresmash.screens.ScreenBase implements com.
         DEBUG
     }
 
-    private class GameUI implements UIComponent, com.coresmash.Observer {
+    private class GameUI implements UIComponent, Observer {
         Table root, tblPowerUps, tblTop;
         Table tblTime, tblScore;
         Table tblCenter;
