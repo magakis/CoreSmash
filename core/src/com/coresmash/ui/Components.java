@@ -28,10 +28,10 @@ public final class Components {
     }
 
     public static void showToast(String text, Stage stage) {
-        showToast(text, 2.5f, stage);
+        showToast(text, stage, 2.5f);
     }
 
-    public static void showToast(String text, float duration, Stage stage) {
+    public static void showToast(String text, Stage stage, float duration) {
         toast.setText(text);
         toast.show(stage, Actions.sequence(
                 Actions.alpha(0),

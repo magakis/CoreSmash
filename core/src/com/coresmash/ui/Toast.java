@@ -1,10 +1,12 @@
 package com.coresmash.ui;
 
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -19,8 +21,12 @@ public class Toast {
 
     public Toast(ToastStyle style) {
         msg = new Label("", new Label.LabelStyle(style.font, Color.WHITE));
+        msg.setWrap(true);
+        msg.setAlignment(Align.center);
         tbl = new Table();
         tbl.background(style.background);
+        tbl.pad(5 * Gdx.graphics.getDensity());
+        tbl.setTouchable(Touchable.disabled);
         tbl.add(msg);
     }
 
@@ -34,8 +40,17 @@ public class Toast {
 
     public void show(Stage stage, Action action) {
         Objects.requireNonNull(stage);
+        msg.getGlyphLayout().setText(msg.getStyle().font, msg.getText().toString());
+        float textWidth = msg.getGlyphLayout().width;
+        float textHeight = msg.getGlyphLayout().height * 2;
+        float stageWidth = stage.getWidth() * .9f;
+
+        float width = textWidth > stageWidth ? stageWidth : textWidth;
+        float height = (float) (Math.ceil(textWidth / stageWidth)) * textHeight;
+
         tbl.clearActions();
-        tbl.pack();
+        tbl.getCell(msg).size(width, height);
+        tbl.setSize(width + tbl.getPadLeft() * 2, height + tbl.getPadBottom() * 2);
         tbl.setPosition(stage.getWidth() / 2, stage.getHeight() * .95f, Align.center);
         if (action != null) {
             tbl.addAction(action);
