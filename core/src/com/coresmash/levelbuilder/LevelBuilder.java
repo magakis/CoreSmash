@@ -53,14 +53,7 @@ final public class LevelBuilder {
      * Draws at the given screen coordinates
      */
     public void paintAt(float x, float y) {
-        Vector3 worldPos = screenToWorld.convert(x, y);
-
-        if (layer != 0 && map.getTileCountFrom(layer) == 0) {
-            map.setMapPosition(layer, (int) worldPos.x, (int) worldPos.y);
-            mapSettings.get(layer).offset.set(map.getLayerOffsetX(layer), map.getLayerOffsetY(layer));
-        }
-
-        Vector3 relative = map.getWorldToLayerCoords(layer, worldPos);
+        Vector3 relative = map.getWorldToLayerCoords(layer, screenToWorld.convert(x, y));
 
         if (map.isTileEmpty(layer, (int) relative.x, (int) relative.y)) {
             map.placeTile(layer, (int) relative.x, (int) relative.y, TileFactory.createTile(tileType));
