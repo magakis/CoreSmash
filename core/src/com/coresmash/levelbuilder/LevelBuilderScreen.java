@@ -42,6 +42,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.coresmash.CoreSmash;
 import com.coresmash.levels.Level;
 import com.coresmash.managers.RenderManager;
 import com.coresmash.screens.GameScreen;
@@ -85,7 +86,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
     private GestureDetector worldInputHandler;
 
-    public LevelBuilderScreen(com.coresmash.CoreSmash game) {
+    public LevelBuilderScreen(CoreSmash game) {
         super(game);
         gameScreen = new GameScreen(game);
 

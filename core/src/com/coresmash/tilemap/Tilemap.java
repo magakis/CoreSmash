@@ -3,6 +3,8 @@ package com.coresmash.tilemap;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.coresmash.Coords2D;
+import com.coresmash.NotificationType;
 import com.coresmash.tiles.Tile;
 import com.coresmash.tiles.TileContainer.Side;
 
@@ -24,7 +26,7 @@ public class Tilemap extends com.coresmash.Observable implements Comparable<Tile
     private int groupID;
     private int maxDistanceFromCenter;
     private List<TilemapTile> tilemapTiles;
-    private com.coresmash.Coords2D defPosition;
+    private Coords2D defPosition;
     private Vector2 worldPosition;
     private Vector2 offset;
     private Vector2 origin;
@@ -60,14 +62,14 @@ public class Tilemap extends com.coresmash.Observable implements Comparable<Tile
         offset = new Vector2();
     }
 
-    public Tilemap(int id, com.coresmash.Coords2D defPosition) {
+    public Tilemap(int id, Coords2D defPosition) {
         this(id);
         this.defPosition = defPosition;
         worldPosition.set(defPosition.x, defPosition.y);
     }
 
     public static int getTileDistance(int aX1, int aY1, int aX2, int aY2) {
-        int dx = aX1 - aX2;     // signed deltas
+        int dx = aX1 - aX2;    // signed deltas
         int dy = aY1 - aY2;
         int x = Math.abs(dx);  // absolute deltas
         int y = Math.abs(dy);
@@ -135,7 +137,6 @@ public class Tilemap extends com.coresmash.Observable implements Comparable<Tile
                 }
             }
 
-
             tilemapTiles.add(newTile);
             return newTile;
         } else {
@@ -167,7 +168,7 @@ public class Tilemap extends com.coresmash.Observable implements Comparable<Tile
         TilemapTile tmTile = getTilemapTile(x, y);
         if (tmTile == null) return null;
 
-        notifyObservers(com.coresmash.NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED, tmTile);
+        notifyObservers(NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED, tmTile);
         tmTile.clear();
         tilemapTiles.remove(tmTile);
         return tmTile;
@@ -200,7 +201,7 @@ public class Tilemap extends com.coresmash.Observable implements Comparable<Tile
         offset.set(settings.getOffsetX(), settings.getOffsetY());
         updateWorldPosition();
         updateTilePositions();
-        notifyObservers(com.coresmash.NotificationType.TILEMAP_INITIALIZED, getTileList());
+        notifyObservers(NotificationType.TILEMAP_INITIALIZED, getTileList());
     }
 
     public void update(float delta) {

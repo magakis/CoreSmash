@@ -150,8 +150,6 @@ public class LotteryDialog extends Dialog {
                 return false;
             }
         });
-
-        pad(15 * Gdx.graphics.getDensity());
     }
 
 

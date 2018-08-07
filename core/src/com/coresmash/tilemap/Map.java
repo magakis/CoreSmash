@@ -2,6 +2,9 @@ package com.coresmash.tilemap;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.coresmash.Coords2D;
+import com.coresmash.Observer;
+import com.coresmash.WorldSettings;
 import com.coresmash.tiles.Tile;
 import com.coresmash.tiles.TileContainer.Side;
 
@@ -27,18 +30,18 @@ import java.util.List;
  * the Tilemap with that builder and create the tiles
  */
 public class Map extends com.coresmash.Observable implements TilemapCollection {
-    private final com.coresmash.Coords2D defMapPosition;
+    private final Coords2D defMapPosition;
     private int activeTilemaps;
-    com.coresmash.Observer tmObserver;
-    private List<com.coresmash.tilemap.Tilemap> tilemaps;
+    Observer tmObserver;
+    private List<Tilemap> tilemaps;
 
     public Map() {
         this(null);
     }
 
-    public Map(com.coresmash.Observer observer) {
+    public Map(Observer observer) {
         tilemaps = new ArrayList<>();
-        defMapPosition = new com.coresmash.Coords2D(com.coresmash.WorldSettings.getWorldWidth() / 2, com.coresmash.WorldSettings.getWorldHeight() - com.coresmash.WorldSettings.getWorldHeight() / 4);
+        defMapPosition = new Coords2D(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
         tmObserver = observer;
     }
 
@@ -183,22 +186,22 @@ public class Map extends com.coresmash.Observable implements TilemapCollection {
 
     public void validate(int layer) {
         assertLayerIndex(layer);
-        com.coresmash.tilemap.Tilemap tm = tilemaps.get(layer);
+        Tilemap tm = tilemaps.get(layer);
         tm.updateWorldPosition();
         tm.updateTilePositions();
     }
 
     public void validate() {
         for (int i = 0; i < activeTilemaps; ++i) {
-            com.coresmash.tilemap.Tilemap tm = tilemaps.get(i);
+            Tilemap tm = tilemaps.get(i);
             tm.updateWorldPosition();
             tm.updateTilePositions();
         }
     }
 
-    public com.coresmash.tilemap.Tilemap newLayer() {
+    public Tilemap newLayer() {
         if (activeTilemaps >= tilemaps.size()) {
-            com.coresmash.tilemap.Tilemap tm = new com.coresmash.tilemap.Tilemap(activeTilemaps, defMapPosition);
+            Tilemap tm = new Tilemap(activeTilemaps, defMapPosition);
             if (tmObserver != null) {
                 tm.addObserver(tmObserver);
             }
@@ -209,13 +212,13 @@ public class Map extends com.coresmash.Observable implements TilemapCollection {
     }
 
     public void update(float delta) {
-        for (com.coresmash.tilemap.Tilemap tilemap : tilemaps) {
+        for (Tilemap tilemap : tilemaps) {
             tilemap.update(delta);
         }
     }
 
     public void reset() {
-        for (com.coresmash.tilemap.Tilemap tilemap : tilemaps) {
+        for (Tilemap tilemap : tilemaps) {
             tilemap.reset();
         }
         activeTilemaps = 0;
