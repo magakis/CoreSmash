@@ -168,31 +168,7 @@ public class TilemapManager extends com.coresmash.Observable implements TilemapC
         return match;
     }
 
-//    public List<TilemapTile> handleColorMatchesFor(TilemapTile newTile) {
-//        assert newTile != null;
-//        ArrayList<TilemapTile> match = match3.getColorMatchesFromTile(newTile);
-//
-//        if (match.size() < 3) {
-//            if (match.size() == 1) {
-//                notifyObservers(NotificationType.NO_COLOR_MATCH, null);
-//            }
-//            return Collections.EMPTY_LIST;
-//        }
-//
-//        alteredTiles.clear();
-//        for (TilemapTile t : match) {
-//            for (Side side : Side.values()) {
-//                TilemapTile tmTile = t.getNeighbour(side);
-//                if (tmTile != null) {
-//                    alteredTiles.give(tmTile);
-//                }
-//            }
-//            removeTile(t);
-//        }
-//        return alteredTiles;
-//    }
 
-    //////////////////|            |//////////////////
     public TilemapBuilder newLayer() {
         tilemapBuilder.startNewTilemap(worldMap.newLayer());
         return tilemapBuilder;
