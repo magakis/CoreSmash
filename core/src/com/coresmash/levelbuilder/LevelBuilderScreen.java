@@ -43,6 +43,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.coresmash.CoreSmash;
+import com.coresmash.PersistentString;
 import com.coresmash.levels.Level;
 import com.coresmash.managers.RenderManager;
 import com.coresmash.screens.GameScreen;
@@ -111,7 +112,23 @@ public class LevelBuilderScreen extends ScreenBase {
 
         screenInputMultiplexer.addProcessor(stage);
         screenInputMultiplexer.addProcessor(worldInputHandler);
-        screenInputMultiplexer.addProcessor(new BackButtonInputHandler());
+        screenInputMultiplexer.addProcessor(new InputAdapter() {
+            public boolean keyDown(int keycode) {
+                if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
+                    if (prefsStack.size() == 1) {
+                        if (activeMode == freeMode) {
+                            gameInstance.setPrevScreen();
+                        } else {
+                            uiTools.btnGroup.uncheckAll();
+                        }
+                    } else {
+                        prefsStack.pop();
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
 
     }
 
@@ -227,9 +244,11 @@ public class LevelBuilderScreen extends ScreenBase {
         private final LoadFileDialog loadFileDialog;
         private Level testLevel;
         private final TextButton tbSave, tbLoad, tbDeploy, tbAssign;
-        private String filenameCache = "";
+        private PersistentString filenameCache;
 
         UIToolbarTop() {
+            filenameCache = new PersistentString("inner_build", "levelbuilder_map_name");
+
             tbSave = UIFactory.createTextButton("Save", skin, "levelBuilderButton");
             tbSave.getLabelCell().pad(Value.percentHeight(.5f, tbSave.getLabel()));
             tbSave.getLabelCell().padTop(Value.percentHeight(.25f, tbSave.getLabel()));
@@ -237,7 +256,7 @@ public class LevelBuilderScreen extends ScreenBase {
             tbSave.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    saveFileDialog.show(stage, filenameCache);
+                    saveFileDialog.show(stage, filenameCache.getValue());
                 }
             });
             tbLoad = UIFactory.createTextButton("Load", skin, "levelBuilderButton");
@@ -305,13 +324,14 @@ public class LevelBuilderScreen extends ScreenBase {
             loadFileDialog = new LoadFileDialog(skin) {
                 @Override
                 protected void result(Object object) {
-                    filenameCache = (String) object;
+                    filenameCache.setValue((String) object);
 
-                    if (levelBuilder.load(filenameCache)) {
-                        freeMode.optionsMenu.updateValues(levelBuilder.getLayer());
-                        Components.showToast("File '" + filenameCache + "' loaded", stage);
+                    if (levelBuilder.load(filenameCache.getValue())) {
+                        freeMode.activate();
+//                        freeMode.optionsMenu.updateValues(levelBuilder.getLayer());
+                        Components.showToast("File '" + filenameCache.getValue() + "' loaded", stage);
                     } else {
-                        Components.showToast("Error: Couldn't load '" + filenameCache + "'", stage);
+                        Components.showToast("Error: Couldn't load '" + filenameCache.getValue() + "'", stage);
                     }
                 }
             };
@@ -322,9 +342,9 @@ public class LevelBuilderScreen extends ScreenBase {
                     if (object == null) {
                         Components.showToast("Error: Invalid file name", stage);
                     } else {
-                        filenameCache = (String) object;
-                        levelBuilder.saveAs(filenameCache);
-                        Components.showToast("Level '" + filenameCache + "' saved", stage);
+                        filenameCache.setValue((String) object);
+                        levelBuilder.saveAs(filenameCache.getValue());
+                        Components.showToast("Level '" + filenameCache.getValue() + "' saved", stage);
                     }
                 }
             };
@@ -751,12 +771,12 @@ public class LevelBuilderScreen extends ScreenBase {
             private UIMapSettings mapSettings = new UIMapSettings();
 
             private OptionsMenu() {
-
                 TextButton btnLevelSettings = UIFactory.createTextButton("Level", skin, "levelBuilderButton");
                 btnLevelSettings.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
                         prefsStack.push(gameSettings);
+                        gameSettings.updateValues();
                     }
                 });
 
@@ -951,7 +971,6 @@ public class LevelBuilderScreen extends ScreenBase {
                 root.add(grpBallSpeed).growX();
 
                 updateValues();
-                updateMovesPercent(levelBuilder.getMoves());
             }
 
             void updateValues() {
@@ -962,6 +981,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 tfLives.setText(String.valueOf(levelBuilder.getLives()));
                 tfMoves.setText(String.valueOf(levelBuilder.getMoves()));
                 tfTime.setText(String.valueOf(levelBuilder.getTime()));
+                updateMovesPercent(levelBuilder.getMoves());
             }
 
             private void updateMovesPercent(int amount) {
@@ -1475,22 +1495,6 @@ public class LevelBuilderScreen extends ScreenBase {
         }
 
         abstract void onActivate();
-    }
-
-    private class BackButtonInputHandler extends InputAdapter {
-        @Override
-        public boolean keyDown(int keycode) {
-            if (prefsStack.size() == 1) {
-                if (activeMode == freeMode) {
-                    gameInstance.setPrevScreen();
-                } else {
-                    uiTools.btnGroup.uncheckAll();
-                }
-            } else {
-                prefsStack.pop();
-            }
-            return true;
-        }
     }
 
     private class LevelBuilderGestureListner implements GestureDetector.GestureListener {
