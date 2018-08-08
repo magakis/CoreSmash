@@ -1,6 +1,5 @@
 package com.coresmash.levels;
 
-import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -25,21 +24,39 @@ abstract class CampaignArea {
         levels = new ArrayList<>();
 
         levelGroup = new WidgetGroup();
-        background = new Image(drawable, Scaling.fillX);
-        background.setAlign(Align.bottom);
         refWidth = drawable.getMinWidth();
+        background = new Image(drawable, Scaling.fillX) {
+            @Override
+            protected void positionChanged() {
+                super.positionChanged();
+                recalcLevelButtonPos();
+            }
+
+            @Override
+            protected void sizeChanged() {
+                super.sizeChanged();
+                recalcLevelButtonPos();
+            }
+
+            void recalcLevelButtonPos() {
+                float scale = getWidth() / refWidth;
+                for (LevelButton btn : levels) {
+                    btn.setPosition(btn.originalX * scale + getX(), btn.originalY * scale + getY(), Align.center);
+                }
+            }
+        };
+        background.setAlign(Align.bottom);
     }
 
     public Image getBackground() {
         return background;
     }
 
-    public WidgetGroup getLevelsGroup(Stage stage) {
-        float scale = stage.getWidth() / refWidth;
-
-        for (LevelButton btn : levels) {
-            btn.setPosition(btn.getX() * scale, btn.getY() * scale, Align.center);
-        }
+    public WidgetGroup getLevelsGroup() {
+//        float scale = background.getWidth() / refWidth;
+//        for (LevelButton btn : levels) {
+//            btn.setPosition(btn.getX() * scale, + btn.getY() * scale, Align.center);
+//        }
         return levelGroup;
     }
 
@@ -47,20 +64,26 @@ abstract class CampaignArea {
         return levels;
     }
 
-    protected void addLevel(LevelButton level) {
+    void addLevel(LevelButton level) {
         levels.add(level);
         levelGroup.addActor(level);
     }
 
-    protected static class LevelButton extends TextButton {
-        public LevelButton(int level, int x, int y, Skin skin, ChangeListener listener) {
+    class LevelButton extends TextButton {
+        int originalX;
+        int originalY;
+
+        LevelButton(int level, int x, int y, Skin skin, ChangeListener listener) {
             super(String.valueOf(level), skin, "levelButton");
             addListener(listener);
             addListener(UIUtils.getButtonSoundListener());
             setSize(getStyle().font.getLineHeight() * 2f, getStyle().font.getLineHeight() * 2f);
             setPosition(x, y);
             setName(String.valueOf(level));
+            originalX = x;
+            originalY = y;
         }
+
     }
 
 }
