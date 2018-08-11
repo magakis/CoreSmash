@@ -1,6 +1,7 @@
 package com.coresmash;
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
@@ -71,6 +72,12 @@ public final class AdmobManager implements AdManager {
         dialog.setIndeterminate(true);
         dialog.setMessage("Loading...");
         dialog.setCanceledOnTouchOutside(false);
+        dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface anInterface) {
+                task.cancel(true);
+            }
+        });
 
         executorService = Executors.newSingleThreadScheduledExecutor();
 
@@ -79,7 +86,7 @@ public final class AdmobManager implements AdManager {
                 @Override
                 public void run() {
                     dialog.dismiss();
-                    Toast.makeText(context, "Task took too long. Ensure you have Internet connection and try again!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, "Task took too long!\nEnsure you have Internet connection and try again!", Toast.LENGTH_LONG).show();
                 }
             };
 
@@ -120,7 +127,6 @@ public final class AdmobManager implements AdManager {
 
     @Override
     public void showAdForReward(final AdRewardListener listener) {
-//        toggle();
         handler.postAtFrontOfQueue(new Runnable() {
             @Override
             public void run() {
