@@ -3,8 +3,11 @@ package com.coresmash.ui;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -12,28 +15,36 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
+import com.coresmash.levelbuilder.LevelListParser;
+import com.coresmash.levelbuilder.LevelListParser.RegisteredLevel;
 
 import java.util.Arrays;
 
 
 public class AssignLevelDialog extends Dialog {
-    private Array<com.coresmash.levelbuilder.LevelListParser.RegisteredLevel> levels;
-    private List<com.coresmash.levelbuilder.LevelListParser.RegisteredLevel> levelList;
-    private com.coresmash.levelbuilder.LevelListParser levelListParser;
+    private Array<RegisteredLevel> levels;
+    private List<RegisteredLevel> levelList;
+    private LevelListParser levelListParser;
 
     private AssignLevelTextInput assignLevelTextInput;
     private InsertLevelTextInput insertLevelTextInput;
+    private Input.TextInputListener swapLevelTextInput;
 
     public AssignLevelDialog(Skin skin) {
         super("", skin);
 
         levels = new Array<>();
         levelList = new List<>(skin);
-        levelListParser = new com.coresmash.levelbuilder.LevelListParser();
+        levelListParser = new LevelListParser();
 
         assignLevelTextInput = new AssignLevelTextInput();
         insertLevelTextInput = new InsertLevelTextInput();
+        swapLevelTextInput = new SwapLevelTextInput();
+
+        updateLevelList();
+        levelList.validate();
 
         ScrollPane sp = new ScrollPane(levelList);
         sp.setScrollingDisabled(true, false);
@@ -50,27 +61,28 @@ public class AssignLevelDialog extends Dialog {
         content.pad(lineHeight)
                 .padBottom(0);
 
+
         content.add(sp)
                 .grow()
-                .maxWidth(Value.percentWidth(.75f, UIUtils.getScreenActor(sp)))
                 .maxHeight(Value.percentHeight(.5f, UIUtils.getScreenActor(sp)));
 
+
         TextButton tbAssign = UIFactory.createTextButton("Assign", skin, "dialogButton");
+        final float buttonWidth = tbAssign.getPrefWidth() * 1.2f;
+
+        tbAssign.getLabelCell().width(buttonWidth);
         tbAssign.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                com.coresmash.levelbuilder.LevelListParser.RegisteredLevel chosen = levelList.getSelected();
+                RegisteredLevel chosen = levelList.getSelected();
                 assignLevelTextInput.activeLevel = chosen;
                 Gdx.input.getTextInput(assignLevelTextInput, "Assign '" + chosen.name + "' at:", String.valueOf(chosen.num), "");
             }
         });
-        tbAssign.getLabelCell().pad(Value.percentHeight(.5f, tbAssign.getLabel()));
 
-        TextButton tbCancel = UIFactory.createTextButton("Cancel", skin, "dialogButton");
-        tbCancel.getLabelCell()
-                .pad(Value.percentHeight(1, tbCancel.getLabel()))
-                .padTop(Value.percentHeight(.5f, tbCancel.getLabel()))
-                .padBottom(Value.percentHeight(.5f, tbCancel.getLabel()));
+
+        final TextButton tbCancel = UIFactory.createTextButton("Cancel", skin, "dialogButton");
+        tbCancel.getLabelCell().width(buttonWidth);
         tbCancel.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -79,42 +91,78 @@ public class AssignLevelDialog extends Dialog {
         });
 
         TextButton tbInsert = UIFactory.createTextButton("Insert", skin, "dialogButton");
-        tbInsert.getLabelCell()
-                .pad(Value.percentHeight(1, tbInsert.getLabel()))
-                .padTop(Value.percentHeight(.5f, tbInsert.getLabel()))
-                .padBottom(Value.percentHeight(.5f, tbInsert.getLabel()));
+        tbInsert.getLabelCell().width(buttonWidth);
         tbInsert.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                com.coresmash.levelbuilder.LevelListParser.RegisteredLevel chosen = levelList.getSelected();
+                RegisteredLevel chosen = levelList.getSelected();
                 insertLevelTextInput.activeLevel = chosen;
                 Gdx.input.getTextInput(insertLevelTextInput, "Inserted '" + chosen.name + "' at:", String.valueOf(chosen.num), "");
             }
         });
 
-        Table buttons = getButtonTable();
-        buttons.pad(Value.percentHeight(.25f, tbAssign));
-        buttons.add(tbAssign).padRight(Value.percentHeight(.5f, tbAssign)).expandX().center();
-        buttons.add(tbInsert).padRight(Value.percentHeight(.5f, tbAssign)).expandX().center();
-        buttons.add(tbCancel).expandX().right();
+        TextButton tbSwap = UIFactory.createTextButton("Swap", skin, "dialogButton");
+        tbSwap.getLabelCell().width(buttonWidth);
+        tbSwap.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                RegisteredLevel chosen = levelList.getSelected();
+                Gdx.input.getTextInput(swapLevelTextInput, "Swap '" + chosen.name + "' with:", String.valueOf(chosen.num), "Digits (0-9)");
+            }
+        });
+
+//        Table buttonsTable = getButtonTable();
+
+//        buttons.defaults()
+//                .width(tbAssign.getPrefWidth()*1.2f)
+//                .padRight(tbAssign.getPrefWidth()*.1f)
+//                .expandX().center();
+//        buttons.pad(5 * Gdx.graphics.getDensity());
+
+        HorizontalGroup buttons = new HorizontalGroup();
+        buttons.wrap(true);
+        buttons.space(buttonWidth * .1f);
+        buttons.align(Align.center);
+
+        buttons.addActor(tbAssign);
+        buttons.addActor(tbInsert);
+        buttons.addActor(tbSwap);
+        buttons.addActor(tbCancel);
+
+        getButtonTable().padTop(buttonWidth * .1f).padBottom(buttonWidth * .1f).add(buttons).minWidth(buttonWidth * 5);
+
+        addListener(new InputListener() {
+            @Override
+            public boolean keyDown(InputEvent event, int keycode) {
+                if (keycode == Input.Keys.ESCAPE || keycode == Input.Keys.BACK) {
+                    tbCancel.toggle();
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     @Override
     public Dialog show(Stage stage) {
-        levelList.clearItems();
-        levels.clear();
-
-        levelListParser.getLevels(levels);
-        levels.sort(com.coresmash.levelbuilder.LevelListParser.compLevel);
-
-        levelList.setItems(levels);
+        updateLevelList();
         super.show(stage);
         return this;
     }
 
+    private void updateLevelList() {
+        levelList.clearItems();
+        levels.clear();
+
+        levelListParser.getLevels(levels);
+        levels.sort(LevelListParser.compLevel);
+
+        levelList.setItems(levels);
+    }
+
     private class AssignLevelTextInput implements Input.TextInputListener {
-        protected com.coresmash.levelbuilder.LevelListParser.RegisteredLevel activeLevel;
-        protected com.coresmash.levelbuilder.LevelListParser.RegisteredLevel dummySearchLevel = new com.coresmash.levelbuilder.LevelListParser.RegisteredLevel(0, "");
+        private RegisteredLevel activeLevel;
+        private RegisteredLevel dummySearchLevel = new RegisteredLevel(0, "");
 
         @Override
         public void input(String text) {
@@ -122,17 +170,17 @@ public class AssignLevelDialog extends Dialog {
                 int assignedValue = Integer.parseInt(text);
                 if (assignedValue != activeLevel.num) {
                     dummySearchLevel.num = assignedValue;
-                    int index = Arrays.binarySearch(levelList.getItems().toArray(), dummySearchLevel, com.coresmash.levelbuilder.LevelListParser.compLevel);
+                    int index = Arrays.binarySearch(levelList.getItems().toArray(), dummySearchLevel, LevelListParser.compLevel);
 
                     if (index >= 0) {
                         levelList.getItems().get(index).num = 0;
                     }
 
                     activeLevel.num = assignedValue;
-                    levelList.getItems().sort(com.coresmash.levelbuilder.LevelListParser.compLevel);
+                    levelList.getItems().sort(LevelListParser.compLevel);
                     levelList.setItems(levelList.getItems());
                     levelListParser.serializeLevelList(levelList.getItems());
-                    com.coresmash.ui.Components.showToast("'" + activeLevel.name + "' was assigned to Level: " + activeLevel.num, getStage());
+                    Components.showToast("'" + activeLevel.name + "' was assigned to Level: " + activeLevel.num, getStage());
                 }
             }
             activeLevel = null;
@@ -144,17 +192,20 @@ public class AssignLevelDialog extends Dialog {
         }
     }
 
-    private class InsertLevelTextInput extends AssignLevelTextInput {
+    private class InsertLevelTextInput implements Input.TextInputListener {
+        private RegisteredLevel activeLevel;
+        private RegisteredLevel dummySearchLevel = new RegisteredLevel(0, "");
+
         @Override
         public void input(String text) {
             if (activeLevel != null && !text.isEmpty() && text.matches("[0-9]+")) {
                 int assignedValue = Integer.parseInt(text);
                 if (assignedValue != activeLevel.num) {
                     dummySearchLevel.num = assignedValue;
-                    int index = Arrays.binarySearch(levelList.getItems().toArray(), dummySearchLevel, com.coresmash.levelbuilder.LevelListParser.compLevel);
+                    int index = Arrays.binarySearch(levelList.getItems().toArray(), dummySearchLevel, LevelListParser.compLevel);
 
                     if (index >= 0) {
-                        Array<com.coresmash.levelbuilder.LevelListParser.RegisteredLevel> list = levelList.getItems();
+                        Array<RegisteredLevel> list = levelList.getItems();
                         do {
                             ++list.get(index).num;
                             ++index;
@@ -163,13 +214,53 @@ public class AssignLevelDialog extends Dialog {
                     }
 
                     activeLevel.num = assignedValue;
-                    levelList.getItems().sort(com.coresmash.levelbuilder.LevelListParser.compLevel);
+                    levelList.getItems().sort(LevelListParser.compLevel);
                     levelList.setItems(levelList.getItems());
                     levelListParser.serializeLevelList(levelList.getItems());
-                    com.coresmash.ui.Components.showToast("'" + activeLevel.name + "' was assigned to Level: " + activeLevel.num, getStage());
+                    Components.showToast("'" + activeLevel.name + "' was assigned to Level: " + activeLevel.num, getStage());
                 }
             }
             activeLevel = null;
+        }
+
+        @Override
+        public void canceled() {
+
+        }
+    }
+
+    private class SwapLevelTextInput implements Input.TextInputListener {
+        private RegisteredLevel dummySearchLevel = new RegisteredLevel(0, "");
+
+        @Override
+        public void input(String text) {
+            if (!text.isEmpty() && text.matches("[0-9]+")) {
+                RegisteredLevel activeLevel = levelList.getSelected();
+                int assignedValue = Integer.parseInt(text);
+                if (assignedValue != activeLevel.num) {
+                    dummySearchLevel.num = assignedValue;
+                    int index = Arrays.binarySearch(levelList.getItems().toArray(), dummySearchLevel, LevelListParser.compLevel);
+
+                    if (index >= 0) {
+                        RegisteredLevel secondLevel = levels.get(index);
+                        int tmp = secondLevel.num;
+                        secondLevel.num = activeLevel.num;
+                        activeLevel.num = tmp;
+
+                        levelList.getItems().sort(LevelListParser.compLevel);
+                        levelList.setItems(levelList.getItems());
+                        levelListParser.serializeLevelList(levelList.getItems());
+                        Components.showToast("'" + activeLevel.name + "' was swaped with '" + secondLevel.name + "'", getStage());
+                        return;
+                    }
+                }
+            }
+            Components.showToast("Could not perform Swap!", getStage());
+        }
+
+        @Override
+        public void canceled() {
+
         }
     }
 }
