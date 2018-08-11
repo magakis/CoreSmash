@@ -122,14 +122,13 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 powerupPickDialog.show(stage, Integer.valueOf(actor.getName()));
             }
         });
-        levelButtons = area1.getLevels();
 
         Container<Image> container = new Container<>(area1.getBackground());
         container.maxWidth(stage.getWidth());
         container.maxHeight(UIUtils.getHeightFor(area1.getBackground().getDrawable(), stage.getWidth()));
 
         Table testTable = new Table();
-        testTable.stack(container, area1.getLevelsGroup(stage)).grow();
+        testTable.stack(container, area1.getLevelsGroup()).grow();
 
         ScrollPane scrollPane = new ScrollPane(testTable);
         scrollPane.setOverscroll(false, false);
@@ -143,9 +142,10 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         Table uiOverlayRoot = new Table();
         rootStack.addActor(uiOverlayRoot);
 
-        UILeftBar leftBar = new UILeftBar();
+        UIRightBar leftBar = new UIRightBar();
         rootStack.addActor(leftBar.root);
 
+        levelButtons = area1.getLevels();
         int levelsUnlocked = gameInstance.getUserAccount().getUnlockedLevels();
         for (int i = levelsUnlocked; i < levelButtons.size(); ++i) {
             levelButtons.get(i).setDisabled(true);
@@ -235,17 +235,11 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         super.resize(width, height);
     }
 
-    private class UILeftBar implements UIComponent {
+    private class UIRightBar implements UIComponent {
         Container<Table> root;
 
-        UILeftBar() {
-            ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle();
-            style.imageUp = skin.getDrawable("slotMachine");
-            style.imageDown = skin.newDrawable("slotMachine", Color.GRAY);
-            style.up = skin.getDrawable("boxSmall");
-            style.down = skin.newDrawable("boxSmall", Color.GRAY);
-
-            ImageButton btnSlotMachine = new ImageButton(style);
+        UIRightBar() {
+            ImageButton btnSlotMachine = new ImageButton(skin, "ButtonLottery");
             btnSlotMachine.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -254,15 +248,13 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             });
 
             Viewport uiVp = stage.getViewport();
-            float btnSize = uiVp.getWorldWidth() * .12f;
+            float btnSize = uiVp.getWorldWidth() * .18f;
 
             Table bar = new Table();
-            bar.setBackground(skin.getDrawable("boxSmall"));
             bar.add(btnSlotMachine).size(btnSize).pad(3 * Gdx.graphics.getDensity());
 
             root = new Container<>(bar);
             root.center().right();
-            root.padRight(-4 * Gdx.graphics.getDensity());
         }
 
         @Override
@@ -340,8 +332,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             hgLevel.addActor(new Label("Level: ", skin, "h5"));
             hgLevel.addActor(lblLevel);
 
-            Image imgLotteryCoin = new Image(skin.getDrawable("lotteryCoin"));
-            Image imgHeart = new Image(skin.getDrawable("heartIcon"));
+            Image imgLotteryCoin = new Image(skin.getDrawable("LotteryCoin"));
+            Image imgHeart = new Image(skin.getDrawable("Heart"));
 //            imgLotteryCoin.addListener(new ClickListener() {
 //                @Override
 //                public void clicked(InputEvent event, float x, float y) {
@@ -354,24 +346,24 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             lblHearts = new Label(" ", skin, "h5");
 
             Table tblInfo = new Table();
-            tblInfo.top().defaults().left();
-            tblInfo.add(imgLotteryCoin).size(Value.percentHeight(1f, lblLotteryCoins)).padRight(Value.percentHeight(.5f, lblLotteryCoins));
+            tblInfo.top().defaults().left().padBottom(lblLotteryCoins.getMinHeight() / 4);
+            tblInfo.add(imgLotteryCoin).height(lblLotteryCoins.getMinHeight() * 1.5f).width(UIUtils.getWidthFor(imgLotteryCoin.getDrawable(), lblLotteryCoins.getMinHeight() * 1.5f)).padRight(Value.percentHeight(.2f, lblLotteryCoins));
             tblInfo.add(lblLotteryCoins).row();
-            tblInfo.add(imgHeart).size(Value.percentHeight(1f, lblHearts)).padRight(Value.percentHeight(.5f, lblHearts));
+            tblInfo.add(imgHeart).height(lblHearts.getMinHeight() * 1.5f).width(UIUtils.getWidthFor(imgHeart.getDrawable(), lblHearts.getMinHeight() * 1.5f)).padRight(Value.percentHeight(.2f, lblHearts));
             tblInfo.add(lblHearts);
 
-            Table tblAccount = new Table();
 
             Viewport uiVp = stage.getViewport();
             float btnUserSize = uiVp.getWorldWidth() * (uiVp.getWorldHeight() > uiVp.getWorldWidth() ? .15f : .1f);
             btnUser.getImageCell().grow().pad(5);
 
-            tblAccount.pad(lblLevel.getPrefHeight() / 3);
+            Table tblAccount = new Table();
             tblAccount.columnDefaults(0).padRight(5);
             tblAccount.row().padBottom(5);
-            tblAccount.background(skin.newDrawable("flatColor", 20 / 255f, 20 / 255f, 20 / 255f, 1));
+            tblAccount.background(skin.getDrawable("UserAccountFrame"));
             tblAccount.add(btnUser)
-                    .size(btnUserSize);
+                    .size(btnUserSize)
+                    .padRight(lblLotteryCoins.getMinHeight() / 2);
             tblAccount.add(tblInfo).fill().row();
             tblAccount.add(hgLevel).padBottom(5).left();
             tblAccount.add(hgExp).padBottom(5).right().row();
@@ -451,16 +443,13 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             }
 
             Table content = getContentTable();
-            content.padBottom(10 * Gdx.graphics.getDensity());
+            content.defaults().padBottom(10 * Gdx.graphics.getDensity());
             content.add(new Label("Choose your POWERUPS!", skin, "h4")).row();
             content.add(powerupsGroup)
-//                    .width(Value.percentWidth(.8f, UIUtils.getScreenActor(powerupsGroup)));
                     .width(stage.getWidth() * .8f);
 
-            float buttonSize = stage.getWidth() / 3;
 
             ImageButton btnClose = UIFactory.createImageButton(skin, "ButtonCancel");
-            btnClose.getImageCell().grow().size(buttonSize, UIUtils.getHeightFor(btnClose.getImage().getDrawable(), buttonSize));
             btnClose.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -470,7 +459,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             });
 
             ImageButton btnStart = UIFactory.createImageButton(skin, "ButtonStart");
-            btnStart.getImageCell().grow().size(buttonSize, UIUtils.getHeightFor(btnClose.getImage().getDrawable(), buttonSize));
             btnStart.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -495,10 +483,11 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 }
             });
 
+            float buttonSize = content.getMinWidth() * .3f;
             Table buttons = getButtonTable();
             buttons.row().padBottom(4 * Gdx.graphics.getDensity());
-            buttons.add(btnStart).expandX();
-            buttons.add(btnClose).expandX();
+            buttons.add(btnStart).width(buttonSize).height(UIUtils.getHeightFor(btnStart.getImage().getDrawable(), buttonSize)).padRight(buttonSize / 5);
+            buttons.add(btnClose).width(buttonSize).height(UIUtils.getHeightFor(btnClose.getImage().getDrawable(), buttonSize));
 
             addListener(new InputListener() {
                 @Override
@@ -514,7 +503,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             setMovable(false);
             setResizable(false);
             setKeepWithinStage(true);
-            pad(10 * Gdx.graphics.getDensity());
         }
 
         @Override
