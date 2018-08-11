@@ -920,7 +920,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 });
                 Table grpBallSpeed = createSliderGroup(lblBallSpeed, sldrBallSpeed);
 
-                sldrLauncherCooldown = new Slider(0f, 4.8f, .16f, false, skin);
+                sldrLauncherCooldown = new Slider(.08f, 3.2f, .04f, false, skin);
                 lblLauncherCooldown = new Label(String.format(Locale.ENGLISH, "LauncherCD: %1.2f", sldrLauncherCooldown.getValue()), skin, "h5");
                 sldrLauncherCooldown.addListener(stopTouchDown);
                 sldrLauncherCooldown.addListener(new ChangeListener() {
