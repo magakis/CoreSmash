@@ -1,7 +1,10 @@
 package com.coresmash.ui;
 
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
@@ -15,11 +18,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
+import com.coresmash.levelbuilder.LevelListParser;
 
 public class SaveFileDialog extends Dialog {
-    private final List<com.coresmash.levelbuilder.LevelListParser.RegisteredLevel> levelList;
-    private final Array<com.coresmash.levelbuilder.LevelListParser.RegisteredLevel> levels;
-    private final com.coresmash.levelbuilder.LevelListParser levelListParser;
+    private final List<LevelListParser.RegisteredLevel> levelList;
+    private final Array<LevelListParser.RegisteredLevel> levels;
+    private final LevelListParser levelListParser;
     private final TextField textField;
     private final Dialog dlgConfirmOverwrite;
 
@@ -27,7 +31,7 @@ public class SaveFileDialog extends Dialog {
         super("", skin);
 
         levels = new Array<>();
-        levelListParser = new com.coresmash.levelbuilder.LevelListParser();
+        levelListParser = new LevelListParser();
         levelList = new List<>(skin);
 
         TextField.TextFieldStyle tfstyle = new TextField.TextFieldStyle();
@@ -78,7 +82,7 @@ public class SaveFileDialog extends Dialog {
                 .padTop(Value.percentHeight(.5f, tbSave.getLabel()))
                 .padBottom(Value.percentHeight(.5f, tbSave.getLabel()));
         tbSave.addListener(new ChangeListener() {
-            private com.coresmash.levelbuilder.LevelListParser.RegisteredLevel dummySearchLevel = new com.coresmash.levelbuilder.LevelListParser.RegisteredLevel(0, "");
+            private LevelListParser.RegisteredLevel dummySearchLevel = new LevelListParser.RegisteredLevel(0, "");
 
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -99,7 +103,7 @@ public class SaveFileDialog extends Dialog {
             }
         });
 
-        TextButton tbCancel = UIFactory.createTextButton("Cancel", skin, "dialogButton");
+        final TextButton tbCancel = UIFactory.createTextButton("Cancel", skin, "dialogButton");
         tbCancel.getLabelCell()
                 .pad(Value.percentHeight(1, tbCancel.getLabel()))
                 .padTop(Value.percentHeight(.5f, tbCancel.getLabel()))
@@ -135,6 +139,17 @@ public class SaveFileDialog extends Dialog {
         buttons.add(textField).colspan(2).growX().row();
         buttons.add(tbSave).padRight(Value.percentHeight(.5f, tbSave)).expandX().left();
         buttons.add(tbCancel).expandX().right();
+
+        addListener(new InputListener() {
+            @Override
+            public boolean keyDown(InputEvent event, int keycode) {
+                if (keycode == Input.Keys.ESCAPE || keycode == Input.Keys.BACK) {
+                    tbCancel.toggle();
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     public void endDialog(String name) {
@@ -147,7 +162,7 @@ public class SaveFileDialog extends Dialog {
         levels.clear();
 
         levelListParser.getLevels(levels);
-        levels.sort(com.coresmash.levelbuilder.LevelListParser.compLevel);
+        levels.sort(LevelListParser.compLevel);
 
         levelList.setItems(levels);
         textField.setText(defText);

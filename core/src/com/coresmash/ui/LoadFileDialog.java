@@ -1,8 +1,11 @@
 package com.coresmash.ui;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
@@ -57,7 +60,7 @@ public class LoadFileDialog extends Dialog {
         tbDelete.getLabelCell()
                 .pad(Value.percentHeight(.5f, tbDelete.getLabel()));
 
-        TextButton tbCancel = UIFactory.createTextButton("Cancel", skin, "dialogButton");
+        final TextButton tbCancel = UIFactory.createTextButton("Cancel", skin, "dialogButton");
         tbCancel.getLabelCell()
                 .pad(Value.percentHeight(1, tbCancel.getLabel()))
                 .padTop(Value.percentHeight(.5f, tbCancel.getLabel()))
@@ -132,7 +135,16 @@ public class LoadFileDialog extends Dialog {
         buttons.add(tbDelete).padRight(Value.percentHeight(.5f, tbLoad)).expandX().center();
         buttons.add(tbCancel).expandX().right();
 
-
+        addListener(new InputListener() {
+            @Override
+            public boolean keyDown(InputEvent event, int keycode) {
+                if (keycode == Input.Keys.ESCAPE || keycode == Input.Keys.BACK) {
+                    tbCancel.toggle();
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     @Override
