@@ -43,13 +43,14 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
     private Skin skin;
     private Label percent;
     private AbstractTheme baseTheme;
-    private final float PPI = Gdx.graphics.getDensity();
+    private final float PPI;
 
     private TextureLoader.TextureParameter textureParam;
 
     public LoadingScreen(com.coresmash.CoreSmash game) {
         super(game);
 
+        PPI = Gdx.graphics.getDensity();
         stage = new Stage(gameInstance.getUIViewport());
         am = game.getAssetManager();
 
@@ -125,16 +126,21 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
         loadTexture("MovesIcon.png");
         loadTexture("HourGlass.png");
         loadTexture("HeartIcon.png");
+        loadTexture("Heart.png");
         loadTexture("LevelBuilderButton.png");
         loadTexture("SpikyBall.png");
         loadTexture("card.png");
         loadTexture("CardRewardShade.png");
-        loadTexture("key.png");
         loadTexture("SlotMachine.png");
         loadTexture("DialogFrame1.png");
         loadTexture("SimpleFrameTrans.png");
         loadTexture("FrameWooden.png");
-        loadTexture("PlayButton.png");
+        loadTexture("UserAccountFrame.png");
+        loadTexture("LotteryCoin.png");
+        loadTexture("ButtonPowerup.png");
+        loadTexture("ButtonPowerupFrame.png");
+        loadTexture("ButtonLottery.png");
+        loadTexture("ButtonPlay.png");
         loadTexture("ButtonCancel.png");
         loadTexture("ButtonStart.png");
         loadTexture("ButtonLevel.png");
@@ -145,6 +151,8 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
         loadTexture("ButtonEditor.png");
         loadTexture("MenuBackground.png");
         loadTexture("CampaignBackground.png");
+        loadTexture("BrightOuterDarkInner.png");
+        loadTexture("FrameColored.png");
     }
 
     private void loadSounds() {
@@ -183,7 +191,6 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
         am.load("h4o.ttf", BitmapFont.class, fontParams);
 
         loadBitmapFont("comic_96bo.fnt");
-
     }
 
     private void setupSounds() {
@@ -207,7 +214,7 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
         Texture tex;
         NinePatch ninePatch;
         Color SlightGray = new Color(.9f, .9f, .9f, 1);
-        Color IntenseGray = new Color(0x404040ff);
+        Color IntenseGray = new Color(0x808080ff);
         /* Used as the Original Scale of each asset */
         float defScale = 0;
 
@@ -227,7 +234,7 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
         tex = new Texture(pix);
         ninePatch = new NinePatch(tex, 10, 10, 10, 10);
         defScale = .4f;
-        ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
+        ninePatch.scale(defScale * PPI, defScale * PPI);
         skin.add("deleteMe", ninePatch);
 
         pix = new Pixmap(30, 30, Pixmap.Format.RGB888);
@@ -238,12 +245,12 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
         tex = new Texture(pix);
         ninePatch = new NinePatch(tex, 10, 10, 10, 10);
         defScale = .6f;
-        ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
+        ninePatch.scale(defScale * PPI, defScale * PPI);
         skin.add("boxBig", ninePatch);
 
         ninePatch = new NinePatch(am.get("DialogFrame1.png",Texture.class), 100,100,100,100);
         defScale = .2f;
-        ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
+        ninePatch.scale(defScale * PPI, defScale * PPI);
         skin.add("dialogFrame1", ninePatch);
 
         ninePatch = new NinePatch(am.get("toast1.png", Texture.class), 15, 15, 15, 15);
@@ -261,28 +268,34 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
 
         ninePatch = new NinePatch(am.get("LevelBuilderButton.png", Texture.class), 15, 15, 15, 15);
         defScale = .5f;
-        ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
+        ninePatch.scale(defScale * PPI, defScale * PPI);
         skin.add("levelBuilderButton", ninePatch);
 
         ninePatch = new NinePatch(am.get("softGray.png", Texture.class), 31, 31, 31, 31);
         defScale = 0.5f;
-        ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
+        ninePatch.scale(defScale * PPI, defScale * PPI);
         skin.add("softGray", ninePatch);
+
+        ninePatch = new NinePatch(am.get("UserAccountFrame.png", Texture.class), 64, 64, 64, 64);
+        defScale = 0.25f;
+        ninePatch.scale(defScale * PPI, defScale * PPI);
+        skin.add("UserAccountFrame", ninePatch);
 
         ninePatch = new NinePatch(am.get("ButtonEditor.png", Texture.class), 31, 31, 31, 31);
         defScale = 0.25f;
-        ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
+        ninePatch.scale(defScale * PPI, defScale * PPI);
         ninePatch.setPadding(ninePatch.getPadLeft() / 2, ninePatch.getPadRight() / 2, ninePatch.getPadTop() / 2, ninePatch.getPadBottom() / 2);
         skin.add("boxSmall", ninePatch);
 
-        ninePatch = new NinePatch(am.get("FrameWooden.png", Texture.class), 70, 70, 70, 70);//80//123
-        defScale = .25f;
-//        defScale = 1f;
-        ninePatch.scale(defScale * Gdx.graphics.getDensity(), defScale * Gdx.graphics.getDensity());
-        skin.add("simpleFrameTrans", ninePatch);
-
         ninePatch = new NinePatch(ninePatch);
         skin.add("EditorBigFrame", ninePatch);
+
+        ninePatch = new NinePatch(am.get("FrameColored.png", Texture.class), 80, 80, 80, 80);//80//123
+        defScale = .25f;
+//        defScale = 1f;
+        ninePatch.scale(defScale * PPI, defScale * PPI);
+        skin.add("simpleFrameTrans", ninePatch);
+
 
         // Textures
         pix = new Pixmap(41, 41, Pixmap.Format.RGBA8888);
@@ -306,10 +319,14 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
         skin.add("heartIcon", am.get("HeartIcon.png"));
         skin.add("cardBack", am.get("card.png"));
         skin.add("cardShade", am.get("CardRewardShade.png"));
-        skin.add("lotteryCoin", am.get("key.png"));
-        skin.add("PlayButton", am.get("PlayButton.png"));
+        skin.add("ButtonPlay", am.get("ButtonPlay.png"));
+        skin.add("Heart", am.get("Heart.png"));
         skin.add("slotMachine", am.get("SlotMachine.png"));
         skin.add("gameScreenTopRound", am.get("UIGameScreenTopRound.png"));
+        skin.add("LotteryCoin", am.get("LotteryCoin.png"));
+        skin.add("ButtonLottery", am.get("ButtonLottery.png"));
+        skin.add("ButtonPowerup", am.get("ButtonPowerup.png"));
+        skin.add("ButtonPowerupFrame", am.get("ButtonPowerupFrame.png"));
         skin.add("ButtonCancel", am.get("ButtonCancel.png"));
         skin.add("ButtonStart", am.get("ButtonStart.png"));
         skin.add("ButtonOpen", am.get("ButtonOpen.png"));
@@ -428,6 +445,12 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
         skin.add("ButtonCancel", imgbs);
 
         imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.imageUp = skin.getDrawable("ButtonLottery");
+        imgbs.imageDown = skin.newDrawable("ButtonLottery", SlightGray);
+        imgbs.imageDisabled = skin.newDrawable("ButtonLottery", Color.DARK_GRAY);
+        skin.add("ButtonLottery", imgbs);
+
+        imgbs = new ImageButton.ImageButtonStyle();
         imgbs.imageUp = skin.getDrawable("ButtonClose");
         imgbs.imageDown = skin.newDrawable("ButtonClose", SlightGray);
         imgbs.imageDisabled = skin.newDrawable("ButtonClose", Color.DARK_GRAY);
@@ -454,10 +477,10 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
         // SliderStyles
         Slider.SliderStyle ss = new Slider.SliderStyle();
         ss.background = skin.newDrawable("boxSmall");
-        ss.background.setMinHeight(15 * Gdx.graphics.getDensity());
+        ss.background.setMinHeight(15 * PPI);
         ss.knob = skin.getDrawable("myBall");
-        ss.knob.setMinHeight(20 * Gdx.graphics.getDensity());
-        ss.knob.setMinWidth(20 * Gdx.graphics.getDensity());
+        ss.knob.setMinHeight(20 * PPI);
+        ss.knob.setMinWidth(20 * PPI);
         skin.add("default-horizontal", ss);
 
         // CheckboxStyles
@@ -470,7 +493,9 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
 
         // Textfield
         TextField.TextFieldStyle tfs = new TextField.TextFieldStyle();
-        tfs.background = skin.getDrawable("boxSmall");
+        tfs.background = skin.newDrawable("boxSmall");
+        tfs.background.setRightWidth(tfs.background.getRightWidth() / 3);
+        tfs.background.setLeftWidth(tfs.background.getLeftWidth() / 3);
         tfs.font = skin.getFont("h4");
         tfs.fontColor = Color.WHITE;
         skin.add("default", tfs);
@@ -495,6 +520,12 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
         bs.down = skin.newDrawable("boxSmall", Color.GRAY);
         bs.disabled = skin.newDrawable("boxSmall", 0, 0, 0, 0);
         skin.add("TransWithHighlight", bs);
+
+        bs = new Button.ButtonStyle();
+        bs.up = skin.getDrawable("ButtonPowerup");
+        bs.down = skin.newDrawable("ButtonPowerup", SlightGray);
+        bs.disabled = skin.newDrawable("ButtonPowerup", Color.DARK_GRAY);
+        skin.add("ButtonPowerup", bs);
 
         // WindowStyles
         Window.WindowStyle ws = new Window.WindowStyle();
