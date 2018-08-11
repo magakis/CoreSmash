@@ -19,8 +19,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Stack;
 
-import static com.badlogic.gdx.Gdx.gl;
-
 public class CoreSmash extends Game {
     public static String VERSION = "0.1.3.2-alpha";
     public static boolean LOG_CRASHES = true;
@@ -36,6 +34,27 @@ public class CoreSmash extends Game {
     private Stack<Screen> screenStack;
 
     public CoreSmash() {
+        this(new AdManager() {
+            @Override
+            public void show() {
+
+            }
+
+            @Override
+            public void showAdForReward(AdRewardListener listener) {
+
+            }
+
+            @Override
+            public void hide() {
+
+            }
+
+            @Override
+            public void toggle() {
+
+            }
+        });
     }
 
     public CoreSmash(AdManager adManager) {
@@ -74,12 +93,12 @@ public class CoreSmash extends Game {
         userAccount = new UserAccount();
 
         super.setScreen(new LoadingScreen(this));
-        gl.glClearColor(30 / 255f, 30 / 255f, 30 / 255f, 1);
+        Gdx.gl.glClearColor(16 / 255f, 16 / 255f, 24 / 255f, 1);
     }
 
     @Override
     public void render() {
-        gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         try {
             super.render();
         } catch (RuntimeException err) {

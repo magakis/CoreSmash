@@ -2,15 +2,14 @@ package com.coresmash.desktop;
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import com.coresmash.AdManager;
 import com.coresmash.CoreSmash;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {
-//		int height = 1920;
-//		int width = 1080;
-        int height = 1024;
-        int width = 768;
+		int height = 900;
+		int width = 1600;
+//        int height = 1024;
+//        int width = 768;
 
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
         config.resizable = false;
@@ -26,27 +25,8 @@ public class DesktopLauncher {
 		config.foregroundFPS = 60;
 		config.backgroundFPS = 15;
 		config.vSyncEnabled = false;
+		config.forceExit = false;
 		System.setProperty("org.lwjgl.opengl.Display.allowSoftwareOpenGL", "true");
-		new LwjglApplication(new CoreSmash(new AdManager() {
-			@Override
-			public void show() {
-
-			}
-
-			@Override
-			public void showAdForReward(AdRewardListener listener) {
-
-			}
-
-			@Override
-			public void hide() {
-
-			}
-
-			@Override
-			public void toggle() {
-
-			}
-		}), config);
+		new LwjglApplication(new CoreSmash(), config);
 	}
 }
