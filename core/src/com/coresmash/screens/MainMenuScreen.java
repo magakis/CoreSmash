@@ -5,9 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -18,11 +16,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
+import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
+import com.coresmash.CoreSmash;
 import com.coresmash.levels.CampaignScreen;
 import com.coresmash.sound.SoundManager;
 import com.coresmash.ui.UIComponent;
@@ -120,59 +119,59 @@ public class MainMenuScreen extends ScreenBase {
     }
 
     private class UIMainMenu implements UIComponent {
-        Table root;
+        WidgetGroup root;
 
         public UIMainMenu() {
-            root = new Table();
+            root = new WidgetGroup();
 
-            ImageButton imgPlay = UIFactory.createImageButton(skin.getDrawable("PlayButton"), skin.newDrawable("PlayButton", Color.GRAY));
-            imgPlay.getImageCell().grow();
-            imgPlay.addListener(new ChangeListener() {
+            Container<ImageButton> imgPlay = newMenuButton();
+
+//            root.defaults()
+//                    .width(Value.percentWidth(3 / 5f, rootStack))
+//                    .height(Value.percentHeight(2 / 14f, rootStack));
+
+            Label versInfo = new Label("v." + CoreSmash.VERSION + " | Michail Angelos Gakis", skin, "h6", Color.DARK_GRAY);
+            versInfo.setAlignment(Align.bottom);
+
+//            root.bottom();
+//            root.add(imgPlay).padBottom(stage.getHeight()/14).row();
+//            root.add(versInfo).align(Align.center).height(versInfo.getPrefHeight());
+
+            root.addActor(imgPlay);
+            root.addActor(versInfo);
+
+            versInfo.setPosition(stage.getWidth() / 2, 10 * Gdx.graphics.getDensity(), Align.center);
+            imgPlay.setPosition(stage.getWidth() / 2, stage.getHeight() / 6, Align.bottom);
+        }
+
+        private Container<ImageButton> newMenuButton() {
+            ImageButton bt = UIFactory.createImageButton(skin.getDrawable("ButtonPlay"), skin.newDrawable("ButtonPlay", Color.GRAY));
+            bt.getImageCell().grow();
+            bt.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     campaignScreen.updateInfo(); // XXX(26/5/2018): Remove this
                     gameInstance.setScreen(campaignScreen);
                 }
             });
-            imgPlay.setTransform(true);
-            imgPlay.setOrigin(imgPlay.getWidth() / 2, imgPlay.getHeight() / 2);
-            imgPlay.setRotation(-.75f);
-            imgPlay.addAction(Actions.forever(
+
+            Container<ImageButton> result = new Container<>(bt);
+            result.setTransform(true);
+            result.fill();
+            result.setRotation(-.25f);
+            result.size(stage.getHeight() / 6);
+            result.setOrigin(Align.center);
+            result.addAction(Actions.forever(
                     Actions.sequence(
                             Actions.rotateBy(1.5f, 1.5f),
                             Actions.rotateBy(-1.5f, 1.5f)
                     )));
-            imgPlay.addAction(Actions.forever(
+            result.addAction(Actions.forever(
                     Actions.sequence(
-                            Actions.scaleBy(.02f, .04f, 0.75f),
-                            Actions.scaleBy(-.02f, -.04f, 0.75f)
+                            Actions.scaleBy(.08f, .04f, 0.75f),
+                            Actions.scaleBy(-.08f, -.04f, 0.75f)
                     )));
 
-
-            root.defaults()
-                    .width(Value.percentWidth(3 / 5f, rootStack))
-                    .height(Value.percentHeight(2 / 14f, rootStack));
-
-            Label versInfo = new Label("v." + gameInstance.VERSION + " | Michail Angelos Gakis", skin, "h6", Color.DARK_GRAY);
-            versInfo.setAlignment(Align.bottom);
-
-            root.bottom();
-            root.add(imgPlay).padBottom(Value.percentHeight(1 / 14f, root)).row();
-            root.add(versInfo).align(Align.center).height(versInfo.getPrefHeight());
-        }
-
-        private Container<TextButton> newMenuButton(String text, String name, EventListener el) {
-            TextButton bt = UIFactory.createTextButton(text, skin.get("menuButton", TextButton.TextButtonStyle.class));
-            bt.setName(name);
-            bt.addListener(el);
-
-            Container<TextButton> result = new Container<>(bt);
-            result.setTransform(true);
-            result.setOrigin(bt.getWidth() / 2, bt.getHeight() / 2);
-            result.fill();
-            result.setRotation(-.25f);
-            result.addAction(Actions.forever(Actions.sequence(Actions.rotateBy(.5f, 1.5f, Interpolation.smoother), Actions.rotateBy(-.5f, 1.5f, Interpolation.smoother))));
-            result.addAction(Actions.forever(Actions.sequence(Actions.scaleBy(.02f, .02f, 0.75f), Actions.scaleBy(-.02f, -.02f, 0.75f))));
             return result;
         }
 
