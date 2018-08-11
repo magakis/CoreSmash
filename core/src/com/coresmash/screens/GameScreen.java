@@ -333,13 +333,6 @@ public class GameScreen extends ScreenBase implements Observer {
 
     }
 
-    public enum GameMode {
-        CLASSIC,
-        SPIN_THE_CORE,
-        SHOOT_EM_UP,
-        DEBUG
-    }
-
     private class GameUI implements UIComponent, Observer {
         Table root, tblPowerUps, tblTop;
         Table tblTime, tblScore;
@@ -419,9 +412,16 @@ public class GameScreen extends ScreenBase implements Observer {
             }
 
             tblPowerUps = new Table();
-            tblPowerUps.setBackground(skin.getDrawable("boxSmall"));
-            tblPowerUps.defaults().size(50 * Gdx.graphics.getDensity(), 50 * Gdx.graphics.getDensity()).pad(3 * Gdx.graphics.getDensity());
+            tblPowerUps.defaults().size(60 * Gdx.graphics.getDensity(), 60 * Gdx.graphics.getDensity()).pad(3 * Gdx.graphics.getDensity());
             tblPowerUps.center();
+            tblPowerUps.setTouchable(Touchable.enabled);
+            tblPowerUps.addCaptureListener(new EventListener() {
+                @Override
+                public boolean handle(Event event) {
+                    event.handle();
+                    return true;
+                }
+            });
 
             tblCenter = new Table(skin);
             tblCenter.background("gameScreenTopRound");
@@ -458,21 +458,12 @@ public class GameScreen extends ScreenBase implements Observer {
                     .maxWidth(fontLayout.width);
 
 
-            tblPowerUps.setTouchable(Touchable.enabled);
-            tblPowerUps.addCaptureListener(new EventListener() {
-                @Override
-                public boolean handle(Event event) {
-                    event.handle();
-                    return true;
-                }
-            });
-
             /* Validate the tblTop in order to obtain the correct height for tblScore */
             tblTop.validate();
             root = new Table();
             root.setFillParent(true);
             root.top().add(tblTop).growX().height(Value.percentHeight(1.6f, tblScore)).padTop(Value.percentHeight(-.25f, tblScore)).row();
-            root.add(tblPowerUps).expand().center().right().padRight(-6 * Gdx.graphics.getDensity());
+            root.add(tblPowerUps).expand().center().right();
         }
 
         public void setup() {
@@ -552,12 +543,16 @@ public class GameScreen extends ScreenBase implements Observer {
             private Label text;
 
             public PowerupButton() {
-                super(skin, "default");
+                super(skin, "ButtonPowerup");
 
-                image = new Image();
                 text = new Label("null", skin, "h5");
                 text.setAlignment(Align.bottomLeft);
-                stack(image, text).grow();
+
+                image = new Image();
+                Container<Image> container = new Container<>(image);
+                container.size(Value.percentWidth(.5f, this));
+
+                stack(new Container<Container>(container), text).align(Align.center).grow();
             }
 
             public void setPower(PowerupType type, int count) {
@@ -613,7 +608,6 @@ public class GameScreen extends ScreenBase implements Observer {
             main.add(staticScore).padBottom(10).row();
             main.add(lblScore).row();
             main.add(buttonGroup).padTop(100);
-
         }
 
         public void update() {
