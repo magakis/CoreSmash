@@ -336,11 +336,12 @@ public class GameScreen extends ScreenBase implements Observer {
     private class GameUI implements UIComponent, Observer {
         Table root, tblPowerUps, tblTop;
         Table tblTime, tblScore;
+        Container<Table> centerTable;
         Table tblCenter;
         Label lblTime, lblScore, lblLives, lblMoves, lblTargetScore;
         PowerupButton[] powerupButtons;
         Label lblStaticLives;
-        Image imgHourGlass, imgMovesIcon, imgLivesIcon, imgRound;
+        Image imgHourGlass, imgMovesIcon, imgLivesIcon;
 
         public GameUI() {
             lblTime = new Label("0", skin, "h4");
@@ -424,18 +425,11 @@ public class GameScreen extends ScreenBase implements Observer {
             });
 
             tblCenter = new Table(skin);
-            tblCenter.background("gameScreenTopRound");
-            tblCenter.bottom();
-            tblCenter.columnDefaults(0).padRight(Value.percentHeight(.1f, lblLives)).padLeft(Value.percentHeight(.2f, lblLives));
+            tblCenter.columnDefaults(0).padRight(Value.percentHeight(.1f, lblLives));
             tblCenter.columnDefaults(1).width(lblLives.getPrefHeight() * 1.5f).right();
-            tblCenter.add(imgMovesIcon).size(lblLives.getPrefHeight());
-            tblCenter.add(lblMoves).left();
-            tblCenter.row().padTop(Value.percentHeight(.2f, lblLives));
-            tblCenter.add(imgLivesIcon).size(lblLives.getPrefHeight());
-            tblCenter.add(lblLives).left();
 
-            imgRound = new Image(skin, "gameScreenTopRound");
-            imgRound.setScaling(Scaling.fit);
+            centerTable = new Container<>(tblCenter);
+            centerTable.setBackground(skin.getDrawable("gameScreenTopRound"));
 
             GlyphLayout fontLayout = new GlyphLayout(skin.getFont("h4"), "000000/000000");
 
@@ -451,7 +445,7 @@ public class GameScreen extends ScreenBase implements Observer {
             tblTop.add(tblTime)
                     .growX()
                     .maxWidth(fontLayout.width);
-            tblTop.add(tblCenter)
+            tblTop.add(centerTable)
                     .size(lblLives.getPrefHeight() * 5);
             tblTop.add(tblScore)
                     .growX()
@@ -461,8 +455,7 @@ public class GameScreen extends ScreenBase implements Observer {
             /* Validate the tblTop in order to obtain the correct height for tblScore */
             tblTop.validate();
             root = new Table();
-            root.setFillParent(true);
-            root.top().add(tblTop).growX().height(Value.percentHeight(1.6f, tblScore)).padTop(Value.percentHeight(-.25f, tblScore)).row();
+            root.top().add(tblTop).padTop(Value.percentHeight(-.25f, tblScore)).growX().height(Value.percentHeight(1.6f, tblScore)).row();
             root.add(tblPowerUps).expand().center().right();
         }
 
@@ -470,17 +463,31 @@ public class GameScreen extends ScreenBase implements Observer {
             lblScore.setText(String.valueOf(0));
             lblTargetScore.setText(String.valueOf(statsManager.getTargetScore()));
             lblLives.setText(String.valueOf(statsManager.getLives()));
-
             lblMoves.setText(String.valueOf(statsManager.getMoves()));
 
+            tblCenter.clear();
+
             if (statsManager.isMovesEnabled() && statsManager.isLivesEnabled()) {
-                tblTop.getCells().get(1).padTop(Value.percentHeight(-1.0f, lblLives));
-                tblCenter.getCells().get(2).padBottom(lblLives.getPrefHeight() * .5f);
-                tblCenter.getCells().get(3).padBottom(lblLives.getPrefHeight() * .5f);
+                tblTop.getCell(centerTable).padTop(-tblScore.getPrefHeight() / 4);
+                centerTable.padTop(tblScore.getPrefHeight() * .9f);
+
+                tblCenter.add(imgMovesIcon).size(lblLives.getPrefHeight());
+                tblCenter.add(lblMoves).left();
+                tblCenter.row().padTop(Value.percentHeight(.2f, lblLives));
+                tblCenter.add(imgLivesIcon).size(lblLives.getPrefHeight());
+                tblCenter.add(lblLives).left();
             } else {
-                tblTop.getCells().get(1).padTop(Value.percentHeight(-2.5f, lblLives));
-                tblCenter.getCells().get(2).padBottom(-lblLives.getHeight() * .4f);
-                tblCenter.getCells().get(3).padBottom(-lblLives.getHeight() * .4f);
+                tblTop.getCell(centerTable).padTop(-tblScore.getPrefHeight());
+                centerTable.padTop(tblScore.getPrefHeight());
+
+                if (statsManager.isLivesEnabled()) {
+                    tblCenter.add(imgLivesIcon).size(lblLives.getPrefHeight());
+                    tblCenter.add(lblLives).left();
+                }
+                if (statsManager.isMovesEnabled()) {
+                    tblCenter.add(imgMovesIcon).size(lblMoves.getPrefHeight());
+                    tblCenter.add(lblMoves).left();
+                }
             }
 
             imgMovesIcon.setVisible(statsManager.isMovesEnabled());
