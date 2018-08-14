@@ -107,8 +107,7 @@ public final class AdmobManager implements AdManager {
             }
         });
 
-        AdRequest.Builder requestBuilder = new AdRequest.Builder();
-        adView.loadAd(requestBuilder.build());
+        adView.loadAd(new AdRequest.Builder().addTestDevice("EA655C74DEA919ECE1BFC5F57C5C8708").build());
 
         RelativeLayout.LayoutParams adParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
@@ -134,7 +133,7 @@ public final class AdmobManager implements AdManager {
                     rewardedVideoAd.show();
                 } else {
                     dialog.show();
-                    rewardedVideoAd.loadAd("ca-app-pub-3940256099942544/5224354917", new AdRequest.Builder().build());
+                    rewardedVideoAd.loadAd("ca-app-pub-3940256099942544/5224354917", new AdRequest.Builder().addTestDevice("EA655C74DEA919ECE1BFC5F57C5C8708").build());
                     rewardedVideoAd.setRewardedVideoAdListener(new RewardedVideoAdListener() {
                         @Override
                         public void onRewardedVideoAdLoaded() {
