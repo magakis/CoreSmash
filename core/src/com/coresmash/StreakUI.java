@@ -17,7 +17,7 @@ public class StreakUI implements UIComponent,Observer {
     public StreakUI(Skin skin) {
         m_skin = skin;
         root = new Table();
-        Label label = new Label("", m_skin, "comic_96bo");
+        Label label = new Label("", m_skin, "h2o");
 
         m_label = new Container<Label>(label);
         m_label.setTransform(true);
