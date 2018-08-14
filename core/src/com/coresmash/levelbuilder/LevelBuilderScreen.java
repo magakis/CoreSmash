@@ -43,9 +43,11 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.coresmash.CoreSmash;
+import com.coresmash.GameController;
 import com.coresmash.PersistentString;
 import com.coresmash.levels.Level;
 import com.coresmash.managers.RenderManager;
+import com.coresmash.managers.StatsManager;
 import com.coresmash.screens.GameScreen;
 import com.coresmash.screens.ScreenBase;
 import com.coresmash.tilemap.TilemapManager;
@@ -353,9 +355,9 @@ public class LevelBuilderScreen extends ScreenBase {
 
             testLevel = new Level() {
                 @Override
-                public void initialize(com.coresmash.GameController gameScreenController) {
-                    gameScreenController.loadLevelMap("_editor_");
-                    com.coresmash.managers.StatsManager stats = gameScreenController.getBehaviourPack().statsManager;
+                public void initialize(GameController gameScreenController) {
+                    gameScreenController.loadLevelMap("_editor_", LevelListParser.Source.EXTERNAL);
+                    StatsManager stats = gameScreenController.getBehaviourPack().statsManager;
                     stats.debug();
                     for (TileType.PowerupType type : TileType.PowerupType.values()) {
                         stats.enablePowerup(type, 10);
@@ -367,7 +369,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
 
                 @Override
-                public void end(com.coresmash.managers.StatsManager.GameStats stats) {
+                public void end(StatsManager.GameStats stats) {
                 }
 
                 @Override

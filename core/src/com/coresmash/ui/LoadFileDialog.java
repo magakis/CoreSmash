@@ -18,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
+import com.coresmash.levelbuilder.LevelListParser;
 
 public class LoadFileDialog extends Dialog {
     private final List<com.coresmash.levelbuilder.LevelListParser.RegisteredLevel> levelList;
@@ -152,7 +153,7 @@ public class LoadFileDialog extends Dialog {
         levelList.clearItems();
         levels.clear();
 
-        levelListParser.getLevels(levels);
+        levelListParser.getLevels(levels, LevelListParser.Source.EXTERNAL);
         levels.sort(com.coresmash.levelbuilder.LevelListParser.compLevel);
 
         levelList.setItems(levels);

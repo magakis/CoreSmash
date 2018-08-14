@@ -47,7 +47,7 @@ public final class LevelParser {
             return new ParsedTile();
         }
     };
-    private static com.coresmash.levelbuilder.ParsedLevel parsedLevel = new com.coresmash.levelbuilder.ParsedLevel();
+    private static ParsedLevel parsedLevel = new ParsedLevel();
 
     public static boolean saveAs(String name, Map map, LevelSettings levelSettings, com.coresmash.levelbuilder.MapSettings[] mapSettings) {
         FileHandle file = Gdx.files.external("/CoreSmash/levels/" + name + ".xml");
@@ -106,8 +106,15 @@ public final class LevelParser {
         return true;
     }
 
-    public static com.coresmash.levelbuilder.ParsedLevel loadFrom(String filename) {
-        FileHandle file = Gdx.files.external("/CoreSmash/levels/" + filename + ".xml");
+    public static ParsedLevel loadFrom(String filename, LevelListParser.Source source) {
+        if (source == null) throw new RuntimeException("Source is required!");
+
+        FileHandle file;
+        if (source.equals(LevelListParser.Source.EXTERNAL)) {
+            file = Gdx.files.external("/CoreSmash/levels/" + filename + ".xml");
+        } else {
+            file = Gdx.files.internal("levels/" + filename + ".xml");
+        }
         if (!file.exists()) return null;
 
         parsedLevel.reset();

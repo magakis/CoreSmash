@@ -161,7 +161,7 @@ public class SaveFileDialog extends Dialog {
         levelList.clearItems();
         levels.clear();
 
-        levelListParser.getLevels(levels);
+        levelListParser.getLevels(levels, LevelListParser.Source.EXTERNAL);
         levels.sort(LevelListParser.compLevel);
 
         levelList.setItems(levels);

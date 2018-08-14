@@ -1,5 +1,6 @@
 package com.coresmash;
 
+import com.coresmash.levelbuilder.LevelListParser;
 import com.coresmash.levelbuilder.LevelParser;
 import com.coresmash.levelbuilder.LevelSettings;
 import com.coresmash.levelbuilder.MapSettings;
@@ -78,8 +79,8 @@ public class GameController {
 //        loadLevelMap("level" + lvl);
 //    }
 
-    public void loadLevelMap(String fileName) {
-        ParsedLevel parsedLevel = LevelParser.loadFrom(fileName);
+    public void loadLevelMap(String fileName, LevelListParser.Source source) {
+        ParsedLevel parsedLevel = LevelParser.loadFrom(fileName, source);
 
         LevelSettings levelSettings = Objects.requireNonNull(parsedLevel).getLevelSettings();
         statsManager.setLives(levelSettings.lives);

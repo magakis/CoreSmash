@@ -87,15 +87,22 @@ public class LevelListParser {
         }
     }
 
-    public void parseAssignedLevels(Array<RegisteredLevel> output) {
-        FileHandle file = Gdx.files.external("/CoreSmash/levels/level_list");
-        output.clear();
+    public void parseAssignedLevels(Array<RegisteredLevel> output, Source source) {
+        if (source == null) throw new RuntimeException("Source type is required!");
 
+
+        FileHandle file;
+        if (source.equals(Source.EXTERNAL)) {
+            file = Gdx.files.external("/CoreSmash/levels/level_list");
+        } else {
+            file = Gdx.files.internal("levels/level_list");
+        }
         if (!file.exists()) return;
+
+        output.clear();
 
         XmlPullParser parser = XmlManager.getParser();
         try {
-
             parser.setInput(file.reader());
             int type = parser.getEventType();
             do {
@@ -132,17 +139,21 @@ public class LevelListParser {
         }
     }
 
-    public void getLevels(Array<RegisteredLevel> output) {
+    public void getLevels(Array<RegisteredLevel> output, Source source) {
         helperArray.clear();
 
         getFoundLevels(output);
-        parseAssignedLevels(helperArray);
+        parseAssignedLevels(helperArray, source);
         for (RegisteredLevel assigned : helperArray) {
             int index = output.indexOf(assigned, false);
             if (index != -1) {
                 output.get(index).num = assigned.num;
             }
         }
+    }
+
+    public enum Source {
+        INTERNAL, EXTERNAL
     }
 
     public static class RegisteredLevel {
@@ -164,7 +175,7 @@ public class LevelListParser {
         public String toString() {
             stringBuilder.setLength(0);
             return num == 0 ? name :
-                    stringBuilder.append('(').append(num).append(')').append("    ").append(name).toString();
+                    stringBuilder.append('(').append(num).append(')').append("  ").append(name).toString();
         }
 
         @Override

@@ -257,7 +257,7 @@ final public class LevelBuilder {
     }
 
     public boolean load(String name) {
-        ParsedLevel parsedLevel = LevelParser.loadFrom(name);
+        ParsedLevel parsedLevel = LevelParser.loadFrom(name, LevelListParser.Source.EXTERNAL);
         if (parsedLevel == null) return false;
 
         map.reset();

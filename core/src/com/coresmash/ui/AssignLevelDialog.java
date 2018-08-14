@@ -43,9 +43,6 @@ public class AssignLevelDialog extends Dialog {
         insertLevelTextInput = new InsertLevelTextInput();
         swapLevelTextInput = new SwapLevelTextInput();
 
-        updateLevelList();
-        levelList.validate();
-
         ScrollPane sp = new ScrollPane(levelList);
         sp.setScrollingDisabled(true, false);
         sp.setOverscroll(false, false);
@@ -154,7 +151,7 @@ public class AssignLevelDialog extends Dialog {
         levelList.clearItems();
         levels.clear();
 
-        levelListParser.getLevels(levels);
+        levelListParser.getLevels(levels, LevelListParser.Source.EXTERNAL);
         levels.sort(LevelListParser.compLevel);
 
         levelList.setItems(levels);

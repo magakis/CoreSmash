@@ -29,6 +29,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.coresmash.AdManager;
 import com.coresmash.CoreSmash;
+import com.coresmash.GameController;
 import com.coresmash.RoundEndListener;
 import com.coresmash.UserAccount;
 import com.coresmash.levelbuilder.LevelListParser;
@@ -179,10 +180,10 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         if (index < 0) return;
 
         final RegisteredLevel level = levels.get(index);
-        gameScreen.deployLevel(new com.coresmash.levels.CampaignLevel(lvl, gameInstance.getUserAccount(), this) {
+        gameScreen.deployLevel(new CampaignLevel(lvl, gameInstance.getUserAccount(), this) {
             @Override
-            public void initialize(com.coresmash.GameController controller) {
-                controller.loadLevelMap(level.name);
+            public void initialize(GameController controller) {
+                controller.loadLevelMap(level.name, LevelListParser.Source.INTERNAL);
                 StatsManager statsManager = controller.getBehaviourPack().statsManager;
                 statsManager.setLevel(level.num, gameInstance.getUserAccount().getUnlockedLevels());
                 for (Powerup powerup : powerups) {
@@ -205,7 +206,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     @Override
     public void show() {
         levels.clear();
-        levelListParser.parseAssignedLevels(levels);
+        levelListParser.parseAssignedLevels(levels, LevelListParser.Source.INTERNAL);
         levels.sort(LevelListParser.compLevel);
         super.show();
     }
@@ -248,7 +249,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             });
 
             Viewport uiVp = stage.getViewport();
-            float btnSize = uiVp.getWorldWidth() * .18f;
+            float btnSize = uiVp.getWorldWidth() * .16f;
 
             Table bar = new Table();
             bar.add(btnSlotMachine).size(btnSize).pad(3 * Gdx.graphics.getDensity());
