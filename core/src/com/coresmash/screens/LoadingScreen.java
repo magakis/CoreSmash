@@ -6,6 +6,7 @@ import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.assets.loaders.TextureLoader;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.assets.loaders.resolvers.ResolutionFileResolver;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -37,7 +38,7 @@ import com.coresmash.ui.UIUtils;
 
 import java.util.Locale;
 
-public class LoadingScreen extends com.coresmash.screens.ScreenBase {
+public class LoadingScreen extends ScreenBase {
     private AssetManager am;
     private Stage stage;
     private Skin skin;
@@ -58,8 +59,6 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
         textureParam.genMipMaps = true;
         textureParam.minFilter = Texture.TextureFilter.MipMapLinearNearest;
         textureParam.magFilter = Texture.TextureFilter.MipMapLinearNearest;
-//        textureParam.minFilter = Texture.TextureFilter.Linear;
-//        textureParam.magFilter = Texture.TextureFilter.Linear;
 
         FileHandleResolver internalResolver = new InternalFileHandleResolver();
         am.setLoader(FreeTypeFontGenerator.class, new FreeTypeFontGeneratorLoader(internalResolver));
@@ -106,20 +105,15 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
     }
 
     private void loadAllTextures() {
-        loadTexture("asteroid.png");
-        loadTexture("balloon.png");
         loadTexture("ball.png");
         loadTexture("cog.png");
-        loadTexture("group.png");
         loadTexture("speaker.png");
         loadTexture("DefaultUserIcon.png");
         loadTexture("toast1.png");
-        loadTexture("dialog1.png");
         loadTexture("GameScreenTop.png");
         loadTexture("softGray.png");
         loadTexture("progressbar_inner.png");
         loadTexture("map.png");
-        loadTexture("SimpleOrangeBorder.png");
         loadTexture("BorderTrans.png");
         loadTexture("default.png");
         loadTexture("UIGameScreenTopRound.png");
@@ -132,8 +126,6 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
         loadTexture("card.png");
         loadTexture("CardRewardShade.png");
         loadTexture("SlotMachine.png");
-        loadTexture("DialogFrame1.png");
-        loadTexture("SimpleFrameTrans.png");
         loadTexture("FrameWooden.png");
         loadTexture("UserAccountFrame.png");
         loadTexture("LotteryCoin.png");
@@ -158,6 +150,7 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
     private void loadSounds() {
         am.load("blop.mp3", Sound.class);
         am.load("BackgroundLoop.mp3", Sound.class);
+        am.load("Music.mp3", Music.class);
         am.load("click.mp3", Sound.class);
         am.load("bombExplosion.mp3", Sound.class);
     }
@@ -189,14 +182,12 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
         fontParams.fontParameters.borderWidth = 1 * PPI;
         fontParams.fontParameters.size = (int) (18 * PPI);
         am.load("h4o.ttf", BitmapFont.class, fontParams);
-
-        loadBitmapFont("comic_96bo.fnt");
     }
 
     private void setupSounds() {
         SoundManager soundManager = SoundManager.get();
+        soundManager.loadMusic("backgroundMusic", am.get("Music.mp3", Music.class));
         soundManager.loadSound("regularBallDestroy", am.get("blop.mp3", Sound.class));
-        soundManager.loadSound("backgroundMusic", am.get("BackgroundLoop.mp3", Sound.class));
         soundManager.loadSound("buttonClick", am.get("click.mp3", Sound.class));
         soundManager.loadSound("bombExplosion", am.get("bombExplosion.mp3", Sound.class));
     }
@@ -248,10 +239,10 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
         ninePatch.scale(defScale * PPI, defScale * PPI);
         skin.add("boxBig", ninePatch);
 
-        ninePatch = new NinePatch(am.get("DialogFrame1.png",Texture.class), 100,100,100,100);
-        defScale = .2f;
-        ninePatch.scale(defScale * PPI, defScale * PPI);
-        skin.add("dialogFrame1", ninePatch);
+//        ninePatch = new NinePatch(am.get("DialogFrame1.png",Texture.class), 100,100,100,100);
+//        defScale = .2f;
+//        ninePatch.scale(defScale * PPI, defScale * PPI);
+//        skin.add("dialogFrame1", ninePatch);
 
         ninePatch = new NinePatch(am.get("toast1.png", Texture.class), 15, 15, 15, 15);
         skin.add("toast1", ninePatch);
@@ -311,7 +302,7 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
         skin.add("cog", am.get("cog.png"));
         skin.add("userDefIcon", am.get("DefaultUserIcon.png"));
         skin.add("ball", am.get("ball.png"));
-        skin.add("asteroid", am.get("asteroid.png"));
+//        skin.add("asteroid", am.get("asteroid.png"));
         skin.add("map", am.get("map.png"));
         skin.add("speaker", am.get("speaker.png"));
         skin.add("timeIcon", am.get("HourGlass.png"));
@@ -356,7 +347,6 @@ public class LoadingScreen extends com.coresmash.screens.ScreenBase {
         registerFont(skin, "h2o", "h2o.ttf");
         registerFont(skin, "h3o", "h3o.ttf");
         registerFont(skin, "h4o", "h4o.ttf");
-        registerFont(skin, "comic_96bo", "comic_96bo.fnt");
 
         // 96   84  72  60  48  36
 

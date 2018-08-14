@@ -22,6 +22,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.coresmash.CoreSmash;
+import com.coresmash.levelbuilder.LevelBuilderScreen;
 import com.coresmash.levels.CampaignScreen;
 import com.coresmash.sound.SoundManager;
 import com.coresmash.ui.UIComponent;
@@ -34,7 +35,7 @@ import com.coresmash.ui.UIUtils;
 
 public class MainMenuScreen extends ScreenBase {
     private CampaignScreen campaignScreen;
-    private com.coresmash.levelbuilder.LevelBuilderScreen levelBuilderScreen;
+    private LevelBuilderScreen levelBuilderScreen;
     private Stage stage;
     private Skin skin;
     private Stack rootStack;
@@ -42,9 +43,9 @@ public class MainMenuScreen extends ScreenBase {
     private UIMainMenu uiMainMenu;
 
     /* TODO: Should be part of some options class */
-    private SoundManager.SoundAsset backgroundMusic;
+    private SoundManager.MusicAsset backgroundMusic;
 
-    public MainMenuScreen(com.coresmash.CoreSmash game) {
+    public MainMenuScreen(CoreSmash game) {
         super(game);
         stage = new Stage(game.getUIViewport());
         setupMainMenuStage(stage);
@@ -63,9 +64,11 @@ public class MainMenuScreen extends ScreenBase {
         });
 
         campaignScreen = new CampaignScreen(gameInstance);
-        levelBuilderScreen = new com.coresmash.levelbuilder.LevelBuilderScreen(gameInstance);
-        backgroundMusic = SoundManager.get().getSoundAsset("backgroundMusic");
-//        backgroundMusic.loop();
+        levelBuilderScreen = new LevelBuilderScreen(gameInstance);
+        backgroundMusic = SoundManager.get().getMusicAsset("backgroundMusic");
+        backgroundMusic.setLooping(true);
+        backgroundMusic.setVolume(.3f);
+        backgroundMusic.play();
     }
 
     @Override
