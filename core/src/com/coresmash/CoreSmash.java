@@ -20,7 +20,7 @@ import java.util.Calendar;
 import java.util.Stack;
 
 public class CoreSmash extends Game {
-    public static String VERSION = "0.1.3.2-alpha";
+    public static String VERSION = "0.1.3.3-alpha";
     public static boolean LOG_CRASHES = true;
     public static boolean DEBUG_TABLET = false;
 
