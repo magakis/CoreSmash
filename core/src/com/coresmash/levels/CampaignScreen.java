@@ -431,9 +431,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             powerupButtons = new Button[PowerupType.values().length];
 
             HorizontalGroup powerupsGroup = new HorizontalGroup();
-            powerupsGroup.space(10 * Gdx.graphics.getDensity());
+            powerupsGroup.space(8 * Gdx.graphics.getDensity());
             powerupsGroup.wrap(true);
-            powerupsGroup.wrapSpace(10 * Gdx.graphics.getDensity());
+            powerupsGroup.wrapSpace(8 * Gdx.graphics.getDensity());
             powerupsGroup.align(Align.center);
 
             int counter = 0;
@@ -445,10 +445,10 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             }
 
             Table content = getContentTable();
-            content.defaults().padBottom(10 * Gdx.graphics.getDensity());
+            content.defaults().padBottom(5 * Gdx.graphics.getDensity());
             content.add(new Label("Choose your POWERUPS!", skin, "h4")).row();
             content.add(powerupsGroup)
-                    .width(stage.getWidth() * .8f);
+                    .width(powerupButtons[0].getPrefWidth() * 5);
 
 
             ImageButton btnClose = UIFactory.createImageButton(skin, "ButtonCancel");
@@ -487,7 +487,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             float buttonSize = content.getMinWidth() * .3f;
             Table buttons = getButtonTable();
-            buttons.row().padBottom(4 * Gdx.graphics.getDensity());
             buttons.add(btnStart).width(buttonSize).height(UIUtils.getHeightFor(btnStart.getImage().getDrawable(), buttonSize)).padRight(buttonSize / 5);
             buttons.add(btnClose).width(buttonSize).height(UIUtils.getHeightFor(btnClose.getImage().getDrawable(), buttonSize));
 
@@ -540,7 +539,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             tb.setName(type.name());
             tb.add().row();
             tb.add(lbl).row();
-            tb.getImageCell().size(50 * Gdx.graphics.getDensity(), 50 * Gdx.graphics.getDensity() - lbl.getPrefHeight()).row();
+            tb.getImageCell().size(40 * Gdx.graphics.getDensity(), 40 * Gdx.graphics.getDensity() - lbl.getPrefHeight()).row();
             return tb;
         }
     }

@@ -99,19 +99,7 @@ public class CoreSmash extends Game {
     @Override
     public void render() {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        try {
-            super.render();
-        } catch (RuntimeException err) {
-            if (LOG_CRASHES) {
-                SimpleDateFormat format = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss");
-                try (Writer writer = Gdx.files.external("/CoreSmash/crash-logs/" + format.format(Calendar.getInstance().getTime()) + ".txt").writer(false)) {
-                    err.printStackTrace(new PrintWriter(writer));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            throw err;
-        }
+        super.render();
     }
 
     public AdManager getAdManager() {

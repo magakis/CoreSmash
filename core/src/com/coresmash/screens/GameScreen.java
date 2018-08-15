@@ -396,9 +396,9 @@ public class GameScreen extends ScreenBase implements Observer {
 
             board = new Table(skin);
             board.background("BoardBackground");
-            board.columnDefaults(0).expandX();
+            board.columnDefaults(0).expandX().padBottom(lblTime.getPrefHeight() / 6);
             board.columnDefaults(1);
-            board.columnDefaults(2).expandX();
+            board.columnDefaults(2).expandX().padBottom(lblScore.getPrefHeight() / 6);
 
             Container<Table> timeWrapper = new Container<>(tblTime);
             timeWrapper.height(Value.percentHeight(2, lblTime)).width(new Value() {
@@ -463,7 +463,7 @@ public class GameScreen extends ScreenBase implements Observer {
                 }
             });
 
-            float boardHeight = tblScore.getHeight() * 1.2f; // Prior call to board.validate() is required!
+            float boardHeight = tblScore.getHeight() * 1.28f; // Prior call to board.validate() is required!
             boardRoot = new Container<>(board);
             boardRoot.fill().height(boardHeight).width(UIUtils.getWidthFor(board.getBackground(), boardHeight));
 

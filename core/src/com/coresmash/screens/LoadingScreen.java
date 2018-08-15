@@ -123,7 +123,8 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("Heart.png");
         loadTexture("LevelBuilderButton.png");
         loadTexture("SpikyBall.png");
-        loadTexture("card.png");
+        loadTexture("UserBoardBackground.png");
+        loadTexture("LotteryCard.png");
         loadTexture("CardRewardShade.png");
         loadTexture("SlotMachine.png");
         loadTexture("FrameWooden.png");
@@ -245,12 +246,12 @@ public class LoadingScreen extends ScreenBase {
         skin.add("levelBuilderButton", ninePatch);
 
         ninePatch = new NinePatch(am.get("softGray.png", Texture.class), 31, 31, 31, 31);
-        defScale = 0.5f;
+        defScale = 0.5f * PPI;
         ninePatch.scale(defScale * PPI, defScale * PPI);
         skin.add("softGray", ninePatch);
 
-        ninePatch = new NinePatch(am.get("UserAccountFrame.png", Texture.class), 64, 64, 64, 64);
-        defScale = 0.25f;
+        ninePatch = new NinePatch(am.get("UserBoardBackground.png", Texture.class), 40, 40, 40, 40);// 64, 64, 64, 64);
+        defScale = .25f;
         ninePatch.scale(defScale * PPI, defScale * PPI);
         skin.add("UserAccountFrame", ninePatch);
 
@@ -263,10 +264,9 @@ public class LoadingScreen extends ScreenBase {
         ninePatch = new NinePatch(ninePatch);
         skin.add("EditorBigFrame", ninePatch);
 
-        ninePatch = new NinePatch(am.get("FrameColored.png", Texture.class), 80, 80, 80, 80);//80//123
-        defScale = .25f;
-//        defScale = 1f;
-        ninePatch.scale(defScale * PPI, defScale * PPI);
+        ninePatch = new NinePatch(am.get("FrameColored.png", Texture.class), 40, 40, 40, 40);//80//123
+        defScale = .25f * PPI;
+        ninePatch.scale(defScale, defScale);
         skin.add("simpleFrameTrans", ninePatch);
 
 
@@ -289,7 +289,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("timeIcon", am.get("HourGlass.png"));
         skin.add("movesIcon", am.get("MovesIcon.png"));
         skin.add("heartIcon", am.get("HeartIcon.png"));
-        skin.add("cardBack", am.get("card.png"));
+        skin.add("cardBack", am.get("LotteryCard.png"));
         skin.add("cardShade", am.get("CardRewardShade.png"));
         skin.add("ButtonPlay", am.get("ButtonPlay.png"));
         skin.add("Heart", am.get("Heart.png"));

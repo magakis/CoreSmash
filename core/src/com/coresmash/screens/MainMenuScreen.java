@@ -68,7 +68,7 @@ public class MainMenuScreen extends ScreenBase {
         backgroundMusic = SoundManager.get().getMusicAsset("backgroundMusic");
         backgroundMusic.setLooping(true);
         backgroundMusic.setVolume(.3f);
-        backgroundMusic.play();
+//        backgroundMusic.play();
     }
 
     @Override

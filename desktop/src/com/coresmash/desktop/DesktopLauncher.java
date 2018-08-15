@@ -6,14 +6,11 @@ import com.coresmash.CoreSmash;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {
-		int height = 900;
-		int width = 1600;
-//        int height = 1024;
-//        int width = 768;
+		int height = 1024;
+		int width = 768;
 
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
         config.resizable = false;
-		config.y = 0;
 		if (CoreSmash.DEBUG_TABLET) {
 			config.height = width;
 			config.width = height;
