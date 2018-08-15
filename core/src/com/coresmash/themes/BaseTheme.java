@@ -14,6 +14,6 @@ public class BaseTheme extends com.coresmash.themes.AbstractTheme {
         setResourcesFor(18, "ballWall.png", null);
         setResourcesFor(20, "SpikyBall.png", null);
         setResourcesFor(101, "Fireball.png", null);
-        setResourcesFor(102, "ballColorBomb.png", null);
+        setResourcesFor(102, "ColorBomb.png", null);
     }
 }
