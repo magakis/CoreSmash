@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Queue;
+import com.coresmash.WorldSettings;
 import com.coresmash.themes.AbstractTheme;
 import com.coresmash.tilemap.Tilemap;
 import com.coresmash.tilemap.TilemapTile;
@@ -23,7 +24,7 @@ public class RenderManager {
     private final SpriteBatch batch;
     private final AssetManager assetManager;
     private final ShapeRenderer shapeRenderer;
-    private final float sideLength = com.coresmash.WorldSettings.getTileSize();
+    private final float sideLength = WorldSettings.getTileSize();
     private final float sideLengthHalf = sideLength / 2.f;
     private AbstractTheme theme;
 
@@ -80,8 +81,9 @@ public class RenderManager {
         float sideLen = sideLengthHalf * mt.getScale();
 
         Texture texture = theme.getTexture(tile.getID());
+        float drawWidthHalf = texture.getWidth() / (texture.getHeight() / sideLen);
 
-        batch.draw(texture, atPos.x - sideLen, atPos.y - sideLen, sideLen * 2, sideLen * 2);
+        batch.draw(texture, atPos.x - drawWidthHalf, atPos.y - sideLen, drawWidthHalf * 2, sideLen * 2);
     }
 
     public void draw(List<MovingBall> mt) {
