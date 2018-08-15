@@ -11,7 +11,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/asteroid"
+        android:icon="@mipmap/coresmash_logo"
         android:label="@string/app_name"
         android:theme="@style/GdxTheme">
         <activity
