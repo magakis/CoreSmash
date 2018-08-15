@@ -39,6 +39,7 @@ import com.coresmash.managers.StatsManager;
 import com.coresmash.managers.StatsManager.GameStats;
 import com.coresmash.screens.GameScreen;
 import com.coresmash.screens.ScreenBase;
+import com.coresmash.tilemap.TilemapManager;
 import com.coresmash.tiles.TileType.PowerupType;
 import com.coresmash.ui.Components;
 import com.coresmash.ui.LotteryDialog;
@@ -192,7 +193,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             }
 
             @Override
-            public void update(float delta, com.coresmash.tilemap.TilemapManager tilemapManager) {
+            public void update(float delta, TilemapManager tilemapManager) {
 
             }
         });
