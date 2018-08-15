@@ -4,8 +4,8 @@ package com.coresmash.tiles;
  * Created by Michail on 19/3/2018.
  */
 
-public class MovingBall extends com.coresmash.tiles.TileContainer {
-    private float m_speed;
+public class MovingBall extends TileContainer {
+    private float speed;
     private float scale;
     private boolean flag;
 
@@ -16,8 +16,8 @@ public class MovingBall extends com.coresmash.tiles.TileContainer {
     /*
      * Throws exception if cast can't be done, CAN return NULL if empty
      */
-    public com.coresmash.tiles.Launchable getLaunchable() {
-        return (com.coresmash.tiles.Launchable) getTile();
+    public Launchable getLaunchable() {
+        return (Launchable) getTile();
     }
 
     public void setScale(float scale) {
@@ -25,7 +25,7 @@ public class MovingBall extends com.coresmash.tiles.TileContainer {
     }
 
     public void setSpeed(float speed) {
-        m_speed = speed * 100;
+        this.speed = speed * 100;
     }
 
     public float getScale() {
@@ -49,11 +49,11 @@ public class MovingBall extends com.coresmash.tiles.TileContainer {
     }
 
     public void update(float delta) {
-        moveBy(0, m_speed * delta);
+        moveBy(0, speed * delta);
     }
 
-    public com.coresmash.tiles.Tile extractTile() {
-        com.coresmash.tiles.Tile res = getTile();
+    public Tile extractTile() {
+        Tile res = getTile();
         setTile(null);
         return res;
     }

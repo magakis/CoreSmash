@@ -87,7 +87,7 @@ public class MovingBallManager extends com.coresmash.Observable {
         }
     }
 
-    public void draw(com.coresmash.managers.RenderManager renderManager) {
+    public void draw(RenderManager renderManager) {
         renderManager.draw(activeList);
     }
 
