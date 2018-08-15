@@ -17,13 +17,12 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
-import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
@@ -47,6 +46,7 @@ import com.coresmash.ui.UIUtils;
 
 import java.util.Locale;
 import java.util.Objects;
+
 /**
  * Created by Michail on 17/3/2018.
  */
@@ -607,35 +607,35 @@ public class GameScreen extends ScreenBase implements Observer {
         Container<Table> root;
 
         ResultUI() {
-            Table main = new Table(skin);
-            main.background("boxSmall");
-            main.pad(40);
-            root = new Container<>(main);
-            root.setFillParent(true);
-
             resultTextLbl = new Label("null", skin, "h2");
             lblScore = new Label("null", skin, "h3");
 
-            TextButton tbMenu = UIFactory.createTextButton("Menu", skin);
-            tbMenu.addListener(new ChangeListener() {
+            ImageButton btnMenu = UIFactory.createImageButton(skin, "ButtonMenu");
+            btnMenu.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                     gameInstance.setPrevScreen();
                 }
             });
-            tbMenu.getLabelCell().width(200).height(150);
 
-            HorizontalGroup buttonGroup = new HorizontalGroup();
-            buttonGroup.align(Align.center);
-            buttonGroup.addActor(tbMenu);
+
+            float buttonSize = lblScore.getPrefHeight() * 2;
+            Container<ImageButton> menuButtonWrapper = new Container<>(btnMenu);
+            menuButtonWrapper.size(UIUtils.getWidthFor(btnMenu.getImage().getDrawable(), buttonSize), buttonSize);
 
             Label staticScore = new Label("Score:", skin, "h3");
 
-            main.center();
+            Table main = new Table(skin);
+            main.background("simpleFrameTrans")
+                    .pad(40)
+                    .center();
             main.add(resultTextLbl).padBottom(40).row();
             main.add(staticScore).padBottom(10).row();
             main.add(lblScore).row();
-            main.add(buttonGroup).padTop(100);
+            main.add(menuButtonWrapper).padTop(100);
+
+            root = new Container<>(main);
+            root.setFillParent(true);
         }
 
         public void update() {

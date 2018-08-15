@@ -141,6 +141,7 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("ButtonClaim.png");
         loadTexture("ButtonRetry.png");
         loadTexture("ButtonEditor.png");
+        loadTexture("ButtonMenu.png");
         loadTexture("MenuBackground.png");
         loadTexture("CampaignBackground.png");
         loadTexture("BrightOuterDarkInner.png");
@@ -301,6 +302,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("ButtonCancel", am.get("ButtonCancel.png"));
         skin.add("ButtonStart", am.get("ButtonStart.png"));
         skin.add("ButtonOpen", am.get("ButtonOpen.png"));
+        skin.add("ButtonMenu", am.get("ButtonMenu.png"));
         skin.add("ButtonClose", am.get("ButtonClose.png"));
         skin.add("ButtonClaim", am.get("ButtonClaim.png"));
         skin.add("ButtonRetry", am.get("ButtonRetry.png"));
@@ -447,6 +449,12 @@ public class LoadingScreen extends ScreenBase {
         imgbs.imageDown = skin.newDrawable("ButtonOpen", SlightGray);
         imgbs.imageDisabled = skin.newDrawable("ButtonOpen", Color.DARK_GRAY);
         skin.add("ButtonOpen", imgbs);
+
+        imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.imageUp = skin.getDrawable("ButtonMenu");
+        imgbs.imageDown = skin.newDrawable("ButtonMenu", SlightGray);
+        imgbs.imageDisabled = skin.newDrawable("ButtonMenu", Color.DARK_GRAY);
+        skin.add("ButtonMenu", imgbs);
 
         // SliderStyles
         Slider.SliderStyle ss = new Slider.SliderStyle();
