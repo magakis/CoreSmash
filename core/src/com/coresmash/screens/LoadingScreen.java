@@ -145,6 +145,10 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("CampaignBackground.png");
         loadTexture("BrightOuterDarkInner.png");
         loadTexture("FrameColored.png");
+        loadTexture("BoardTime.png");
+        loadTexture("BoardScore.png");
+        loadTexture("BoardBackground.png");
+        loadTexture("BoardCenter.png");
     }
 
     private void loadSounds() {
@@ -210,24 +214,6 @@ public class LoadingScreen extends ScreenBase {
         float defScale = 0;
 
         // Nine-Patches
-        pix = new Pixmap(4, 4, Pixmap.Format.RGB888);
-        pix.setColor(Color.WHITE);
-        pix.fill();
-        tex = new Texture(pix);
-        ninePatch = new NinePatch(tex, 1, 1, 1, 1);
-        skin.add("flatColor", ninePatch);
-
-        pix = new Pixmap(30, 30, Pixmap.Format.RGB888);
-        pix.setColor(Color.WHITE);
-        pix.fill();
-        pix.setColor(Color.rgba8888(30 / 255f, 30 / 255f, 30 / 255f, 1));
-        pix.fillRectangle(5, 5, pix.getWidth() - 10, 30 - 10);
-        tex = new Texture(pix);
-        ninePatch = new NinePatch(tex, 10, 10, 10, 10);
-        defScale = .4f;
-        ninePatch.scale(defScale * PPI, defScale * PPI);
-        skin.add("deleteMe", ninePatch);
-
         pix = new Pixmap(30, 30, Pixmap.Format.RGB888);
         pix.setColor(Color.WHITE);
         pix.fill();
@@ -238,11 +224,6 @@ public class LoadingScreen extends ScreenBase {
         defScale = .6f;
         ninePatch.scale(defScale * PPI, defScale * PPI);
         skin.add("boxBig", ninePatch);
-
-//        ninePatch = new NinePatch(am.get("DialogFrame1.png",Texture.class), 100,100,100,100);
-//        defScale = .2f;
-//        ninePatch.scale(defScale * PPI, defScale * PPI);
-//        skin.add("dialogFrame1", ninePatch);
 
         ninePatch = new NinePatch(am.get("toast1.png", Texture.class), 15, 15, 15, 15);
         skin.add("toast1", ninePatch);
@@ -302,7 +283,6 @@ public class LoadingScreen extends ScreenBase {
         skin.add("cog", am.get("cog.png"));
         skin.add("userDefIcon", am.get("DefaultUserIcon.png"));
         skin.add("ball", am.get("ball.png"));
-//        skin.add("asteroid", am.get("asteroid.png"));
         skin.add("map", am.get("map.png"));
         skin.add("speaker", am.get("speaker.png"));
         skin.add("timeIcon", am.get("HourGlass.png"));
@@ -327,6 +307,10 @@ public class LoadingScreen extends ScreenBase {
         skin.add("ButtonLevel", am.get("ButtonLevel.png"));
         skin.add("MenuBackground", am.get("MenuBackground.png"));
         skin.add("CampaignBackground", am.get("CampaignBackground.png"));
+        skin.add("BoardTime", am.get("BoardTime.png"));
+        skin.add("BoardScore", am.get("BoardScore.png"));
+        skin.add("BoardBackground", am.get("BoardBackground.png"));
+        skin.add("BoardCenter", am.get("BoardCenter.png"));
 
         for (PowerupType type : PowerupType.values()) {
             skin.add(type.name(), baseTheme.getTexture(type.getType().getID()));
@@ -511,10 +495,11 @@ public class LoadingScreen extends ScreenBase {
         bs.disabled = skin.newDrawable("boxSmall", 0, 0, 0, 0);
         skin.add("TransWithHighlight", bs);
 
+        Color invisible = new Color(0, 0, 0, 0);
         bs = new Button.ButtonStyle();
-        bs.up = skin.getDrawable("ButtonPowerup");
-        bs.down = skin.newDrawable("ButtonPowerup", SlightGray);
-        bs.disabled = skin.newDrawable("ButtonPowerup", Color.DARK_GRAY);
+        bs.up = skin.newDrawable("ButtonPowerup", invisible);
+        bs.down = skin.newDrawable("ButtonPowerup", invisible);
+        bs.disabled = skin.newDrawable("ButtonPowerup", invisible);
         skin.add("ButtonPowerup", bs);
 
         // WindowStyles

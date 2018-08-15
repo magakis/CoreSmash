@@ -43,6 +43,7 @@ import com.coresmash.tilemap.TilemapManager;
 import com.coresmash.tiles.TileType.PowerupType;
 import com.coresmash.ui.UIComponent;
 import com.coresmash.ui.UIFactory;
+import com.coresmash.ui.UIUtils;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -86,8 +87,12 @@ public class GameScreen extends ScreenBase implements Observer {
         statsManager = new StatsManager();
         gameController = new GameController(tilemapManager, movingBallManager, statsManager, launcher);
 
-        skin = gameInstance.getSkin();
+        launcher.addObserver(statsManager);
+        tilemapManager.addObserver(statsManager);
+        movingBallManager.addObserver(statsManager);
 
+        stage = new Stage(game.getUIViewport());
+        skin = gameInstance.getSkin();
         streakUI = new StreakUI(skin);
         gameUI = new GameUI();
         resultUI = new ResultUI();
@@ -97,13 +102,6 @@ public class GameScreen extends ScreenBase implements Observer {
         statsManager.addObserver(streakUI);
         statsManager.addObserver(gameUI);
 
-        launcher.addObserver(statsManager);
-
-        tilemapManager.addObserver(statsManager);
-
-        movingBallManager.addObserver(statsManager);
-
-        stage = new Stage(game.getUIViewport());
         rootUIStack = new Stack();
         rootUIStack.setFillParent(true);
         stage.addActor(rootUIStack);
@@ -334,9 +332,11 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     private class GameUI implements UIComponent, Observer {
-        Table root, tblPowerUps, tblTop;
+        Stack root;
+
+        Table tblPowerUps, board;
         Table tblTime, tblScore;
-        Container<Table> centerTable;
+        Container<Table> boardRoot, centerTable;
         Table tblCenter;
         Label lblTime, lblScore, lblLives, lblMoves, lblTargetScore;
         PowerupButton[] powerupButtons;
@@ -356,7 +356,7 @@ public class GameScreen extends ScreenBase implements Observer {
             lblMoves = new Label("null", skin, "h4");
             lblMoves.setAlignment(Align.center);
 
-            lblTargetScore = new Label("", skin, "h5", Color.GRAY);
+            lblTargetScore = new Label("", skin, "h5", new Color(5 / 255f, 45 / 255f, 51 / 255f, 1));
             lblTargetScore.setAlignment(Align.center);
 
             lblStaticLives = new Label("Lives: ", skin, "h4");
@@ -371,22 +371,61 @@ public class GameScreen extends ScreenBase implements Observer {
             imgLivesIcon.setScaling(Scaling.fit);
 
             tblScore = new Table(skin);
-            tblScore.background("softGray");
-            tblScore.pad(Value.percentHeight(.25f, lblScore)).right();
-            tblScore.add(lblScore).right().width(lblScore.getPrefHeight() * 2);
+            tblScore.background("BoardScore");
+            tblScore.row().padTop(Value.percentHeight(.4f, lblScore)).right();
+            tblScore.add(lblScore);
             tblScore.add("/", "h4");
-            tblScore.add(lblTargetScore).padRight(Value.percentHeight(.4f, lblScore));
+            tblScore.add(lblTargetScore).bottom();
 
 
             tblTime = new Table(skin);
-            tblTime.setBackground("softGray");
-            tblTime.pad(Value.percentHeight(.2f, lblTime))
-                    .padLeft(Value.percentHeight(.4f, lblScore));
+            tblTime.setBackground("BoardTime");
+            tblTime.row().padTop(Value.percentHeight(.4f, lblTime)).right();
             tblTime.add(imgHourGlass)
                     .size(Value.percentHeight(.9f, lblTime))
                     .padRight(Value.percentHeight(0.2f, lblTime));
             tblTime.add(lblTime);
 
+            tblCenter = new Table();
+            tblCenter.columnDefaults(1).width(lblLives.getPrefHeight() * 1.4f).right();
+
+            centerTable = new Container<>(tblCenter);
+            centerTable.setBackground(skin.getDrawable("BoardCenter"));
+
+            GlyphLayout fontLayout = new GlyphLayout(skin.getFont("h4"), "000000/000000");
+
+            board = new Table(skin);
+            board.background("BoardBackground");
+            board.columnDefaults(0).expandX();
+            board.columnDefaults(1);
+            board.columnDefaults(2).expandX();
+
+            Container<Table> timeWrapper = new Container<>(tblTime);
+            timeWrapper.height(Value.percentHeight(2, lblTime)).width(new Value() {
+                @Override
+                public float get(Actor context) {
+                    return UIUtils.getWidthFor(tblTime.getBackground(), lblTime.getPrefHeight() * 2f);
+                }
+            });
+            board.add(timeWrapper).right();
+
+            board.add(centerTable).height(Value.percentHeight(1.6f, board)).width(new Value() {
+                @Override
+                public float get(Actor context) {
+                    return UIUtils.getWidthFor(centerTable.getBackground(), board.getHeight() * 1.6f);
+                }
+            });
+
+            Container<Table> scoreWrapper = new Container<>(tblScore);
+            scoreWrapper.height(Value.percentHeight(2, lblScore)).width(new Value() {
+                @Override
+                public float get(Actor context) {
+                    return UIUtils.getWidthFor(tblScore.getBackground(), lblScore.getPrefHeight() * 2);
+                }
+            });
+            board.add(scoreWrapper).left();
+
+            board.validate(); // Important call! Required for tblScore to have correct values on size
 
             powerupButtons = new PowerupButton[3];
             for (int i = 0; i < powerupButtons.length; ++i) {
@@ -424,39 +463,19 @@ public class GameScreen extends ScreenBase implements Observer {
                 }
             });
 
-            tblCenter = new Table(skin);
-            tblCenter.columnDefaults(0).padRight(Value.percentHeight(.1f, lblLives));
-            tblCenter.columnDefaults(1).width(lblLives.getPrefHeight() * 1.5f).right();
+            float boardHeight = tblScore.getHeight() * 1.2f; // Prior call to board.validate() is required!
+            boardRoot = new Container<>(board);
+            boardRoot.fill().height(boardHeight).width(UIUtils.getWidthFor(board.getBackground(), boardHeight));
 
-            centerTable = new Container<>(tblCenter);
-            centerTable.setBackground(skin.getDrawable("gameScreenTopRound"));
+            Container<Container> boardWrapper = new Container<Container>(boardRoot);
+            boardWrapper.top();
 
-            GlyphLayout fontLayout = new GlyphLayout(skin.getFont("h4"), "000000/000000");
+            Container<Table> powerupsWrapper = new Container<>(tblPowerUps);
+            powerupsWrapper.center().right();
 
-            tblTop = new Table(skin);
-            tblTop.background("softGray");
-            tblTop.pad(0);
-            tblTop.columnDefaults(0).padLeft(Value.percentHeight(.5f, lblScore)).expandX().uniformX();
-            tblTop.columnDefaults(1);
-            tblTop.columnDefaults(2).padRight(Value.percentHeight(.5f, lblScore)).expandX().uniformX();
-            tblTop.padTop(Value.percentHeight(.5f, lblScore));
-            tblTop.row()
-                    .padBottom(Value.percentHeight(.2f, lblScore));
-            tblTop.add(tblTime)
-                    .growX()
-                    .maxWidth(fontLayout.width);
-            tblTop.add(centerTable)
-                    .size(lblLives.getPrefHeight() * 5);
-            tblTop.add(tblScore)
-                    .growX()
-                    .maxWidth(fontLayout.width);
-
-
-            /* Validate the tblTop in order to obtain the correct height for tblScore */
-            tblTop.validate();
-            root = new Table();
-            root.top().add(tblTop).padTop(Value.percentHeight(-.25f, tblScore)).growX().height(Value.percentHeight(1.6f, tblScore)).row();
-            root.add(tblPowerUps).expand().center().right();
+            root = new Stack();
+            root.addActor(boardWrapper);
+            root.addActor(powerupsWrapper);
         }
 
         public void setup() {
@@ -468,18 +487,12 @@ public class GameScreen extends ScreenBase implements Observer {
             tblCenter.clear();
 
             if (statsManager.isMovesEnabled() && statsManager.isLivesEnabled()) {
-                tblTop.getCell(centerTable).padTop(-tblScore.getPrefHeight() / 4);
-                centerTable.padTop(tblScore.getPrefHeight() * .9f);
-
                 tblCenter.add(imgMovesIcon).size(lblLives.getPrefHeight());
                 tblCenter.add(lblMoves).left();
                 tblCenter.row().padTop(Value.percentHeight(.2f, lblLives));
                 tblCenter.add(imgLivesIcon).size(lblLives.getPrefHeight());
                 tblCenter.add(lblLives).left();
             } else {
-                tblTop.getCell(centerTable).padTop(-tblScore.getPrefHeight());
-                centerTable.padTop(tblScore.getPrefHeight());
-
                 if (statsManager.isLivesEnabled()) {
                     tblCenter.add(imgLivesIcon).size(lblLives.getPrefHeight());
                     tblCenter.add(lblLives).left();
@@ -546,6 +559,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
         private class PowerupButton extends Button {
             private PowerupType type;
+            private Container<Image> imageContainer;
             private Image image;
             private Label text;
 
@@ -556,10 +570,15 @@ public class GameScreen extends ScreenBase implements Observer {
                 text.setAlignment(Align.bottomLeft);
 
                 image = new Image();
-                Container<Image> container = new Container<>(image);
-                container.size(Value.percentWidth(.5f, this));
+                imageContainer = new Container<>(image);
+                imageContainer.size(new Value() {
+                    @Override
+                    public float get(Actor context) {
+                        return UIUtils.getWidthFor(image.getDrawable(), getHeight() * .9f);
+                    }
+                }, Value.percentHeight(.9f, this));
 
-                stack(new Container<Container>(container), text).align(Align.center).grow();
+                stack(new Container<Container>(imageContainer), text).align(Align.center).grow();
             }
 
             public void setPower(PowerupType type, int count) {
@@ -568,7 +587,9 @@ public class GameScreen extends ScreenBase implements Observer {
                 if (count > 0) {
                     text.setColor(Color.WHITE);
                     image.setDrawable(skin.getDrawable(type.name()));
+
                 } else {
+
                     text.setColor(Color.DARK_GRAY);
                     image.setDrawable(skin.newDrawable(type.name(), Color.DARK_GRAY));
                     setDisabled(true);
