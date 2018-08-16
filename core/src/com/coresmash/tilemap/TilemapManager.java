@@ -1,5 +1,11 @@
 package com.coresmash.tilemap;
 
+import com.coresmash.Coords2D;
+import com.coresmash.Match3;
+import com.coresmash.NotificationType;
+import com.coresmash.Observable;
+import com.coresmash.Observer;
+import com.coresmash.managers.RenderManager;
 import com.coresmash.tiles.Breakable;
 import com.coresmash.tiles.RegularTile;
 import com.coresmash.tiles.Tile;
@@ -24,22 +30,22 @@ import java.util.List;
  * the IDs and balance the map based on them. After I have applied the filter I want, I will instantiate
  * the Tilemap with that builder and create the tiles
  */
-public class TilemapManager extends com.coresmash.Observable implements TilemapCollection, com.coresmash.Observer {
-    private final com.coresmash.Coords2D defTilemapPosition;
+public class TilemapManager extends Observable implements TilemapCollection, Observer {
+    private final Coords2D defTilemapPosition;
     private final Map worldMap;
 
     private List<TilemapTile> tileList;
-    private List<TilemapTile> alteredTiles;
-    private com.coresmash.tilemap.TilemapPathfinder pathfinder = new com.coresmash.tilemap.TilemapPathfinder();
+    private List<TilemapTile> queuedForDeletion;
+    private TilemapPathfinder pathfinder = new TilemapPathfinder();
     private TilemapBuilder tilemapBuilder = new TilemapBuilder();
-    private com.coresmash.Match3 match3 = new com.coresmash.Match3();
+    private Match3 match3 = new Match3();
     private int[] colorsAvailable = new int[10]; // XXX(22/4/2018): MagicValue 10 (Should ask TileIndex)
 
     public TilemapManager() {
-        defTilemapPosition = new com.coresmash.Coords2D(com.coresmash.WorldSettings.getWorldWidth() / 2, com.coresmash.WorldSettings.getWorldHeight() - com.coresmash.WorldSettings.getWorldHeight() / 4);
+        defTilemapPosition = new Coords2D(com.coresmash.WorldSettings.getWorldWidth() / 2, com.coresmash.WorldSettings.getWorldHeight() - com.coresmash.WorldSettings.getWorldHeight() / 4);
         worldMap = new Map(this);
         tileList = new ArrayList<>();
-        alteredTiles = new ArrayList<>();
+        queuedForDeletion = new ArrayList<>();
     }
 
     public TilemapTile getTilemapTile(int layer, int x, int y) {
@@ -59,7 +65,7 @@ public class TilemapManager extends com.coresmash.Observable implements TilemapC
         return Collections.unmodifiableList(tileList);
     }
 
-    public com.coresmash.Coords2D getDefTilemapPosition() {
+    public Coords2D getDefTilemapPosition() {
         return defTilemapPosition;
     }
 
@@ -95,11 +101,11 @@ public class TilemapManager extends com.coresmash.Observable implements TilemapC
         }
 
         if (removed instanceof Breakable) {
-            ((Breakable) removed).onDestroy();
+            ((Breakable) removed).onDestroy(tmTile, this);
         }
 
         if (layer == 0 && x == 0 && y == 0) {
-            notifyObservers(com.coresmash.NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
+            notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
         }
     }
 
@@ -127,12 +133,18 @@ public class TilemapManager extends com.coresmash.Observable implements TilemapC
     }
 
     public void destroyTiles(TilemapTile tile) {
-        assert tile != null;
+        destroyTiles(tile.getLayerId(), tile.getX(), tile.getY());
+    }
 
-        if (worldMap.isChained(tile.getLayerId())) {
-            List<TilemapTile> destroyables = pathfinder.getDestroyableTiles(tile);
-            for (TilemapTile t : destroyables) {
-                removeTile(t);
+    public void destroyTiles(int layer, int x, int y) {
+        TilemapTile tile = worldMap.getTilemapTile(layer, x, y);
+        if (tile == null)
+            throw new RuntimeException("Couldn't find tile at Layer:" + layer + " X: " + x + " Y:" + y);
+
+        if (worldMap.isChained(layer)) {
+            pathfinder.getDestroyableTiles(tile, queuedForDeletion);
+            for (int i = 0; i < queuedForDeletion.size(); ++i) {
+                removeTile(queuedForDeletion.get(i));
             }
         } else {
             removeTile(tile);
@@ -144,9 +156,9 @@ public class TilemapManager extends com.coresmash.Observable implements TilemapC
         if (tiles.size() == 0) return;
 
         if (worldMap.isChained(tiles.get(0).getLayerId())) {
-            List<TilemapTile> destroyables = pathfinder.getDestroyableTiles(tiles);
-            for (TilemapTile t : destroyables) {
-                removeTile(t);
+            pathfinder.getDestroyableTiles(tiles, queuedForDeletion);
+            for (int i = 0; i < queuedForDeletion.size(); ++i) {
+                removeTile(queuedForDeletion.get(i));
             }
         } else {
             for (TilemapTile t : tiles) {
@@ -161,7 +173,7 @@ public class TilemapManager extends com.coresmash.Observable implements TilemapC
 
         if (match.size() < 3) {
             if (match.size() == 1) {
-                notifyObservers(com.coresmash.NotificationType.NO_COLOR_MATCH, null);
+                notifyObservers(NotificationType.NO_COLOR_MATCH, null);
             }
             return Collections.EMPTY_LIST;
         }
@@ -176,6 +188,7 @@ public class TilemapManager extends com.coresmash.Observable implements TilemapC
 
     public void update(float delta) {
         worldMap.update(delta);
+        queuedForDeletion.clear();
     }
 
     public void reset() {
@@ -186,12 +199,12 @@ public class TilemapManager extends com.coresmash.Observable implements TilemapC
         tileList.clear();
     }
 
-    public void draw(com.coresmash.managers.RenderManager renderManager) {
+    public void draw(RenderManager renderManager) {
         worldMap.draw(renderManager);
     }
 
     @Override
-    public void onNotify(com.coresmash.NotificationType type, Object ob) {
+    public void onNotify(NotificationType type, Object ob) {
         switch (type) {
             case TILEMAP_INITIALIZED:
                 List<TilemapTile> tiles = (List<TilemapTile>) ob;
@@ -207,4 +220,49 @@ public class TilemapManager extends com.coresmash.Observable implements TilemapC
         }
     }
 
+    public interface TilemapEffect {
+        void apply(TilemapManager manager);
+    }
+
+    public static class DestroyRadiusEffect implements TilemapEffect {
+        private int radius, layer, originX, originY;
+        private boolean isInitialized;
+
+        @Override
+        public void apply(TilemapManager manager) {
+            if (!isInitialized) throw new RuntimeException("Effects needs to be set up!");
+
+            if (radius == 0) {
+                manager.destroyTiles(layer, originX, originY);
+            } else {
+                int minX = originX - radius;
+                int minY = originY - radius;
+                int maxX = originX + radius + 1;
+                int maxY = originY + radius + 1;
+
+                for (int y = minY; y < maxY; ++y) {
+                    for (int x = minX; x < maxX; ++x) {
+                        if (Tilemap.getTileDistance(x, y, originX, originY) <= radius) {
+                            TilemapTile tile = manager.getTilemapTile(layer, x, y);
+                            if (tile != null) {
+                                manager.destroyTiles(tile);
+                            }
+                        }
+                    }
+                }
+            }
+
+            isInitialized = false;
+        }
+
+        public void setup(int radius, int layer, int coordX, int coordY) {
+            if (radius < 0) throw new RuntimeException("Radius can't be negative: " + radius);
+
+            isInitialized = true;
+            this.radius = radius;
+            this.originX = coordX;
+            this.originY = coordY;
+            this.layer = layer;
+        }
+    }
 }

@@ -13,9 +13,13 @@ public enum TileType {
     REGULAR_BALL6(5, true, MajorType.REGULAR),
     REGULAR_BALL7(6, true, MajorType.REGULAR),
     REGULAR_BALL8(7, true, MajorType.REGULAR),
+
     RANDOM_REGULAR(17, true, MajorType.EDITOR_ONLY),
+
     WALL_BALL(18, true, MajorType.SPECIAL),
+    BOMB_BALL(19, true, MajorType.SPECIAL),
     SPIKY_BALL(20, true, MajorType.SPECIAL),
+
     FIREBALL(101, false, MajorType.POWERUP),
     COLORBOMB(102, false, MajorType.POWERUP),;
 

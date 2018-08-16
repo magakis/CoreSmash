@@ -9,7 +9,7 @@ import com.badlogic.gdx.math.Vector2;
 public abstract class TileContainer {
     public static final float[] s_verticesOnMiddleEdges = generateVertices(0);
     public static final float[] s_vertices = generateVertices(30);
-    private com.coresmash.tiles.Tile tile;
+    private Tile tile;
 
     protected Vector2 positionInWorld;
 
@@ -38,11 +38,11 @@ public abstract class TileContainer {
         positionInWorld.set(x, y);
     }
 
-    public com.coresmash.tiles.Tile getTile() {
+    public Tile getTile() {
         return tile;
     }
 
-    public void setTile(com.coresmash.tiles.Tile tile) {
+    public void setTile(Tile tile) {
         this.tile = tile;
     }
 

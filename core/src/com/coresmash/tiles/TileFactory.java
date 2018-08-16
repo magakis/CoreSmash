@@ -25,15 +25,17 @@ public class TileFactory {
             case REGULAR_BALL8:
                 return new RegularTile(type);
             case RANDOM_REGULAR:
-                return new com.coresmash.tiles.RandomTile(type);
+                return new RandomTile(type);
             case WALL_BALL:
-                return new com.coresmash.tiles.WallBall(type);
+                return new WallBall(type);
+            case BOMB_BALL:
+                return new BombBall();
             case SPIKY_BALL:
                 return new SpikyBall(type);
             case FIREBALL:
-                return new com.coresmash.tiles.FireBall(type);
+                return new FireBall(type);
             case COLORBOMB:
-                return new com.coresmash.tiles.ColorBomb(type);
+                return new ColorBomb(type);
         }
         throw new RuntimeException("Not Implemented Tile!(" + type.name() + ")");
     }

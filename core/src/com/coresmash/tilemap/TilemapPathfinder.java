@@ -29,7 +29,7 @@ class TilemapPathfinder {
         };
     }
 
-    public List<TilemapTile> getDestroyableTiles(List<TilemapTile> matched) {
+    public void getDestroyableTiles(List<TilemapTile> matched, List<TilemapTile> output) {
         disconnected.clear();
         TilemapTile centerTile = null;
 
@@ -45,15 +45,23 @@ class TilemapPathfinder {
             addDisconnectedTilesFrom(centerTile);
         }
 
-        return disconnected;
+        for (TilemapTile t : disconnected) {
+            if (!output.contains(t)) {
+                output.add(t);
+            }
+        }
     }
 
-    public List<TilemapTile> getDestroyableTiles(TilemapTile destroyed) {
+    public void getDestroyableTiles(TilemapTile destroyed, List<TilemapTile> output) {
         disconnected.clear();
 
         addDisconnectedTilesFrom(destroyed);
 
-        return disconnected;
+        for (TilemapTile t : disconnected) {
+            if (!output.contains(t)) {
+                output.add(t);
+            }
+        }
     }
 
     private void addDisconnectedTilesFrom(TilemapTile destroyed) {

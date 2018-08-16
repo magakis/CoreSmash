@@ -1,11 +1,13 @@
 package com.coresmash.tiles;
 
 import com.coresmash.sound.SoundManager;
+import com.coresmash.tilemap.TilemapManager;
+import com.coresmash.tilemap.TilemapTile;
 import com.coresmash.tiles.TileContainer.Side;
 
 import java.util.List;
 
-public class RegularTile extends com.coresmash.tiles.Tile implements com.coresmash.tiles.Launchable, com.coresmash.tiles.Matchable, com.coresmash.tiles.Breakable {
+public class RegularTile extends com.coresmash.tiles.Tile implements Launchable, Matchable, Breakable {
     private SoundManager.SoundAsset destroySound;
 
     RegularTile(com.coresmash.tiles.TileType type) {
@@ -34,7 +36,7 @@ public class RegularTile extends com.coresmash.tiles.Tile implements com.coresma
     }
 
     @Override
-    public void onDestroy() {
+    public void onDestroy(TilemapTile self, TilemapManager manager) {
         destroySound.play();
     }
 

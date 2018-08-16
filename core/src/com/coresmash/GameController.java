@@ -59,7 +59,7 @@ public class GameController {
             if (tileHit == null) continue;
 
             if (tileHit.getTile() instanceof CollisionInitiator) {
-                if (!((CollisionInitiator) tileHit.getTile()).handleCollisionWith(mb, this)) {
+                if (!((CollisionInitiator) tileHit.getTile()).handleCollisionWith(tileHit, mb, this)) {
                     mb.getLaunchable().onCollide(mb, tileHit, this);
                 }
             } else {
@@ -73,11 +73,6 @@ public class GameController {
     public BehaviourPack getBehaviourPack() {
         return behaviourPowerPack;
     }
-
-//    public void loadLevel(int lvl) {
-//        statsManager.setLevel(lvl);
-//        loadLevelMap("level" + lvl);
-//    }
 
     public void loadLevelMap(String fileName, LevelListParser.Source source) {
         ParsedLevel parsedLevel = LevelParser.loadFrom(fileName, source);

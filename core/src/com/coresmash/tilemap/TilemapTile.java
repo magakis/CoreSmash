@@ -66,7 +66,7 @@ public class TilemapTile extends TileContainer implements Comparable<TilemapTile
     public void setCoordinates(int x, int y) {
         coords.x = x;
         coords.y = y;
-        distanceFromCenter = com.coresmash.tilemap.Tilemap.getTileDistance(coords.x, coords.y, 0, 0);
+        distanceFromCenter = Tilemap.getTileDistance(coords.x, coords.y, 0, 0);
     }
 
     /**
@@ -102,7 +102,7 @@ public class TilemapTile extends TileContainer implements Comparable<TilemapTile
     void setPositionInTilemap(int tilemapID, int x, int y) {
         coords.set(x, y);
         groupID = tilemapID;
-        distanceFromCenter = com.coresmash.tilemap.Tilemap.getTileDistance(coords.x, coords.y, 0, 0);
+        distanceFromCenter = Tilemap.getTileDistance(coords.x, coords.y, 0, 0);
     }
 
     void setNeighbour(TileContainer.Side side, TilemapTile neighbour) {
@@ -129,7 +129,7 @@ public class TilemapTile extends TileContainer implements Comparable<TilemapTile
     }
 
     void clear() {
-        coords.set(999, 999);
+//        coords.set(999, 999);
         detachNeighbours();
     }
 
