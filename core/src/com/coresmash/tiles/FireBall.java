@@ -6,14 +6,15 @@ import com.coresmash.tilemap.TilemapManager;
 import com.coresmash.tilemap.TilemapTile;
 
 public class FireBall extends Tile implements Launchable {
-    private SoundManager.SoundAsset explosionSound = SoundManager.get().getSoundAsset("bombExplosion");
+    private SoundManager.SoundEffects explosionSound = SoundManager.get().getSoundAsset("explosion1");
+    private SoundManager.SoundEffects launchSound = SoundManager.get().getSoundAsset("launch1");
     FireBall(TileType type) {
         super(type);
     }
 
     @Override
     public void onLaunch() {
-
+        launchSound.play();
     }
 
     @Override

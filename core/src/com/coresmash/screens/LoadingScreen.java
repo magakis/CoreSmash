@@ -46,6 +46,8 @@ public class LoadingScreen extends ScreenBase {
     private AbstractTheme baseTheme;
     private final float PPI;
 
+    private final String SOUND_DIR = "sound/";
+
     private TextureLoader.TextureParameter textureParam;
 
     public LoadingScreen(com.coresmash.CoreSmash game) {
@@ -158,7 +160,8 @@ public class LoadingScreen extends ScreenBase {
         am.load("BackgroundLoop.mp3", Sound.class);
         am.load("Music.mp3", Music.class);
         am.load("click.mp3", Sound.class);
-        am.load("bombExplosion.mp3", Sound.class);
+        am.load(SOUND_DIR + "explosion1.ogg", Sound.class);
+        am.load(SOUND_DIR + "launch1.ogg", Sound.class);
     }
 
     private void loadAllBitmapFonts() {
@@ -195,7 +198,8 @@ public class LoadingScreen extends ScreenBase {
         soundManager.loadMusic("backgroundMusic", am.get("Music.mp3", Music.class));
         soundManager.loadSound("regularBallDestroy", am.get("blop.mp3", Sound.class));
         soundManager.loadSound("buttonClick", am.get("click.mp3", Sound.class));
-        soundManager.loadSound("bombExplosion", am.get("bombExplosion.mp3", Sound.class));
+        soundManager.loadSound("explosion1", am.get(SOUND_DIR + "explosion1.ogg", Sound.class));
+        soundManager.loadSound("launch1", am.get(SOUND_DIR + "launch1.ogg", Sound.class));
     }
 
     private void setupFonts() {

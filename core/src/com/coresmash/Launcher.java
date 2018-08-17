@@ -5,6 +5,7 @@ import com.badlogic.gdx.utils.Queue;
 import com.coresmash.managers.MovingBallManager;
 import com.coresmash.managers.RenderManager;
 import com.coresmash.tilemap.TilemapManager;
+import com.coresmash.tiles.Launchable;
 import com.coresmash.tiles.MovingBall;
 import com.coresmash.tiles.RegularTile;
 
@@ -30,7 +31,7 @@ public class Launcher extends Observable {
 
     public Launcher(MovingBallManager movingBallManager) {
         this.movingBallManager = movingBallManager;
-        launcher = new Queue<MovingBall>(3);
+        launcher = new Queue<>(3);
         launcherPos = new Vector2(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() / 5);
         launcherCooldown = .1f;
         chanceColorPicker = new ChanceColorPicker();
@@ -41,7 +42,9 @@ public class Launcher extends Observable {
     public void eject() {
         if (launcherCooldownTimer == 0) {
             if (launcher.size > 0) {
-                movingBallManager.activate(launcher.removeFirst());
+                MovingBall ball = launcher.removeFirst();
+                movingBallManager.activate(ball);
+                ((Launchable) ball.getTile()).onLaunch();
 
                 if (!isLoadedWithSpecial) {
                     if (launcher.size > 0) {

@@ -6,6 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.Layout;
+import com.coresmash.sound.SoundManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +34,7 @@ public class UIUtils {
 
     public static void initialize() {
         buttonSoundListener = new ChangeListener() {
-            private com.coresmash.sound.SoundManager.SoundAsset btnSound = com.coresmash.sound.SoundManager.get().getSoundAsset("buttonClick");
+            private SoundManager.SoundEffects btnSound = com.coresmash.sound.SoundManager.get().getSoundAsset("buttonClick");
 
             @Override
             public void changed(ChangeEvent event, Actor actor) {

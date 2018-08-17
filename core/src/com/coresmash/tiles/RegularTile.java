@@ -8,7 +8,7 @@ import com.coresmash.tiles.TileContainer.Side;
 import java.util.List;
 
 public class RegularTile extends com.coresmash.tiles.Tile implements Launchable, Matchable, Breakable {
-    private SoundManager.SoundAsset destroySound;
+    private SoundManager.SoundEffects destroySound;
 
     RegularTile(com.coresmash.tiles.TileType type) {
         super(type);

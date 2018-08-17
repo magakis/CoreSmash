@@ -29,11 +29,13 @@ class TilemapPathfinder {
         };
     }
 
-    public void getDestroyableTiles(List<TilemapTile> matched, List<TilemapTile> output) {
+    // NOTE: current implementation is vulnerable to destroyLists that contains all balls around the center
+    // tile effectively destroying every destroyable ball on the tilemap
+    public void getDestroyableTiles(List<TilemapTile> destroyList, List<TilemapTile> output) {
         disconnected.clear();
         TilemapTile centerTile = null;
 
-        for (TilemapTile tile : matched) {
+        for (TilemapTile tile : destroyList) {
             if (tile.getX() == 0 && tile.getY() == 0 && tile.getLayerId() == 0) {
                 centerTile = tile;
                 continue;
@@ -41,26 +43,33 @@ class TilemapPathfinder {
             addDisconnectedTilesFrom(tile);
         }
 
-        if (centerTile != null) {
-            addDisconnectedTilesFrom(centerTile);
+        for (TilemapTile t : disconnected) {
+            if (!output.contains(t))
+                output.add(t);
         }
 
-        for (TilemapTile t : disconnected) {
-            if (!output.contains(t)) {
-                output.add(t);
-            }
+        // added at the end of the list cause when it is destroyed, it emmits that the center
+        // tile has been destroyed and freezes StatManager preventing it from obtaining the last points
+        if (centerTile != null) {
+            if (!output.contains(centerTile))
+                output.add(centerTile);
         }
     }
 
     public void getDestroyableTiles(TilemapTile destroyed, List<TilemapTile> output) {
         disconnected.clear();
 
+        if (destroyed.getX() == 0 && destroyed.getY() == 0 && destroyed.getLayerId() == 0) {
+            if (!output.contains(destroyed))
+                output.add(destroyed);
+            return;
+        }
+
         addDisconnectedTilesFrom(destroyed);
 
         for (TilemapTile t : disconnected) {
-            if (!output.contains(t)) {
+            if (!output.contains(t))
                 output.add(t);
-            }
         }
     }
 
@@ -69,8 +78,6 @@ class TilemapPathfinder {
 
         altered.clear();
         disconnected.add(destroyed);
-
-        if (destroyed.getX() == 0 && destroyed.getY() == 0 && destroyed.getLayerId() == 0) return;
 
         for (Side side : Side.values()) {
             TilemapTile neighbour = destroyed.getNeighbour(side);

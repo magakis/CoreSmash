@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.coresmash.managers.RenderManager;
 import com.coresmash.screens.LoadingScreen;
+import com.coresmash.sound.SoundManager;
 import com.coresmash.ui.UIUtils;
 
 import java.io.IOException;
@@ -26,6 +27,7 @@ public class CoreSmash extends Game {
 
     private Viewport viewport;
     private RenderManager renderManager;
+    private SoundManager soundManager;
     private AssetManager assetManager;
     private UserAccount userAccount;
     private Skin skin;
@@ -59,6 +61,7 @@ public class CoreSmash extends Game {
 
     public CoreSmash(AdManager adManager) {
         this.adManager = adManager;
+        soundManager = SoundManager.get();
     }
 
     @Override
@@ -100,6 +103,7 @@ public class CoreSmash extends Game {
     public void render() {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         super.render();
+        soundManager.update(Gdx.graphics.getDeltaTime());
     }
 
     public AdManager getAdManager() {

@@ -92,6 +92,7 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
     public void removeTile(int layer, int x, int y) {
         TilemapTile tmTile = worldMap.removeTile(layer, x, y);
         if (tmTile == null) return;
+
         tileList.remove(tmTile);
 
         Tile removed = tmTile.getTile();
@@ -152,17 +153,31 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
     }
 
     /* Assumes that all destroyed tiles come from the *same* layer! */
-    public void destroyTiles(List<TilemapTile> tiles) {
-        if (tiles.size() == 0) return;
+    public void destroyTiles(List<TilemapTile> destroyList) {
+        if (destroyList.size() == 0) return;
 
-        if (worldMap.isChained(tiles.get(0).getLayerId())) {
-            pathfinder.getDestroyableTiles(tiles, queuedForDeletion);
-            for (int i = 0; i < queuedForDeletion.size(); ++i) {
-                removeTile(queuedForDeletion.get(i));
+        boolean containsCenterTile = false;
+        for (TilemapTile tile : destroyList) {
+            if (tile.getX() == 0 && tile.getY() == 0 && tile.getLayerId() == 0) {
+                containsCenterTile = true;
+                break;
+            }
+        }
+
+        if (containsCenterTile) {
+            for (TilemapTile t : destroyList) {
+                removeTile(t);
             }
         } else {
-            for (TilemapTile t : tiles) {
-                removeTile(t);
+            if (worldMap.isChained(destroyList.get(0).getLayerId())) {
+                pathfinder.getDestroyableTiles(destroyList, queuedForDeletion);
+                for (int i = 0; i < queuedForDeletion.size(); ++i) {
+                    removeTile(queuedForDeletion.get(i));
+                }
+            } else {
+                for (TilemapTile t : destroyList) {
+                    removeTile(t);
+                }
             }
         }
     }
@@ -227,6 +242,11 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
     public static class DestroyRadiusEffect implements TilemapEffect {
         private int radius, layer, originX, originY;
         private boolean isInitialized;
+        private List<TilemapTile> destroyList;
+
+        public DestroyRadiusEffect() {
+            destroyList = new ArrayList<>();
+        }
 
         @Override
         public void apply(TilemapManager manager) {
@@ -245,13 +265,14 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
                         if (Tilemap.getTileDistance(x, y, originX, originY) <= radius) {
                             TilemapTile tile = manager.getTilemapTile(layer, x, y);
                             if (tile != null) {
-                                manager.destroyTiles(tile);
+                                destroyList.add(tile);
                             }
                         }
                     }
                 }
             }
 
+            manager.destroyTiles(destroyList);
             isInitialized = false;
         }
 

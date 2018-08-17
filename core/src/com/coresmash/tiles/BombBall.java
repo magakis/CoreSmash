@@ -7,7 +7,7 @@ import com.coresmash.tilemap.TilemapManager;
 import com.coresmash.tilemap.TilemapTile;
 
 public class BombBall extends Tile implements Breakable, CollisionInitiator {
-    private static SoundManager.SoundAsset explosion = SoundManager.get().getSoundAsset("bombExplosion");
+    private static SoundManager.SoundEffects explosion = SoundManager.get().getSoundAsset("explosion1");
 
     public BombBall() {
         super(TileType.BOMB_BALL);
