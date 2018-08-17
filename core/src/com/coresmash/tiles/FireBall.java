@@ -2,12 +2,13 @@ package com.coresmash.tiles;
 
 import com.coresmash.GameController;
 import com.coresmash.sound.SoundManager;
-import com.coresmash.tilemap.TilemapManager;
 import com.coresmash.tilemap.TilemapTile;
+import com.coresmash.tilemap.effect.DestroyRadiusEffect;
 
 public class FireBall extends Tile implements Launchable {
-    private SoundManager.SoundEffects explosionSound = SoundManager.get().getSoundAsset("explosion1");
-    private SoundManager.SoundEffects launchSound = SoundManager.get().getSoundAsset("launch1");
+    private static final SoundManager.SoundEffects explosionSound = SoundManager.get().getSoundAsset("explosion1");
+    private static final SoundManager.SoundEffects launchSound = SoundManager.get().getSoundAsset("launch1");
+
     FireBall(TileType type) {
         super(type);
     }
@@ -19,9 +20,8 @@ public class FireBall extends Tile implements Launchable {
 
     @Override
     public void onCollide(MovingBall movingBall, TilemapTile tileHit, GameController controller) {
-        TilemapManager.DestroyRadiusEffect effect = new TilemapManager.DestroyRadiusEffect();
-        effect.setup(2, tileHit.getLayerId(), tileHit.getX(), tileHit.getY());
-        effect.apply(controller.getBehaviourPack().tilemapManager);
+        DestroyRadiusEffect.newInstance(2, tileHit.getLayerId(), tileHit.getX(), tileHit.getY())
+                .apply(controller.getBehaviourPack().tilemapManager);
         explosionSound.play();
     }
 }
