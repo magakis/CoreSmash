@@ -5,7 +5,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -356,7 +355,7 @@ public class GameScreen extends ScreenBase implements Observer {
             lblMoves = new Label("null", skin, "h4");
             lblMoves.setAlignment(Align.center);
 
-            lblTargetScore = new Label("", skin, "h5", new Color(5 / 255f, 45 / 255f, 51 / 255f, 1));
+            lblTargetScore = new Label("", skin, "h5", new Color(61 / 255f, 61 / 255f, 92 / 255f, 1));
             lblTargetScore.setAlignment(Align.center);
 
             lblStaticLives = new Label("Lives: ", skin, "h4");
@@ -387,15 +386,13 @@ public class GameScreen extends ScreenBase implements Observer {
             tblTime.add(lblTime);
 
             tblCenter = new Table();
-            tblCenter.columnDefaults(1).width(lblLives.getPrefHeight() * 1.4f).right();
+            tblCenter.padTop(Value.percentHeight(.5f, lblScore))
+                    .columnDefaults(1).width(lblLives.getPrefHeight() * 1.4f).right();
 
             centerTable = new Container<>(tblCenter);
             centerTable.setBackground(skin.getDrawable("BoardCenter"));
 
-            GlyphLayout fontLayout = new GlyphLayout(skin.getFont("h4"), "000000/000000");
-
             board = new Table(skin);
-            board.background("BoardBackground");
             board.columnDefaults(0).expandX().padBottom(lblTime.getPrefHeight() / 6);
             board.columnDefaults(1);
             board.columnDefaults(2).expandX().padBottom(lblScore.getPrefHeight() / 6);
@@ -414,7 +411,7 @@ public class GameScreen extends ScreenBase implements Observer {
                 public float get(Actor context) {
                     return UIUtils.getWidthFor(centerTable.getBackground(), board.getHeight() * 1.6f);
                 }
-            });
+            }).padTop(Value.percentHeight(-.5f, lblScore));
 
             Container<Table> scoreWrapper = new Container<>(tblScore);
             scoreWrapper.height(Value.percentHeight(2, lblScore)).width(new Value() {
@@ -465,7 +462,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
             float boardHeight = tblScore.getHeight() * 1.28f; // Prior call to board.validate() is required!
             boardRoot = new Container<>(board);
-            boardRoot.fill().height(boardHeight).width(UIUtils.getWidthFor(board.getBackground(), boardHeight));
+            boardRoot.fill().height(boardHeight);
 
             Container<Container> boardWrapper = new Container<Container>(boardRoot);
             boardWrapper.top();
