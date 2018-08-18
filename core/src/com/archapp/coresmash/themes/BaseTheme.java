@@ -1,6 +1,6 @@
 package com.archapp.coresmash.themes;
 
-public class BaseTheme extends com.archapp.coresmash.themes.AbstractTheme {
+public class BaseTheme extends AbstractTheme {
     public BaseTheme() {
         setResourcesFor(0, "RedBall.png", null);
         setResourcesFor(1, "BlueBall.png", null);

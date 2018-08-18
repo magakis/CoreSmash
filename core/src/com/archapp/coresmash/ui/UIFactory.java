@@ -27,31 +27,31 @@ public final class UIFactory {
 
     public static ImageButton createImageButton(Skin skin, String style) {
         ImageButton button = new ImageButton(skin, style);
-        button.addListener(com.archapp.coresmash.ui.UIUtils.getButtonSoundListener());
+        button.addListener(UIUtils.getButtonSoundListener());
         return button;
     }
 
     public static ImageButton createImageButton(Drawable up, Drawable down) {
         ImageButton button = new ImageButton(up, down);
-        button.addListener(com.archapp.coresmash.ui.UIUtils.getButtonSoundListener());
+        button.addListener(UIUtils.getButtonSoundListener());
         return button;
     }
 
     public static TextButton createTextButton(String txt, Skin skin, String stylename) {
         TextButton button = new TextButton(txt, skin, stylename);
-        button.addListener(com.archapp.coresmash.ui.UIUtils.getButtonSoundListener());
+        button.addListener(UIUtils.getButtonSoundListener());
         return button;
     }
 
     public static TextButton createTextButton(String txt, Skin skin) {
         TextButton button = new TextButton(txt, skin);
-        button.addListener(com.archapp.coresmash.ui.UIUtils.getButtonSoundListener());
+        button.addListener(UIUtils.getButtonSoundListener());
         return button;
     }
 
     public static TextButton createTextButton(String txt, TextButton.TextButtonStyle style) {
         TextButton button = new TextButton(txt, style);
-        button.addListener(com.archapp.coresmash.ui.UIUtils.getButtonSoundListener());
+        button.addListener(UIUtils.getButtonSoundListener());
         return button;
     }
 }

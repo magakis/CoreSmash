@@ -1,5 +1,7 @@
 package com.archapp.coresmash.screens;
 
+import com.archapp.coresmash.CoreSmash;
+import com.archapp.coresmash.UserAccount;
 import com.archapp.coresmash.ui.UIComponent;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -10,12 +12,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 
-public class ScoresScreen extends com.archapp.coresmash.screens.ScreenBase {
+public class ScoresScreen extends ScreenBase {
     private Stage stage;
     private Skin skin;
     private UIScoreTable uiScoreTable;
 
-    public ScoresScreen(com.archapp.coresmash.CoreSmash game) {
+    public ScoresScreen(CoreSmash game) {
         super(game);
         setupStage();
 
@@ -90,7 +92,7 @@ public class ScoresScreen extends com.archapp.coresmash.screens.ScreenBase {
          }
 
          void updateTable() {
-             com.archapp.coresmash.UserAccount user = gameInstance.getUserAccount();
+             UserAccount user = gameInstance.getUserAccount();
 
              for (int i = 0; i < 5; ++i) {
                  lblTotalScore.setText("Total Score: " + user.getTotalProgress());

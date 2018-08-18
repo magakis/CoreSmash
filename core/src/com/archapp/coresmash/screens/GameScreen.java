@@ -1,8 +1,10 @@
 package com.archapp.coresmash.screens;
 
+import com.archapp.coresmash.Coords2D;
 import com.archapp.coresmash.CoreSmash;
 import com.archapp.coresmash.GameController;
 import com.archapp.coresmash.Launcher;
+import com.archapp.coresmash.NotificationType;
 import com.archapp.coresmash.Observer;
 import com.archapp.coresmash.StreakUI;
 import com.archapp.coresmash.WorldSettings;
@@ -201,7 +203,7 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     @Override
-    public void onNotify(com.archapp.coresmash.NotificationType type, Object ob) {
+    public void onNotify(NotificationType type, Object ob) {
         switch (type) {
             case BALL_LAUNCHED:
                 if (statsManager.isMovesEnabled()) {
@@ -220,7 +222,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private class GameInputListener implements GestureDetector.GestureListener {
         private boolean isPanning;
-        private com.archapp.coresmash.Coords2D tmPos;
+        private Coords2D tmPos;
         private Vector3 scrPos;
         private float initAngle;
         private Vector2 currPoint;
@@ -521,7 +523,7 @@ public class GameScreen extends ScreenBase implements Observer {
         }
 
         @Override
-        public void onNotify(com.archapp.coresmash.NotificationType type, Object ob) {
+        public void onNotify(NotificationType type, Object ob) {
             switch (type) {
                 case NOTIFICATION_TYPE_SCORE_INCREMENTED:
                     lblScore.setText(String.valueOf(statsManager.getScore()));

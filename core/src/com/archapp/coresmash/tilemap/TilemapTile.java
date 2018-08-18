@@ -1,12 +1,13 @@
 package com.archapp.coresmash.tilemap;
 
+import com.archapp.coresmash.Coords2D;
 import com.archapp.coresmash.tiles.Tile;
 import com.archapp.coresmash.tiles.TileContainer;
 
 import java.util.List;
 
 public class TilemapTile extends TileContainer implements Comparable<TilemapTile> {
-    final private com.archapp.coresmash.Coords2D coords;
+    final private Coords2D coords;
     final private NeighbourTiles neighbourTiles;
     private int distanceFromCenter;
     private int groupID;
@@ -15,7 +16,7 @@ public class TilemapTile extends TileContainer implements Comparable<TilemapTile
 
     public TilemapTile(Tile tile) {
         setTile(tile);
-        coords = new com.archapp.coresmash.Coords2D();
+        coords = new Coords2D();
         neighbourTiles = new NeighbourTiles();
     }
 

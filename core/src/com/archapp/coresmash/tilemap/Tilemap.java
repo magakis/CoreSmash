@@ -2,6 +2,8 @@ package com.archapp.coresmash.tilemap;
 
 import com.archapp.coresmash.Coords2D;
 import com.archapp.coresmash.NotificationType;
+import com.archapp.coresmash.Observable;
+import com.archapp.coresmash.WorldSettings;
 import com.archapp.coresmash.tiles.Tile;
 import com.archapp.coresmash.tiles.TileContainer.Side;
 import com.badlogic.gdx.math.MathUtils;
@@ -22,7 +24,7 @@ import static com.archapp.coresmash.tiles.TileContainer.getOppositeSide;
  * Created by Michail on 18/3/2018.
  */
 
-public class Tilemap extends com.archapp.coresmash.Observable implements Comparable<Tilemap> {
+public class Tilemap extends Observable implements Comparable<Tilemap> {
     private int groupID;
     private int maxDistanceFromCenter;
     private List<TilemapTile> tilemapTiles;
@@ -97,7 +99,7 @@ public class Tilemap extends com.archapp.coresmash.Observable implements Compara
         world.x -= worldPosition.x;
         world.y -= worldPosition.y;
 
-        int tileSize = com.archapp.coresmash.WorldSettings.getTileSize();
+        int tileSize = WorldSettings.getTileSize();
         // XXX(11/5/2018): MAGIC VALUES .8f , .95f
         float tileYDistance = tileSize * .8f;
         float tileXDistance = tileSize * .95f;
@@ -348,7 +350,7 @@ public class Tilemap extends com.archapp.coresmash.Observable implements Compara
     private void updateTilemapTile(TilemapTile tmTile) {
         float x = tmTile.getX();
         float y = tmTile.getY();
-        float tileSize = com.archapp.coresmash.WorldSettings.getTileSize();
+        float tileSize = WorldSettings.getTileSize();
 
         float X_world, Y_world;
         float tileXDistance = tileSize * .95f;

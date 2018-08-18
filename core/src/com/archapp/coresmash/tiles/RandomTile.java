@@ -1,6 +1,6 @@
 package com.archapp.coresmash.tiles;
 
-public class RandomTile extends com.archapp.coresmash.tiles.Tile {
+public class RandomTile extends Tile {
 
     RandomTile(TileType type) {
         super(type);

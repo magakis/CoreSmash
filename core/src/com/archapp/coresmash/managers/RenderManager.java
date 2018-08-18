@@ -1,5 +1,6 @@
 package com.archapp.coresmash.managers;
 
+import com.archapp.coresmash.Coords2D;
 import com.archapp.coresmash.WorldSettings;
 import com.archapp.coresmash.themes.AbstractTheme;
 import com.archapp.coresmash.tilemap.Tilemap;
@@ -67,7 +68,7 @@ public class RenderManager {
         shapeRenderer.end();
     }
 
-    public void renderCenterDot(com.archapp.coresmash.Coords2D pos, Matrix4 combined) {
+    public void renderCenterDot(Coords2D pos, Matrix4 combined) {
         shapeRenderer.setProjectionMatrix(combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(Color.GOLDENROD);

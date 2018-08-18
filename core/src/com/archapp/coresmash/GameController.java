@@ -33,10 +33,10 @@ public class GameController {
     private CollisionDetector collisionDetector;
     private StatsManager statsManager;
     private BehaviourPack behaviourPowerPack;
-    private com.archapp.coresmash.Launcher launcher;
+    private Launcher launcher;
 
 
-    public GameController(TilemapManager tilemapManager, MovingBallManager movingBallManager, StatsManager statsManager, com.archapp.coresmash.Launcher launcher) {
+    public GameController(TilemapManager tilemapManager, MovingBallManager movingBallManager, StatsManager statsManager, Launcher launcher) {
         collisionDetector = new CollisionDetector();
         this.movingBallManager = movingBallManager;
         this.tilemapManager = tilemapManager;

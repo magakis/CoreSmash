@@ -3,7 +3,8 @@ package com.archapp.coresmash;
 public class Coords2D {
     public int x, y;
 
-    public Coords2D(){};
+    public Coords2D() {
+    }
 
     public Coords2D(Coords2D coords2D) {
         x = coords2D.x;

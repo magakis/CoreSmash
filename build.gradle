@@ -13,7 +13,7 @@ buildscript {
     }
     dependencies {
         classpath 'de.richsource.gradle.plugins:gwt-gradle-plugin:0.6'
-        classpath 'com.android.tools.build:gradle:3.3.0-alpha01'
+        classpath 'com.android.tools.build:gradle:3.3.0-alpha06'
     }
 }
 
@@ -23,8 +23,8 @@ allprojects {
 
     version = '1.0'
     ext {
-        appName = "core-smash"
-        gdxVersion = '1.9.8'
+        appName = "coresmash"
+        gdxVersion = '1.9.9-SNAPSHOT'
         admobVersion = '15.0.1'
     }
 

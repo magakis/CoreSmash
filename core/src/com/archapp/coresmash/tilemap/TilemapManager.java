@@ -5,6 +5,7 @@ import com.archapp.coresmash.Match3;
 import com.archapp.coresmash.NotificationType;
 import com.archapp.coresmash.Observable;
 import com.archapp.coresmash.Observer;
+import com.archapp.coresmash.WorldSettings;
 import com.archapp.coresmash.managers.RenderManager;
 import com.archapp.coresmash.tiles.Breakable;
 import com.archapp.coresmash.tiles.RegularTile;
@@ -42,7 +43,7 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
     private int[] colorsAvailable = new int[10]; // XXX(22/4/2018): MagicValue 10 (Should ask TileIndex)
 
     public TilemapManager() {
-        defTilemapPosition = new Coords2D(com.archapp.coresmash.WorldSettings.getWorldWidth() / 2, com.archapp.coresmash.WorldSettings.getWorldHeight() - com.archapp.coresmash.WorldSettings.getWorldHeight() / 4);
+        defTilemapPosition = new Coords2D(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
         worldMap = new Map(this);
         tileList = new ArrayList<>();
         queuedForDeletion = new ArrayList<>();

@@ -18,7 +18,7 @@ final public class LevelBuilder {
     private Map map;
 
     private LevelSettings levelSettings;
-    private List<com.archapp.coresmash.levelbuilder.MapSettings> mapSettings;
+    private List<MapSettings> mapSettings;
 
     private int layer;
     private TileType tileType;
@@ -33,7 +33,7 @@ final public class LevelBuilder {
         map = new Map();
 
         map.newLayer();
-        mapSettings.add(new com.archapp.coresmash.levelbuilder.MapSettings());
+        mapSettings.add(new MapSettings());
         mapSettings.get(0).chained = true;
     }
 
@@ -253,7 +253,7 @@ final public class LevelBuilder {
 
     public boolean saveAs(String name) {
         // XXX(16/6/2018): Fix this array shit
-        return LevelParser.saveAs(name, map, levelSettings, mapSettings.toArray(new com.archapp.coresmash.levelbuilder.MapSettings[mapSettings.size()]));
+        return LevelParser.saveAs(name, map, levelSettings, mapSettings.toArray(new MapSettings[mapSettings.size()]));
     }
 
     public boolean load(String name) {
@@ -268,7 +268,7 @@ final public class LevelBuilder {
             if (i < mapSettings.size()) {
                 mapSettings.get(i).copy(parsedLevel.mapSettings.get(i));
             } else {
-                com.archapp.coresmash.levelbuilder.MapSettings ms = new com.archapp.coresmash.levelbuilder.MapSettings();
+                MapSettings ms = new MapSettings();
                 ms.copy(parsedLevel.mapSettings.get(i));
                 mapSettings.add(ms);
             }
@@ -296,7 +296,7 @@ final public class LevelBuilder {
         ++layer;
         if (!map.layerExists(layer)) {
             map.newLayer();
-            mapSettings.add(new com.archapp.coresmash.levelbuilder.MapSettings());
+            mapSettings.add(new MapSettings());
         }
         return layer;
     }

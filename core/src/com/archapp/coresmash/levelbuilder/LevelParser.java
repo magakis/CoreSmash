@@ -49,7 +49,7 @@ public final class LevelParser {
     };
     private static ParsedLevel parsedLevel = new ParsedLevel();
 
-    public static boolean saveAs(String name, Map map, LevelSettings levelSettings, com.archapp.coresmash.levelbuilder.MapSettings[] mapSettings) {
+    public static boolean saveAs(String name, Map map, LevelSettings levelSettings, MapSettings[] mapSettings) {
         FileHandle file = Gdx.files.external("/CoreSmash/levels/" + name + ".xml");
         int maxTilemaps = map.layerCount();
         XmlSerializer serializer = XmlManager.getSerializer();
@@ -72,7 +72,7 @@ public final class LevelParser {
             int groupID = 0;
             for (int mapIndex = 0; mapIndex < maxTilemaps; ++mapIndex) {
                 if (map.getTileCountFrom(mapIndex) == 0) continue;
-                com.archapp.coresmash.levelbuilder.MapSettings setting = mapSettings[mapIndex];
+                MapSettings setting = mapSettings[mapIndex];
 
                 serializer.startTag(NO_NAMESPACE, TAG_MAP);
                 serializer.attribute(NO_NAMESPACE, "id", String.valueOf(groupID++));
@@ -208,7 +208,7 @@ public final class LevelParser {
             if (type == XmlPullParser.START_TAG) {
                 if (name.equals(TAG_MAP)) {
                     if (parsedLevel.mapSettings.size() == mapIndex) {
-                        parsedLevel.mapSettings.add(new com.archapp.coresmash.levelbuilder.MapSettings());
+                        parsedLevel.mapSettings.add(new MapSettings());
                         parsedLevel.mapTiles.add(new ArrayList<ParsedTile>());
                     }
                     parseMap(parser, mapIndex++);
@@ -223,7 +223,7 @@ public final class LevelParser {
 
         int type;
         String name;
-        com.archapp.coresmash.levelbuilder.MapSettings map = parsedLevel.mapSettings.get(index);
+        MapSettings map = parsedLevel.mapSettings.get(index);
 
         do {
             do {

@@ -1,13 +1,16 @@
 package com.archapp.coresmash.tests;
 
+import com.archapp.coresmash.Coords2D;
+import com.archapp.coresmash.tilemap.TilemapBuilder;
+import com.archapp.coresmash.tilemap.TilemapManager;
 import com.badlogic.gdx.math.Vector2;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 @Deprecated//("INVALID TEST .. IT'S BROKEN!")
-public class TilemapManagerTest extends com.archapp.coresmash.tests.ProjectTestCase {
-    com.archapp.coresmash.tilemap.TilemapManager tilemapManager;
+public class TilemapManagerTest extends ProjectTestCase {
+    TilemapManager tilemapManager;
 
     @BeforeClass
     public static void testInit() {
@@ -19,7 +22,7 @@ public class TilemapManagerTest extends com.archapp.coresmash.tests.ProjectTestC
 
     @Override
     protected void setUp() throws Exception {
-        tilemapManager = new com.archapp.coresmash.tilemap.TilemapManager();
+        tilemapManager = new TilemapManager();
     }
 
     @Test
@@ -54,8 +57,8 @@ public class TilemapManagerTest extends com.archapp.coresmash.tests.ProjectTestC
 
     @Test
     public void testWorldPosition() {
-        com.archapp.coresmash.tilemap.TilemapBuilder builder = tilemapManager.newLayer();
-        com.archapp.coresmash.Coords2D def = tilemapManager.getDefTilemapPosition();
+        TilemapBuilder builder = tilemapManager.newLayer();
+        Coords2D def = tilemapManager.getDefTilemapPosition();
 
         assertEquals(def.x, tilemapManager.getLayerPositionX(0), 0.001);
         assertEquals(def.y, tilemapManager.getLayerPositionY(0), 0.001);

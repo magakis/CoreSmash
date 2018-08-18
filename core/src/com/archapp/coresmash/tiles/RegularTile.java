@@ -1,5 +1,6 @@
 package com.archapp.coresmash.tiles;
 
+import com.archapp.coresmash.GameController;
 import com.archapp.coresmash.sound.SoundManager;
 import com.archapp.coresmash.tilemap.TilemapManager;
 import com.archapp.coresmash.tilemap.TilemapTile;
@@ -7,10 +8,10 @@ import com.archapp.coresmash.tiles.TileContainer.Side;
 
 import java.util.List;
 
-public class RegularTile extends com.archapp.coresmash.tiles.Tile implements Launchable, Matchable, Breakable {
+public class RegularTile extends Tile implements Launchable, Matchable, Breakable {
     private SoundManager.SoundEffects destroySound;
 
-    RegularTile(com.archapp.coresmash.tiles.TileType type) {
+    RegularTile(TileType type) {
         super(type);
         destroySound = SoundManager.get().getSoundAsset("regularBallDestroy");
     }
@@ -21,14 +22,14 @@ public class RegularTile extends com.archapp.coresmash.tiles.Tile implements Lau
     }
 
     @Override
-    public void onCollide(com.archapp.coresmash.tiles.MovingBall ball, com.archapp.coresmash.tilemap.TilemapTile tileHit, com.archapp.coresmash.GameController controller) {
-        com.archapp.coresmash.GameController.BehaviourPack pack = controller.getBehaviourPack();
-        com.archapp.coresmash.tilemap.TilemapManager tmm = pack.tilemapManager;
+    public void onCollide(MovingBall ball, TilemapTile tileHit, GameController controller) {
+        GameController.BehaviourPack pack = controller.getBehaviourPack();
+        TilemapManager tmm = pack.tilemapManager;
         Side[] sides = pack.collisionDetector.getClosestSides(tmm.getLayerRotation(tileHit.getLayerId()), pack.collisionDetector.getDirection(ball.getPositionInWorld(), tileHit.getPositionInWorld()));
 
-        com.archapp.coresmash.tilemap.TilemapTile newTile = tmm.attachBall(ball.extractTile(), tileHit, sides);
+        TilemapTile newTile = tmm.attachBall(ball.extractTile(), tileHit, sides);
         if (newTile != null) {
-            List<com.archapp.coresmash.tilemap.TilemapTile> matched = tmm.getColorMatches(newTile);
+            List<TilemapTile> matched = tmm.getColorMatches(newTile);
             if (pack.statsManager.isGameActive()) {
                 tmm.destroyTiles(matched);
             }

@@ -1,5 +1,6 @@
 package com.archapp.coresmash.managers;
 
+import com.archapp.coresmash.Observable;
 import com.archapp.coresmash.tiles.Launchable;
 import com.archapp.coresmash.tiles.MovingBall;
 import com.archapp.coresmash.tiles.Tile;
@@ -14,7 +15,7 @@ import java.util.ListIterator;
  * Created by Michail on 24/3/2018.
  */
 
-public class MovingBallManager extends com.archapp.coresmash.Observable {
+public class MovingBallManager extends Observable {
     private Pool<MovingBall> movingTilePool;
     private LinkedList<MovingBall> activeList;
 

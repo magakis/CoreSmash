@@ -13,6 +13,6 @@ public interface TilemapCollection {
 
     void draw(RenderManager renderManager);
 
-    com.archapp.coresmash.tilemap.TilemapTile getTilemapTile(int layer, int x, int y);
+    TilemapTile getTilemapTile(int layer, int x, int y);
 }
 

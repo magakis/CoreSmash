@@ -1,5 +1,6 @@
 package com.archapp.coresmash.managers;
 
+import com.archapp.coresmash.WorldSettings;
 import com.archapp.coresmash.tilemap.Tilemap;
 import com.archapp.coresmash.tilemap.TilemapTile;
 import com.archapp.coresmash.tiles.MovingBall;
@@ -37,7 +38,7 @@ public class CollisionDetector {
     }
 
     public TilemapTile findCollision(List<TilemapTile> tilemapTileList, MovingBall ball) {
-        int sideHalf = com.archapp.coresmash.WorldSettings.getTileSize() / 2;
+        int sideHalf = WorldSettings.getTileSize() / 2;
         //XXX(HACK): Arbitrary value to decrease range and match better the texture
         float minDist = sideHalf + sideHalf * ball.getScale() * 0.8f;
 
@@ -51,7 +52,7 @@ public class CollisionDetector {
     }
 
     public TilemapTile findCollision(Tilemap tm, MovingBall moveTile) {
-        int sideHalf = com.archapp.coresmash.WorldSettings.getTileSize() / 2;
+        int sideHalf = WorldSettings.getTileSize() / 2;
         //XXX(HACK): Arbitrary value to decrease range and match better the texture
         float minDist = sideHalf + sideHalf * moveTile.getScale() * 0.8f;
 

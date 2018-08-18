@@ -22,6 +22,5 @@ public class AndroidLauncher extends AndroidApplication {
         layout.addView(gameView);
         adManager.init(this, layout);
         setContentView(layout);
-
     }
 }

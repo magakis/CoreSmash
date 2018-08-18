@@ -1,5 +1,6 @@
 package com.archapp.coresmash.tilemap;
 
+import com.archapp.coresmash.levelbuilder.ParsedTile;
 import com.archapp.coresmash.tiles.TileFactory;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
@@ -20,7 +21,7 @@ public class TilemapBuilder {
 
     private boolean debugEnabled;
     private boolean isBuilt;
-    private com.archapp.coresmash.tilemap.Tilemap tilemap;
+    private Tilemap tilemap;
     private int colorCount;
     private int maxDistance;
     private int blueprintTileCount;
@@ -98,7 +99,7 @@ public class TilemapBuilder {
         };
     }
 
-    public void startNewTilemap(com.archapp.coresmash.tilemap.Tilemap tm) {
+    public void startNewTilemap(Tilemap tm) {
         if (tm == null) throw new NullPointerException();
         reset();
         tilemap = tm;
@@ -140,9 +141,9 @@ public class TilemapBuilder {
         return this;
     }
 
-    public TilemapBuilder populateFrom(List<com.archapp.coresmash.levelbuilder.ParsedTile> parsedTiles) {
+    public TilemapBuilder populateFrom(List<ParsedTile> parsedTiles) {
         int randomTileID = 17;
-        for (com.archapp.coresmash.levelbuilder.ParsedTile parsedTile : parsedTiles) {
+        for (ParsedTile parsedTile : parsedTiles) {
             if (parsedTile.getTileID() == randomTileID) {
                 checkIfCanBuild();
                 BlueprintTile tile = getTile(parsedTile.getX(), parsedTile.getY());

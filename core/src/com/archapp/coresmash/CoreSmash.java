@@ -13,11 +13,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.Stack;
 
 public class CoreSmash extends Game {
@@ -70,10 +70,10 @@ public class CoreSmash extends Game {
             @Override
             public void uncaughtException(Thread thread, Throwable err) {
                 if (LOG_CRASHES) {
-                    SimpleDateFormat format = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss");
-                    try (Writer writer = Gdx.files.external("/CoreSmash/crash-logs/" + format.format(Calendar.getInstance().getTime()) + ".txt").writer(false)) {
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.getDefault());
+                    try (Writer writer = Gdx.files.external("/CoreSmash/crash-logs/" + "crash_" + format.format(Calendar.getInstance().getTime()) + ".txt").writer(false)) {
                         err.printStackTrace(new PrintWriter(writer));
-                    } catch (IOException ignored) {
+                    } catch (Exception wtfJustHappened) {
                     }
                 }
                 err.printStackTrace();
@@ -84,7 +84,6 @@ public class CoreSmash extends Game {
         WorldSettings.init();
         screenStack = new Stack<>();
 
-//        viewport = new ExtendViewport(768, 1024);
         viewport = new ScreenViewport();
 
         Gdx.input.setCatchBackKey(true);

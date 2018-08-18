@@ -1,5 +1,6 @@
 package com.archapp.coresmash.levelbuilder;
 
+import com.archapp.coresmash.Coords2D;
 import com.archapp.coresmash.CoreSmash;
 import com.archapp.coresmash.GameController;
 import com.archapp.coresmash.PersistentString;
@@ -649,7 +650,7 @@ public class LevelBuilderScreen extends ScreenBase {
     private class RotateMode extends Mode {
         UILayer uiLayer;
         private boolean isPanning;
-        private com.archapp.coresmash.Coords2D tmPos = new com.archapp.coresmash.Coords2D();
+        private Coords2D tmPos = new Coords2D();
         private Vector3 scrPos = new Vector3();
         private float initAngle;
         private Vector2 currPoint = new Vector2();

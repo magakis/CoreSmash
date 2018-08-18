@@ -1,5 +1,6 @@
 package com.archapp.coresmash.screens;
 
+import com.archapp.coresmash.CoreSmash;
 import com.archapp.coresmash.sound.SoundManager;
 import com.archapp.coresmash.themes.AbstractTheme;
 import com.archapp.coresmash.themes.BaseTheme;
@@ -50,7 +51,7 @@ public class LoadingScreen extends ScreenBase {
 
     private TextureLoader.TextureParameter textureParam;
 
-    public LoadingScreen(com.archapp.coresmash.CoreSmash game) {
+    public LoadingScreen(CoreSmash game) {
         super(game);
 
         PPI = Gdx.graphics.getDensity();
@@ -98,7 +99,7 @@ public class LoadingScreen extends ScreenBase {
             setupSkin();
             Components.initialize(skin);
             UIUtils.initialize();
-            gameInstance.setScreen(new com.archapp.coresmash.screens.MainMenuScreen(gameInstance));
+            gameInstance.setScreen(new MainMenuScreen(gameInstance));
         }
         percent.setText(String.format(Locale.ENGLISH, "%.0f %%", am.getProgress() * 100));
 
@@ -157,8 +158,7 @@ public class LoadingScreen extends ScreenBase {
 
     private void loadSounds() {
         am.load("blop.mp3", Sound.class);
-        am.load("BackgroundLoop.mp3", Sound.class);
-        am.load("Music.mp3", Music.class);
+        am.load("BackgroundLoop.mp3", Music.class);
         am.load("click.mp3", Sound.class);
         am.load(SOUND_DIR + "explosion1.ogg", Sound.class);
         am.load(SOUND_DIR + "launch1.ogg", Sound.class);
@@ -195,7 +195,7 @@ public class LoadingScreen extends ScreenBase {
 
     private void setupSounds() {
         SoundManager soundManager = SoundManager.get();
-        soundManager.loadMusic("backgroundMusic", am.get("Music.mp3", Music.class));
+        soundManager.loadMusic("backgroundMusic", am.get("BackgroundLoop.mp3", Music.class));
         soundManager.loadSound("regularBallDestroy", am.get("blop.mp3", Sound.class));
         soundManager.loadSound("buttonClick", am.get("click.mp3", Sound.class));
         soundManager.loadSound("explosion1", am.get(SOUND_DIR + "explosion1.ogg", Sound.class));

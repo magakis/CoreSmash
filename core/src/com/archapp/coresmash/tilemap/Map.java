@@ -1,8 +1,10 @@
 package com.archapp.coresmash.tilemap;
 
 import com.archapp.coresmash.Coords2D;
+import com.archapp.coresmash.Observable;
 import com.archapp.coresmash.Observer;
 import com.archapp.coresmash.WorldSettings;
+import com.archapp.coresmash.managers.RenderManager;
 import com.archapp.coresmash.tiles.Tile;
 import com.archapp.coresmash.tiles.TileContainer.Side;
 import com.badlogic.gdx.math.Vector2;
@@ -29,7 +31,7 @@ import java.util.List;
  * the IDs and balance the map based on them. After I have applied the filter I want, I will instantiate
  * the Tilemap with that builder and create the tiles
  */
-public class Map extends com.archapp.coresmash.Observable implements TilemapCollection {
+public class Map extends Observable implements TilemapCollection {
     private final Coords2D defMapPosition;
     private int activeTilemaps;
     Observer tmObserver;
@@ -224,13 +226,13 @@ public class Map extends com.archapp.coresmash.Observable implements TilemapColl
         activeTilemaps = 0;
     }
 
-    public void draw(com.archapp.coresmash.managers.RenderManager renderManager) {
+    public void draw(RenderManager renderManager) {
         for (int i = 0; i < activeTilemaps; ++i) {
             renderManager.draw(tilemaps.get(i));
         }
     }
 
-    public void draw(com.archapp.coresmash.managers.RenderManager renderManager, int layer) {
+    public void draw(RenderManager renderManager, int layer) {
         assertLayerIndex(layer);
         if (tilemaps.get(layer).getTileCount() == 0) return;
         renderManager.draw(tilemaps.get(layer));

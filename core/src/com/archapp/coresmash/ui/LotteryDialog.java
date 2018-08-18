@@ -1,5 +1,7 @@
 package com.archapp.coresmash.ui;
 
+import com.archapp.coresmash.Lottery;
+import com.archapp.coresmash.UserAccount;
 import com.archapp.coresmash.tiles.TileType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -27,19 +29,19 @@ import static com.archapp.coresmash.CurrencyType.LOTTERY_COIN;
 
 public class LotteryDialog extends Dialog {
     final private Skin skin;
-    final private com.archapp.coresmash.UserAccount user;
+    final private UserAccount user;
 
     private CardButton[] cardButtons;
     private ImageButton btnClose, btnOpen, btnClaim, btnRetry;
-    private com.archapp.coresmash.Lottery lottery;
+    private Lottery lottery;
     private Reward reward;
 
 
-    public LotteryDialog(Skin sk, com.archapp.coresmash.UserAccount userAccount) {
+    public LotteryDialog(Skin sk, UserAccount userAccount) {
         super("", sk, "PickPowerUpDialog");
         this.user = userAccount;
         skin = sk;
-        lottery = new com.archapp.coresmash.Lottery();
+        lottery = new Lottery();
         reward = new Reward();
 
         btnClaim = UIFactory.createImageButton(skin, "ButtonClaim");
@@ -111,7 +113,7 @@ public class LotteryDialog extends Dialog {
                             , Actions.run(new Runnable() {
                                               @Override
                                               public void run() {
-                                                  com.archapp.coresmash.Lottery.Item item = lottery.draw();
+                                                  Lottery.Item item = lottery.draw();
                                                   reward.set(item.getType(), item.getAmount());
                                                   button.setReward(item.getType(), item.getAmount());
                                                   button.showReward();

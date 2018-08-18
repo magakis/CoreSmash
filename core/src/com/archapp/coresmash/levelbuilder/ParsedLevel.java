@@ -5,7 +5,7 @@ import java.util.List;
 
 public class ParsedLevel {
     LevelSettings levelSettings;
-    List<com.archapp.coresmash.levelbuilder.MapSettings> mapSettings;
+    List<MapSettings> mapSettings;
     List<List<ParsedTile>> mapTiles;
 
     ParsedLevel() {
@@ -22,7 +22,7 @@ public class ParsedLevel {
         return levelSettings;
     }
 
-    public com.archapp.coresmash.levelbuilder.MapSettings getMapSettings(int layer) {
+    public MapSettings getMapSettings(int layer) {
         if (layer >= mapSettings.size()) throw new RuntimeException();
         return mapSettings.get(layer);
     }
@@ -38,7 +38,7 @@ public class ParsedLevel {
         levelSettings.launcherSize = 1;
         levelSettings.launcherCooldown = 0f;
 
-        for (com.archapp.coresmash.levelbuilder.MapSettings map : mapSettings) {
+        for (MapSettings map : mapSettings) {
             map.reset();
         }
 

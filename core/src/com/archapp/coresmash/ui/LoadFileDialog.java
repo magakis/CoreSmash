@@ -1,5 +1,6 @@
 package com.archapp.coresmash.ui;
 
+import com.archapp.coresmash.levelbuilder.LevelListParser;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.files.FileHandle;
@@ -20,15 +21,15 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
 
 public class LoadFileDialog extends Dialog {
-    private final List<com.archapp.coresmash.levelbuilder.LevelListParser.RegisteredLevel> levelList;
-    private final Array<com.archapp.coresmash.levelbuilder.LevelListParser.RegisteredLevel> levels;
-    private final com.archapp.coresmash.levelbuilder.LevelListParser levelListParser;
+    private final List<LevelListParser.RegisteredLevel> levelList;
+    private final Array<LevelListParser.RegisteredLevel> levels;
+    private final LevelListParser levelListParser;
     private final Dialog dlgConfirmDelete;
 
     public LoadFileDialog(final Skin skin) {
         super("", skin);
 
-        levelListParser = new com.archapp.coresmash.levelbuilder.LevelListParser();
+        levelListParser = new LevelListParser();
 
         levels = new Array<>();
         levelList = new List<>(skin);
@@ -76,16 +77,16 @@ public class LoadFileDialog extends Dialog {
             @Override
             protected void result(Object object) {
                 if ((boolean) object) {
-                    com.archapp.coresmash.levelbuilder.LevelListParser.RegisteredLevel chosen = levelList.getSelected();
+                    LevelListParser.RegisteredLevel chosen = levelList.getSelected();
                     FileHandle file = Gdx.files.external("/CoreSmash/levels/" + chosen.name + ".xml");
                     file.delete();
-                    Array<com.archapp.coresmash.levelbuilder.LevelListParser.RegisteredLevel> tmp = levelList.getItems();
+                    Array<LevelListParser.RegisteredLevel> tmp = levelList.getItems();
                     tmp.removeValue(chosen, false);
                     levelList.setItems(tmp);
                     if (chosen.num != 0) {
                         levelListParser.serializeLevelList(tmp);
                     }
-                    com.archapp.coresmash.ui.Components.showToast("Deleted '" + chosen.name + "'", this.getStage());
+                    Components.showToast("Deleted '" + chosen.name + "'", this.getStage());
                 }
             }
         };
@@ -153,7 +154,7 @@ public class LoadFileDialog extends Dialog {
         levels.clear();
 
         levelListParser.getAllLevels(levels);
-        levels.sort(com.archapp.coresmash.levelbuilder.LevelListParser.compLevel);
+        levels.sort(LevelListParser.compLevel);
 
         levelList.setItems(levels);
         super.show(stage);

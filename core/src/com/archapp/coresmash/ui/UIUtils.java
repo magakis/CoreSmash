@@ -34,7 +34,7 @@ public class UIUtils {
 
     public static void initialize() {
         buttonSoundListener = new ChangeListener() {
-            private SoundManager.SoundEffects btnSound = com.archapp.coresmash.sound.SoundManager.get().getSoundAsset("buttonClick");
+            private SoundManager.SoundEffects btnSound = SoundManager.get().getSoundAsset("buttonClick");
 
             @Override
             public void changed(ChangeEvent event, Actor actor) {
