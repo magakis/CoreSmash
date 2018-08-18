@@ -1,7 +1,7 @@
-package test.com.coresmash.performance;
+package test.com.archapp.coresmash.performance;
 
-import com.coresmash.tiles.Tile;
-import com.coresmash.tiles.TileFactory;
+import com.archapp.coresmash.tiles.Tile;
+import com.archapp.coresmash.tiles.TileFactory;
 
 import org.junit.BeforeClass;
 import org.junit.Test;

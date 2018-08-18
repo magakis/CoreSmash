@@ -1,4 +1,4 @@
-package test.com.coresmash.performance;
+package test.com.archapp.coresmash.performance;
 
 import junit.framework.TestCase;
 
