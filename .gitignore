@@ -130,3 +130,6 @@ Thumbs.db
 
 ## Config Files
 *.json
+
+## Files Produced
+*.apk
