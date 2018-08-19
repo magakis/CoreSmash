@@ -21,7 +21,7 @@ import java.util.Locale;
 import java.util.Stack;
 
 public class CoreSmash extends Game {
-    public static String VERSION = "0.1.3.3-internal";
+    public static String APP_VERSION = "0.1.0";
     public static boolean LOG_CRASHES = true;
     public static boolean DEBUG_TABLET = false;
 

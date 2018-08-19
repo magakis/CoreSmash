@@ -1,6 +1,4 @@
 buildscript {
-    
-
     repositories {
         mavenLocal()
         mavenCentral()
@@ -10,11 +8,14 @@ buildscript {
             url 'https://maven.google.com/'
             name 'Google'
         }
+        google()
     }
+
     dependencies {
         classpath 'de.richsource.gradle.plugins:gwt-gradle-plugin:0.6'
         classpath 'com.android.tools.build:gradle:3.3.0-alpha06'
     }
+
 }
 
 allprojects {
@@ -24,6 +25,7 @@ allprojects {
     version = '1.0'
     ext {
         appName = "coresmash"
+
         gdxVersion = '1.9.9-SNAPSHOT'
         admobVersion = '15.0.1'
     }

@@ -133,7 +133,7 @@ public class MainMenuScreen extends ScreenBase {
 //                    .width(Value.percentWidth(3 / 5f, rootStack))
 //                    .height(Value.percentHeight(2 / 14f, rootStack));
 
-            Label versInfo = new Label("v." + CoreSmash.VERSION + " | Michail Angelos Gakis", skin, "h6", Color.DARK_GRAY);
+            Label versInfo = new Label("v." + CoreSmash.APP_VERSION + " | Michail Angelos Gakis", skin, "h6", Color.DARK_GRAY);
             versInfo.setAlignment(Align.bottom);
 
 //            root.bottom();
