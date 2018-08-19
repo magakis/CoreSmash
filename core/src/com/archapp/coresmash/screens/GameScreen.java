@@ -125,12 +125,14 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private void draw(float delta) {
         renderManager.spriteBatchBegin(camera.combined);
+
         launcher.draw(renderManager);
         tilemapManager.draw(renderManager);
         movingBallManager.draw(renderManager);
+        renderManager.drawCenterTileIndicator(tilemapManager);
+
         renderManager.spriteBatchEnd();
 
-        renderManager.renderCenterDot(tilemapManager.getDefTilemapPosition(), camera.combined);
         stage.draw();
     }
 

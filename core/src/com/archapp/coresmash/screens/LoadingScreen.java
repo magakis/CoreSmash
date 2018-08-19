@@ -124,6 +124,7 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("HourGlass.png");
         loadTexture("HeartIcon.png");
         loadTexture("Heart.png");
+        loadTexture("CenterTileIndicator.png");
         loadTexture("LevelBuilderButton.png");
         loadTexture("SpikyBall.png");
         loadTexture("UserBoardBackground.png");

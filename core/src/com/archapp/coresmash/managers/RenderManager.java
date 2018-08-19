@@ -4,6 +4,7 @@ import com.archapp.coresmash.Coords2D;
 import com.archapp.coresmash.WorldSettings;
 import com.archapp.coresmash.themes.AbstractTheme;
 import com.archapp.coresmash.tilemap.Tilemap;
+import com.archapp.coresmash.tilemap.TilemapManager;
 import com.archapp.coresmash.tilemap.TilemapTile;
 import com.archapp.coresmash.tiles.MovingBall;
 import com.archapp.coresmash.tiles.Tile;
@@ -68,7 +69,26 @@ public class RenderManager {
         shapeRenderer.end();
     }
 
-    public void renderCenterDot(Coords2D pos, Matrix4 combined) {
+    public void drawCenterTileIndicator(TilemapManager manager) {
+        TilemapTile centerTile = manager.getTilemapTile(0, 0, 0);
+        if (centerTile == null) return;
+
+        Vector2 coords = centerTile.getPositionInWorld();
+        float size = WorldSettings.getTileSize() * .7f;
+        float halfSize = size / 2f;
+        Texture texture = assetManager.get("CenterTileIndicator.png", Texture.class);
+        float rotation = (float) Math.toDegrees(manager.getLayerRotation(0));
+
+        batch.draw(texture,
+                coords.x - halfSize, coords.y - halfSize,
+                halfSize, halfSize,
+                size, size,
+                1, 1, -rotation, 0, 0,
+                texture.getWidth(), texture.getHeight(), false, false);
+
+    }
+
+    public void renderDotAt(Coords2D pos, Matrix4 combined) {
         shapeRenderer.setProjectionMatrix(combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(Color.GOLDENROD);
