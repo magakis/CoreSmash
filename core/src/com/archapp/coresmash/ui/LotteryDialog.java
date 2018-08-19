@@ -29,7 +29,7 @@ import static com.archapp.coresmash.CurrencyType.LOTTERY_COIN;
 
 public class LotteryDialog extends Dialog {
     final private Skin skin;
-    final private UserAccount user;
+    final private UserAccount.CurrencyManager currencies;
 
     private CardButton[] cardButtons;
     private ImageButton btnClose, btnOpen, btnClaim, btnRetry;
@@ -37,9 +37,9 @@ public class LotteryDialog extends Dialog {
     private Reward reward;
 
 
-    public LotteryDialog(Skin sk, UserAccount userAccount) {
+    public LotteryDialog(Skin sk, UserAccount.CurrencyManager currencyManager) {
         super("", sk, "PickPowerUpDialog");
-        this.user = userAccount;
+        currencies = currencyManager;
         skin = sk;
         lottery = new Lottery();
         reward = new Reward();
@@ -57,8 +57,8 @@ public class LotteryDialog extends Dialog {
         btnOpen.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if (user.isCurrencyAvailable(LOTTERY_COIN)) {
-                    user.consumeCurrency(LOTTERY_COIN);
+                if (currencies.isCurrencyAvailable(LOTTERY_COIN)) {
+                    currencies.consumeCurrency(LOTTERY_COIN);
 
                     for (CardButton btn : cardButtons) {
                         btn.setDisabled(false);
@@ -67,7 +67,7 @@ public class LotteryDialog extends Dialog {
                     getButtonTable().clearChildren();
                     pack();
                 } else {
-                    throw new RuntimeException("Coins:" + user.getAmountOf(LOTTERY_COIN));
+                    throw new RuntimeException("Coins:" + currencies.getAmountOf(LOTTERY_COIN));
                 }
             }
         });
@@ -126,7 +126,7 @@ public class LotteryDialog extends Dialog {
                                 public void run() {
                                     showImageButton(btnClaim);
                                     showImageButton(btnRetry);
-                                    btnRetry.setDisabled(!user.isCurrencyAvailable(LOTTERY_COIN));
+                                    btnRetry.setDisabled(!currencies.isCurrencyAvailable(LOTTERY_COIN));
                                     pack();
                                 }
                             })
@@ -169,7 +169,7 @@ public class LotteryDialog extends Dialog {
         getButtonTable().clearChildren();
         showImageButton(btnOpen);
         showImageButton(btnClose);
-        btnOpen.setDisabled(!user.isCurrencyAvailable(LOTTERY_COIN));
+        btnOpen.setDisabled(!currencies.isCurrencyAvailable(LOTTERY_COIN));
         reward.reset();
     }
 

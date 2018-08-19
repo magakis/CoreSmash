@@ -4,20 +4,22 @@ import com.archapp.coresmash.managers.StatsManager;
 import com.archapp.coresmash.tiles.TileType;
 import com.badlogic.gdx.Gdx;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.archapp.coresmash.CurrencyType.LOTTERY_COIN;
 
 public class UserAccount {
-    private final String PREFS_NAME = "account";
+    private static final String PREFS_NAME = "account";
+
+    private final List<PropertyChangeListener> propertyChangeListeners;
 
     private String name;
     private HeartManager heartManager;
-    private CurrenciesManager currencies;
+    private CurrencyManager currencies;
     private PowerupManager powerups;
     private PersistentInt unlockedLevels;
     private int userLevel;
@@ -34,11 +36,17 @@ public class UserAccount {
     }
 
     public UserAccount() {
-//        name = prefs.getString("username", "_error_");
+        propertyChangeListeners = new ArrayList<>();
+
         unlockedLevels = new PersistentInt("unlocked_levels", PREFS_NAME, 1);
         totalProgress = new PersistentInt("total_score", PREFS_NAME);
 
-        currencies = new CurrenciesManager(PREFS_NAME);
+        currencies = new CurrencyManager(PREFS_NAME);
+
+        /*
+         * I could have also passed the user and generically manipulate the hearts.
+         * Passing the Currency makes it more specific
+         */
         heartManager = new HeartManager(PREFS_NAME);
 
         int scoreLeft = totalProgress.getValue();
@@ -57,38 +65,8 @@ public class UserAccount {
         return heartManager;
     }
 
-    public int getAmountOf(CurrencyType type) {
-        return currencies.get(type);
-    }
-
-    public void giveCurrency(CurrencyType type) {
-        giveCurrency(type, 1);
-    }
-
-    public void giveCurrency(CurrencyType type, int amount) {
-        assert amount > 0;
-        currencies.give(type, amount);
-    }
-
-    public void consumeCurrency(CurrencyType type) {
-        consumeCurrency(type, 1);
-    }
-
-    public void consumeCurrency(CurrencyType type, int amount) {
-        assert amount > 0;
-        if (isCurrencyAvailable(type, amount)) {
-            currencies.consume(type, amount);
-        } else {
-            throw new RuntimeException("Not enough of : " + type.name() + " (" + amount + ")");
-        }
-    }
-
-    public boolean isCurrencyAvailable(CurrencyType type) {
-        return isCurrencyAvailable(type, 1);
-    }
-
-    public boolean isCurrencyAvailable(CurrencyType type, int amount) {
-        return currencies.get(type) >= amount;
+    public CurrencyManager getCurrencyManager() {
+        return currencies;
     }
 
     public PowerupManager getSpecialBallsAvailable() {
@@ -159,6 +137,17 @@ public class UserAccount {
         powerups.consumePowerup(type);
     }
 
+    public void setPropertyChangeListener(PropertyChangeListener listener) {
+        if (!propertyChangeListeners.contains(listener))
+            propertyChangeListeners.add(listener);
+    }
+
+    private void notifyListeners(String name, Object value) {
+        for (PropertyChangeListener listener : propertyChangeListeners) {
+            listener.onChange(name, value);
+        }
+    }
+
     private void saveScore(int score) {
         totalProgress.addAmount(score);
         progressForLevel += score;
@@ -168,27 +157,95 @@ public class UserAccount {
         }
     }
 
-    private static class CurrenciesManager {
-        private Map<CurrencyType, PersistentInt> currencies;
+    public class CurrencyManager {
+        private Map<CurrencyType, Currency> currencies;
 
-        public CurrenciesManager(String prefsName) {
+        private CurrencyManager(String prefsName) {
             currencies = new EnumMap<>(CurrencyType.class);
-            currencies.put(LOTTERY_COIN, new PersistentInt("currency_lottery_coins", prefsName));
+            currencies.put(LOTTERY_COIN, new Currency("currency_lottery_coins", prefsName, 999_999));
         }
 
-        public void give(CurrencyType type, int amount) {
+        public int getAmountOf(CurrencyType type) {
+            return currencies.get(type).value();
+        }
+
+        public void giveCurrency(CurrencyType type) {
+            giveCurrency(type, 1);
+        }
+
+        public void giveCurrency(CurrencyType type, int amount) {
             assert amount > 0;
             currencies.get(type).addAmount(amount);
+            notifyListeners(type.name(), getAmountOf(type));
         }
 
-        public int get(CurrencyType type) {
-            return currencies.get(type).getValue();
+        public void consumeCurrency(CurrencyType type) {
+            consumeCurrency(type, 1);
         }
 
-        public void consume(CurrencyType type, int amount) {
-            currencies.get(type).subAmount(amount);
+        public void consumeCurrency(CurrencyType type, int amount) {
+            assert amount > 0;
+            if (isCurrencyAvailable(type, amount)) {
+                currencies.get(type).subAmount(amount);
+                notifyListeners(type.name(), getAmountOf(type));
+            } else {
+                throw new RuntimeException("Not enough of : " + type.name() + " (" + amount + ")");
+            }
         }
 
+        public boolean isCurrencyAvailable(CurrencyType type) {
+            return isCurrencyAvailable(type, 1);
+        }
+
+        public boolean isCurrencyAvailable(CurrencyType type, int amount) {
+            return getAmountOf(type) >= amount;
+        }
+
+        public boolean isFullOf(CurrencyType type) {
+            return currencies.get(type).isFull();
+        }
+
+        private class Currency {
+            private final PersistentInt val;
+            private final int maxValue;
+
+            public Currency(String prefKey, String prefsName, int maxValue) {
+                val = new PersistentInt(prefKey, prefsName);
+                this.maxValue = maxValue;
+            }
+
+            public int value() {
+                return val.getValue();
+            }
+
+            public int getMaxValue() {
+                return maxValue;
+            }
+
+            public boolean isFull() {
+                return value() == maxValue;
+            }
+
+            /**
+             * WARNING: Doesn't check for integer overflows
+             */
+            public void addAmount(int amount) {
+                if (value() + amount > maxValue)
+                    throw new RuntimeException("Operation exceeds max amount: " + (value() + amount) + " > " + maxValue);
+                else
+                    val.addAmount(amount);
+            }
+
+            /**
+             * WARNING: Doesn't check for integer overflows
+             */
+            public void subAmount(int amount) {
+                if (value() - amount < 0)
+                    throw new RuntimeException("Operation results in negative amount: " + (value() - amount));
+                else
+                    val.subAmount(amount);
+            }
+        }
     }
 
     public static class HeartManager {
@@ -197,6 +254,8 @@ public class UserAccount {
 
         private PersistentInt hearts;
         private PersistentLong timeForNextHeart;
+
+        /* One change listener... if more are required put them in a list */
         private PropertyChangeListener changeListener;
 
         public HeartManager(String prefsName) {
@@ -222,19 +281,14 @@ public class UserAccount {
             int availableHearts = hearts.getValue();
             if (availableHearts < MAX_HEARTS) {
                 hearts.addAmount(1);
-                if (changeListener != null) {
-                    changeListener.propertyChange(new PropertyChangeEvent(this, "hearts", availableHearts, hearts.getValue()));
-                }
+                notifyListeners();
             }
         }
 
         public void restoreToFull() {
-            int availableHearts = hearts.getValue();
-            if (availableHearts != MAX_HEARTS) {
+            if (!isFull()) {
                 hearts.setValue(MAX_HEARTS);
-                if (changeListener != null) {
-                    changeListener.propertyChange(new PropertyChangeEvent(this, "hearts", availableHearts, MAX_HEARTS));
-                }
+                notifyListeners();
             }
         }
 
@@ -250,14 +304,13 @@ public class UserAccount {
             if (availableHearts == MAX_HEARTS) {
                 timeForNextHeart.setValue(System.currentTimeMillis() + NEW_HEART_INTERVAL);
             }
+
             hearts.subAmount(1);
-            if (changeListener != null) {
-                changeListener.propertyChange(new PropertyChangeEvent(this, "hearts", availableHearts, hearts.getValue()));
-            }
+            notifyListeners();
         }
 
         public void checkTimeForHeart() {
-            if (hearts.getValue() == MAX_HEARTS) return;
+            if (isFull()) return;
 
             long currentTime = System.currentTimeMillis();
             // If dif < 0 : It's the time left for life
@@ -275,12 +328,15 @@ public class UserAccount {
                     timeForNextHeart.addAmount(generatedHearts * NEW_HEART_INTERVAL);
                 }
 
-                if (changeListener != null) {
-                    changeListener.propertyChange(new PropertyChangeEvent(this, "hearts", availableHearts, hearts.getValue()));
-                }
+                notifyListeners();
             }
         }
 
+        private void notifyListeners() {
+            if (changeListener != null) {
+                changeListener.onChange("HEART", getHearts());
+            }
+        }
     }
 
     // ============| POWERUP-MANAGER |============

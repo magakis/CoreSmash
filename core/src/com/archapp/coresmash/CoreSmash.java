@@ -71,7 +71,7 @@ public class CoreSmash extends Game {
             public void uncaughtException(Thread thread, Throwable err) {
                 if (LOG_CRASHES) {
                     SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.getDefault());
-                    try (Writer writer = Gdx.files.external("/CoreSmash/crash-logs/" + "crash_" + format.format(Calendar.getInstance().getTime()) + ".txt").writer(false)) {
+                    try (Writer writer = Gdx.files.external("/CoreSmash/crash-logs/" + "crash_" + format.format(Calendar.getInstance().getTime())).writer(false)) {
                         err.printStackTrace(new PrintWriter(writer));
                     } catch (Exception wtfJustHappened) {
                     }
