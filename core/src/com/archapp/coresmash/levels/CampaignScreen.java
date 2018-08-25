@@ -64,8 +64,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private GameScreen gameScreen;
     private PickPowerUpsDialog powerupPickDialog;
     private UserAccount.HeartManager heartManager;
-    private UIRightBar rightBar;
-    private UIOverlay uiOverlay;
+    private UIRightBar uiRightBar;
+    private UIUserPanel uiUserPanel;
     private Skin skin;
     private Stage stage;
     private List<LevelButton> levelButtons;
@@ -137,8 +137,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         Table uiOverlayRoot = new Table();
         rootStack.addActor(uiOverlayRoot);
 
-        rightBar = new UIRightBar(stage, skin, gameInstance.getUserAccount(), gameInstance.getAdManager());
-        rootStack.addActor(rightBar.root);
+        uiRightBar = new UIRightBar(stage, skin, gameInstance.getUserAccount(), gameInstance.getAdManager());
+        rootStack.addActor(uiRightBar.root);
 
         levelButtons = area1.getLevels();
         int levelsUnlocked = gameInstance.getUserAccount().getUnlockedLevels();
@@ -146,7 +146,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             levelButtons.get(i).setDisabled(true);
         }
 
-        uiOverlay = new UIOverlay(uiOverlayRoot);
+        uiUserPanel = new UIUserPanel(uiOverlayRoot);
     }
 
     @Override
@@ -154,7 +154,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         heartManager.checkTimeForHeart();
 
         if (!heartManager.isFull())
-            rightBar.heartButton.updateTimeTillNextHeart();
+            uiRightBar.heartButton.updateTimeTillNextHeart();
 
         stage.act();
         stage.draw();
@@ -191,7 +191,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     }
 
     public void updateInfo() {
-        uiOverlay.updateValues();
+        uiUserPanel.updateValues();
     }
 
     @Override
@@ -210,7 +210,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     @Override
     public void onRoundEnded(GameStats stats) {
         gameInstance.getUserAccount().saveStats(stats);
-        uiOverlay.updateValues();
+        uiUserPanel.updateValues();
         if (stats.isRoundWon()) {
             if (stats.isLevelUnlocked()) {
                 int nextLevel = stats.getUnlockedLevel() + 1;
@@ -367,12 +367,12 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         }
     }
 
-    private class UIOverlay implements UIComponent {
+    private class UIUserPanel implements UIComponent {
         private Table root;
         private ProgressBar pbAccountExp;
         private Label lblLevel, lblExp, lblExpForLevel, lblLotteryCoins;
 
-        public UIOverlay(Table root) {
+        public UIUserPanel(Table root) {
             this.root = root;
             ImageButton.ImageButtonStyle userButtonStyle = new ImageButton.ImageButtonStyle();
             userButtonStyle.up = skin.getDrawable("borderTrans");
