@@ -108,9 +108,7 @@ public class LoadingScreen extends ScreenBase {
     }
 
     private void loadAllTextures() {
-        loadTexture("ball.png");
         loadTexture("cog.png");
-        loadTexture("speaker.png");
         loadTexture("DefaultUserIcon.png");
         loadTexture("toast1.png");
         loadTexture("GameScreenTop.png");
@@ -130,12 +128,10 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("UserBoardBackground.png");
         loadTexture("LotteryCard.png");
         loadTexture("CardRewardShade.png");
-        loadTexture("SlotMachine.png");
         loadTexture("FrameWooden.png");
         loadTexture("UserAccountFrame.png");
         loadTexture("LotteryCoin.png");
         loadTexture("ButtonPowerup.png");
-        loadTexture("ButtonPowerupFrame.png");
         loadTexture("ButtonLottery.png");
         loadTexture("ButtonPlay.png");
         loadTexture("ButtonCancel.png");
@@ -153,7 +149,6 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("FrameColored.png");
         loadTexture("BoardTime.png");
         loadTexture("BoardScore.png");
-        loadTexture("BoardBackground.png");
         loadTexture("BoardCenter.png");
     }
 
@@ -288,9 +283,7 @@ public class LoadingScreen extends ScreenBase {
 
         skin.add("cog", am.get("cog.png"));
         skin.add("userDefIcon", am.get("DefaultUserIcon.png"));
-        skin.add("ball", am.get("ball.png"));
         skin.add("map", am.get("map.png"));
-        skin.add("speaker", am.get("speaker.png"));
         skin.add("timeIcon", am.get("HourGlass.png"));
         skin.add("movesIcon", am.get("MovesIcon.png"));
         skin.add("heartIcon", am.get("HeartIcon.png"));
@@ -298,12 +291,10 @@ public class LoadingScreen extends ScreenBase {
         skin.add("cardShade", am.get("CardRewardShade.png"));
         skin.add("ButtonPlay", am.get("ButtonPlay.png"));
         skin.add("Heart", am.get("Heart.png"));
-        skin.add("slotMachine", am.get("SlotMachine.png"));
         skin.add("gameScreenTopRound", am.get("UIGameScreenTopRound.png"));
         skin.add("LotteryCoin", am.get("LotteryCoin.png"));
         skin.add("ButtonLottery", am.get("ButtonLottery.png"));
         skin.add("ButtonPowerup", am.get("ButtonPowerup.png"));
-        skin.add("ButtonPowerupFrame", am.get("ButtonPowerupFrame.png"));
         skin.add("ButtonCancel", am.get("ButtonCancel.png"));
         skin.add("ButtonStart", am.get("ButtonStart.png"));
         skin.add("ButtonOpen", am.get("ButtonOpen.png"));
@@ -316,7 +307,6 @@ public class LoadingScreen extends ScreenBase {
         skin.add("CampaignBackground", am.get("CampaignBackground.png"));
         skin.add("BoardTime", am.get("BoardTime.png"));
         skin.add("BoardScore", am.get("BoardScore.png"));
-        skin.add("BoardBackground", am.get("BoardBackground.png"));
         skin.add("BoardCenter", am.get("BoardCenter.png"));
 
         for (PowerupType type : PowerupType.values()) {

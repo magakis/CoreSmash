@@ -29,6 +29,10 @@
 -dontwarn com.badlogic.gdx.graphics.g2d.freetype.FreetypeBuild
 
 -keep class com.badlogic.gdx.controllers.android.AndroidControllers
+ -keep class com.badlogic.gdx.scenes.scene2d.ui.**{
+    **[] $VALUES;
+     *;
+ }
 
 -keepclassmembers class com.badlogic.gdx.backends.android.AndroidInput* {
    <init>(com.badlogic.gdx.Application, android.content.Context, java.lang.Object, com.badlogic.gdx.backends.android.AndroidApplicationConfiguration);
