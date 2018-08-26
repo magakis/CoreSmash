@@ -32,16 +32,16 @@ public final class Components {
     }
 
     public static void showToast(String text, Stage stage, float duration) {
-        toast.setText(text);
-        toast.show(stage, Actions.sequence(
-                Actions.alpha(0),
-                Actions.fadeIn(.4f),
-                Actions.delay(duration),
-                Actions.run(new Runnable() {
-                    @Override
-                    public void run() {
-                        toast.hide(Actions.fadeOut(.4f));
-                    }
-                })));
+        toast.setText(text)
+                .show(stage, Actions.sequence(
+                        Actions.alpha(0),
+                        Actions.fadeIn(.4f),
+                        Actions.delay(duration),
+                        Actions.run(new Runnable() {
+                            @Override
+                            public void run() {
+                                toast.hide(Actions.fadeOut(.4f));
+                            }
+                        })));
     }
 }

@@ -280,8 +280,11 @@ public class LevelBuilderScreen extends ScreenBase {
             tbDeploy.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    levelBuilder.saveAs("_editor_");
-                    gameScreen.deployLevel(testLevel);
+                    if (levelBuilder.saveAs("_editor_")) {
+                        gameScreen.deployLevel(testLevel);
+                    } else {
+                        Components.showToast("[Error] Could not deploy level", stage);
+                    }
                 }
             });
 
@@ -346,8 +349,10 @@ public class LevelBuilderScreen extends ScreenBase {
                         Components.showToast("Error: Invalid file name", stage);
                     } else {
                         filenameCache.setValue((String) object);
-                        levelBuilder.saveAs(filenameCache.getValue());
-                        Components.showToast("Level '" + filenameCache.getValue() + "' saved", stage);
+                        if (levelBuilder.saveAs(filenameCache.getValue()))
+                            Components.showToast("Level '" + filenameCache.getValue() + "' saved", stage);
+                        else
+                            Components.showToast("[Error] Invalid level", stage);
                     }
                 }
             };

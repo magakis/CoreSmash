@@ -16,16 +16,13 @@ import java.util.Random;
 public class TilemapBuilder {
     private final TilemapBuilderInfo builderInfo = new TilemapBuilderInfo();
     private final int maxColorCount = 16;// XXX(4/5/2018): MAGIC VALUE 16
-    private final int blueprintSize = 30;// XXX(4/5/2018): MAGIC VALUE 30
-    private final int centerTile = blueprintSize / 2;
 
     private boolean debugEnabled;
     private boolean isBuilt;
     private Tilemap tilemap;
     private int colorCount;
     private int maxDistance;
-    private int blueprintTileCount;
-    int maxMatchCount;
+    private int maxMatchCount;
 
     private Random rand;
     private Pool<BlueprintTile> blueprintTilePool;
@@ -33,25 +30,15 @@ public class TilemapBuilder {
     private Array<BlueprintTile> fixedTilesArray;
     private Comparator<ColorGroupContainer> compSizes, compColors;
     private Comparator<BlueprintTile> compDistance;
-    private BlueprintTile[][] blueprintMap;
+    private List<BlueprintTile> blueprintList;
+    private BlueprintTile dummySearchTile;
     private Matcher matcher;
 
-    private Vector2 origin;
-    private Vector2 offset;
-
-    private boolean isChained;
-    private int minMapRotationSpeed;
-    private int maxMapRotationSpeed;
-    private boolean rotateMapCounterClockwise;
-
-    private int minRotSpeed;
-    private int maxRotSpeed;
-    private boolean rotateCounterClockwise;
 
     public TilemapBuilder() {
         rand = new Random();
         colorGroupList = new ColorGroupContainer[maxColorCount];
-        blueprintMap = new BlueprintTile[blueprintSize][blueprintSize];
+        blueprintList = new ArrayList<>();
         fixedTilesArray = new Array<>();
         matcher = new Matcher();
         blueprintTilePool = new Pool<BlueprintTile>() {
@@ -60,8 +47,7 @@ public class TilemapBuilder {
                 return new BlueprintTile();
             }
         };
-        origin = new Vector2();
-        offset = new Vector2();
+        dummySearchTile = new BlueprintTile();
 
         for (int i = 0; i < maxColorCount; ++i) { // XXX(4/5/2018): Magic value,
             colorGroupList[i] = new ColorGroupContainer(i);
@@ -106,7 +92,7 @@ public class TilemapBuilder {
     }
 
     public TilemapBuilder setChained(boolean chained) {
-        isChained = chained;
+        builderInfo.isChained = chained;
         return this;
     }
 
@@ -118,31 +104,31 @@ public class TilemapBuilder {
     }
 
     public TilemapBuilder setOrigin(Vector2 orig) {
-        origin.set(orig);
+        builderInfo.origin.set(orig);
         return this;
     }
 
     public TilemapBuilder setOffset(Vector2 offs) {
-        offset.set(offs);
+        builderInfo.offset.set(offs);
         return this;
     }
 
     public TilemapBuilder setMinMaxRotationSpeed(int min, int max, boolean counterClockwise) {
-        maxRotSpeed = max;
-        minRotSpeed = min;
-        rotateCounterClockwise = counterClockwise;
+        builderInfo.maxRotSpeed = max;
+        builderInfo.minRotSpeed = min;
+        builderInfo.rotateCounterClockwise = counterClockwise;
         return this;
     }
 
     public TilemapBuilder setMapMinMaxRotationSpeed(int min, int max, boolean counterClockwise) {
-        maxMapRotationSpeed = max;
-        minMapRotationSpeed = min;
-        rotateMapCounterClockwise = counterClockwise;
+        builderInfo.maxMapRotationSpeed = max;
+        builderInfo.minMapRotationSpeed = min;
+        builderInfo.rotateMapCounterClockwise = counterClockwise;
         return this;
     }
 
     public TilemapBuilder populateFrom(List<ParsedTile> parsedTiles) {
-        int randomTileID = 17;
+        int randomTileID = 17; // XXX(8/26/2018): MAGIC VALUE 17
         for (ParsedTile parsedTile : parsedTiles) {
             if (parsedTile.getTileID() == randomTileID) {
                 checkIfCanBuild();
@@ -152,8 +138,7 @@ public class TilemapBuilder {
                 }
             } else {
                 BlueprintTile tile = blueprintTilePool.obtain();
-                tile.set(parsedTile.getX(), parsedTile.getY());
-                tile.ID = parsedTile.getTileID();
+                tile.set(parsedTile.getX(), parsedTile.getY(), parsedTile.getTileID());
                 fixedTilesArray.add(tile);
             }
         }
@@ -170,7 +155,7 @@ public class TilemapBuilder {
     private void balanceColors() {
         checkIfCanBuild();
 
-        int aver = blueprintTileCount / colorCount;
+        int aver = blueprintList.size() / colorCount;
         int maxIndex = colorCount - 1;
 
         Arrays.sort(colorGroupList, compSizes);
@@ -272,8 +257,6 @@ public class TilemapBuilder {
     }
 
     private ArrayList<BlueprintTile> findBigColorMatch(int maxMatch, List<BlueprintTile> list) {
-//        ArrayList<BlueprintTile> cache = null;
-
         for (BlueprintTile tile : list) {
             ArrayList<BlueprintTile> cache = matcher.getColorMatchesFromTile(tile);
             if (cache.size() > maxMatch) {
@@ -351,13 +334,6 @@ public class TilemapBuilder {
         return isPrimeAllowed && isDonorAllowed;
     }
 
-    private ColorGroupContainer getColorGroupForID(int id) {
-        for (ColorGroupContainer colorGroup : colorGroupList) {
-            if (colorGroup.groupColor == id) return colorGroup;
-        }
-        return null;
-    }
-
     private int getConsequetiveValueIndex(List<BlueprintTile> list) {
         int listSize = list.size();
         if (listSize == 0) return -1;
@@ -409,14 +385,12 @@ public class TilemapBuilder {
         // TODO(4/5/2018): this function needs to know what each id represents...
 
         int randomTileID = 17;
-        for (BlueprintTile[] arr : blueprintMap) {
-            for (BlueprintTile tile : arr) {
-                if (tile == null) continue;
-                if (debugEnabled && tile.ID == randomTileID)
-                    tilemap.putTilemapTile(tile.x, tile.y, TileFactory.getTileFromID(randomTileID));
-                else
-                    tilemap.putTilemapTile(tile.x, tile.y, TileFactory.getTileFromID(tile.ID));
-            }
+        for (BlueprintTile tile : blueprintList) {
+            if (debugEnabled && tile.ID == randomTileID)
+                tilemap.putTilemapTile(tile.x, tile.y, TileFactory.getTileFromID(randomTileID));
+            else
+                tilemap.putTilemapTile(tile.x, tile.y, TileFactory.getTileFromID(tile.ID));
+
         }
 
         tilemap.initialize(builderInfo);
@@ -424,7 +398,12 @@ public class TilemapBuilder {
     }
 
     private BlueprintTile getTile(int x, int y) {
-        return blueprintMap[y + centerTile][x + centerTile];
+        dummySearchTile.set(x, y);
+        int index = Collections.binarySearch(blueprintList, dummySearchTile);
+        if (index < 0)
+            return null;
+        else
+            return blueprintList.get(index);
     }
 
     private void setTile(int x, int y, int ID) {
@@ -432,26 +411,16 @@ public class TilemapBuilder {
 
         if (tile == null) {
             tile = blueprintTilePool.obtain();
-            tile.distance = getTileDistance(x, y, 0, 0);
-
-            if (tile.distance > maxDistance) {
-                maxDistance = tile.distance;
-            }
-
-            ++blueprintTileCount;
-            blueprintMap[y + centerTile][x + centerTile] = tile;
+            blueprintList.add(tile);
         }
 
-        tile.ID = ID;
-        tile.x = x;
-        tile.y = y;
+        tile.set(x, y, ID);
     }
 
     private void putFixedTilesInBlueprint() {
         for (BlueprintTile tile : fixedTilesArray) {
             setTile(tile.x, tile.y, tile.ID);
         }
-        fixedTilesArray.clear();
     }
 
     private int getRandomColorID() {
@@ -470,13 +439,8 @@ public class TilemapBuilder {
     private void fillColorGroupContainers() {
         resetColorGroupContainers();
 
-        for (int y = 0; y < blueprintSize; ++y) {
-            for (int x = 0; x < blueprintSize; ++x) {
-                BlueprintTile tile = blueprintMap[y][x];
-                if (tile == null) continue;
-
-                colorGroupList[tile.ID].list.add(tile);
-            }
+        for (BlueprintTile tile : blueprintList) {
+            colorGroupList[tile.ID].list.add(tile);
         }
     }
 
@@ -492,38 +456,24 @@ public class TilemapBuilder {
         if (colorCount == 0) throw new RuntimeException("ColorCount must be set first");
     }
 
-    private int getNextColor(int currentColor) {
-        return currentColor + 1 == colorCount ? 0 : currentColor + 1;
-    }
-
     private void reset() {
-        for (int y = 0; y < blueprintSize; ++y) {
-            for (int x = 0; x < blueprintSize; ++x) {
-                BlueprintTile tile = blueprintMap[y][x];
-                if (tile == null) continue;
-
-                blueprintTilePool.free(tile);
-                blueprintMap[y][x] = null;
-            }
+        for (BlueprintTile tile : blueprintList) {
+            blueprintTilePool.free(tile);
         }
+        blueprintList.clear();
 
-        origin.setZero();
-        offset.setZero();
+        for (BlueprintTile tile : fixedTilesArray) {
+            blueprintTilePool.free(tile);
+        }
         fixedTilesArray.clear();
+
         tilemap = null;
         isBuilt = false;
-        isChained = false;
         colorCount = 0;
         maxDistance = 0;
         maxMatchCount = 0;
-        blueprintTileCount = 0;
         debugEnabled = false;
-        minMapRotationSpeed = 0;
-        maxMapRotationSpeed = 0;
-        minRotSpeed = 0;
-        maxRotSpeed = 0;
-        rotateMapCounterClockwise = false;
-        rotateCounterClockwise = false;
+        builderInfo.reset();
     }
 
     private class ColorGroupContainer {
@@ -539,15 +489,23 @@ public class TilemapBuilder {
         }
     }
 
-    private class BlueprintTile implements Pool.Poolable {
+    private class BlueprintTile implements Pool.Poolable, Comparable<BlueprintTile> {
         int ID;
         int x;
         int y;
         int distance;
 
+        BlueprintTile() {
+        }
+
         public void set(int x, int y) {
+            set(x, y, -1);
+        }
+
+        public void set(int x, int y, int ID) {
             this.x = x;
             this.y = y;
+            this.ID = ID;
             distance = getTileDistance(x, y, 0, 0);
         }
 
@@ -563,6 +521,12 @@ public class TilemapBuilder {
             ID = 0;
             x = 0;
             y = 0;
+        }
+
+        @Override
+        public int compareTo(BlueprintTile tile) {
+            int compX = Integer.compare(x, tile.x);
+            return compX == 0 ? Integer.compare(y, tile.y) : compX;
         }
     }
 
@@ -587,78 +551,85 @@ public class TilemapBuilder {
             exclude.add(tile);
 
             //top_left
-            if (checkBounds(tx - 1, ty + 1)) {
-                tt = getTile(tx - 1, ty + 1);
-                if (tt != null && !exclude.contains(tt)) {
-                    if (tt.ID == tile.ID) {
-                        addSurroundingColorMatches(tt);
-                    }
+            tt = getTile(tx - 1, ty + 1);
+            if (tt != null && !exclude.contains(tt)) {
+                if (tt.ID == tile.ID) {
+                    addSurroundingColorMatches(tt);
                 }
             }
 
             //top_right
-            if (checkBounds(tx, ty + 1)) {
-                tt = getTile(tx, ty + 1);
-                if (tt != null && !exclude.contains(tt)) {
-                    if (tt.ID == tile.ID) {
-                        addSurroundingColorMatches(tt);
-                    }
+            tt = getTile(tx, ty + 1);
+            if (tt != null && !exclude.contains(tt)) {
+                if (tt.ID == tile.ID) {
+                    addSurroundingColorMatches(tt);
                 }
             }
 
             //right
-            if (checkBounds(tx + 1, ty)) {
-                tt = getTile(tx + 1, ty);
-                if (tt != null && !exclude.contains(tt)) {
-                    if (tt.ID == tile.ID) {
-                        addSurroundingColorMatches(tt);
-                    }
+            tt = getTile(tx + 1, ty);
+            if (tt != null && !exclude.contains(tt)) {
+                if (tt.ID == tile.ID) {
+                    addSurroundingColorMatches(tt);
                 }
             }
 
             //bottom_right
-            if (checkBounds(tx + 1, ty - 1)) {
-                tt = getTile(tx + 1, ty - 1);
-                if (tt != null && !exclude.contains(tt)) {
-                    if (tt.ID == tile.ID) {
-                        addSurroundingColorMatches(tt);
-                    }
+            tt = getTile(tx + 1, ty - 1);
+            if (tt != null && !exclude.contains(tt)) {
+                if (tt.ID == tile.ID) {
+                    addSurroundingColorMatches(tt);
                 }
             }
 
             //bottom_left
-            if (checkBounds(tx, ty - 1)) {
-                tt = getTile(tx, ty - 1);
-                if (tt != null && !exclude.contains(tt)) {
-                    if (tt.ID == tile.ID) {
-                        addSurroundingColorMatches(tt);
-                    }
+            tt = getTile(tx, ty - 1);
+            if (tt != null && !exclude.contains(tt)) {
+                if (tt.ID == tile.ID) {
+                    addSurroundingColorMatches(tt);
                 }
             }
 
 
             //left
-            if (checkBounds(tx - 1, ty)) {
-                tt = getTile(tx - 1, ty);
-                if (tt != null && !exclude.contains(tt)) {
-                    if (tt.ID == tile.ID) {
-                        addSurroundingColorMatches(tt);
-                    }
+            tt = getTile(tx - 1, ty);
+            if (tt != null && !exclude.contains(tt)) {
+                if (tt.ID == tile.ID) {
+                    addSurroundingColorMatches(tt);
                 }
             }
         }
 
     }
 
-    private boolean checkBounds(int x, int y) {
-        x += centerTile;
-        y += centerTile;
-        return x >= 0 && x < blueprintSize &&
-                y >= 0 && y < blueprintSize;
-    }
+    public static class TilemapBuilderInfo {
+        private Vector2 origin;
+        private Vector2 offset;
 
-    public class TilemapBuilderInfo {
+        private boolean isChained;
+        private int minMapRotationSpeed;
+        private int maxMapRotationSpeed;
+        private boolean rotateMapCounterClockwise;
+
+        private int minRotSpeed;
+        private int maxRotSpeed;
+        private boolean rotateCounterClockwise;
+
         private TilemapBuilderInfo() {
+            origin = new Vector2();
+            offset = new Vector2();
+        }
+
+        private void reset() {
+            minMapRotationSpeed = 0;
+            maxMapRotationSpeed = 0;
+            minRotSpeed = 0;
+            maxRotSpeed = 0;
+            rotateMapCounterClockwise = false;
+            rotateCounterClockwise = false;
+            origin.setZero();
+            offset.setZero();
+            isChained = false;
         }
 
         public float getOriginX() {

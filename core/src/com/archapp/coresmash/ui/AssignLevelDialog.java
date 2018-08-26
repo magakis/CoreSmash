@@ -71,9 +71,11 @@ public class AssignLevelDialog extends Dialog {
         tbAssign.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                RegisteredLevel chosen = levelList.getSelected();
-                assignLevelTextInput.activeLevel = chosen;
-                Gdx.input.getTextInput(assignLevelTextInput, "Assign '" + chosen.name + "' at:", String.valueOf(chosen.num), "");
+                RegisteredLevel selected = levelList.getSelected();
+                if (selected != null) {
+                    assignLevelTextInput.activeLevel = selected;
+                    Gdx.input.getTextInput(assignLevelTextInput, "Assign '" + selected.name + "' at:", String.valueOf(selected.num), "");
+                }
             }
         });
 
@@ -92,9 +94,11 @@ public class AssignLevelDialog extends Dialog {
         tbInsert.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                RegisteredLevel chosen = levelList.getSelected();
-                insertLevelTextInput.activeLevel = chosen;
-                Gdx.input.getTextInput(insertLevelTextInput, "Inserted '" + chosen.name + "' at:", String.valueOf(chosen.num), "");
+                RegisteredLevel selected = levelList.getSelected();
+                if (selected != null) {
+                    insertLevelTextInput.activeLevel = selected;
+                    Gdx.input.getTextInput(insertLevelTextInput, "Inserted '" + selected.name + "' at:", String.valueOf(selected.num), "");
+                }
             }
         });
 
@@ -103,18 +107,12 @@ public class AssignLevelDialog extends Dialog {
         tbSwap.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                RegisteredLevel chosen = levelList.getSelected();
-                Gdx.input.getTextInput(swapLevelTextInput, "Swap '" + chosen.name + "' with:", String.valueOf(chosen.num), "Digits (0-9)");
+                RegisteredLevel selected = levelList.getSelected();
+                if (selected != null) {
+                    Gdx.input.getTextInput(swapLevelTextInput, "Swap '" + selected.name + "' with:", String.valueOf(selected.num), "Digits (0-9)");
+                }
             }
         });
-
-//        Table buttonsTable = getButtonTable();
-
-//        buttons.defaults()
-//                .width(tbAssign.getPrefWidth()*1.2f)
-//                .padRight(tbAssign.getPrefWidth()*.1f)
-//                .expandX().center();
-//        buttons.pad(5 * Gdx.graphics.getDensity());
 
         HorizontalGroup buttons = new HorizontalGroup();
         buttons.wrap(true);

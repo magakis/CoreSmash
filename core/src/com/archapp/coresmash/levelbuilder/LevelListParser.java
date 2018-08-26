@@ -138,6 +138,9 @@ public class LevelListParser {
     private void getFoundLevels(Array<RegisteredLevel> output) {
         String[] files = Gdx.files.external("/CoreSmash/levels/").file().list(xmlFileFilter);
 
+        /* In case folder doesn't exist */
+        if (files == null) return;
+
         output.ensureCapacity(files.length);
         for (String filename : files) {
             output.add(new RegisteredLevel(0, filename.substring(0, filename.length() - 4)));

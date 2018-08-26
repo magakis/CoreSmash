@@ -50,8 +50,18 @@ public final class LevelParser {
     private static ParsedLevel parsedLevel = new ParsedLevel();
 
     public static boolean saveAs(String name, Map map, LevelSettings levelSettings, MapSettings[] mapSettings) {
-        FileHandle file = Gdx.files.external("/CoreSmash/levels/" + name + ".xml");
         int maxTilemaps = map.layerCount();
+
+        boolean isLevelValid = false;
+        for (int i = 0; i < maxTilemaps; ++i) {
+            if (map.getTileCountFrom(i) > 0) {
+                isLevelValid = true;
+                break;
+            }
+        }
+        if (!isLevelValid) return false;
+
+        FileHandle file = Gdx.files.external("/CoreSmash/levels/" + name + ".xml");
         XmlSerializer serializer = XmlManager.getSerializer();
 
         try (Writer writer = file.writer(false)) {

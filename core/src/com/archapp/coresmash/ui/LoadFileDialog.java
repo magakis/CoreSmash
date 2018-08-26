@@ -42,9 +42,12 @@ public class LoadFileDialog extends Dialog {
         tbLoad.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                hide();
-                String chosen = levelList.getSelected().name;
-                result(chosen);
+                LevelListParser.RegisteredLevel selected = levelList.getSelected();
+                if (selected != null) {
+                    hide();
+                    String chosen = selected.name;
+                    result(chosen);
+                }
             }
         });
 
@@ -52,10 +55,13 @@ public class LoadFileDialog extends Dialog {
         tbDelete.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                String chosen = levelList.getSelected().name;
-                ((Label) dlgConfirmDelete.getContentTable().getCells().get(0).getActor())
-                        .setText("Delete level '[GREEN]" + chosen + "[]'?");
-                dlgConfirmDelete.show(getStage());
+                LevelListParser.RegisteredLevel selected = levelList.getSelected();
+                if (selected != null) {
+                    String chosen = selected.name;
+                    ((Label) dlgConfirmDelete.getContentTable().getCells().get(0).getActor())
+                            .setText("Delete level '[GREEN]" + chosen + "[]'?");
+                    dlgConfirmDelete.show(getStage());
+                }
             }
         });
         tbDelete.getLabelCell()
@@ -86,7 +92,7 @@ public class LoadFileDialog extends Dialog {
                     if (chosen.num != 0) {
                         levelListParser.serializeLevelList(tmp);
                     }
-                    Components.showToast("Deleted '" + chosen.name + "'", this.getStage());
+                    Components.showToast("Deleted '" + chosen.name + "'", getStage());
                 }
             }
         };

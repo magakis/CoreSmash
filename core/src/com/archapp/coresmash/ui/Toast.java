@@ -13,11 +13,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Align;
 
-import java.util.Objects;
-
 public class Toast {
-    Table tbl;
-    Label msg;
+    private Table tbl;
+    private Label msg;
 
     public Toast(ToastStyle style) {
         msg = new Label("", new Label.LabelStyle(style.font, Color.WHITE));
@@ -30,8 +28,9 @@ public class Toast {
         tbl.add(msg);
     }
 
-    public void setText(String text) {
+    public Toast setText(String text) {
         msg.setText(text);
+        return this;
     }
 
     public void show(Stage stage) {
@@ -39,8 +38,7 @@ public class Toast {
     }
 
     public void show(Stage stage, Action action) {
-        Objects.requireNonNull(stage);
-        msg.getGlyphLayout().setText(msg.getStyle().font, msg.getText().toString());
+        msg.getGlyphLayout().setText(msg.getStyle().font, msg.getText());
         float textWidth = msg.getGlyphLayout().width;
         float textHeight = msg.getGlyphLayout().height * 2;
         float stageWidth = stage.getWidth() * .9f;
@@ -49,12 +47,17 @@ public class Toast {
         float height = (float) (Math.ceil(textWidth / stageWidth)) * textHeight;
 
         tbl.clearActions();
+        tbl.addAction(Actions.alpha(1));
+        tbl.addAction(Actions.rotateTo(0));
         tbl.getCell(msg).size(width, height);
         tbl.setSize(width + tbl.getPadLeft() * 2, height + tbl.getPadBottom() * 2);
         tbl.setPosition(stage.getWidth() / 2, stage.getHeight() * .95f, Align.center);
         if (action != null) {
             tbl.addAction(action);
         }
+
+        msg.layout(); // Required! (fixes bug where msg is not showing)
+
         stage.addActor(tbl);
     }
 

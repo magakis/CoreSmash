@@ -83,7 +83,6 @@ public class SaveFileDialog extends Dialog {
                 .padBottom(Value.percentHeight(.5f, tbSave.getLabel()));
         tbSave.addListener(new ChangeListener() {
             private LevelListParser.RegisteredLevel dummySearchLevel = new LevelListParser.RegisteredLevel(0, "");
-
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 String name = textField.getText();

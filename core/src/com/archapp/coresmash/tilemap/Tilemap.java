@@ -198,11 +198,11 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         mapSpeedDiff = maxMapRotationSpeed - minMapRotationSpeed;
 
         autoRotationEnabled = maxRotationSpeed != 0;
-        isTilemapInitilized = true;
         origin.set(settings.getOriginX(), settings.getOriginY());
         offset.set(settings.getOffsetX(), settings.getOffsetY());
         updateWorldPosition();
         updateTilePositions();
+        isTilemapInitilized = true;
         notifyObservers(NotificationType.TILEMAP_INITIALIZED, getTileList());
     }
 
