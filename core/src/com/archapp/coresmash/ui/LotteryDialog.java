@@ -2,8 +2,8 @@ package com.archapp.coresmash.ui;
 
 import com.archapp.coresmash.Lottery;
 import com.archapp.coresmash.UserAccount;
+import com.archapp.coresmash.WorldSettings;
 import com.archapp.coresmash.tiles.TileType;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -19,7 +19,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Align;
@@ -28,6 +27,9 @@ import com.badlogic.gdx.utils.Scaling;
 import static com.archapp.coresmash.CurrencyType.LOTTERY_COIN;
 
 public class LotteryDialog extends Dialog {
+    private float contentWidth;
+    private float buttonRatio;
+
     final private Skin skin;
     final private UserAccount.CurrencyManager currencies;
 
@@ -43,6 +45,9 @@ public class LotteryDialog extends Dialog {
         skin = sk;
         lottery = new Lottery();
         reward = new Reward();
+
+        contentWidth = WorldSettings.getDefaultDialogSize() - getPadLeft() - getPadRight();
+        buttonRatio = WorldSettings.DefaultRatio.dialogButtonToContent();
 
         btnClaim = UIFactory.createImageButton(skin, "ButtonClaim");
         btnClaim.addListener(new ChangeListener() {
@@ -135,9 +140,14 @@ public class LotteryDialog extends Dialog {
             });
         }
 
-        Table contents = getContentTable();
-        for (CardButton ib : cardButtons) {
-            contents.add(ib).space(5 * Gdx.graphics.getDensity()).size(Value.percentWidth(.25f, UIUtils.getScreenActor(ib)), Value.percentWidth(ib.heightToWidthRatio * .25f, UIUtils.getScreenActor(ib)));
+        final Table contents = getContentTable();
+        contents.columnDefaults(0).padRight(contentWidth * .025f);
+        contents.columnDefaults(1).padRight(contentWidth * .025f);
+        contents.padBottom(contentWidth * .025f);
+        getCell(contents).width(contentWidth);
+        float cardSize = contentWidth * .3f;
+        for (final CardButton ib : cardButtons) {
+            contents.add(ib).width(cardSize).height(UIUtils.getHeightFor(ib.cardBack, cardSize));
         }
 
         setMovable(false);
@@ -152,6 +162,8 @@ public class LotteryDialog extends Dialog {
                 return false;
             }
         });
+
+        getButtonTable().defaults().space((contentWidth - 2 * (contentWidth * buttonRatio)) / 4);
     }
 
 
@@ -174,9 +186,9 @@ public class LotteryDialog extends Dialog {
     }
 
     private void showImageButton(ImageButton button) {
-        float ratio = 0.25f;
+        float buttonSize = contentWidth * buttonRatio;
         Table table = getButtonTable();
-        table.add(button).height(getContentTable().getPrefHeight() * ratio).width(UIUtils.getWidthFor(button.getImage().getDrawable(), getContentTable().getPrefHeight() * ratio));
+        table.add(button).width(buttonSize).height(UIUtils.getHeightFor(button.getImage().getDrawable(), buttonSize));
     }
 
     public static class Reward {
@@ -230,7 +242,7 @@ public class LotteryDialog extends Dialog {
             imgBackground = new Image(cardBack);
             imgReward = new Image();
             imgReward.setScaling(Scaling.fit);
-            lblReward = new Label("~", skin, "h3");
+            lblReward = new Label("null", skin, "h3");
             lblReward.setAlignment(Align.bottom);
 
             shade = new Image(skin.getDrawable("cardShade"));
@@ -238,7 +250,7 @@ public class LotteryDialog extends Dialog {
             heightToWidthRatio = imgBackground.getDrawable().getMinHeight() / imgBackground.getDrawable().getMinWidth();
 
             Stack stack = new Stack(imgBackground, shade, imgReward, lblReward);
-            add(stack).grow().pad(3 * Gdx.graphics.getDensity());
+            add(stack).grow();
         }
 
         @Override

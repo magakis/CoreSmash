@@ -7,6 +7,7 @@ import com.archapp.coresmash.GameController;
 import com.archapp.coresmash.PropertyChangeListener;
 import com.archapp.coresmash.RoundEndListener;
 import com.archapp.coresmash.UserAccount;
+import com.archapp.coresmash.WorldSettings;
 import com.archapp.coresmash.levelbuilder.LevelListParser;
 import com.archapp.coresmash.levelbuilder.LevelListParser.RegisteredLevel;
 import com.archapp.coresmash.levels.CampaignArea.LevelButton;
@@ -471,16 +472,20 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     }
 
     private class PickPowerUpsDialog extends Dialog {
-        UserAccount.PowerupManager powerUpsAvailable;
-        List<Powerup> choosenPowerups;
-        int levelToLaunch = -1;
-        ButtonGroup<Button> buttonGroup;
-        Button[] powerupButtons;
+        private float contentSize;
+
+        private UserAccount.PowerupManager powerUpsAvailable;
+        private List<Powerup> choosenPowerups;
+        private int levelToLaunch = -1;
+        private ButtonGroup<Button> buttonGroup;
+        private Button[] powerupButtons;
 
         PickPowerUpsDialog(Skin skin, final UserAccount.PowerupManager powerUps) {
             super("", skin, "PickPowerUpDialog");
             powerUpsAvailable = powerUps;
             choosenPowerups = new ArrayList<>(3);
+
+            contentSize = WorldSettings.getDefaultDialogSize() - getPadLeft() - getPadRight();
 
             buttonGroup = new ButtonGroup<>();
             buttonGroup.setMaxCheckCount(3);
@@ -488,7 +493,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             powerupButtons = new Button[PowerupType.values().length];
 
             HorizontalGroup powerupsGroup = new HorizontalGroup();
-            powerupsGroup.space(8 * Gdx.graphics.getDensity());
+            powerupsGroup.space(contentSize * .05f);
             powerupsGroup.wrap(true);
             powerupsGroup.wrapSpace(8 * Gdx.graphics.getDensity());
             powerupsGroup.align(Align.center);
@@ -501,11 +506,13 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 ++counter;
             }
 
+
             Table content = getContentTable();
-            content.defaults().padBottom(5 * Gdx.graphics.getDensity());
+            getCell(content).width(contentSize);
+            content.padBottom(contentSize * .025f);
             content.add(new Label("Choose your POWERUPS!", skin, "h4")).row();
             content.add(powerupsGroup)
-                    .width(powerupButtons[0].getPrefWidth() * 5);
+                    .width(contentSize);
 
 
             ImageButton btnClose = UIFactory.createImageButton(skin, "ButtonCancel");
@@ -542,9 +549,10 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 }
             });
 
-            float buttonSize = content.getMinWidth() * .3f;
+            float buttonSize = contentSize * WorldSettings.DefaultRatio.dialogButtonToContent();
             Table buttons = getButtonTable();
-            buttons.add(btnStart).width(buttonSize).height(UIUtils.getHeightFor(btnStart.getImage().getDrawable(), buttonSize)).padRight(buttonSize / 5);
+            buttons.defaults().space((contentSize - (2 * buttonSize)) / 4);
+            buttons.add(btnStart).width(buttonSize).height(UIUtils.getHeightFor(btnStart.getImage().getDrawable(), buttonSize));
             buttons.add(btnClose).width(buttonSize).height(UIUtils.getHeightFor(btnClose.getImage().getDrawable(), buttonSize));
 
             addListener(new InputListener() {
@@ -583,6 +591,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         }
 
         private ImageButton createPowerUpButton(PowerupType type) {
+            float buttonSize = contentSize * .15f;
             Skin skin = getSkin();
             Label lbl = new Label("null", getSkin(), "h5");
             ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle();
@@ -596,7 +605,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             tb.setName(type.name());
             tb.add().row();
             tb.add(lbl).row();
-            tb.getImageCell().size(40 * Gdx.graphics.getDensity(), 40 * Gdx.graphics.getDensity() - lbl.getPrefHeight()).row();
+            tb.getImageCell().size(buttonSize, buttonSize - lbl.getPrefHeight()).row();
             return tb;
         }
     }

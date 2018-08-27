@@ -81,7 +81,6 @@ public class CoreSmash extends Game {
             }
         });
 
-        WorldSettings.init();
         screenStack = new Stack<>();
 
         viewport = new ScreenViewport();

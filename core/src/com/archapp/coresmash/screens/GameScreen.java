@@ -604,10 +604,12 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     private class ResultUI implements UIComponent {
-        Label resultTextLbl, lblScore;
-        Container<Table> root;
+        private Label resultTextLbl, lblScore;
+        private Container<Container<Table>> root;
+        private float contentWidth;
 
         ResultUI() {
+
             resultTextLbl = new Label("null", skin, "h2");
             lblScore = new Label("null", skin, "h3");
 
@@ -620,22 +622,27 @@ public class GameScreen extends ScreenBase implements Observer {
             });
 
 
-            float buttonSize = lblScore.getPrefHeight() * 2;
-            Container<ImageButton> menuButtonWrapper = new Container<>(btnMenu);
-            menuButtonWrapper.size(UIUtils.getWidthFor(btnMenu.getImage().getDrawable(), buttonSize), buttonSize);
-
             Label staticScore = new Label("Score:", skin, "h3");
 
             Table main = new Table(skin);
-            main.background("simpleFrameTrans")
-                    .pad(40)
-                    .center();
+            main.background("simpleFrameTrans");
+
+            contentWidth = WorldSettings.getDefaultDialogSize() - main.getPadLeft() - main.getPadRight();
+
+            float buttonSize = contentWidth * (WorldSettings.DefaultRatio.dialogButtonToContent() * 1.3f);
+            Container<ImageButton> menuButtonWrapper = new Container<>(btnMenu);
+            menuButtonWrapper.size(buttonSize, UIUtils.getHeightFor(btnMenu.getImage().getDrawable(), buttonSize));
+
             main.add(resultTextLbl).padBottom(40).row();
             main.add(staticScore).padBottom(10).row();
             main.add(lblScore).row();
-            main.add(menuButtonWrapper).padTop(100);
+            main.add(menuButtonWrapper).padTop(50);
 
-            root = new Container<>(main);
+
+            Container<Table> wrapper = new Container<>(main);
+            wrapper.width(contentWidth);
+
+            root = new Container<>(wrapper);
             root.setFillParent(true);
         }
 

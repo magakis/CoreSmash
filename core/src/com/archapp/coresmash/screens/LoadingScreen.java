@@ -281,6 +281,12 @@ public class LoadingScreen extends ScreenBase {
         tex = new Texture(pix);
         skin.add("myBall", tex);
 
+        pix = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pix.setColor(Color.alpha(0));
+        pix.fill();
+        tex = new Texture(pix);
+        skin.add("invisible", tex);
+
         skin.add("cog", am.get("cog.png"));
         skin.add("userDefIcon", am.get("DefaultUserIcon.png"));
         skin.add("map", am.get("map.png"));
@@ -493,9 +499,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("default", bs);
 
         bs = new Button.ButtonStyle();
-        bs.up = skin.newDrawable("boxSmall", 0, 0, 0, 0);
-        bs.down = skin.newDrawable("boxSmall", Color.GRAY);
-        bs.disabled = skin.newDrawable("boxSmall", 0, 0, 0, 0);
+        bs.up = skin.getDrawable("invisible");
         skin.add("TransWithHighlight", bs);
 
         Color invisible = new Color(0, 0, 0, 0);
