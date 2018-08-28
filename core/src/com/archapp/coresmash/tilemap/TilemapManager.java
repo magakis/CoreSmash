@@ -82,31 +82,46 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
         return worldMap.getLayerPositionY(layer);
     }
 
+    public float getLayerRotation(int layer) {
+        return worldMap.getLayerRotation(layer);
+    }
+
     public void removeTile(TilemapTile tmTile) {
         removeTile(tmTile.getLayerId(), tmTile.getX(), tmTile.getY());
     }
 
-    public float getLayerRotation(int layer) {
-        return worldMap.getLayerRotation(layer);
+    /**
+     * Ensure the provided list contains no null values
+     */
+    public void removeTile(List<TilemapTile> forRemoval) {
+        worldMap.removeTile(forRemoval);
+
+        for (TilemapTile tile : forRemoval) {
+            handleTileRemoval(tile);
+        }
     }
 
     public void removeTile(int layer, int x, int y) {
         TilemapTile tmTile = worldMap.removeTile(layer, x, y);
         if (tmTile == null) return;
 
-        tileList.remove(tmTile);
+        handleTileRemoval(tmTile);
+    }
 
-        Tile removed = tmTile.getTile();
+    private void handleTileRemoval(TilemapTile tile) {
+        tileList.remove(tile);
+
+        Tile removed = tile.getTile();
         //XXX : Magic Number 10
         if (removed.getID() < 10) {
             --colorsAvailable[removed.getID()];
         }
 
         if (removed instanceof Breakable) {
-            ((Breakable) removed).onDestroy(tmTile, this);
+            ((Breakable) removed).onDestroy(tile, this);
         }
 
-        if (layer == 0 && x == 0 && y == 0) {
+        if (tile.getLayerId() == 0 && tile.getX() == 0 && tile.getY() == 0) {
             notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
         }
     }
@@ -135,7 +150,12 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
     }
 
     public void destroyTiles(TilemapTile tile) {
-        destroyTiles(tile.getLayerId(), tile.getX(), tile.getY());
+        if (worldMap.isChained(tile.getLayerId())) {
+            pathfinder.getDestroyableTiles(tile, queuedForDeletion);
+            removeTile(queuedForDeletion);
+        } else {
+            removeTile(tile);
+        }
     }
 
     public void destroyTiles(int layer, int x, int y) {
@@ -143,14 +163,7 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
         if (tile == null)
             throw new RuntimeException("Couldn't find tile at Layer:" + layer + " X: " + x + " Y:" + y);
 
-        if (worldMap.isChained(layer)) {
-            pathfinder.getDestroyableTiles(tile, queuedForDeletion);
-            for (int i = 0; i < queuedForDeletion.size(); ++i) {
-                removeTile(queuedForDeletion.get(i));
-            }
-        } else {
-            removeTile(tile);
-        }
+        destroyTiles(tile);
     }
 
     /* Assumes that all destroyed tiles come from the *same* layer! */
@@ -166,19 +179,13 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
         }
 
         if (containsCenterTile) {
-            for (TilemapTile t : destroyList) {
-                removeTile(t);
-            }
+            removeTile(destroyList);
         } else {
             if (worldMap.isChained(destroyList.get(0).getLayerId())) {
                 pathfinder.getDestroyableTiles(destroyList, queuedForDeletion);
-                for (int i = 0; i < queuedForDeletion.size(); ++i) {
-                    removeTile(queuedForDeletion.get(i));
-                }
+                removeTile(queuedForDeletion);
             } else {
-                for (TilemapTile t : destroyList) {
-                    removeTile(t);
-                }
+                removeTile(destroyList);
             }
         }
     }

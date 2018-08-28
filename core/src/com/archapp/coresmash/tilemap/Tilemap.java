@@ -37,7 +37,7 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
     private boolean isChained;
     private boolean rotateCounterClockwise;
     private boolean autoRotationEnabled;
-    private float rotation;
+    private float rotation; // Radians
     private float originRotation;
 
     private int minMapRotationSpeed;
@@ -118,7 +118,8 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
 
     public TilemapTile getTilemapTile(int x, int y) {
         dummyTile.setCoordinates(x, y);
-        Collections.sort(tilemapTiles);
+
+        // Assume list is always sorted
         int index = Collections.binarySearch(tilemapTiles, dummyTile);
         return index >= 0 ? tilemapTiles.get(index) : null;
     }
@@ -140,6 +141,7 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
             }
 
             tilemapTiles.add(newTile);
+            Collections.sort(tilemapTiles);
             return newTile;
         } else {
             throw new RuntimeException("I was too bored to implement but looks like I have to..");
@@ -166,6 +168,15 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         throw new RuntimeException("PFFF... JUST HOW?!");
     }
 
+    public void destroyTilemapTile(List<TilemapTile> forDesrtuction) {
+        for (TilemapTile tile : forDesrtuction) {
+            notifyObservers(NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED, tile); // put before others!
+            tile.clear();
+            tilemapTiles.remove(tile);
+        }
+        Collections.sort(tilemapTiles);
+    }
+
     public TilemapTile destroyTilemapTile(int x, int y) {
         TilemapTile tmTile = getTilemapTile(x, y);
         if (tmTile == null) return null;
@@ -173,6 +184,8 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         notifyObservers(NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED, tmTile);
         tmTile.clear();
         tilemapTiles.remove(tmTile);
+
+        Collections.sort(tilemapTiles);
         return tmTile;
     }
 

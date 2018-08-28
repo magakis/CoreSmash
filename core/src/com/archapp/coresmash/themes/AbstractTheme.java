@@ -27,6 +27,8 @@ public abstract class AbstractTheme {
         if (data == null) {
             data = new ResourceData();
             resourceList.put(id, data);
+        } else {
+            throw new RuntimeException("Resource already assigned to ID: " + id);
         }
 
         data.textureName = textureName;

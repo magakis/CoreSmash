@@ -158,6 +158,12 @@ public class Map extends Observable implements TilemapCollection {
         tilemaps.get(layer).setMapPosition(x, y);
     }
 
+    public void removeTile(List<TilemapTile> forRemoval) {
+        assert forRemoval.size() != 0;
+
+        tilemaps.get(forRemoval.get(0).getLayerId()).destroyTilemapTile(forRemoval);
+    }
+
     public TilemapTile removeTile(int layer, int x, int y) {
         assertLayerIndex(layer);
         TilemapTile removed = tilemaps.get(layer).destroyTilemapTile(x, y);
