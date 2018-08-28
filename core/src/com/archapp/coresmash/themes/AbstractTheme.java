@@ -3,6 +3,8 @@ package com.archapp.coresmash.themes;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,10 +33,9 @@ public abstract class AbstractTheme {
         data.soundName = soundName;
     }
 
-    public Texture getTexture(int id) {
+    public TextureRegion getTexture(int id) {
         ResourceData data = resourceList.get(id);
-        if (data == null) return assetManager.get("default.png", Texture.class);
-        //        if (data == null) throw new RuntimeException("No texture found for ID: "+id);
+        if (data == null) return new TextureRegion(assetManager.get("default.png", Texture.class));
         return data.texture;
     }
 
@@ -48,9 +49,12 @@ public abstract class AbstractTheme {
      * and should be avoided by a better design.
      */
     public void finishLoading() {
+        TextureAtlas atlas = assetManager.get("atlas/Balls.atlas");
+
         for (Map.Entry entry : resourceList.entrySet()) {
             ResourceData data = (ResourceData) entry.getValue();
-            data.texture = assetManager.get(data.textureName, Texture.class);
+            data.texture = atlas.findRegion(data.textureName);
+//            data.texture = assetManager.get(data.textureName, Texture.class);
             assert (data.texture != null);
         }
     }
@@ -62,17 +66,19 @@ public abstract class AbstractTheme {
 
     public void queueForLoad(AssetManager am) {
         assetManager = am;
-        for (Map.Entry entry : resourceList.entrySet()) {
-            ResourceData data = (ResourceData) entry.getValue();
-            if (data.textureName != null) {
-                am.load(data.textureName, Texture.class);
-            }
-        }
+
+        am.load("atlas/Balls.atlas", TextureAtlas.class);
+//        for (Map.Entry entry : resourceList.entrySet()) {
+//            ResourceData data = (ResourceData) entry.getValue();
+//            if (data.textureName != null) {
+//                am.load(data.textureName, Texture.class);
+//            }
+//        }
     }
 
     private class ResourceData {
         String textureName;
-        Texture texture;
+        TextureRegion texture;
         String soundName;
     }
 

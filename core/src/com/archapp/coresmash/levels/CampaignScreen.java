@@ -51,7 +51,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.viewport.Viewport;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -135,8 +134,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
         rootStack.addActor(scrollPane);
 
-        Table uiOverlayRoot = new Table();
-        rootStack.addActor(uiOverlayRoot);
+        uiUserPanel = new UIUserPanel();
+        rootStack.addActor(uiUserPanel.root);
 
         uiRightBar = new UIRightBar(stage, skin, gameInstance.getUserAccount(), gameInstance.getAdManager());
         rootStack.addActor(uiRightBar.root);
@@ -146,8 +145,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         for (int i = levelsUnlocked; i < levelButtons.size(); ++i) {
             levelButtons.get(i).setDisabled(true);
         }
-
-        uiUserPanel = new UIUserPanel(uiOverlayRoot);
     }
 
     @Override
@@ -369,17 +366,16 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     }
 
     private class UIUserPanel implements UIComponent {
-        private Table root;
+        private float contentSize;
+
+        private Container<Container<Table>> root;
         private ProgressBar pbAccountExp;
         private Label lblLevel, lblExp, lblExpForLevel, lblLotteryCoins;
 
-        public UIUserPanel(Table root) {
-            this.root = root;
+        public UIUserPanel() {
             ImageButton.ImageButtonStyle userButtonStyle = new ImageButton.ImageButtonStyle();
-            userButtonStyle.up = skin.getDrawable("borderTrans");
-            userButtonStyle.down = skin.newDrawable("borderTrans", Color.GRAY);
-            userButtonStyle.imageUp = skin.newDrawable("userDefIcon");
-
+            userButtonStyle.up = skin.getDrawable("invisible");
+            userButtonStyle.imageUp = skin.getDrawable("DefaultUserIcon");
             ImageButton btnUser = new ImageButton(userButtonStyle);
 
             ProgressBar.ProgressBarStyle pbStyle = new ProgressBar.ProgressBarStyle();
@@ -388,7 +384,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             pbStyle.background.setLeftWidth(0);
             pbStyle.background.setRightWidth(0);
-
             pbStyle.knobBefore.setLeftWidth(0);
             pbStyle.knobBefore.setRightWidth(0);
 
@@ -410,39 +405,36 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             hgLevel.addActor(lblLevel);
 
             Image imgLotteryCoin = new Image(skin.getDrawable("LotteryCoin"));
-//            imgLotteryCoin.addListener(new ClickListener() {
-//                @Override
-//                public void clicked(InputEvent event, float x, float y) {
-//                    gameInstance.getUserAccount().addLotteryCoins(1);
-//                    lblLotteryCoins.setText(gameInstance.getUserAccount().getLotteryCoins());
-//                }
-//            });
             lblLotteryCoins = new Label(String.valueOf(gameInstance.getUserAccount().getCurrencyManager().getAmountOf(LOTTERY_COIN)), skin, "h5");
-
 
             Table tblInfo = new Table();
             tblInfo.top().defaults().left().padBottom(lblLotteryCoins.getMinHeight() / 4);
             tblInfo.add(imgLotteryCoin).height(lblLotteryCoins.getMinHeight() * 1.3f).width(UIUtils.getWidthFor(imgLotteryCoin.getDrawable(), lblLotteryCoins.getMinHeight() * 1.3f)).padRight(Value.percentHeight(.2f, lblLotteryCoins));
             tblInfo.add(lblLotteryCoins).row();
 
-            Viewport uiVp = stage.getViewport();
-            float btnUserSize = uiVp.getWorldWidth() * (uiVp.getWorldHeight() > uiVp.getWorldWidth() ? .15f : .1f);
-            btnUser.getImageCell().grow().pad(5);
 
             Table tblAccount = new Table();
+            tblAccount.background(skin.getDrawable("UserAccountFrame"));
+
+            contentSize = WorldSettings.getSmallestScreenDimension() * .4f;
+
             tblAccount.columnDefaults(0).padRight(5);
             tblAccount.row().padBottom(5);
-            tblAccount.background(skin.getDrawable("UserAccountFrame"));
             tblAccount.add(btnUser)
-                    .size(btnUserSize)
+                    .size(contentSize * .4f)
                     .padRight(lblLotteryCoins.getMinHeight() / 2);
             tblAccount.add(tblInfo).fill().row();
             tblAccount.add(hgLevel).padBottom(5).left();
             tblAccount.add(hgExp).padBottom(5).right().row();
-            tblAccount.add(pbAccountExp).grow().colspan(tblAccount.getColumns());
+            tblAccount.add(pbAccountExp).growX().colspan(tblAccount.getColumns()).padRight(0);
 
-            root.top().left().pad(lblLevel.getPrefHeight() / 2);
-            root.add(tblAccount);
+
+            Container<Table> wrapper = new Container<>(tblAccount);
+            wrapper.maxWidth(contentSize);
+            wrapper.pad(lblLevel.getPrefHeight() / 2);
+
+            root = new Container<>(wrapper);
+            root.top().left();
 
             gameInstance.getUserAccount().setPropertyChangeListener(new PropertyChangeListener() {
                 @Override

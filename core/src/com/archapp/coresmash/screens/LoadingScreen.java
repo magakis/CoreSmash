@@ -20,6 +20,8 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGeneratorLoader;
 import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader;
@@ -150,6 +152,8 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("BoardTime.png");
         loadTexture("BoardScore.png");
         loadTexture("BoardCenter.png");
+
+        am.load("atlas/gameui.atlas", TextureAtlas.class);
     }
 
     private void loadSounds() {
@@ -234,6 +238,8 @@ public class LoadingScreen extends ScreenBase {
         skin.add("borderTrans", ninePatch);
 
         ninePatch = new NinePatch(am.get("progressbar_inner.png", Texture.class), 7, 7, 7, 7);
+        defScale = .5f * PPI;
+        ninePatch.scale(defScale, defScale);
         skin.add("progressbar_inner", ninePatch);
 
         ninePatch = new NinePatch(am.get("GameScreenTop.png", Texture.class), 24, 24, 24, 24);
@@ -288,10 +294,8 @@ public class LoadingScreen extends ScreenBase {
         skin.add("invisible", tex);
 
         skin.add("cog", am.get("cog.png"));
-        skin.add("userDefIcon", am.get("DefaultUserIcon.png"));
+        skin.add("DefaultUserIcon", am.get("DefaultUserIcon.png"));
         skin.add("map", am.get("map.png"));
-        skin.add("timeIcon", am.get("HourGlass.png"));
-        skin.add("movesIcon", am.get("MovesIcon.png"));
         skin.add("heartIcon", am.get("HeartIcon.png"));
         skin.add("cardBack", am.get("LotteryCard.png"));
         skin.add("cardShade", am.get("CardRewardShade.png"));
@@ -311,12 +315,17 @@ public class LoadingScreen extends ScreenBase {
         skin.add("ButtonLevel", am.get("ButtonLevel.png"));
         skin.add("MenuBackground", am.get("MenuBackground.png"));
         skin.add("CampaignBackground", am.get("CampaignBackground.png"));
-        skin.add("BoardTime", am.get("BoardTime.png"));
-        skin.add("BoardScore", am.get("BoardScore.png"));
-        skin.add("BoardCenter", am.get("BoardCenter.png"));
+
+        TextureAtlas atlas = am.get("atlas/gameui.atlas");
+
+        skin.add("timeIcon", atlas.findRegion("HourGlass"), TextureRegion.class);
+        skin.add("movesIcon", atlas.findRegion("MovesIcon"), TextureRegion.class);
+        skin.add("BoardTime", atlas.findRegion("BoardTime"), TextureRegion.class);
+        skin.add("BoardScore", atlas.findRegion("BoardScore"), TextureRegion.class);
+        skin.add("BoardCenter", atlas.findRegion("BoardCenter"), TextureRegion.class);
 
         for (PowerupType type : PowerupType.values()) {
-            skin.add(type.name(), baseTheme.getTexture(type.getType().getID()));
+            skin.add(type.name(), baseTheme.getTexture(type.getType().getID()), TextureRegion.class);
         }
 
         registerFont(skin, "h6", "h6.ttf");
@@ -530,10 +539,6 @@ public class LoadingScreen extends ScreenBase {
 
     private void loadTexture(String name) {
         am.load(name, Texture.class, textureParam);
-    }
-
-    private void loadBitmapFont(String name) {
-        am.load(name, BitmapFont.class);
     }
 
     private void generateBitmapFont(int size, String name) {

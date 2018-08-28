@@ -647,7 +647,7 @@ public class GameScreen extends ScreenBase implements Observer {
         }
 
         public void update() {
-            String resultText = statsManager.getRoundOutcome() ? "Level Completed!" : "You Failed!";
+            String resultText = statsManager.getRoundOutcome() ? "Congratulations!" : "You Failed!";
             resultTextLbl.setText(resultText);
             lblScore.setText(String.valueOf(statsManager.getScore()));
         }
