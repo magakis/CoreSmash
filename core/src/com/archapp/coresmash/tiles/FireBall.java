@@ -6,8 +6,8 @@ import com.archapp.coresmash.tilemap.TilemapTile;
 import com.archapp.coresmash.tilemap.effect.DestroyRadiusEffect;
 
 public class FireBall extends Tile implements Launchable {
-    private static final SoundManager.SoundEffects explosionSound = SoundManager.get().getSoundAsset("explosion1");
-    private static final SoundManager.SoundEffects launchSound = SoundManager.get().getSoundAsset("launch1");
+    private static final SoundManager.SoundEffect explosionSound = SoundManager.get().getSoundAsset("explosion1");
+    private static final SoundManager.SoundEffect launchSound = SoundManager.get().getSoundAsset("launch1");
 
     FireBall(TileType type) {
         super(type);

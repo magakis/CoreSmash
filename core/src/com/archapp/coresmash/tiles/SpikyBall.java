@@ -11,7 +11,11 @@ public class SpikyBall extends Tile implements CollisionInitiator {
 
     @Override
     public boolean handleCollisionWith(TilemapTile self, MovingBall ball, GameController controller) {
-        controller.getBehaviourPack().statsManager.loseLife();
+        if (ball.getTile().getTileType().getMajorType() == TileType.MajorType.POWERUP) {
+            ball.getLaunchable().onCollide(ball, self, controller);
+        } else {
+            controller.getBehaviourPack().statsManager.loseLife();
+        }
         return true; //Simply make the ball disappear
     }
 }

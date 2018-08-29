@@ -9,7 +9,7 @@ import com.archapp.coresmash.tiles.TileContainer.Side;
 import java.util.List;
 
 public class RegularTile extends Tile implements Launchable, Matchable, Breakable {
-    private SoundManager.SoundEffects destroySound;
+    private SoundManager.SoundEffect destroySound;
 
     RegularTile(TileType type) {
         super(type);

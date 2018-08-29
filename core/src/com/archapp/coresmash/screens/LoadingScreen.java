@@ -157,11 +157,14 @@ public class LoadingScreen extends ScreenBase {
     }
 
     private void loadSounds() {
-        am.load("blop.mp3", Sound.class);
         am.load("BackgroundLoop.mp3", Music.class);
+        am.load(SOUND_DIR + "gamescreen_music.ogg", Music.class);
+
+        am.load("blop.mp3", Sound.class);
         am.load("click.mp3", Sound.class);
         am.load(SOUND_DIR + "explosion1.ogg", Sound.class);
         am.load(SOUND_DIR + "launch1.ogg", Sound.class);
+        am.load(SOUND_DIR + "astronaut_release.ogg", Sound.class);
     }
 
     private void loadAllBitmapFonts() {
@@ -196,10 +199,13 @@ public class LoadingScreen extends ScreenBase {
     private void setupSounds() {
         SoundManager soundManager = SoundManager.get();
         soundManager.loadMusic("backgroundMusic", am.get("BackgroundLoop.mp3", Music.class));
+        soundManager.loadMusic("gamescreenMusic", am.get(SOUND_DIR + "gamescreen_music.ogg", Music.class));
+
         soundManager.loadSound("regularBallDestroy", am.get("blop.mp3", Sound.class));
         soundManager.loadSound("buttonClick", am.get("click.mp3", Sound.class));
         soundManager.loadSound("explosion1", am.get(SOUND_DIR + "explosion1.ogg", Sound.class));
         soundManager.loadSound("launch1", am.get(SOUND_DIR + "launch1.ogg", Sound.class));
+        soundManager.loadSound("releaseAstronaut", am.get(SOUND_DIR + "astronaut_release.ogg", Sound.class));
     }
 
     private void setupFonts() {

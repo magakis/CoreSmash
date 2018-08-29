@@ -107,7 +107,7 @@ public final class AdmobManager implements AdManager {
             }
         });
 
-        adView.loadAd(new AdRequest.Builder().addTestDevice("EA655C74DEA919ECE1BFC5F57C5C8708").build());
+//        adView.loadAd(new AdRequest.Builder().addTestDevice("EA655C74DEA919ECE1BFC5F57C5C8708").build());
 
         RelativeLayout.LayoutParams adParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,

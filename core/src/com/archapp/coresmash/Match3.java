@@ -13,11 +13,11 @@ public class Match3 {
     public ArrayList<TilemapTile> getColorMatchesFromTile(TilemapTile tile) {
         matched.clear();
         closed.clear();
-        addSurroundingColorMatches(tile);
+        addSurroundingColorMatches(tile, tile.getTileID());
         return matched;
     }
 
-    private void addSurroundingColorMatches(TilemapTile tmTile) {
+    private void addSurroundingColorMatches(TilemapTile tmTile, int id) {
         closed.add(tmTile);
         matched.add(tmTile);
 
@@ -25,54 +25,53 @@ public class Match3 {
         //top_left
         neighbour = tmTile.getNeighbour(Side.TOP_LEFT);
         if (neighbour != null && !closed.contains(neighbour)) {
-            if (isMatching(tmTile, neighbour)) {
-                addSurroundingColorMatches(neighbour);
+            if (isMatching(id, neighbour)) {
+                addSurroundingColorMatches(neighbour, id);
             }
         }
 
         //top_right
         neighbour = tmTile.getNeighbour(Side.TOP_RIGHT);
         if (neighbour != null && !closed.contains(neighbour)) {
-            if (isMatching(tmTile, neighbour)) {
-                addSurroundingColorMatches(neighbour);
+            if (isMatching(id, neighbour)) {
+                addSurroundingColorMatches(neighbour, id);
             }
         }
 
         //right
         neighbour = tmTile.getNeighbour(Side.RIGHT);
         if (neighbour != null && !closed.contains(neighbour)) {
-            if (isMatching(tmTile, neighbour)) {
-                addSurroundingColorMatches(neighbour);
+            if (isMatching(id, neighbour)) {
+                addSurroundingColorMatches(neighbour, id);
             }
         }
 
         //bottom_right
         neighbour = tmTile.getNeighbour(Side.BOTTOM_RIGHT);
         if (neighbour != null && !closed.contains(neighbour)) {
-            if (isMatching(tmTile, neighbour)) {
-                addSurroundingColorMatches(neighbour);
+            if (isMatching(id, neighbour)) {
+                addSurroundingColorMatches(neighbour, id);
             }
         }
 
         //bottom_left
         neighbour = tmTile.getNeighbour(Side.BOTTOM_LEFT);
         if (neighbour != null && !closed.contains(neighbour)) {
-            if (isMatching(tmTile, neighbour)) {
-                addSurroundingColorMatches(neighbour);
+            if (isMatching(id, neighbour)) {
+                addSurroundingColorMatches(neighbour, id);
             }
         }
 
         //left
         neighbour = tmTile.getNeighbour(Side.LEFT);
         if (neighbour != null && !closed.contains(neighbour)) {
-            if (isMatching(tmTile, neighbour)) {
-                addSurroundingColorMatches(neighbour);
+            if (isMatching(id, neighbour)) {
+                addSurroundingColorMatches(neighbour, id);
             }
         }
     }
 
-    private boolean isMatching(TilemapTile tmTile, TilemapTile neighbour) {
-        return neighbour.getTile() instanceof Matchable &&
-                (((Matchable) neighbour.getTile()).matchesWith(tmTile.getTileID()) || ((Matchable) tmTile.getTile()).matchesWith(neighbour.getTileID()));
+    private boolean isMatching(int id, TilemapTile neighbour) {
+        return neighbour.getTile() instanceof Matchable && ((Matchable) neighbour.getTile()).matchesWith(id);
     }
 }

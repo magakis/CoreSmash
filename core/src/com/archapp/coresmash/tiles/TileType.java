@@ -14,11 +14,22 @@ public enum TileType {
     REGULAR_BALL7(6, true, MajorType.REGULAR),
     REGULAR_BALL8(7, true, MajorType.REGULAR),
 
+
+    RANDOM_ASTRONAUT(16, true, MajorType.EDITOR_ONLY),
     RANDOM_REGULAR(17, true, MajorType.EDITOR_ONLY),
 
     WALL_BALL(18, true, MajorType.SPECIAL),
     BOMB_BALL(19, true, MajorType.SPECIAL),
     SPIKY_BALL(20, true, MajorType.SPECIAL),
+
+    ASTRONAUT_BALL1(21, true, MajorType.ASTRONAUT),
+    ASTRONAUT_BALL2(22, true, MajorType.ASTRONAUT),
+    ASTRONAUT_BALL3(23, true, MajorType.ASTRONAUT),
+    ASTRONAUT_BALL4(24, true, MajorType.ASTRONAUT),
+    ASTRONAUT_BALL5(25, true, MajorType.ASTRONAUT),
+    ASTRONAUT_BALL6(26, true, MajorType.ASTRONAUT),
+    ASTRONAUT_BALL7(27, true, MajorType.ASTRONAUT),
+    ASTRONAUT_BALL8(28, true, MajorType.ASTRONAUT),
 
     FIREBALL(101, false, MajorType.POWERUP),
     COLORBOMB(102, false, MajorType.POWERUP),;
@@ -74,7 +85,8 @@ public enum TileType {
         REGULAR,
         EDITOR_ONLY,
         POWERUP,
-        SPECIAL
+        ASTRONAUT,
+        SPECIAL,
     }
 
     private static final class Placeables {

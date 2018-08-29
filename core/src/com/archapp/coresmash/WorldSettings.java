@@ -3,7 +3,7 @@ package com.archapp.coresmash;
 import com.badlogic.gdx.Gdx;
 
 public final class WorldSettings {
-    private static int tileSize = 70;
+    private static int tileSize = 80;
     private static int screenWidth = Gdx.graphics.getWidth();
     private static int screenHeight = Gdx.graphics.getHeight();
     private static int smallestScreenDimension = screenHeight > screenWidth ? screenWidth : screenHeight;

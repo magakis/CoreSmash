@@ -57,7 +57,7 @@ public abstract class AbstractTheme {
             ResourceData data = (ResourceData) entry.getValue();
             data.texture = atlas.findRegion(data.textureName);
 //            data.texture = assetManager.get(data.textureName, Texture.class);
-            assert (data.texture != null);
+            if (data.texture == null) throw new RuntimeException(data.textureName);
         }
     }
 

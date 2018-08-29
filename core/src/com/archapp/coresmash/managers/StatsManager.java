@@ -4,6 +4,8 @@ import com.archapp.coresmash.Launcher;
 import com.archapp.coresmash.NotificationType;
 import com.archapp.coresmash.Observable;
 import com.archapp.coresmash.Observer;
+import com.archapp.coresmash.tilemap.TilemapTile;
+import com.archapp.coresmash.tiles.TileType;
 import com.archapp.coresmash.tiles.TileType.PowerupType;
 import com.badlogic.gdx.Gdx;
 
@@ -216,12 +218,21 @@ public class StatsManager extends Observable implements Observer {
     @Override
     public void onNotify(NotificationType type, Object ob) {
         switch (type) {
+            case ASTRONAUTS_FOUND:
+                gameStats.astronautsLeft += (short) ob;
+                break;
+
             case NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED:
-                gameStats.isRoundWon = true;
+                if (gameStats.astronautsLeft == 0)
+                    gameStats.isRoundWon = true;
+
                 isGameActive = false;
                 break;
 
             case NOTIFICATION_TYPE_TILE_DESTROYED:
+                if (((TilemapTile) ob).getTile().getTileType().getMajorType() == TileType.MajorType.ASTRONAUT)
+                    --gameStats.astronautsLeft;
+
                 ++ballsDestroyedThisFrame;
                 break;
 
@@ -335,10 +346,12 @@ public class StatsManager extends Observable implements Observer {
         private boolean isMovesEnabled;
         private boolean isLivesEnabled;
         private boolean isTimeEnabled;
+        private boolean isAstronautEnabled;
 
         private int movesLeft;
         private float timeLeft;
         private int livesLeft;
+        private int astronautsLeft;
 
         private void reset() {
             activeLevel = -1;
@@ -352,10 +365,12 @@ public class StatsManager extends Observable implements Observer {
             isLivesEnabled = false;
             isMovesEnabled = false;
             isTimeEnabled = false;
+            isAstronautEnabled = false;
 
             movesLeft = 0;
             timeLeft = 0;
             livesLeft = 0;
+            astronautsLeft = 0;
         }
 
         public boolean isRoundWon() {

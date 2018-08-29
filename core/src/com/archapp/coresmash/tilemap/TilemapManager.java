@@ -7,10 +7,11 @@ import com.archapp.coresmash.Observable;
 import com.archapp.coresmash.Observer;
 import com.archapp.coresmash.WorldSettings;
 import com.archapp.coresmash.managers.RenderManager;
-import com.archapp.coresmash.tiles.Breakable;
-import com.archapp.coresmash.tiles.RegularTile;
+import com.archapp.coresmash.tiles.AstronautBall;
+import com.archapp.coresmash.tiles.Destroyable;
 import com.archapp.coresmash.tiles.Tile;
 import com.archapp.coresmash.tiles.TileContainer.Side;
+import com.archapp.coresmash.tiles.TileType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,7 +41,7 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
     private TilemapPathfinder pathfinder = new TilemapPathfinder();
     private TilemapBuilder tilemapBuilder = new TilemapBuilder();
     private Match3 match3 = new Match3();
-    private int[] colorsAvailable = new int[10]; // XXX(22/4/2018): MagicValue 10 (Should ask TileIndex)
+    private int[] colorsAvailable = new int[8]; // XXX(22/4/2018): MagicValue 7 (Should ask TileIndex)
 
     public TilemapManager() {
         defTilemapPosition = new Coords2D(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
@@ -111,14 +112,11 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
     private void handleTileRemoval(TilemapTile tile) {
         tileList.remove(tile);
 
-        Tile removed = tile.getTile();
-        //XXX : Magic Number 10
-        if (removed.getID() < 10) {
-            --colorsAvailable[removed.getID()];
-        }
+        removeColorAvailable(tile);
 
-        if (removed instanceof Breakable) {
-            ((Breakable) removed).onDestroy(tile, this);
+        Tile removed = tile.getTile();
+        if (removed instanceof Destroyable) {
+            ((Destroyable) removed).onDestroy(tile, this);
         }
 
         if (tile.getLayerId() == 0 && tile.getX() == 0 && tile.getY() == 0) {
@@ -130,17 +128,22 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
         return worldMap.getTilemapTile(0, 0, 0).getTileID();
     }
 
+    public Tile getCenterTile() {
+        return worldMap.getTilemapTile(0, 0, 0).getTile();
+    }
+
     /**
      * Finds an empty side from the coordinates specified and attach the tile provided.
      *
      * @returns Returns the TilemapTile that was placed or null.
+     * @warning Uses TileID as index in an array. If IDs change in the furure, it will be a mess.
      */
     public TilemapTile attachBall(Tile tile, TilemapTile tileHit, Side[] listSides) {
         for (Side side : listSides) {
             if (tileHit.getNeighbour(side) == null) {
                 TilemapTile newTile = worldMap.placeTile(tileHit, tile, side);
-                if (newTile != null && tile.getID() < 10) { // XXX(30/6/2018): magic value
-                    ++colorsAvailable[tile.getID()];
+                if (newTile != null) { //
+                    addColorAvailable(newTile);
                 }
                 tileList.add(newTile);
                 return newTile;
@@ -231,15 +234,43 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
         switch (type) {
             case TILEMAP_INITIALIZED:
                 List<TilemapTile> tiles = (List<TilemapTile>) ob;
+                short astronautsFound = 0;
                 for (TilemapTile tile : tiles) {
-                    if (tile.getTile() instanceof RegularTile) {
-                        ++colorsAvailable[tile.getTileID()];
-                    }
+                    if (tile.getTile().getTileType().getMajorType() == TileType.MajorType.ASTRONAUT)
+                        ++astronautsFound;
+                    else
+                        addColorAvailable(tile);
                 }
+                if (astronautsFound > 0)
+                    notifyObservers(NotificationType.ASTRONAUTS_FOUND, astronautsFound);
                 tileList.addAll(tiles);
                 break;
             default:
                 notifyObservers(type, ob);
+        }
+    }
+
+    private void addColorAvailable(TilemapTile newTile) {
+        Tile tile = newTile.getTile();
+        switch (tile.getTileType().getMajorType()) {
+            case REGULAR:
+                ++colorsAvailable[tile.getID()];
+                break;
+            case ASTRONAUT:
+                ++colorsAvailable[((AstronautBall) tile).getMatchID()];
+                break;
+        }
+    }
+
+    private void removeColorAvailable(TilemapTile removedTile) {
+        Tile tile = removedTile.getTile();
+        switch (tile.getTileType().getMajorType()) {
+            case REGULAR:
+                --colorsAvailable[tile.getID()];
+                break;
+            case ASTRONAUT:
+                --colorsAvailable[((AstronautBall) tile).getMatchID()];
+                break;
         }
     }
 

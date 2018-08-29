@@ -2,6 +2,7 @@ package com.archapp.coresmash.tilemap;
 
 import com.archapp.coresmash.levelbuilder.ParsedTile;
 import com.archapp.coresmash.tiles.TileFactory;
+import com.archapp.coresmash.tiles.TileType;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
@@ -128,18 +129,24 @@ public class TilemapBuilder {
     }
 
     public TilemapBuilder populateFrom(List<ParsedTile> parsedTiles) {
-        int randomTileID = 17; // XXX(8/26/2018): MAGIC VALUE 17
+        checkIfCanBuild();
+
         for (ParsedTile parsedTile : parsedTiles) {
-            if (parsedTile.getTileID() == randomTileID) {
-                checkIfCanBuild();
-                BlueprintTile tile = getTile(parsedTile.getX(), parsedTile.getY());
-                if (tile == null) {
+            BlueprintTile tile;
+            switch (parsedTile.getTileID()) {
+                case 16:
+                    tile = blueprintTilePool.obtain();
+                    tile.set(parsedTile.getX(), parsedTile.getY(), getRandomAstronautID());
+                    fixedTilesArray.add(tile);
+                    break;
+                case 17:
                     setTile(parsedTile.getX(), parsedTile.getY(), getRandomColorID());
-                }
-            } else {
-                BlueprintTile tile = blueprintTilePool.obtain();
-                tile.set(parsedTile.getX(), parsedTile.getY(), parsedTile.getTileID());
-                fixedTilesArray.add(tile);
+                    break;
+                default:
+                    tile = blueprintTilePool.obtain();
+                    tile.set(parsedTile.getX(), parsedTile.getY(), parsedTile.getTileID());
+                    fixedTilesArray.add(tile);
+                    break;
             }
         }
         return this;
@@ -384,13 +391,8 @@ public class TilemapBuilder {
         putFixedTilesInBlueprint();
         // TODO(4/5/2018): this function needs to know what each id represents...
 
-        int randomTileID = 17;
         for (BlueprintTile tile : blueprintList) {
-            if (debugEnabled && tile.ID == randomTileID)
-                tilemap.putTilemapTile(tile.x, tile.y, TileFactory.getTileFromID(randomTileID));
-            else
                 tilemap.putTilemapTile(tile.x, tile.y, TileFactory.getTileFromID(tile.ID));
-
         }
 
         tilemap.initialize(builderInfo);
@@ -424,7 +426,11 @@ public class TilemapBuilder {
     }
 
     private int getRandomColorID() {
-        return rand.nextInt(colorCount);
+        return rand.nextInt(colorCount) + TileType.REGULAR_BALL1.getID();
+    }
+
+    private int getRandomAstronautID() {
+        return rand.nextInt(colorCount) + TileType.ASTRONAUT_BALL1.getID();
     }
 
     private int getTileDistance(int x1, int y1, int x2, int y2) {

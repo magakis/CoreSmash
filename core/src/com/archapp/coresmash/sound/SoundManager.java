@@ -10,9 +10,9 @@ import java.util.List;
 
 public class SoundManager {
     private static SoundManager instance = new SoundManager();
-    private ObjectMap<String, SoundEffects> soundList;
+    private ObjectMap<String, SoundEffect> soundList;
     private ObjectMap<String, MusicAsset> musicList;
-    private List<SoundEffects> playlist;
+    private List<SoundEffect> playlist;
 
     public static SoundManager get() {
         return instance;
@@ -25,9 +25,9 @@ public class SoundManager {
     }
 
     public void update(float delta) {
-        Iterator<SoundEffects> iter = playlist.iterator();
+        Iterator<SoundEffect> iter = playlist.iterator();
         while (iter.hasNext()) {
-            SoundEffects asset = iter.next();
+            SoundEffect asset = iter.next();
             asset.playSound();
             --asset.playCount;
             if (asset.playCount == 0) {
@@ -37,14 +37,14 @@ public class SoundManager {
     }
 
     public void loadSound(String assetName, Sound sound) {
-        soundList.put(assetName, new SoundEffects(assetName, sound));
+        soundList.put(assetName, new SoundEffect(assetName, sound));
     }
 
     public void loadMusic(String assetName, Music sound) {
         musicList.put(assetName, new MusicAsset(assetName, sound));
     }
 
-    public SoundEffects getSoundAsset(String assetName) {
+    public SoundEffect getSoundAsset(String assetName) {
         if (!soundList.containsKey(assetName))
             throw new RuntimeException("Sound not loaded: " + assetName);
         return soundList.get(assetName);
@@ -56,12 +56,12 @@ public class SoundManager {
         return musicList.get(assetName);
     }
 
-    public class SoundEffects {
+    public class SoundEffect {
         private Sound sound;
         private String soundName;
         private int playCount;
 
-        private SoundEffects(String name, Sound sound) {
+        private SoundEffect(String name, Sound sound) {
             soundName = name;
             this.sound = sound;
         }
@@ -70,11 +70,26 @@ public class SoundManager {
             sound.play();
         }
 
+        public void setVolume(float volume) {
+        }
+
+        public void loop(float volume) {
+            sound.loop(volume);
+        }
+
+        public void loop() {
+            sound.loop();
+        }
+
         public void play() {
             if (playCount == 0) {
                 playlist.add(this);
                 ++playCount;
             }
+        }
+
+        public void stop() {
+            sound.stop();
         }
     }
 

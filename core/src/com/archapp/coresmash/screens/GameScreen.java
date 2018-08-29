@@ -12,7 +12,9 @@ import com.archapp.coresmash.levels.Level;
 import com.archapp.coresmash.managers.MovingBallManager;
 import com.archapp.coresmash.managers.RenderManager;
 import com.archapp.coresmash.managers.StatsManager;
+import com.archapp.coresmash.sound.SoundManager;
 import com.archapp.coresmash.tilemap.TilemapManager;
+import com.archapp.coresmash.tiles.Launchable;
 import com.archapp.coresmash.tiles.TileType.PowerupType;
 import com.archapp.coresmash.ui.UIComponent;
 import com.archapp.coresmash.ui.UIFactory;
@@ -66,6 +68,7 @@ public class GameScreen extends ScreenBase implements Observer {
     private StreakUI streakUI;
     private Level activeLevel;
 
+    private SoundManager.MusicAsset backgroundMusic;
     //===========
     private DebugUI debugUI;
     private GameUI gameUI;
@@ -77,6 +80,10 @@ public class GameScreen extends ScreenBase implements Observer {
 
     public GameScreen(CoreSmash game) {
         super(game);
+        backgroundMusic = SoundManager.get().getMusicAsset("gamescreenMusic");
+        backgroundMusic.setLooping(true);
+        backgroundMusic.setVolume(.3f);
+
         viewport = new ExtendViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight());
         camera = (OrthographicCamera) viewport.getCamera();
         camera.setToOrtho(false, viewport.getMinWorldWidth(), viewport.getMinWorldHeight());
@@ -110,6 +117,18 @@ public class GameScreen extends ScreenBase implements Observer {
         screenInputMultiplexer.addProcessor(stage);
         InputProcessor gameGestureDetector = new CustomGestureDetector(new GameInputListener());
         screenInputMultiplexer.addProcessor(gameGestureDetector);
+    }
+
+    @Override
+    public void show() {
+        super.show();
+        backgroundMusic.play();
+    }
+
+    @Override
+    public void hide() {
+        super.hide();
+        backgroundMusic.stop();
     }
 
     @Override
@@ -168,6 +187,7 @@ public class GameScreen extends ScreenBase implements Observer {
         resultUI.update();
         rootUIStack.clear();
         rootUIStack.addActor(resultUI.getRoot());
+        backgroundMusic.stop();
     }
 
     private void reset() {
@@ -213,7 +233,10 @@ public class GameScreen extends ScreenBase implements Observer {
                     if (moves > launcher.getLauncherSize()) {
                         launcher.loadLauncher(tilemapManager);
                     } else if (moves == launcher.getLauncherSize()) {
-                        launcher.loadLauncher(tilemapManager.getCenterTileID());
+                        if (tilemapManager.getCenterTile() instanceof Launchable)
+                            launcher.loadLauncher(tilemapManager.getCenterTileID());
+                        else
+                            launcher.loadLauncher(tilemapManager);
                     }
                 } else {
                     launcher.loadLauncher(tilemapManager);
