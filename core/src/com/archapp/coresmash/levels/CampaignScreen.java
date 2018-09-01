@@ -15,6 +15,7 @@ import com.archapp.coresmash.managers.StatsManager;
 import com.archapp.coresmash.managers.StatsManager.GameStats;
 import com.archapp.coresmash.screens.GameScreen;
 import com.archapp.coresmash.screens.ScreenBase;
+import com.archapp.coresmash.sound.SoundManager;
 import com.archapp.coresmash.tilemap.TilemapManager;
 import com.archapp.coresmash.tiles.TileType.PowerupType;
 import com.archapp.coresmash.ui.Components;
@@ -32,6 +33,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
@@ -225,7 +227,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     }
 
     private static class UIRightBar implements UIComponent {
-        public final float BUTTON_SIZE;
+        private final float BUTTON_SIZE;
         private Container<Container<VerticalGroup>> root;
         private final LotteryButton lotteryButton;
         private final HeartButton heartButton;
@@ -233,12 +235,14 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         UIRightBar(final Stage stage, final Skin skin, final UserAccount user, final AdManager adManager) {
             BUTTON_SIZE = skin.getFont("h4").getLineHeight() * 3;
 
-            lotteryButton = new LotteryButton(stage, skin, user);
+            lotteryButton = new LotteryButton(stage, skin, user, adManager);
             heartButton = new HeartButton(skin, user, adManager);
 
             VerticalGroup barGroup = new VerticalGroup();
             barGroup.addActor(heartButton.root);
             barGroup.addActor(lotteryButton.root);
+
+            barGroup.space(BUTTON_SIZE * .4f);
 
             Container<VerticalGroup> bar = new Container<>(barGroup);
 
@@ -255,19 +259,19 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             Container<ImageButton> root;
             LotteryDialog lotteryDialog;
 
-            public LotteryButton(final Stage stage, Skin skin, final UserAccount user) {
-                lotteryDialog = new LotteryDialog(skin, user.getCurrencyManager()) {
+            public LotteryButton(final Stage stage, Skin skin, final UserAccount user, AdManager adManager) {
+                lotteryDialog = new LotteryDialog(skin, user.getCurrencyManager(), adManager) {
                     @Override
                     protected void result(Object object) {
                         Reward reward = ((Reward) object);
                         if (reward.getAmount() > 0) {
                             user.addPowerup(reward.getType(), reward.getAmount());
-                            Components.showToast("You have claimed " + reward.getAmount() + "x " + reward.getType() + "!", getStage());
                         }
                     }
                 };
 
-                ImageButton btnSlotMachine = new ImageButton(skin, "ButtonLottery");
+                ImageButton btnSlotMachine = UIFactory.createImageButton(skin, "ButtonLottery");
+                btnSlotMachine.getImageCell().grow();
                 btnSlotMachine.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
@@ -276,31 +280,59 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 });
 
                 root = new Container<>(btnSlotMachine);
-                root.size(BUTTON_SIZE, UIUtils.getWidthFor(btnSlotMachine.getImage().getDrawable(), BUTTON_SIZE));
+                root.size(BUTTON_SIZE, UIUtils.getHeightFor(btnSlotMachine.getImage().getDrawable(), BUTTON_SIZE));
             }
         }
 
         private class HeartButton {
             private VerticalGroup root;
             private UserAccount.HeartManager heartManager;
+            private final SoundManager.SoundEffect buttonClick;
+            private AdManager.AdRewardListener listener;
             private Label lblLivesLeft;
             private Label lblTimeForLife;
+            private Container<Image> redCross;
 
             public HeartButton(Skin skin, final UserAccount user, final AdManager adManager) {
                 heartManager = user.getHeartManager();
+                buttonClick = SoundManager.get().getSoundAsset("buttonClick");
+
+                listener = new AdManager.AdRewardListener() {
+                    @Override
+                    public void reward(String type, int amount) {
+                        heartManager.restoreHeart();
+                    }
+                };
 
                 lblLivesLeft = new Label("null", skin, "h3o");
                 lblLivesLeft.setAlignment(Align.center);
                 lblTimeForLife = new Label("null", skin, "h5");
                 lblTimeForLife.setAlignment(Align.center);
 
-                Container<Label> livesLeft = new Container<>(lblLivesLeft);
-                livesLeft.center();
-                livesLeft.setBackground(skin.getDrawable("Heart"));
+                Image imgRedCross = new Image(skin, "RedCross");
+                redCross = new Container<>(imgRedCross);
+                redCross.size(BUTTON_SIZE * .3f, UIUtils.getHeightFor(imgRedCross.getDrawable(), BUTTON_SIZE * .3f));
+                redCross.setTransform(true);
+                redCross.addAction(Actions.forever(Actions.forever(Actions.sequence(
+                        Actions.scaleBy(.15f, .15f, .5f),
+                        Actions.scaleBy(-.15f, -.15f, .5f)
+                ))));
+
+                Container<Container<Image>> redCrossWrapper = new Container<>(redCross);
+                redCrossWrapper.top().right();
+
+                Image backgroundImage = new Image(skin, "Heart");
+
+                Stack heartStack = new Stack();
+                heartStack.add(backgroundImage);
+                heartStack.add(lblLivesLeft);
+                heartStack.add(redCrossWrapper);
+
+                redCross.setOrigin(Align.center);
 
                 float buttonSize = BUTTON_SIZE * .8f;
-                Container<Container<Label>> livesLeftWrapper = new Container<>(livesLeft);
-                livesLeftWrapper.size(buttonSize, UIUtils.getHeightFor(livesLeft.getBackground(), buttonSize));
+                Container<Stack> livesLeftWrapper = new Container<>(heartStack);
+                livesLeftWrapper.size(buttonSize, UIUtils.getHeightFor(backgroundImage.getDrawable(), buttonSize));
 
                 Container<Label> timeForLife = new Container<>(lblTimeForLife);
                 timeForLife.width(Value.percentWidth(1, livesLeftWrapper));
@@ -313,13 +345,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
                         if (!heartManager.isFull()) {
-                            adManager.showAdForReward(new AdManager.AdRewardListener() {
-                                @Override
-                                public void reward(String type, int amount) {
-                                    user.getCurrencyManager().giveCurrency(LOTTERY_COIN);
-                                    heartManager.restoreHeart();
-                                }
-                            });
+                            buttonClick.play();
+                            adManager.showAdForReward(listener);
                         }
                     }
                 });
@@ -346,6 +373,10 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             public void updateHearts() {
                 lblLivesLeft.setText(String.valueOf(heartManager.getHearts()));
+                if (heartManager.isFull())
+                    redCross.setVisible(false);
+                else
+                    redCross.setVisible(true);
             }
         }
     }
@@ -390,7 +421,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             pbAccountExp = new ProgressBar(0, 1, 1, false, pbStyle);
 
             lblLevel = new Label("", skin, "h5");
-            lblExp = new Label("", skin, "h5");
+            lblExp = new Label("", skin, "h6");
             lblExpForLevel = new Label("", skin, "h6", Color.GRAY);
 
             HorizontalGroup hgExp = new HorizontalGroup();
@@ -424,8 +455,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                     .size(contentSize * .4f)
                     .padRight(lblLotteryCoins.getMinHeight() / 2);
             tblAccount.add(tblInfo).fill().row();
-            tblAccount.add(hgLevel).padBottom(5).left();
-            tblAccount.add(hgExp).padBottom(5).right().row();
+            tblAccount.add(hgLevel).padBottom(5).left().row();
+//            tblAccount.add(hgExp).padBottom(5).right().row();
             tblAccount.add(pbAccountExp).growX().colspan(tblAccount.getColumns()).padRight(0);
 
 
@@ -516,7 +547,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 }
             });
 
-            ImageButton btnStart = UIFactory.createImageButton(skin, "ButtonStart");
+            ImageButton btnStart = UIFactory.createImageButton(skin, "ButtonPlay");
             btnStart.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -543,9 +574,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             float buttonSize = contentSize * WorldSettings.DefaultRatio.dialogButtonToContent();
             Table buttons = getButtonTable();
-            buttons.defaults().space((contentSize - (2 * buttonSize)) / 4);
-            buttons.add(btnStart).width(buttonSize).height(UIUtils.getHeightFor(btnStart.getImage().getDrawable(), buttonSize));
-            buttons.add(btnClose).width(buttonSize).height(UIUtils.getHeightFor(btnClose.getImage().getDrawable(), buttonSize));
+            buttons.row().expandX();
+            buttons.add(btnStart).height(buttonSize).width(UIUtils.getWidthFor(btnStart.getImage().getDrawable(), buttonSize));
+            buttons.add(btnClose).height(buttonSize).width(UIUtils.getWidthFor(btnClose.getImage().getDrawable(), buttonSize));
 
             addListener(new InputListener() {
                 @Override

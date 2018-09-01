@@ -25,14 +25,12 @@ public class RegularTile extends Tile implements Launchable, Matchable, Breakabl
     public void onCollide(MovingBall ball, TilemapTile tileHit, GameController controller) {
         GameController.BehaviourPack pack = controller.getBehaviourPack();
         TilemapManager tmm = pack.tilemapManager;
-        Side[] sides = pack.collisionDetector.getClosestSides(tmm.getLayerRotation(tileHit.getLayerId()), pack.collisionDetector.getDirection(ball.getPositionInWorld(), tileHit.getPositionInWorld()));
+        Side[] sides = pack.collisionDetector.getClosestSides(tmm.getLayerRotation(tileHit.getLayerID()), pack.collisionDetector.getDirection(ball.getPositionInWorld(), tileHit.getPositionInWorld()));
 
         TilemapTile newTile = tmm.attachBall(ball.extractTile(), tileHit, sides);
         if (newTile != null) {
             List<TilemapTile> matched = tmm.getColorMatches(newTile);
-            if (pack.statsManager.isGameActive()) {
-                tmm.destroyTiles(matched);
-            }
+            tmm.destroyTiles(matched);
         }
     }
 

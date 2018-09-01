@@ -11,29 +11,30 @@ import java.util.List;
 /* NOTE: The only reason I don't use a single method apply() with all the required parameters including
  * the execution is to comply with the TilemapEffect interface so it can be stored as that
  */
-public class DestroyRadiusEffect implements TilemapManager.TilemapEffect, Pool.Poolable {
-    private static Pool<DestroyRadiusEffect> pool;
+public class DestroyRadiusEffectConditional implements TilemapManager.TilemapEffect, Pool.Poolable {
+    private static Pool<DestroyRadiusEffectConditional> pool;
 
     static {
-        pool = new Pool<DestroyRadiusEffect>() {
+        pool = new Pool<DestroyRadiusEffectConditional>() {
             @Override
-            protected DestroyRadiusEffect newObject() {
-                return new DestroyRadiusEffect();
+            protected DestroyRadiusEffectConditional newObject() {
+                return new DestroyRadiusEffectConditional();
             }
         };
     }
 
-    public static DestroyRadiusEffect newInstance(int radius, int layer, int coordX, int coordY) {
-        DestroyRadiusEffect result = pool.obtain();
-        result.setup(radius, layer, coordX, coordY);
+    public static DestroyRadiusEffectConditional newInstance(int radius, int layer, int coordX, int coordY, Condition condition) {
+        DestroyRadiusEffectConditional result = pool.obtain();
+        result.setup(radius, layer, coordX, coordY, condition);
         return result;
     }
 
     private int radius, layer, originX, originY;
+    private Condition condition;
     private boolean isNew;
     private List<TilemapTile> destroyList;
 
-    private DestroyRadiusEffect() {
+    private DestroyRadiusEffectConditional() {
         destroyList = new ArrayList<>();
     }
 
@@ -53,7 +54,7 @@ public class DestroyRadiusEffect implements TilemapManager.TilemapEffect, Pool.P
                 for (int x = minX; x < maxX; ++x) {
                     if (Tilemap.getTileDistance(x, y, originX, originY) <= radius) {
                         TilemapTile tile = tmm.getTilemapTile(layer, x, y);
-                        if (tile != null) {
+                        if (tile != null && condition.isConditionMet(tile)) {
                             destroyList.add(tile);
                         }
                     }
@@ -66,13 +67,14 @@ public class DestroyRadiusEffect implements TilemapManager.TilemapEffect, Pool.P
         pool.free(this);
     }
 
-    private void setup(int radius, int layer, int coordX, int coordY) {
+    private void setup(int radius, int layer, int coordX, int coordY, Condition condition) {
         if (radius < 0) throw new RuntimeException("Radius can't be negative: " + radius);
 
         this.radius = radius;
         this.originX = coordX;
         this.originY = coordY;
         this.layer = layer;
+        this.condition = condition;
         isNew = true;
     }
 
@@ -80,6 +82,11 @@ public class DestroyRadiusEffect implements TilemapManager.TilemapEffect, Pool.P
     public void reset() {
         destroyList.clear();
         radius = layer = originX = originY = 0;
+        condition = null;
         isNew = false;
+    }
+
+    public interface Condition {
+        boolean isConditionMet(TilemapTile tile);
     }
 }

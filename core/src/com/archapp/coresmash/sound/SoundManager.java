@@ -37,7 +37,11 @@ public class SoundManager {
     }
 
     public void loadSound(String assetName, Sound sound) {
-        soundList.put(assetName, new SoundEffect(assetName, sound));
+        loadSound(assetName, sound, 1);
+    }
+
+    public void loadSound(String assetName, Sound sound, float volume) {
+        soundList.put(assetName, new SoundEffect(assetName, sound, volume));
     }
 
     public void loadMusic(String assetName, Music sound) {
@@ -59,15 +63,21 @@ public class SoundManager {
     public class SoundEffect {
         private Sound sound;
         private String soundName;
+        private float volume;
         private int playCount;
 
         private SoundEffect(String name, Sound sound) {
+            this(name, sound, 1);
+        }
+
+        private SoundEffect(String name, Sound sound, float volume) {
             soundName = name;
             this.sound = sound;
+            this.volume = volume;
         }
 
         private void playSound() {
-            sound.play();
+            sound.play(volume);
         }
 
         public void setVolume(float volume) {
@@ -104,6 +114,10 @@ public class SoundManager {
 
         public void play() {
             sound.play();
+        }
+
+        public void pause() {
+            sound.pause();
         }
 
         public void setLooping(boolean loop) {

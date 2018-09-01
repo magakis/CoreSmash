@@ -10,7 +10,7 @@ public class TilemapTile extends TileContainer implements Comparable<TilemapTile
     final private Coords2D coords;
     final private NeighbourTiles neighbourTiles;
     private int distanceFromCenter;
-    private int groupID;
+    private int layerID;
 
     // PUBLIC
 
@@ -28,8 +28,8 @@ public class TilemapTile extends TileContainer implements Comparable<TilemapTile
         return coords.y;
     }
 
-    public int getLayerId() {
-        return groupID;
+    public int getLayerID() {
+        return layerID;
     }
 
     public int getDistanceFromCenter() {
@@ -62,6 +62,10 @@ public class TilemapTile extends TileContainer implements Comparable<TilemapTile
             default:
                 throw new RuntimeException("Wrong side?(" + side + ")");
         }
+    }
+
+    public boolean isCenterTile() {
+        return coords.x == 0 && coords.y == 0 && layerID == 0;
     }
 
     public void setCoordinates(int x, int y) {
@@ -102,7 +106,7 @@ public class TilemapTile extends TileContainer implements Comparable<TilemapTile
 
     void setPositionInTilemap(int tilemapID, int x, int y) {
         coords.set(x, y);
-        groupID = tilemapID;
+        layerID = tilemapID;
         distanceFromCenter = Tilemap.getTileDistance(coords.x, coords.y, 0, 0);
     }
 

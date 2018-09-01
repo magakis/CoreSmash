@@ -38,7 +38,7 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
     private boolean rotateCounterClockwise;
     private boolean autoRotationEnabled;
     private float rotation; // Radians
-    private float originRotation;
+    private float originRotation; // Radians
 
     private int minMapRotationSpeed;
     private int maxMapRotationSpeed;
@@ -84,7 +84,7 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
     }
 
     public float getRotation() {
-        return rotation;
+        return rotation + originRotation;
     }
 
     public boolean isChained() {
@@ -195,8 +195,8 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         else
             rotation += Math.toRadians(deg);
 
-        cos = (float) Math.cos(rotation);
-        sin = (float) Math.sin(rotation);
+        cos = (float) Math.cos(rotation + originRotation);
+        sin = (float) Math.sin(rotation + originRotation);
     }
 
     public void initialize(TilemapBuilder.TilemapBuilderInfo settings) {

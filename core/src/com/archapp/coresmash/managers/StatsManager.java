@@ -16,9 +16,11 @@ public class StatsManager extends Observable implements Observer {
     private PowerupCase powerupCase;
     private GameStats gameStats;
 
-    private boolean isGameActive;
-    private boolean isDebugEnabled;
+    private boolean gamePaused;
+    private boolean gameTerminated;
+    private boolean debugEnabled;
     private int ballsDestroyedThisFrame;
+    private int scoreThisFrame;
 
 
     public StatsManager() {
@@ -30,17 +32,21 @@ public class StatsManager extends Observable implements Observer {
         gameStats.activeLevel = level;
         gameStats.unlockedLevel = unlockedLevel;
         gameStats.targetScore = Gdx.app.getPreferences("account").getInteger("level" + level);
+
+        // Allow only paid lives after level 10
+        if (level < 11)
+            gameStats.freeSecondLife = true;
     }
 
     public void start() {
-        if ((gameStats.activeLevel == -1 || gameStats.unlockedLevel == -1) && !isDebugEnabled)
+        if ((gameStats.activeLevel == -1 || gameStats.unlockedLevel == -1) && !debugEnabled)
             throw new RuntimeException("Game not initialized properly (Level:" + gameStats.activeLevel + ", Unlocked:" + gameStats.unlockedLevel + ")");
 
-        isGameActive = true;
+        gamePaused = false;
     }
 
     public void update(float delta) {
-        if (gameStats.isTimeEnabled) {
+        if (gameStats.timeEnabled) {
             gameStats.timeLeft -= delta;
         }
 
@@ -62,15 +68,15 @@ public class StatsManager extends Observable implements Observer {
                     multiplier = 15;
                     break;
             }
-            scoreGained = (ballsDestroyedThisFrame * multiplier);
+            scoreGained = (ballsDestroyedThisFrame * multiplier) + scoreThisFrame;
             gameStats.totalScore += scoreGained;
             notifyObservers(NotificationType.NOTIFICATION_TYPE_SCORE_INCREMENTED, scoreGained);
 
-            if (gameStats.isLivesEnabled) {
+            if (gameStats.livesEnabled) {
                 float chanceToGainLife = ((ballsDestroyedThisFrame * ballsDestroyedThisFrame) / 9.f) / 100.f; // random algorithm I came up with
                 if (rand.nextFloat() < chanceToGainLife) {
                     ++gameStats.livesLeft;
-                    notifyObservers(NotificationType.NOTIFICATION_TYPE_LIVES_CHANGED, null);
+                    notifyObservers(NotificationType.LIVES_AMOUNT_CHANGED, null);
                 }
             }
 
@@ -84,25 +90,38 @@ public class StatsManager extends Observable implements Observer {
         gameStats.reset();
 
         ballsDestroyedThisFrame = 0;
-        isDebugEnabled = false;
+        scoreThisFrame = 0;
+        debugEnabled = false;
+        gameTerminated = false;
+        gamePaused = true;
     }
 
+    /**
+     * @return true should end the game and false should not
+     */
     public boolean checkEndingConditions(MovingBallManager ballManager) {
-        if (!isGameActive) {
+        if (gameTerminated) {
+            stopGame();
             return true;
         }
 
-        if (gameStats.isTimeEnabled && gameStats.timeLeft <= 0) {
-            isGameActive = false;
+        if (gameStats.timeEnabled && gameStats.timeLeft <= 0) {
+            stopGame();
+            gameStats.reasonOfLoss = ReasonOfLoss.OUT_OF_TIME;
             return true;
         }
-        if (gameStats.isLivesEnabled && gameStats.livesLeft == 0) {
-            isGameActive = false;
+
+        if (gameStats.livesEnabled && gameStats.livesLeft == 0) {
+            stopGame();
+            gameStats.reasonOfLoss = ReasonOfLoss.OUT_OF_LIVES;
             return true;
         }
-        if (gameStats.isMovesEnabled && gameStats.movesLeft == 0 && !ballManager.hasActiveBalls()) {
-            isGameActive = false;
+
+        if (gameStats.movesEnabled && gameStats.movesLeft == 0 && !ballManager.hasActiveBalls()) {
+            stopGame();
+            gameStats.reasonOfLoss = ReasonOfLoss.OUT_OF_MOVES;
             return true;
+
         }
         return false;
     }
@@ -112,11 +131,11 @@ public class StatsManager extends Observable implements Observer {
     }
 
     public void debug() {
-        isDebugEnabled = true;
+        debugEnabled = true;
     }
 
-    public boolean getRoundOutcome() {
-        if (isGameActive) throw new IllegalStateException("The game is still running?!");
+    public boolean isRoundWon() {
+        if (!gameTerminated) throw new IllegalStateException("The game is still running?!");
         return gameStats.isRoundWon;
     }
 
@@ -124,12 +143,17 @@ public class StatsManager extends Observable implements Observer {
         return gameStats;
     }
 
-    public boolean isGameActive() {
-        return isGameActive;
+    public boolean isGamePaused() {
+        return gamePaused;
+    }
+
+    public boolean isGameTerminated() {
+        return gameTerminated;
     }
 
     public void stopGame() {
-        isGameActive = false;
+        gameTerminated = true;
+        gamePaused = true;
     }
 
     public int getTargetScore() {
@@ -169,41 +193,92 @@ public class StatsManager extends Observable implements Observer {
     }
 
     public boolean isMovesEnabled() {
-        return gameStats.isMovesEnabled;
+        return gameStats.movesEnabled;
     }
 
     public boolean isLivesEnabled() {
-        return gameStats.isLivesEnabled;
+        return gameStats.livesEnabled;
     }
 
     public boolean isTimeEnabled() {
-        return gameStats.isTimeEnabled;
+        return gameStats.timeEnabled;
     }
 
     public void loseLife() {
-        if (gameStats.isLivesEnabled) {
+        if (gameStats.livesEnabled) {
             --gameStats.livesLeft;
-            notifyObservers(NotificationType.NOTIFICATION_TYPE_LIVES_CHANGED, null);
+            notifyObservers(NotificationType.LIVES_AMOUNT_CHANGED, null);
         }
     }
 
     public void setLives(int lives) {
         gameStats.livesLeft = lives < 0 ? 0 : lives;
-        gameStats.isLivesEnabled = lives != 0;
+        gameStats.livesEnabled = lives != 0;
     }
 
     public void setTime(int time) {
         gameStats.timeLeft = time < 0 ? 0 : time;
-        gameStats.isTimeEnabled = time != 0;
+        gameStats.timeEnabled = time != 0;
     }
 
     public void setMoves(int moves) {
         gameStats.movesLeft = moves < 0 ? 0 : moves;
-        gameStats.isMovesEnabled = moves != 0;
+        gameStats.movesEnabled = moves != 0;
+    }
+
+    public void giveExtraLife(int moves, int lives, int time) {
+        rewardLives(lives);
+        rewardMoves(moves);
+        rewardTime(time);
+        ++gameStats.extraLivesUsed;
+    }
+
+    public void rewardLives(int amount) {
+        if (gameStats.livesEnabled) {
+            gameStats.livesLeft += amount;
+            notifyObservers(NotificationType.REWARDED_LIVES, amount);
+            notifyObservers(NotificationType.LIVES_AMOUNT_CHANGED, amount);
+        }
+    }
+
+    public void rewardMoves(int amount) {
+        if (gameStats.movesEnabled) {
+            gameStats.movesLeft += amount;
+            notifyObservers(NotificationType.REWARDED_MOVES, amount);
+            notifyObservers(NotificationType.MOVES_AMOUNT_CHANGED, gameStats.movesLeft);
+        }
+    }
+
+    public void addScore(int amount) {
+        scoreThisFrame += amount;
+    }
+
+    // Time constantly changes so a notification is not required
+    public void rewardTime(int amount) {
+        if (gameStats.timeEnabled) {
+            gameStats.timeLeft += amount;
+        }
     }
 
     public boolean isDebugEnabled() {
-        return isDebugEnabled;
+        return debugEnabled;
+    }
+
+    public void pauseGame() {
+        gamePaused = true;
+    }
+
+    public void resumeGame() {
+        gamePaused = false;
+    }
+
+    public void consumeSecondLife() {
+        gameStats.freeSecondLife = false;
+        ++gameStats.extraLivesUsed;
+    }
+
+    public boolean isSecondLifeAvailable() {
+        return gameStats.freeSecondLife;
     }
 
     public boolean consumePowerup(PowerupType type, Launcher launcher) {
@@ -225,8 +300,10 @@ public class StatsManager extends Observable implements Observer {
             case NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED:
                 if (gameStats.astronautsLeft == 0)
                     gameStats.isRoundWon = true;
+                else
+                    gameStats.reasonOfLoss = ReasonOfLoss.ASTRONAUTS_LEFT;
 
-                isGameActive = false;
+                gameTerminated = true;
                 break;
 
             case NOTIFICATION_TYPE_TILE_DESTROYED:
@@ -237,14 +314,14 @@ public class StatsManager extends Observable implements Observer {
                 break;
 
             case NO_COLOR_MATCH:
-                if (gameStats.isLivesEnabled) {
+                if (gameStats.livesEnabled) {
                     --gameStats.livesLeft;
-                    notifyObservers(NotificationType.NOTIFICATION_TYPE_LIVES_CHANGED, null);
+                    notifyObservers(NotificationType.LIVES_AMOUNT_CHANGED, null);
                 }
                 break;
 
             case BALL_LAUNCHED:
-                if (gameStats.isMovesEnabled) {
+                if (gameStats.movesEnabled) {
                     --gameStats.movesLeft;
                     notifyObservers(NotificationType.MOVES_AMOUNT_CHANGED, null);
                 }
@@ -335,6 +412,8 @@ public class StatsManager extends Observable implements Observer {
     }
 
     public static class GameStats {
+        private ReasonOfLoss reasonOfLoss;
+
         private int activeLevel;
         private int unlockedLevel;
         private boolean isRoundWon;
@@ -343,15 +422,17 @@ public class StatsManager extends Observable implements Observer {
         private int totalScore;
         private int targetScore;
 
-        private boolean isMovesEnabled;
-        private boolean isLivesEnabled;
-        private boolean isTimeEnabled;
-        private boolean isAstronautEnabled;
+        private boolean movesEnabled;
+        private boolean livesEnabled;
+        private boolean timeEnabled;
 
         private int movesLeft;
         private float timeLeft;
         private int livesLeft;
         private int astronautsLeft;
+
+        private boolean freeSecondLife;
+        private int extraLivesUsed;
 
         private void reset() {
             activeLevel = -1;
@@ -362,15 +443,30 @@ public class StatsManager extends Observable implements Observer {
             totalScore = 0;
             targetScore = 0;
 
-            isLivesEnabled = false;
-            isMovesEnabled = false;
-            isTimeEnabled = false;
-            isAstronautEnabled = false;
+            extraLivesUsed = 0;
+
+            livesEnabled = false;
+            movesEnabled = false;
+            timeEnabled = false;
+            freeSecondLife = false;
+            reasonOfLoss = ReasonOfLoss.NONE;
 
             movesLeft = 0;
             timeLeft = 0;
             livesLeft = 0;
             astronautsLeft = 0;
+        }
+
+        public boolean isFreeLifeAvailable() {
+            return freeSecondLife;
+        }
+
+        public ReasonOfLoss getReasonOfLoss() {
+            return reasonOfLoss;
+        }
+
+        public int getExtraLivesUsed() {
+            return extraLivesUsed;
         }
 
         public boolean isRoundWon() {
@@ -396,6 +492,14 @@ public class StatsManager extends Observable implements Observer {
         public int getTotalScore() {
             return totalScore;
         }
+    }
+
+    public enum ReasonOfLoss {
+        NONE,
+        ASTRONAUTS_LEFT,
+        OUT_OF_MOVES,
+        OUT_OF_LIVES,
+        OUT_OF_TIME
     }
 }
 

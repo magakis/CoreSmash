@@ -1,5 +1,6 @@
 package com.archapp.coresmash.screens;
 
+import com.archapp.coresmash.AdManager;
 import com.archapp.coresmash.Coords2D;
 import com.archapp.coresmash.CoreSmash;
 import com.archapp.coresmash.GameController;
@@ -27,6 +28,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
@@ -34,7 +36,9 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -66,13 +70,15 @@ public class GameScreen extends ScreenBase implements Observer {
     private Launcher launcher;
 
     private StreakUI streakUI;
+    private SecondLifeDialog secondLifeDialog;
+    private ResultDialog resultDialog;
+
     private Level activeLevel;
 
     private SoundManager.MusicAsset backgroundMusic;
     //===========
     private DebugUI debugUI;
     private GameUI gameUI;
-    private ResultUI resultUI;
     private Skin skin;
     private Stage stage;
     private Stack rootUIStack;
@@ -82,7 +88,7 @@ public class GameScreen extends ScreenBase implements Observer {
         super(game);
         backgroundMusic = SoundManager.get().getMusicAsset("gamescreenMusic");
         backgroundMusic.setLooping(true);
-        backgroundMusic.setVolume(.3f);
+        backgroundMusic.setVolume(.5f);
 
         viewport = new ExtendViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight());
         camera = (OrthographicCamera) viewport.getCamera();
@@ -103,8 +109,17 @@ public class GameScreen extends ScreenBase implements Observer {
         skin = gameInstance.getSkin();
         streakUI = new StreakUI(skin);
         gameUI = new GameUI();
-        resultUI = new ResultUI();
+        resultDialog = new ResultDialog(skin);
         debugUI = new DebugUI();
+
+        secondLifeDialog = new SecondLifeDialog(skin, gameInstance.getAdManager()) {
+            @Override
+            protected void result(Object object) {
+                statsManager.resumeGame();
+                if (statsManager.checkEndingConditions(movingBallManager))
+                    endGame();
+            }
+        };
 
         statsManager.addObserver(this);
         statsManager.addObserver(streakUI);
@@ -123,12 +138,26 @@ public class GameScreen extends ScreenBase implements Observer {
     public void show() {
         super.show();
         backgroundMusic.play();
+        SoundManager.get().getMusicAsset("backgroundMusic").stop();
+    }
+
+    @Override
+    public void pause() {
+        super.pause();
+        backgroundMusic.pause();
+    }
+
+    @Override
+    public void resume() {
+        super.resume();
+        backgroundMusic.play();
     }
 
     @Override
     public void hide() {
         super.hide();
         backgroundMusic.stop();
+        SoundManager.get().getMusicAsset("backgroundMusic").play();
     }
 
     @Override
@@ -156,7 +185,7 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     private void update(float delta) {
-        if (statsManager.isGameActive()) {
+        if (!statsManager.isGamePaused()) {
             activeLevel.update(delta, tilemapManager);
             launcher.update(delta);
             tilemapManager.update(delta);
@@ -167,10 +196,22 @@ public class GameScreen extends ScreenBase implements Observer {
             updateStage();
 
             if (statsManager.checkEndingConditions(movingBallManager)) {
-                endGame();
+                if (!statsManager.isRoundWon()) {
+                    if (!statsManager.getGameStats().getReasonOfLoss().equals(StatsManager.ReasonOfLoss.ASTRONAUTS_LEFT)) {
+                        if (statsManager.getGameStats().getExtraLivesUsed() < 3)
+                            secondLifeDialog.show(stage);
+                        else
+                            endGame();
+                    } else {
+                        endGame();
+                    }
+                } else {
+                    endGame();
+                }
             }
         }
-        stage.act(); // Moved out of updateStage() cause it always has to convert called
+
+        stage.act(); // Moved out of updateStage() cause it always has to get called
     }
 
     private void updateStage() {
@@ -184,9 +225,9 @@ public class GameScreen extends ScreenBase implements Observer {
     private void endGame() {
         activeLevel.end(statsManager.getGameStats());
 
-        resultUI.update();
-        rootUIStack.clear();
-        rootUIStack.addActor(resultUI.getRoot());
+        resultDialog.update();
+        resultDialog.show(stage, null);
+
         backgroundMusic.stop();
     }
 
@@ -212,7 +253,7 @@ public class GameScreen extends ScreenBase implements Observer {
             gameInstance.setScreen(this);
             return;
         }
-        launcher.fillLauncher(tilemapManager);
+        launcher.fillLauncher(tilemapManager, statsManager);
 
         gameUI.setup();
 
@@ -242,6 +283,10 @@ public class GameScreen extends ScreenBase implements Observer {
                     launcher.loadLauncher(tilemapManager);
                 }
                 break;
+
+            case REWARDED_MOVES:
+                launcher.fillLauncher(tilemapManager, statsManager);
+                break;
         }
     }
 
@@ -265,8 +310,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
         @Override
         public boolean tap(float x, float y, int count, int button) {
-            if (statsManager.isGameActive())
-                launcher.eject();
+            launcher.eject();
             return true;
         }
 
@@ -374,7 +418,7 @@ public class GameScreen extends ScreenBase implements Observer {
             lblTime.setAlignment(Align.left);
 
             lblScore = new Label("0", skin, "h4");
-            lblScore.setAlignment(Align.right);
+            lblScore.setAlignment(Align.center);
 
             lblLives = new Label("null", skin, "h4");
             lblLives.setAlignment(Align.center);
@@ -401,7 +445,7 @@ public class GameScreen extends ScreenBase implements Observer {
             tblScore.row().padTop(Value.percentHeight(.4f, lblScore)).right();
             tblScore.add(lblScore);
             tblScore.add("/", "h4");
-            tblScore.add(lblTargetScore).bottom();
+            tblScore.add(lblTargetScore);
 
 
             tblTime = new Table(skin);
@@ -553,7 +597,7 @@ public class GameScreen extends ScreenBase implements Observer {
                 case NOTIFICATION_TYPE_SCORE_INCREMENTED:
                     lblScore.setText(String.valueOf(statsManager.getScore()));
                     break;
-                case NOTIFICATION_TYPE_LIVES_CHANGED:
+                case LIVES_AMOUNT_CHANGED:
                     lblLives.setText(String.valueOf(statsManager.getLives()));
                     break;
                 case MOVES_AMOUNT_CHANGED:
@@ -626,58 +670,77 @@ public class GameScreen extends ScreenBase implements Observer {
         }
     }
 
-    private class ResultUI implements UIComponent {
-        private Label resultTextLbl, lblScore;
-        private Container<Container<Table>> root;
+    private class ResultDialog extends Dialog {
+        private final String
+                outOfMoves = "Out of Moves",
+                outOfLives = "Out of Lives",
+                outOfTime = "Out of Time",
+                astronautsLeft = "Astronauts left Unsaved";
+        private Label lblResult, lblScore, lblMessage;
         private float contentWidth;
 
-        ResultUI() {
+        ResultDialog(Skin skin) {
+            super("", skin, "PickPowerUpDialog");
 
-            resultTextLbl = new Label("null", skin, "h2");
-            lblScore = new Label("null", skin, "h3");
+            Label staticScore = new Label("Score:", skin, "h3");
+            lblResult = new Label("null", skin, "h2");
+            lblScore = new Label("null", skin, "h5");
+            lblMessage = UIFactory.createLabel("", skin, "h4", Align.center);
 
             ImageButton btnMenu = UIFactory.createImageButton(skin, "ButtonMenu");
             btnMenu.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeListener.ChangeEvent event, Actor actor) {
                     gameInstance.setPrevScreen();
+                    hide(null);
                 }
             });
 
 
-            Label staticScore = new Label("Score:", skin, "h3");
+            contentWidth = WorldSettings.getDefaultDialogSize() - getPadLeft() - getPadRight();
 
-            Table main = new Table(skin);
-            main.background("simpleFrameTrans");
+            Table content = getContentTable();
+            getCell(content).width(contentWidth);
+            content.add(lblResult).row();
+            content.add(lblMessage).padBottom(40).row();
+            content.add(staticScore).row();
+            content.add(lblScore).row();
 
-            contentWidth = WorldSettings.getDefaultDialogSize() - main.getPadLeft() - main.getPadRight();
+            float buttonSize = contentWidth * (WorldSettings.DefaultRatio.dialogButtonToContent() * 1.2f);
+            Table buttons = getButtonTable();
+            getCell(buttons).width(contentWidth);
+            buttons.add(btnMenu).height(buttonSize).padTop(40);
 
-            float buttonSize = contentWidth * (WorldSettings.DefaultRatio.dialogButtonToContent() * 1.3f);
-            Container<ImageButton> menuButtonWrapper = new Container<>(btnMenu);
-            menuButtonWrapper.size(buttonSize, UIUtils.getHeightFor(btnMenu.getImage().getDrawable(), buttonSize));
-
-            main.add(resultTextLbl).padBottom(40).row();
-            main.add(staticScore).padBottom(10).row();
-            main.add(lblScore).row();
-            main.add(menuButtonWrapper).padTop(50);
-
-
-            Container<Table> wrapper = new Container<>(main);
-            wrapper.width(contentWidth);
-
-            root = new Container<>(wrapper);
-            root.setFillParent(true);
-        }
-
-        public void update() {
-            String resultText = statsManager.getRoundOutcome() ? "Congratulations!" : "You Failed!";
-            resultTextLbl.setText(resultText);
-            lblScore.setText(String.valueOf(statsManager.getScore()));
         }
 
         @Override
-        public Group getRoot() {
-            return root;
+        public Dialog show(Stage stage, Action action) {
+            super.show(stage, action);
+            setPosition(stage.getWidth() / 2, stage.getHeight() / 2, Align.center);
+            return this;
+        }
+
+        public void update() {
+            String resultText = statsManager.isRoundWon() ? "Congratulations!" : "You Failed!";
+            switch (statsManager.getGameStats().getReasonOfLoss()) {
+                case NONE:
+                    lblMessage.setText("");
+                    break;
+                case ASTRONAUTS_LEFT:
+                    lblMessage.setText(astronautsLeft);
+                    break;
+                case OUT_OF_MOVES:
+                    lblMessage.setText(outOfMoves);
+                    break;
+                case OUT_OF_LIVES:
+                    lblMessage.setText(outOfLives);
+                    break;
+                case OUT_OF_TIME:
+                    lblMessage.setText(outOfTime);
+                    break;
+            }
+            lblResult.setText(resultText);
+            lblScore.setText(String.valueOf(statsManager.getScore()));
         }
     }
 
@@ -713,4 +776,94 @@ public class GameScreen extends ScreenBase implements Observer {
         }
     }
 
+    private class SecondLifeDialog extends Dialog {
+        private float contentSize;
+        private float buttonSize;
+
+        private ImageButton btnPlayOnFree, btnPlayOnAd, btnGiveUp;
+
+        public SecondLifeDialog(Skin skin, final AdManager adManager) {
+            super("", skin, "PickPowerUpDialog");
+
+            Label title, description;
+            title = UIFactory.createLabel("Oh no!", skin, "h3", Align.center);
+            description = UIFactory.createLabel("You're so close! You just need to focus more!", skin, "h4", Align.center);
+            description.setWrap(true);
+
+            btnPlayOnFree = UIFactory.createImageButton(skin, "ButtonPlayOnFree");
+            btnPlayOnFree.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    statsManager.giveExtraLife(5, 1, 30);
+                    hide(null);
+                    result(null);
+                }
+            });
+
+            btnPlayOnAd = UIFactory.createImageButton(skin, "ButtonPlayOnAd");
+            btnPlayOnAd.addListener(new ChangeListener() {
+                AdManager.AdRewardListener listener = new AdManager.AdRewardListener() {
+                    @Override
+                    public void reward(String type, int amount) {
+                        statsManager.giveExtraLife(5, 1, 30);
+                        hide(null);
+                        result(null);
+                    }
+                };
+
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    adManager.showAdForReward(listener);
+                }
+            });
+
+            btnGiveUp = UIFactory.createImageButton(skin, "ButtonGiveUp");
+            btnGiveUp.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    hide(null);
+                    result(null);
+                }
+            });
+
+            contentSize = WorldSettings.getDefaultDialogSize() - getPadLeft() - getPadRight();
+
+
+            Table content = getContentTable();
+            getCell(content).width(contentSize);
+            content.add(title).padBottom(contentSize * .02f).row();
+            content.add(description).width(contentSize * .9f).row();
+            content.padBottom(contentSize * .1f);
+
+            buttonSize = contentSize * WorldSettings.DefaultRatio.dialogButtonToContent();
+            Table buttons = getButtonTable();
+            getCell(buttons).width(contentSize);
+        }
+
+        @Override
+        public Dialog show(Stage stage, Action action) {
+            getButtonTable().clearChildren();
+
+            Cell firstButton;
+            if (statsManager.isSecondLifeAvailable()) {
+                firstButton = addButton(btnPlayOnFree);
+                statsManager.consumeSecondLife();
+            } else {
+                firstButton = addButton(btnPlayOnAd);
+            }
+
+            firstButton.padBottom(contentSize * .02f).row();
+            addButton(btnGiveUp, .85f).row();
+
+            return super.show(stage, action);
+        }
+
+        private Cell addButton(ImageButton btn) {
+            return addButton(btn, 1);
+        }
+
+        private Cell addButton(ImageButton btn, float percent) {
+            return getButtonTable().add(btn).height(buttonSize * percent);
+        }
+    }
 }

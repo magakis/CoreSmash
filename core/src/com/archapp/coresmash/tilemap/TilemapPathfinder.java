@@ -30,13 +30,13 @@ class TilemapPathfinder {
 
     // NOTE: current implementation is vulnerable to destroyLists that contains all balls around the center
     // tile effectively destroying every destroyable ball on the tilemap
-    public void getDestroyableTiles(List<TilemapTile> destroyList, List<TilemapTile> output) {
+    public void getDestroyableTiles(List<TilemapTile> output) {
         checked.clear();
         altered.clear();
         TilemapTile centerTile = null;
 
-        for (TilemapTile tile : destroyList) {
-            if (tile.getX() == 0 && tile.getY() == 0 && tile.getLayerId() == 0) {
+        for (TilemapTile tile : output) {
+            if (tile.getX() == 0 && tile.getY() == 0 && tile.getLayerID() == 0) {
                 centerTile = tile;
                 continue;
             }
@@ -47,8 +47,6 @@ class TilemapPathfinder {
                     altered.add(neighbour);
                 }
             }
-
-            output.add(tile);
         }
 
         validateAlteredTiles(output);
@@ -59,27 +57,6 @@ class TilemapPathfinder {
             if (!output.contains(centerTile))
                 output.add(centerTile);
         }
-    }
-
-    public void getDestroyableTiles(TilemapTile destroyed, List<TilemapTile> output) {
-        checked.clear();
-        altered.clear();
-
-        if (destroyed.getX() == 0 && destroyed.getY() == 0 && destroyed.getLayerId() == 0) {
-            if (!output.contains(destroyed))
-                output.add(destroyed);
-            return;
-        }
-
-        for (Side side : Side.values()) {
-            TilemapTile neighbour = destroyed.getNeighbour(side);
-            if (neighbour != null && !altered.contains(neighbour) && (neighbour.getTile() instanceof Breakable)) {
-                altered.add(neighbour);
-            }
-        }
-        output.add(destroyed);
-
-        validateAlteredTiles(output);
     }
 
     private void validateAlteredTiles(List<TilemapTile> output) {

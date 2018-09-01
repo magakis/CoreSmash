@@ -87,8 +87,12 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
         return worldMap.getLayerRotation(layer);
     }
 
+    public boolean tileExists(TilemapTile tile) {
+        return getTilemapTile(tile.getLayerID(), tile.getX(), tile.getY()) != null;
+    }
+
     public void removeTile(TilemapTile tmTile) {
-        removeTile(tmTile.getLayerId(), tmTile.getX(), tmTile.getY());
+        removeTile(tmTile.getLayerID(), tmTile.getX(), tmTile.getY());
     }
 
     /**
@@ -119,7 +123,7 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
             ((Destroyable) removed).onDestroy(tile, this);
         }
 
-        if (tile.getLayerId() == 0 && tile.getX() == 0 && tile.getY() == 0) {
+        if (tile.getLayerID() == 0 && tile.getX() == 0 && tile.getY() == 0) {
             notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
         }
     }
@@ -142,31 +146,12 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
         for (Side side : listSides) {
             if (tileHit.getNeighbour(side) == null) {
                 TilemapTile newTile = worldMap.placeTile(tileHit, tile, side);
-                if (newTile != null) { //
-                    addColorAvailable(newTile);
-                }
+                addColorAvailable(newTile);
                 tileList.add(newTile);
                 return newTile;
             }
         }
         throw new RuntimeException("No empty side on collided tile");
-    }
-
-    public void destroyTiles(TilemapTile tile) {
-        if (worldMap.isChained(tile.getLayerId())) {
-            pathfinder.getDestroyableTiles(tile, queuedForDeletion);
-            removeTile(queuedForDeletion);
-        } else {
-            removeTile(tile);
-        }
-    }
-
-    public void destroyTiles(int layer, int x, int y) {
-        TilemapTile tile = worldMap.getTilemapTile(layer, x, y);
-        if (tile == null)
-            throw new RuntimeException("Couldn't find tile at Layer:" + layer + " X: " + x + " Y:" + y);
-
-        destroyTiles(tile);
     }
 
     /* Assumes that all destroyed tiles come from the *same* layer! */
@@ -175,7 +160,7 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
 
         boolean containsCenterTile = false;
         for (TilemapTile tile : destroyList) {
-            if (tile.getX() == 0 && tile.getY() == 0 && tile.getLayerId() == 0) {
+            if (tile.getX() == 0 && tile.getY() == 0 && tile.getLayerID() == 0) {
                 containsCenterTile = true;
                 break;
             }
@@ -184,9 +169,9 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
         if (containsCenterTile) {
             removeTile(destroyList);
         } else {
-            if (worldMap.isChained(destroyList.get(0).getLayerId())) {
-                pathfinder.getDestroyableTiles(destroyList, queuedForDeletion);
-                removeTile(queuedForDeletion);
+            if (worldMap.isChained(destroyList.get(0).getLayerID())) {
+                pathfinder.getDestroyableTiles(destroyList);
+                removeTile(destroyList);
             } else {
                 removeTile(destroyList);
             }
@@ -238,8 +223,8 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
                 for (TilemapTile tile : tiles) {
                     if (tile.getTile().getTileType().getMajorType() == TileType.MajorType.ASTRONAUT)
                         ++astronautsFound;
-                    else
-                        addColorAvailable(tile);
+
+                    addColorAvailable(tile);
                 }
                 if (astronautsFound > 0)
                     notifyObservers(NotificationType.ASTRONAUTS_FOUND, astronautsFound);

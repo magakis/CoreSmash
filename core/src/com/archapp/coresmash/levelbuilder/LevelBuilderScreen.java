@@ -56,7 +56,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
@@ -928,7 +927,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 });
                 Table grpBallSpeed = createSliderGroup(lblBallSpeed, sldrBallSpeed);
 
-                sldrLauncherCooldown = new Slider(.08f, 3.2f, .04f, false, skin);
+                sldrLauncherCooldown = new Slider(.16f, 3.2f, .04f, false, skin);
                 lblLauncherCooldown = new Label(String.format(Locale.ENGLISH, "LauncherCD: %1.2f", sldrLauncherCooldown.getValue()), skin, "h5");
                 sldrLauncherCooldown.addListener(stopTouchDown);
                 sldrLauncherCooldown.addListener(new ChangeListener() {
@@ -1053,29 +1052,11 @@ public class LevelBuilderScreen extends ScreenBase {
                 };
 
                 activeLayer = levelBuilder.getLayer();
-                sldrMinRot = new Slider(0, 120, 1, false, skin);
+                sldrMinRot = new Slider(0, 150, 1, false, skin);
                 lblMinRot = new Label(String.format(Locale.ROOT, "Min:%3d", (int) sldrMinRot.getValue()), skin, "h5");
                 sldrMinRot.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        int min = (int) sldrMinRot.getValue();
-                        lblMinRot.setText(String.format(Locale.ROOT, "Min:%3d", min));
-                        levelBuilder.setMinSpeed(min);
-                    }
-                });
-                sldrMinRot.addListener(new DragListener() {
-                    @Override
-                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                        compute();
-                        return super.touchDown(event, x, y, pointer, button);
-                    }
-
-                    @Override
-                    public void drag(InputEvent event, float x, float y, int pointer) {
-                        compute();
-                    }
-
-                    private void compute() {
                         int min = (int) sldrMinRot.getValue();
                         int max = (int) sldrMaxRot.getValue();
                         if (Integer.compare(min, max) == 1) {
@@ -1083,34 +1064,15 @@ public class LevelBuilderScreen extends ScreenBase {
                         }
                         lblMinRot.setText(String.format(Locale.ROOT, "Min:%3d", min));
                         levelBuilder.setMinSpeed(min);
-
                     }
                 });
                 sldrMinRot.addListener(stopTouchDown);
 
-                sldrMaxRot = new Slider(0, 120, 1, false, skin);
+                sldrMaxRot = new Slider(0, 150, 1, false, skin);
                 lblMaxRot = new Label(String.format(Locale.ROOT, "Max:%3d", (int) sldrMaxRot.getValue()), skin, "h5");
                 sldrMaxRot.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        int max = (int) sldrMaxRot.getValue();
-                        lblMaxRot.setText(String.format(Locale.ROOT, "Max:%3d", max));
-                        levelBuilder.setMaxSpeed(max);
-                    }
-                });
-                sldrMaxRot.addListener(new DragListener() {
-                    @Override
-                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                        compute();
-                        return super.touchDown(event, x, y, pointer, button);
-                    }
-
-                    @Override
-                    public void drag(InputEvent event, float x, float y, int pointer) {
-                        compute();
-                    }
-
-                    private void compute() {
                         int min = (int) sldrMinRot.getValue();
                         int max = (int) sldrMaxRot.getValue();
                         if (Integer.compare(min, max) == 1) {
@@ -1122,29 +1084,11 @@ public class LevelBuilderScreen extends ScreenBase {
                 });
                 sldrMaxRot.addListener(stopTouchDown);
 
-                sldrOriginMinRot = new Slider(0, 120, 1, false, skin);
+                sldrOriginMinRot = new Slider(0, 150, 1, false, skin);
                 lblOriginMinRot = new Label(String.format(Locale.ROOT, "Min:%3d", (int) sldrOriginMinRot.getValue()), skin, "h5");
                 sldrOriginMinRot.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        int min = (int) sldrOriginMinRot.getValue();
-                        lblOriginMinRot.setText(String.format(Locale.ROOT, "Min:%3d", min));
-                        levelBuilder.setOriginMinSpeed(min);
-                    }
-                });
-                sldrOriginMinRot.addListener(new DragListener() {
-                    @Override
-                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                        compute();
-                        return super.touchDown(event, x, y, pointer, button);
-                    }
-
-                    @Override
-                    public void drag(InputEvent event, float x, float y, int pointer) {
-                        compute();
-                    }
-
-                    private void compute() {
                         int min = (int) sldrOriginMinRot.getValue();
                         int max = (int) sldrOriginMaxRot.getValue();
                         if (Integer.compare(min, max) == 1) {
@@ -1152,34 +1096,15 @@ public class LevelBuilderScreen extends ScreenBase {
                         }
                         lblOriginMinRot.setText(String.format(Locale.ROOT, "Min:%3d", min));
                         levelBuilder.setOriginMinSpeed(min);
-
                     }
                 });
                 sldrOriginMinRot.addListener(stopTouchDown);
 
-                sldrOriginMaxRot = new Slider(0, 120, 1, false, skin);
+                sldrOriginMaxRot = new Slider(0, 150, 1, false, skin);
                 lblOriginMaxRot = new Label(String.format(Locale.ROOT, "Max:%3d", (int) sldrOriginMaxRot.getValue()), skin, "h5");
                 sldrOriginMaxRot.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        int max = (int) sldrOriginMaxRot.getValue();
-                        lblOriginMaxRot.setText(String.format(Locale.ROOT, "Max:%3d", max));
-                        levelBuilder.setOriginMaxSpeed(max);
-                    }
-                });
-                sldrOriginMaxRot.addListener(new DragListener() {
-                    @Override
-                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                        compute();
-                        return super.touchDown(event, x, y, pointer, button);
-                    }
-
-                    @Override
-                    public void drag(InputEvent event, float x, float y, int pointer) {
-                        compute();
-                    }
-
-                    private void compute() {
                         int min = (int) sldrOriginMinRot.getValue();
                         int max = (int) sldrOriginMaxRot.getValue();
                         if (Integer.compare(min, max) == 1) {

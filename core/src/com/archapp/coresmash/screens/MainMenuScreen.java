@@ -67,8 +67,8 @@ public class MainMenuScreen extends ScreenBase {
         levelBuilderScreen = new LevelBuilderScreen(gameInstance);
         backgroundMusic = SoundManager.get().getMusicAsset("backgroundMusic");
         backgroundMusic.setLooping(true);
-        backgroundMusic.setVolume(.3f);
-//        backgroundMusic.play();
+        backgroundMusic.setVolume(.5f);
+        backgroundMusic.play();
     }
 
     @Override
@@ -148,7 +148,7 @@ public class MainMenuScreen extends ScreenBase {
         }
 
         private Container<ImageButton> newMenuButton() {
-            ImageButton bt = UIFactory.createImageButton(skin.getDrawable("ButtonPlay"), skin.newDrawable("ButtonPlay", Color.GRAY));
+            ImageButton bt = UIFactory.createImageButton(skin.getDrawable("ButtonMenuPlay"), skin.newDrawable("ButtonMenuPlay", Color.GRAY));
             bt.getImageCell().grow();
             bt.addListener(new ChangeListener() {
                 @Override

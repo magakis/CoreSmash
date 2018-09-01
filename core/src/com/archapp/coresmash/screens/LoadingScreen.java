@@ -124,6 +124,7 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("HourGlass.png");
         loadTexture("HeartIcon.png");
         loadTexture("Heart.png");
+        loadTexture("RedCross.png");
         loadTexture("CenterTileIndicator.png");
         loadTexture("LevelBuilderButton.png");
         loadTexture("SpikyBall.png");
@@ -135,16 +136,22 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("LotteryCoin.png");
         loadTexture("ButtonPowerup.png");
         loadTexture("ButtonLottery.png");
-        loadTexture("ButtonPlay.png");
+        loadTexture("ButtonMenuPlay.png");
+
         loadTexture("ButtonCancel.png");
-        loadTexture("ButtonStart.png");
+        loadTexture("ButtonPlay.png");
+        loadTexture("ButtonGiveUp.png");
+        loadTexture("ButtonPlayOnFree.png");
+        loadTexture("ButtonPlayOnAd.png");
         loadTexture("ButtonLevel.png");
-        loadTexture("ButtonOpen.png");
+        loadTexture("ButtonFreePick.png");
+        loadTexture("ButtonPick.png");
         loadTexture("ButtonClose.png");
         loadTexture("ButtonClaim.png");
-        loadTexture("ButtonRetry.png");
+        loadTexture("ButtonPickAgain.png");
         loadTexture("ButtonEditor.png");
         loadTexture("ButtonMenu.png");
+
         loadTexture("MenuBackground.png");
         loadTexture("CampaignBackground.png");
         loadTexture("BrightOuterDarkInner.png");
@@ -157,10 +164,10 @@ public class LoadingScreen extends ScreenBase {
     }
 
     private void loadSounds() {
-        am.load("BackgroundLoop.mp3", Music.class);
-        am.load(SOUND_DIR + "gamescreen_music.ogg", Music.class);
+        am.load(SOUND_DIR + "menu_music.ogg", Music.class);
+        am.load(SOUND_DIR + "game_music.ogg", Music.class);
 
-        am.load("blop.mp3", Sound.class);
+        am.load(SOUND_DIR + "blop.ogg", Sound.class);
         am.load("click.mp3", Sound.class);
         am.load(SOUND_DIR + "explosion1.ogg", Sound.class);
         am.load(SOUND_DIR + "launch1.ogg", Sound.class);
@@ -178,19 +185,19 @@ public class LoadingScreen extends ScreenBase {
         generateBitmapFont(18, "h4f.ttf");
 
         FreetypeFontLoader.FreeTypeFontLoaderParameter fontParams = new FreetypeFontLoader.FreeTypeFontLoaderParameter();
-        fontParams.fontFileName = "Gidole-Regular.ttf";
+        fontParams.fontFileName = "BubblegumSans.otf";
         fontParams.fontParameters.borderWidth = 1 * PPI;
         fontParams.fontParameters.size = (int) (36 * PPI);
         am.load("h2o.ttf", BitmapFont.class, fontParams);
 
         fontParams = new FreetypeFontLoader.FreeTypeFontLoaderParameter();
-        fontParams.fontFileName = "Gidole-Regular.ttf";
+        fontParams.fontFileName = "BubblegumSans.otf";
         fontParams.fontParameters.borderWidth = 1 * PPI;
         fontParams.fontParameters.size = (int) (24 * PPI);
         am.load("h3o.ttf", BitmapFont.class, fontParams);
 
         fontParams = new FreetypeFontLoader.FreeTypeFontLoaderParameter();
-        fontParams.fontFileName = "Gidole-Regular.ttf";
+        fontParams.fontFileName = "BubblegumSans.otf";
         fontParams.fontParameters.borderWidth = 1 * PPI;
         fontParams.fontParameters.size = (int) (18 * PPI);
         am.load("h4o.ttf", BitmapFont.class, fontParams);
@@ -198,14 +205,14 @@ public class LoadingScreen extends ScreenBase {
 
     private void setupSounds() {
         SoundManager soundManager = SoundManager.get();
-        soundManager.loadMusic("backgroundMusic", am.get("BackgroundLoop.mp3", Music.class));
-        soundManager.loadMusic("gamescreenMusic", am.get(SOUND_DIR + "gamescreen_music.ogg", Music.class));
+        soundManager.loadMusic("backgroundMusic", am.get(SOUND_DIR + "menu_music.ogg", Music.class));
+        soundManager.loadMusic("gamescreenMusic", am.get(SOUND_DIR + "game_music.ogg", Music.class));
 
-        soundManager.loadSound("regularBallDestroy", am.get("blop.mp3", Sound.class));
+        soundManager.loadSound("regularBallDestroy", am.get(SOUND_DIR + "blop.ogg", Sound.class));
         soundManager.loadSound("buttonClick", am.get("click.mp3", Sound.class));
         soundManager.loadSound("explosion1", am.get(SOUND_DIR + "explosion1.ogg", Sound.class));
         soundManager.loadSound("launch1", am.get(SOUND_DIR + "launch1.ogg", Sound.class));
-        soundManager.loadSound("releaseAstronaut", am.get(SOUND_DIR + "astronaut_release.ogg", Sound.class));
+        soundManager.loadSound("releaseAstronaut", am.get(SOUND_DIR + "astronaut_release.ogg", Sound.class), .6f);
     }
 
     private void setupFonts() {
@@ -221,7 +228,7 @@ public class LoadingScreen extends ScreenBase {
         Texture tex;
         NinePatch ninePatch;
         Color SlightGray = new Color(.9f, .9f, .9f, 1);
-        Color IntenseGray = new Color(0x808080ff);
+        Color IntenseGray = new Color(.4f, .4f, .4f, 1);
         /* Used as the Original Scale of each asset */
         float defScale = 0;
 
@@ -305,20 +312,28 @@ public class LoadingScreen extends ScreenBase {
         skin.add("heartIcon", am.get("HeartIcon.png"));
         skin.add("cardBack", am.get("LotteryCard.png"));
         skin.add("cardShade", am.get("CardRewardShade.png"));
-        skin.add("ButtonPlay", am.get("ButtonPlay.png"));
+        skin.add("ButtonMenuPlay", am.get("ButtonMenuPlay.png"));
         skin.add("Heart", am.get("Heart.png"));
+        skin.add("RedCross", am.get("RedCross.png"));
         skin.add("gameScreenTopRound", am.get("UIGameScreenTopRound.png"));
         skin.add("LotteryCoin", am.get("LotteryCoin.png"));
         skin.add("ButtonLottery", am.get("ButtonLottery.png"));
         skin.add("ButtonPowerup", am.get("ButtonPowerup.png"));
         skin.add("ButtonCancel", am.get("ButtonCancel.png"));
-        skin.add("ButtonStart", am.get("ButtonStart.png"));
-        skin.add("ButtonOpen", am.get("ButtonOpen.png"));
+        skin.add("ButtonMenuPlay", am.get("ButtonMenuPlay.png"));
+
+        skin.add("ButtonPlay", am.get("ButtonPlay.png"));
+        skin.add("ButtonGiveUp", am.get("ButtonGiveUp.png"));
+        skin.add("ButtonPlayOnFree", am.get("ButtonPlayOnFree.png"));
+        skin.add("ButtonPlayOnAd", am.get("ButtonPlayOnAd.png"));
+        skin.add("ButtonPick", am.get("ButtonPick.png"));
+        skin.add("ButtonFreePick", am.get("ButtonFreePick.png"));
         skin.add("ButtonMenu", am.get("ButtonMenu.png"));
         skin.add("ButtonClose", am.get("ButtonClose.png"));
         skin.add("ButtonClaim", am.get("ButtonClaim.png"));
-        skin.add("ButtonRetry", am.get("ButtonRetry.png"));
+        skin.add("ButtonPickAgain", am.get("ButtonPickAgain.png"));
         skin.add("ButtonLevel", am.get("ButtonLevel.png"));
+
         skin.add("MenuBackground", am.get("MenuBackground.png"));
         skin.add("CampaignBackground", am.get("CampaignBackground.png"));
 
@@ -425,10 +440,10 @@ public class LoadingScreen extends ScreenBase {
 
         //ImageButton
         ImageButton.ImageButtonStyle imgbs = new ImageButton.ImageButtonStyle();
-        imgbs.imageUp = skin.getDrawable("ButtonStart");
-        imgbs.imageDown = skin.newDrawable("ButtonStart", SlightGray);
-        imgbs.imageDisabled = skin.newDrawable("ButtonStart", Color.DARK_GRAY);
-        skin.add("ButtonStart", imgbs);
+        imgbs.imageUp = skin.getDrawable("ButtonPlay");
+        imgbs.imageDown = skin.newDrawable("ButtonPlay", SlightGray);
+        imgbs.imageDisabled = skin.newDrawable("ButtonPlay", Color.DARK_GRAY);
+        skin.add("ButtonPlay", imgbs);
 
         imgbs = new ImageButton.ImageButtonStyle();
         imgbs.imageUp = skin.getDrawable("ButtonCancel");
@@ -449,10 +464,10 @@ public class LoadingScreen extends ScreenBase {
         skin.add("ButtonClose", imgbs);
 
         imgbs = new ImageButton.ImageButtonStyle();
-        imgbs.imageUp = skin.getDrawable("ButtonRetry");
-        imgbs.imageDown = skin.newDrawable("ButtonRetry", Color.DARK_GRAY);
-        imgbs.imageDisabled = skin.newDrawable("ButtonRetry", Color.DARK_GRAY);
-        skin.add("ButtonRetry", imgbs);
+        imgbs.imageUp = skin.getDrawable("ButtonPickAgain");
+        imgbs.imageDown = skin.newDrawable("ButtonPickAgain", Color.DARK_GRAY);
+        imgbs.imageDisabled = skin.newDrawable("ButtonPickAgain", Color.DARK_GRAY);
+        skin.add("ButtonPickAgain", imgbs);
 
         imgbs = new ImageButton.ImageButtonStyle();
         imgbs.imageUp = skin.getDrawable("ButtonClaim");
@@ -461,10 +476,34 @@ public class LoadingScreen extends ScreenBase {
         skin.add("ButtonClaim", imgbs);
 
         imgbs = new ImageButton.ImageButtonStyle();
-        imgbs.imageUp = skin.getDrawable("ButtonOpen");
-        imgbs.imageDown = skin.newDrawable("ButtonOpen", SlightGray);
-        imgbs.imageDisabled = skin.newDrawable("ButtonOpen", Color.DARK_GRAY);
-        skin.add("ButtonOpen", imgbs);
+        imgbs.imageUp = skin.getDrawable("ButtonPick");
+        imgbs.imageDown = skin.newDrawable("ButtonPick", SlightGray);
+        imgbs.imageDisabled = skin.newDrawable("ButtonPick", Color.DARK_GRAY);
+        skin.add("ButtonPick", imgbs);
+
+        imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.imageUp = skin.getDrawable("ButtonPlayOnFree");
+        imgbs.imageDown = skin.newDrawable("ButtonPlayOnFree", SlightGray);
+        imgbs.imageDisabled = skin.newDrawable("ButtonPlayOnFree", Color.DARK_GRAY);
+        skin.add("ButtonPlayOnFree", imgbs);
+
+        imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.imageUp = skin.getDrawable("ButtonPlayOnAd");
+        imgbs.imageDown = skin.newDrawable("ButtonPlayOnAd", SlightGray);
+        imgbs.imageDisabled = skin.newDrawable("ButtonPlayOnAd", Color.DARK_GRAY);
+        skin.add("ButtonPlayOnAd", imgbs);
+
+        imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.imageUp = skin.getDrawable("ButtonFreePick");
+        imgbs.imageDown = skin.newDrawable("ButtonFreePick", SlightGray);
+        imgbs.imageDisabled = skin.newDrawable("ButtonFreePick", Color.DARK_GRAY);
+        skin.add("ButtonFreePick", imgbs);
+
+        imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.imageUp = skin.getDrawable("ButtonGiveUp");
+        imgbs.imageDown = skin.newDrawable("ButtonGiveUp", SlightGray);
+        imgbs.imageDisabled = skin.newDrawable("ButtonGiveUp", Color.DARK_GRAY);
+        skin.add("ButtonGiveUp", imgbs);
 
         imgbs = new ImageButton.ImageButtonStyle();
         imgbs.imageUp = skin.getDrawable("ButtonMenu");
@@ -549,7 +588,7 @@ public class LoadingScreen extends ScreenBase {
 
     private void generateBitmapFont(int size, String name) {
         FreetypeFontLoader.FreeTypeFontLoaderParameter fontParams = new FreetypeFontLoader.FreeTypeFontLoaderParameter();
-        fontParams.fontFileName = "Gidole-Regular.ttf";
+        fontParams.fontFileName = "BubblegumSans.otf";
         fontParams.fontParameters.size = (int) (size * PPI);
         am.load(name, BitmapFont.class, fontParams);
     }

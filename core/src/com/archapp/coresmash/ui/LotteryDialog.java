@@ -1,5 +1,6 @@
 package com.archapp.coresmash.ui;
 
+import com.archapp.coresmash.AdManager;
 import com.archapp.coresmash.Lottery;
 import com.archapp.coresmash.UserAccount;
 import com.archapp.coresmash.WorldSettings;
@@ -34,12 +35,12 @@ public class LotteryDialog extends Dialog {
     final private UserAccount.CurrencyManager currencies;
 
     private CardButton[] cardButtons;
-    private ImageButton btnClose, btnOpen, btnClaim, btnRetry;
+    private ImageButton btnClose, btnOpen, btnClaim, btnRetry, btnFreePick;
     private Lottery lottery;
     private Reward reward;
 
 
-    public LotteryDialog(Skin sk, UserAccount.CurrencyManager currencyManager) {
+    public LotteryDialog(Skin sk, UserAccount.CurrencyManager currencyManager, final AdManager adManager) {
         super("", sk, "PickPowerUpDialog");
         currencies = currencyManager;
         skin = sk;
@@ -58,19 +59,13 @@ public class LotteryDialog extends Dialog {
             }
         });
 
-        btnOpen = UIFactory.createImageButton(skin, "ButtonOpen");
+        btnOpen = UIFactory.createImageButton(skin, "ButtonPick");
         btnOpen.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (currencies.isCurrencyAvailable(LOTTERY_COIN)) {
                     currencies.consumeCurrency(LOTTERY_COIN);
-
-                    for (CardButton btn : cardButtons) {
-                        btn.setDisabled(false);
-                    }
-
-                    getButtonTable().clearChildren();
-                    pack();
+                    pickACard();
                 } else {
                     throw new RuntimeException("Coins:" + currencies.getAmountOf(LOTTERY_COIN));
                 }
@@ -85,16 +80,34 @@ public class LotteryDialog extends Dialog {
             }
         });
 
-        btnRetry = UIFactory.createImageButton(skin, "ButtonRetry");
+        btnRetry = UIFactory.createImageButton(skin, "ButtonPickAgain");
         btnRetry.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 result(reward);
-                restart();
-                btnOpen.setChecked(!btnOpen.isChecked()); // trigger ChangeListener of button
+                if (currencies.isCurrencyAvailable(LOTTERY_COIN)) {
+                    currencies.consumeCurrency(LOTTERY_COIN);
+                    pickACard();
+                } else {
+                    throw new RuntimeException("Coins:" + currencies.getAmountOf(LOTTERY_COIN));
+                }
             }
         });
 
+        btnFreePick = UIFactory.createImageButton(skin, "ButtonFreePick");
+        btnFreePick.addListener(new ChangeListener() {
+            AdManager.AdRewardListener listener = new AdManager.AdRewardListener() {
+                @Override
+                public void reward(String type, int amount) {
+                    pickACard();
+                }
+            };
+
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                adManager.showAdForReward(listener);
+            }
+        });
 
         cardButtons = new CardButton[3];
         for (int i = 0; i < cardButtons.length; ++i) {
@@ -129,9 +142,13 @@ public class LotteryDialog extends Dialog {
                             , Actions.run(new Runnable() {
                                 @Override
                                 public void run() {
+                                    if (currencies.isCurrencyAvailable(LOTTERY_COIN))
+                                        showImageButton(btnRetry);
+                                    else
+                                        showImageButton(btnFreePick);
+
                                     showImageButton(btnClaim);
-                                    showImageButton(btnRetry);
-                                    btnRetry.setDisabled(!currencies.isCurrencyAvailable(LOTTERY_COIN));
+                                    result(reward);
                                     pack();
                                 }
                             })
@@ -163,7 +180,7 @@ public class LotteryDialog extends Dialog {
             }
         });
 
-        getButtonTable().defaults().space((contentWidth - 2 * (contentWidth * buttonRatio)) / 4);
+        getButtonTable().defaults().expandX();//space((contentWidth - 2 * (contentWidth * buttonRatio)) / 4);
     }
 
 
@@ -173,22 +190,42 @@ public class LotteryDialog extends Dialog {
         return super.show(stage);
     }
 
-    private void restart() {
+    private void pickACard() {
+        resetCards();
+        enableCards();
+        getButtonTable().clearChildren();
+        pack();
+    }
+
+    private void enableCards() {
+        for (CardButton btn : cardButtons) {
+            btn.setDisabled(false);
+        }
+    }
+
+    private void resetCards() {
         for (CardButton btn : cardButtons) {
             btn.setDisabled(true);
             btn.hideReward();
         }
+    }
+
+    private void restart() {
+        resetCards();
         getButtonTable().clearChildren();
-        showImageButton(btnOpen);
+        if (currencies.isCurrencyAvailable(LOTTERY_COIN))
+            showImageButton(btnOpen);
+        else
+            showImageButton(btnFreePick);
+
         showImageButton(btnClose);
-        btnOpen.setDisabled(!currencies.isCurrencyAvailable(LOTTERY_COIN));
         reward.reset();
     }
 
     private void showImageButton(ImageButton button) {
         float buttonSize = contentWidth * buttonRatio;
         Table table = getButtonTable();
-        table.add(button).width(buttonSize).height(UIUtils.getHeightFor(button.getImage().getDrawable(), buttonSize));
+        table.add(button).height(buttonSize).width(UIUtils.getWidthFor(button.getImage().getDrawable(), buttonSize));
     }
 
     public static class Reward {

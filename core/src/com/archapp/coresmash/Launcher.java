@@ -2,6 +2,7 @@ package com.archapp.coresmash;
 
 import com.archapp.coresmash.managers.MovingBallManager;
 import com.archapp.coresmash.managers.RenderManager;
+import com.archapp.coresmash.managers.StatsManager;
 import com.archapp.coresmash.tilemap.TilemapManager;
 import com.archapp.coresmash.tiles.Launchable;
 import com.archapp.coresmash.tiles.MovingBall;
@@ -14,6 +15,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Random;
 
+/* We need a new Launcher BOYYSSS. This one is disgusting */
 public class Launcher extends Observable {
     private Queue<MovingBall> launcher;
     private ChanceColorPicker chanceColorPicker;
@@ -97,13 +99,21 @@ public class Launcher extends Observable {
         return chanceColorPicker.get();
     }
 
-    public void fillLauncher(TilemapManager tilemapManager) {
-        while(launcher.size < launcherSize) {
+    public void fillLauncher(TilemapManager tilemapManager, StatsManager statsManager) {
+        int maxSize;
+        if (statsManager.isMovesEnabled())
+            maxSize = launcherSize <= statsManager.getMoves() ? launcherSize : statsManager.getMoves();
+        else
+            maxSize = launcherSize;
+
+
+        while (launcher.size < maxSize) {
             loadLauncher(tilemapManager);
         }
     }
 
     public void loadLauncher(TilemapManager tilemapManager) {
+        if (launcher.size == launcherSize) throw new RuntimeException("ff");
         loadLauncher(getColorBasedOnTilemap(tilemapManager));
     }
 
@@ -149,22 +159,8 @@ public class Launcher extends Observable {
     public void insertSpecialTile(int id) {
         // TODO(21/4/2018): This function should know anything about the specialTile...
         if (!isLoadedWithSpecial) {
-            switch (id) {
-                case 101:
-                    //TODO: WORK ON THIS
-                    launcher.addFirst(movingBallManager.create(launcherPos.x, launcherPos.y + ballSize, 101));
-                    launcher.first().setScale(.8f);
-                    isLoadedWithSpecial = true;
-                    break;
-                case 102:
-                    //TODO: WORK ON THIS
-                    launcher.addFirst(movingBallManager.create(launcherPos.x, launcherPos.y + ballSize, 102));
-                    launcher.first().setScale(.8f);
-                    isLoadedWithSpecial = true;
-                    break;
-                default:
-                    throw new RuntimeException("FUCK YOU FOR DESIGNING IT THIS WAY!!!");
-            }
+            launcher.addFirst(movingBallManager.create(launcherPos.x, launcherPos.y + ballSize, id));
+            isLoadedWithSpecial = true;
         }
     }
 
@@ -179,7 +175,7 @@ public class Launcher extends Observable {
         private Comparator sortColors = new Comparator<ColorGroup>() {
             @Override
             public int compare(ColorGroup o1, ColorGroup o2) {
-                return o1.groupColor > o2.groupColor ? 1 : -1;
+                return Integer.compare(o1.groupColor, o2.groupColor);
             }
         };
 

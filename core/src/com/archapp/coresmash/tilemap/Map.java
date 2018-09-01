@@ -120,7 +120,7 @@ public class Map extends Observable implements TilemapCollection {
     }
 
     public TilemapTile placeTile(TilemapTile tmTile, Tile tile, Side side) {
-        TilemapTile newTile = tilemaps.get(tmTile.getLayerId()).putTilemapTile(tmTile, tile, side);
+        TilemapTile newTile = tilemaps.get(tmTile.getLayerID()).putTilemapTile(tmTile, tile, side);
         return newTile;
     }
 
@@ -161,7 +161,7 @@ public class Map extends Observable implements TilemapCollection {
     public void removeTile(List<TilemapTile> forRemoval) {
         assert forRemoval.size() != 0;
 
-        tilemaps.get(forRemoval.get(0).getLayerId()).destroyTilemapTile(forRemoval);
+        tilemaps.get(forRemoval.get(0).getLayerID()).destroyTilemapTile(forRemoval);
     }
 
     public TilemapTile removeTile(int layer, int x, int y) {

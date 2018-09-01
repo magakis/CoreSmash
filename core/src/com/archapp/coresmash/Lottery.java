@@ -13,16 +13,16 @@ public class Lottery {
     private Random rand;
     private int totalChances;
 
+    /* It also supports null as 'no reward' but it's not used atm */
     public Lottery() {
         rand = new Random();
         items = new ArrayList<>(10);
 
-        items.add(new Item(null, 0, 10));
-        items.add(new Item(PowerupType.FIREBALL, 1, 7));
-        items.add(new Item(PowerupType.FIREBALL, 2, 2));
+        items.add(new Item(PowerupType.FIREBALL, 1, 15));
+        items.add(new Item(PowerupType.FIREBALL, 2, 4));
         items.add(new Item(PowerupType.FIREBALL, 3, 1));
-        items.add(new Item(PowerupType.COLORBOMB, 1, 7));
-        items.add(new Item(PowerupType.COLORBOMB, 2, 2));
+        items.add(new Item(PowerupType.COLORBOMB, 1, 15));
+        items.add(new Item(PowerupType.COLORBOMB, 2, 4));
         items.add(new Item(PowerupType.COLORBOMB, 3, 1));
 
         Collections.sort(items, new Comparator<Item>() {

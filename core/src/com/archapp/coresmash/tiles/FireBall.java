@@ -20,7 +20,7 @@ public class FireBall extends Tile implements Launchable {
 
     @Override
     public void onCollide(MovingBall movingBall, TilemapTile tileHit, GameController controller) {
-        DestroyRadiusEffect.newInstance(2, tileHit.getLayerId(), tileHit.getX(), tileHit.getY())
+        DestroyRadiusEffect.newInstance(2, tileHit.getLayerID(), tileHit.getX(), tileHit.getY())
                 .apply(controller.getBehaviourPack().tilemapManager);
         explosionSound.play();
     }
