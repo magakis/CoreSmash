@@ -110,24 +110,17 @@ public class LoadingScreen extends ScreenBase {
     }
 
     private void loadAllTextures() {
-        loadTexture("cog.png");
         loadTexture("DefaultUserIcon.png");
         loadTexture("toast1.png");
-        loadTexture("GameScreenTop.png");
         loadTexture("softGray.png");
         loadTexture("progressbar_inner.png");
         loadTexture("map.png");
-        loadTexture("BorderTrans.png");
         loadTexture("default.png");
         loadTexture("UIGameScreenTopRound.png");
-        loadTexture("MovesIcon.png");
-        loadTexture("HourGlass.png");
-        loadTexture("HeartIcon.png");
         loadTexture("Heart.png");
         loadTexture("RedCross.png");
         loadTexture("CenterTileIndicator.png");
         loadTexture("LevelBuilderButton.png");
-        loadTexture("SpikyBall.png");
         loadTexture("UserBoardBackground.png");
         loadTexture("LotteryCard.png");
         loadTexture("CardRewardShade.png");
@@ -156,9 +149,6 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("CampaignBackground.png");
         loadTexture("BrightOuterDarkInner.png");
         loadTexture("FrameColored.png");
-        loadTexture("BoardTime.png");
-        loadTexture("BoardScore.png");
-        loadTexture("BoardCenter.png");
 
         am.load("atlas/gameui.atlas", TextureAtlas.class);
     }
@@ -247,17 +237,10 @@ public class LoadingScreen extends ScreenBase {
         ninePatch = new NinePatch(am.get("toast1.png", Texture.class), 15, 15, 15, 15);
         skin.add("toast1", ninePatch);
 
-        ninePatch = new NinePatch(am.get("BorderTrans.png", Texture.class), 5, 5, 5, 5);
-        skin.add("borderTrans", ninePatch);
-
         ninePatch = new NinePatch(am.get("progressbar_inner.png", Texture.class), 7, 7, 7, 7);
         defScale = .5f * PPI;
         ninePatch.scale(defScale, defScale);
         skin.add("progressbar_inner", ninePatch);
-
-        ninePatch = new NinePatch(am.get("GameScreenTop.png", Texture.class), 24, 24, 24, 24);
-        ninePatch.scale(.5f, .5f);
-        skin.add("gameScreenTop", ninePatch);
 
         ninePatch = new NinePatch(am.get("LevelBuilderButton.png", Texture.class), 15, 15, 15, 15);
         defScale = .5f;
@@ -306,10 +289,8 @@ public class LoadingScreen extends ScreenBase {
         tex = new Texture(pix);
         skin.add("invisible", tex);
 
-        skin.add("cog", am.get("cog.png"));
         skin.add("DefaultUserIcon", am.get("DefaultUserIcon.png"));
         skin.add("map", am.get("map.png"));
-        skin.add("heartIcon", am.get("HeartIcon.png"));
         skin.add("cardBack", am.get("LotteryCard.png"));
         skin.add("cardShade", am.get("CardRewardShade.png"));
         skin.add("ButtonMenuPlay", am.get("ButtonMenuPlay.png"));
@@ -340,6 +321,7 @@ public class LoadingScreen extends ScreenBase {
         TextureAtlas atlas = am.get("atlas/gameui.atlas");
 
         skin.add("timeIcon", atlas.findRegion("HourGlass"), TextureRegion.class);
+        skin.add("heartIcon", atlas.findRegion("HeartIcon"), TextureRegion.class);
         skin.add("movesIcon", atlas.findRegion("MovesIcon"), TextureRegion.class);
         skin.add("BoardTime", atlas.findRegion("BoardTime"), TextureRegion.class);
         skin.add("BoardScore", atlas.findRegion("BoardScore"), TextureRegion.class);
@@ -383,7 +365,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("modeButton", stb);
 
         stb = new TextButton.TextButtonStyle();
-        stb.up = skin.newDrawable("borderTrans", Color.WHITE);
+        stb.up = skin.newDrawable("boxSmall", Color.WHITE);
         stb.down = skin.newDrawable("boxSmall", Color.GRAY);
         stb.checked = stb.up;
         stb.font = skin.getFont("h4");

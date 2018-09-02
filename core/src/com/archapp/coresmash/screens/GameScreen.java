@@ -464,6 +464,7 @@ public class GameScreen extends ScreenBase implements Observer {
             centerTable.setBackground(skin.getDrawable("BoardCenter"));
 
             board = new Table(skin);
+            board.defaults().space(0);
             board.columnDefaults(0).expandX().padBottom(lblTime.getPrefHeight() / 6);
             board.columnDefaults(1);
             board.columnDefaults(2).expandX().padBottom(lblScore.getPrefHeight() / 6);
