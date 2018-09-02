@@ -1,18 +1,38 @@
 package com.archapp.coresmash.sound;
 
+import com.archapp.coresmash.GameSettings;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.utils.ObjectMap;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 public class SoundManager {
     private static SoundManager instance = new SoundManager();
-    private ObjectMap<String, SoundEffect> soundList;
-    private ObjectMap<String, MusicAsset> musicList;
+    private ObjectMap<SoundTrack, SoundEffect> soundList;
+    private ObjectMap<MusicTrack, MusicAsset> musicList;
     private List<SoundEffect> playlist;
+
+    private static final float BACKGROUND_MUSIC_VOLUME = 0.5f;
+
+    private boolean inGame;
+    private MusicAsset menuMusic, gameMusic;
+
+    public enum MusicTrack {
+        MENU_MUSIC, GAME_MUSIC
+    }
+
+    public enum SoundTrack {
+        BUTTON_CLICK,
+        REGULAR_BALL_DESTROY,
+        FIREBALL_EXPLOSION,
+        FIREBALL_LAUNCH,
+        ASTRONAUT_RELEASE
+    }
 
     public static SoundManager get() {
         return instance;
@@ -22,6 +42,29 @@ public class SoundManager {
         soundList = new ObjectMap<>();
         musicList = new ObjectMap<>();
         playlist = new ArrayList<>();
+
+        GameSettings.get().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                boolean newValue = (boolean) event.getNewValue();
+
+                if (event.getPropertyName().equals(GameSettings.GAME_MUSIC_ENABLED)) {
+                    if (inGame) {
+                        if (newValue)
+                            gameMusic.play();
+                        else
+                            gameMusic.pause();
+                    }
+                } else if (event.getPropertyName().equals(GameSettings.MENU_MUSIC_ENABLED)) {
+                    if (!inGame) {
+                        if (newValue)
+                            menuMusic.play();
+                        else
+                            menuMusic.pause();
+                    }
+                }
+            }
+        });
     }
 
     public void update(float delta) {
@@ -36,48 +79,92 @@ public class SoundManager {
         }
     }
 
-    public void loadSound(String assetName, Sound sound) {
-        loadSound(assetName, sound, 1);
+    public void play(SoundTrack track) {
+        getSoundAsset(track).play();
     }
 
-    public void loadSound(String assetName, Sound sound, float volume) {
-        soundList.put(assetName, new SoundEffect(assetName, sound, volume));
+
+    public void playGameMusic() {
+        inGame = true;
+        menuMusic.pause();
+        if (GameSettings.get().isGameMusicEnabled()) {
+            if (!gameMusic.sound.isPlaying()) {
+                gameMusic.play();
+            }
+        }
     }
 
-    public void loadMusic(String assetName, Music sound) {
-        musicList.put(assetName, new MusicAsset(assetName, sound));
+    public void playMenuMusic() {
+        inGame = false;
+        gameMusic.stop();
+        if (GameSettings.get().isMenuMusicEnabled()) {
+            if (!menuMusic.sound.isPlaying()) {
+                menuMusic.play();
+            }
+        }
     }
 
-    public SoundEffect getSoundAsset(String assetName) {
-        if (!soundList.containsKey(assetName))
-            throw new RuntimeException("Sound not loaded: " + assetName);
-        return soundList.get(assetName);
+    public void setMenuMusic(MusicTrack track) {
+        boolean playing = menuMusic != null && menuMusic.sound.isPlaying();
+
+        menuMusic = getMusicAsset(track);
+        menuMusic.setLooping(true);
+        menuMusic.setVolume(BACKGROUND_MUSIC_VOLUME);
+        if (playing)
+            menuMusic.play();
     }
 
-    public MusicAsset getMusicAsset(String assetName) {
-        if (!musicList.containsKey(assetName))
-            throw new RuntimeException("Music not loaded: " + assetName);
-        return musicList.get(assetName);
+    public void setGameMusic(MusicTrack track) {
+        boolean playing = gameMusic != null && gameMusic.sound.isPlaying();
+
+        gameMusic = getMusicAsset(track);
+        gameMusic.setLooping(true);
+        gameMusic.setVolume(BACKGROUND_MUSIC_VOLUME);
+        if (playing)
+            gameMusic.play();
+    }
+
+    public void loadSound(SoundTrack track, Sound sound) {
+        loadSound(track, sound, 1);
+    }
+
+    public void loadSound(SoundTrack track, Sound sound, float volume) {
+        soundList.put(track, new SoundEffect(sound, volume));
+    }
+
+    public void loadMusic(MusicTrack track, Music sound) {
+        musicList.put(track, new MusicAsset(sound));
+    }
+
+    private SoundEffect getSoundAsset(SoundTrack track) {
+        if (!soundList.containsKey(track))
+            throw new RuntimeException("Sound not loaded: " + track);
+        return soundList.get(track);
+    }
+
+    private MusicAsset getMusicAsset(MusicTrack track) {
+        if (!musicList.containsKey(track))
+            throw new RuntimeException("Music not loaded: " + track);
+        return musicList.get(track);
     }
 
     public class SoundEffect {
         private Sound sound;
-        private String soundName;
         private float volume;
         private int playCount;
 
-        private SoundEffect(String name, Sound sound) {
-            this(name, sound, 1);
+        private SoundEffect(Sound sound) {
+            this(sound, 1);
         }
 
-        private SoundEffect(String name, Sound sound, float volume) {
-            soundName = name;
+        private SoundEffect(Sound sound, float volume) {
             this.sound = sound;
             this.volume = volume;
         }
 
         private void playSound() {
-            sound.play(volume);
+            if (GameSettings.get().isSoundEffectsEnabled())
+                sound.play(volume);
         }
 
         public void setVolume(float volume) {
@@ -105,10 +192,8 @@ public class SoundManager {
 
     public static class MusicAsset {
         private Music sound;
-        private String soundName;
 
-        private MusicAsset(String name, Music sound) {
-            soundName = name;
+        private MusicAsset(Music sound) {
             this.sound = sound;
         }
 
@@ -133,10 +218,6 @@ public class SoundManager {
 
         public void stop() {
             sound.stop();
-        }
-
-        public String getSoundName() {
-            return soundName;
         }
     }
 }

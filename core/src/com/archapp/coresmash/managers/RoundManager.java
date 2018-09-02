@@ -11,7 +11,7 @@ import com.badlogic.gdx.Gdx;
 
 import java.util.Random;
 
-public class StatsManager extends Observable implements Observer {
+public class RoundManager extends Observable implements Observer {
     private Random rand = new Random();
     private PowerupCase powerupCase;
     private GameStats gameStats;
@@ -23,7 +23,7 @@ public class StatsManager extends Observable implements Observer {
     private int scoreThisFrame;
 
 
-    public StatsManager() {
+    public RoundManager() {
         powerupCase = new PowerupCase();
         gameStats = new GameStats();
     }
@@ -100,29 +100,25 @@ public class StatsManager extends Observable implements Observer {
      * @return true should end the game and false should not
      */
     public boolean checkEndingConditions(MovingBallManager ballManager) {
-        if (gameTerminated) {
-            stopGame();
+        if (gameTerminated || gameStats.isRoundWon) {
             return true;
         }
 
         if (gameStats.timeEnabled && gameStats.timeLeft <= 0) {
-            stopGame();
             gameStats.reasonOfLoss = ReasonOfLoss.OUT_OF_TIME;
             return true;
         }
 
         if (gameStats.livesEnabled && gameStats.livesLeft == 0) {
-            stopGame();
             gameStats.reasonOfLoss = ReasonOfLoss.OUT_OF_LIVES;
             return true;
         }
 
         if (gameStats.movesEnabled && gameStats.movesLeft == 0 && !ballManager.hasActiveBalls()) {
-            stopGame();
             gameStats.reasonOfLoss = ReasonOfLoss.OUT_OF_MOVES;
             return true;
-
         }
+
         return false;
     }
 
@@ -135,7 +131,6 @@ public class StatsManager extends Observable implements Observer {
     }
 
     public boolean isRoundWon() {
-        if (!gameTerminated) throw new IllegalStateException("The game is still running?!");
         return gameStats.isRoundWon;
     }
 

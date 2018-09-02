@@ -1,7 +1,7 @@
 package com.archapp.coresmash.levels;
 
 import com.archapp.coresmash.GameController;
-import com.archapp.coresmash.managers.StatsManager;
+import com.archapp.coresmash.managers.RoundManager;
 import com.archapp.coresmash.tilemap.TilemapManager;
 
 /**
@@ -14,7 +14,7 @@ public abstract class Level {
 
     public abstract void update(float delta, TilemapManager tilemapManager);
 
-    public abstract void end(StatsManager.GameStats stats);
+    public abstract void end(RoundManager.GameStats stats);
 
     public abstract int getLevelNumber();
 }

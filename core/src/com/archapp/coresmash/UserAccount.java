@@ -1,6 +1,6 @@
 package com.archapp.coresmash;
 
-import com.archapp.coresmash.managers.StatsManager;
+import com.archapp.coresmash.managers.RoundManager;
 import com.archapp.coresmash.tiles.TileType;
 import com.badlogic.gdx.Gdx;
 
@@ -90,7 +90,7 @@ public class UserAccount {
         return totalProgress.getValue();
     }
 
-    public void saveStats(StatsManager.GameStats stats) {
+    public void saveStats(RoundManager.GameStats stats) {
         int score = stats.getTotalScore();
         if (stats.isRoundWon()) { // WON
             heartManager.restoreHeart();

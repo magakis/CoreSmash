@@ -27,6 +27,7 @@ public final class UIFactory {
 
     public static ImageButton createImageButton(Skin skin, String style) {
         ImageButton button = new ImageButton(skin, style);
+        button.getImageCell().grow();
         button.addListener(UIUtils.getButtonSoundListener());
         return button;
     }

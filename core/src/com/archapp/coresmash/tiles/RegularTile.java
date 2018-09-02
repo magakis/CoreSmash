@@ -9,16 +9,13 @@ import com.archapp.coresmash.tiles.TileContainer.Side;
 import java.util.List;
 
 public class RegularTile extends Tile implements Launchable, Matchable, Breakable {
-    private SoundManager.SoundEffect destroySound;
 
     RegularTile(TileType type) {
         super(type);
-        destroySound = SoundManager.get().getSoundAsset("regularBallDestroy");
     }
 
     @Override
     public void onLaunch() {
-
     }
 
     @Override
@@ -36,7 +33,7 @@ public class RegularTile extends Tile implements Launchable, Matchable, Breakabl
 
     @Override
     public void onDestroy(TilemapTile self, TilemapManager manager) {
-        destroySound.play();
+        SoundManager.get().play(SoundManager.SoundTrack.REGULAR_BALL_DESTROY);
     }
 
     @Override

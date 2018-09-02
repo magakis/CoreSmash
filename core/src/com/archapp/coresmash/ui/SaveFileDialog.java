@@ -47,7 +47,7 @@ public class SaveFileDialog extends Dialog {
                 return Character.isLetterOrDigit(c) || c == '_';
             }
         });
-        textField.setMaxLength(20);
+        textField.setMaxLength(24);
 
         dlgConfirmOverwrite = new Dialog("", skin) {
             @Override

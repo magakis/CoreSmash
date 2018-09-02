@@ -11,8 +11,8 @@ import com.archapp.coresmash.WorldSettings;
 import com.archapp.coresmash.levelbuilder.LevelListParser;
 import com.archapp.coresmash.levelbuilder.LevelListParser.RegisteredLevel;
 import com.archapp.coresmash.levels.CampaignArea.LevelButton;
-import com.archapp.coresmash.managers.StatsManager;
-import com.archapp.coresmash.managers.StatsManager.GameStats;
+import com.archapp.coresmash.managers.RoundManager;
+import com.archapp.coresmash.managers.RoundManager.GameStats;
 import com.archapp.coresmash.screens.GameScreen;
 import com.archapp.coresmash.screens.ScreenBase;
 import com.archapp.coresmash.sound.SoundManager;
@@ -23,10 +23,12 @@ import com.archapp.coresmash.ui.LotteryDialog;
 import com.archapp.coresmash.ui.UIComponent;
 import com.archapp.coresmash.ui.UIFactory;
 import com.archapp.coresmash.ui.UIUtils;
+import com.archapp.coresmash.utlis.FileUtils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -175,10 +177,10 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             @Override
             public void initialize(GameController controller) {
                 controller.loadLevelMap(level.name, LevelListParser.Source.INTERNAL);
-                StatsManager statsManager = controller.getBehaviourPack().statsManager;
-                statsManager.setLevel(level.num, gameInstance.getUserAccount().getUnlockedLevels());
+                RoundManager roundManager = controller.getBehaviourPack().roundManager;
+                roundManager.setLevel(level.num, gameInstance.getUserAccount().getUnlockedLevels());
                 for (Powerup powerup : powerups) {
-                    statsManager.enablePowerup(powerup.type, powerup.count);
+                    roundManager.enablePowerup(powerup.type, powerup.count);
                 }
             }
 
@@ -228,8 +230,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
     private static class UIRightBar implements UIComponent {
         private final float BUTTON_SIZE;
-        private Container<Container<VerticalGroup>> root;
+        private Container<Table> root;
         private final LotteryButton lotteryButton;
+        private final HowToPlayDialog howToPlayDialog;
         private final HeartButton heartButton;
 
         UIRightBar(final Stage stage, final Skin skin, final UserAccount user, final AdManager adManager) {
@@ -237,17 +240,25 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             lotteryButton = new LotteryButton(stage, skin, user, adManager);
             heartButton = new HeartButton(skin, user, adManager);
+            howToPlayDialog = new HowToPlayDialog(skin);
 
-            VerticalGroup barGroup = new VerticalGroup();
-            barGroup.addActor(heartButton.root);
-            barGroup.addActor(lotteryButton.root);
+            ImageButton helpButton = UIFactory.createImageButton(skin, "ButtonHowToPlay");
+            helpButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    howToPlayDialog.show(stage);
+                }
+            });
 
-            barGroup.space(BUTTON_SIZE * .4f);
+            Table barGroup = new Table();
+            barGroup.defaults().space(BUTTON_SIZE * .4f);
+            barGroup.add(helpButton).expandY().top().size(BUTTON_SIZE * .8f).padTop(BUTTON_SIZE * .4f).row();
+            barGroup.add(heartButton.root).row();
+            barGroup.add(lotteryButton.root).expandY().top();
 
-            Container<VerticalGroup> bar = new Container<>(barGroup);
 
-            root = new Container<>(bar);
-            root.center().right().padRight(3 * Gdx.graphics.getDensity());
+            root = new Container<>(barGroup);
+            root.center().right().padRight(3 * Gdx.graphics.getDensity()).fillY();
         }
 
         @Override
@@ -287,7 +298,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         private class HeartButton {
             private VerticalGroup root;
             private UserAccount.HeartManager heartManager;
-            private final SoundManager.SoundEffect buttonClick;
             private AdManager.AdRewardListener listener;
             private Label lblLivesLeft;
             private Label lblTimeForLife;
@@ -295,7 +305,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             public HeartButton(Skin skin, final UserAccount user, final AdManager adManager) {
                 heartManager = user.getHeartManager();
-                buttonClick = SoundManager.get().getSoundAsset("buttonClick");
 
                 listener = new AdManager.AdRewardListener() {
                     @Override
@@ -345,7 +354,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
                         if (!heartManager.isFull()) {
-                            buttonClick.play();
+                            SoundManager.get().play(SoundManager.SoundTrack.BUTTON_CLICK);
                             adManager.showAdForReward(listener);
                         }
                     }
@@ -401,7 +410,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
         private Container<Container<Table>> root;
         private ProgressBar pbAccountExp;
-        private Label lblLevel, lblExp, lblExpForLevel, lblLotteryCoins;
+        private Label lblLevel, lblExp, lblExpForLevel, lblTotalXP, lblLotteryCoins;
 
         public UIUserPanel() {
             ImageButton.ImageButtonStyle userButtonStyle = new ImageButton.ImageButtonStyle();
@@ -423,6 +432,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             lblLevel = new Label("", skin, "h5");
             lblExp = new Label("", skin, "h6");
             lblExpForLevel = new Label("", skin, "h6", Color.GRAY);
+            lblTotalXP = new Label("XP:", skin, "h6");
 
             HorizontalGroup hgExp = new HorizontalGroup();
             hgExp.wrap(false);
@@ -439,26 +449,25 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             lblLotteryCoins = new Label(String.valueOf(gameInstance.getUserAccount().getCurrencyManager().getAmountOf(LOTTERY_COIN)), skin, "h5");
 
             Table tblInfo = new Table();
-            tblInfo.top().defaults().left().padBottom(lblLotteryCoins.getMinHeight() / 4);
-            tblInfo.add(imgLotteryCoin).height(lblLotteryCoins.getMinHeight() * 1.3f).width(UIUtils.getWidthFor(imgLotteryCoin.getDrawable(), lblLotteryCoins.getMinHeight() * 1.3f)).padRight(Value.percentHeight(.2f, lblLotteryCoins));
+            tblInfo.top().left().defaults().left().padBottom(lblLotteryCoins.getMinHeight() / 4);
+            tblInfo.add(imgLotteryCoin).height(lblLotteryCoins.getMinHeight() * 1.1f).width(UIUtils.getWidthFor(imgLotteryCoin.getDrawable(), lblLotteryCoins.getMinHeight() * 1.1f)).padRight(Value.percentHeight(.2f, lblLotteryCoins));
             tblInfo.add(lblLotteryCoins).row();
-
 
             Table tblAccount = new Table();
             tblAccount.background(skin.getDrawable("UserAccountFrame"));
 
-            contentSize = WorldSettings.getSmallestScreenDimension() * .4f;
+            contentSize = WorldSettings.getSmallestScreenDimension() * .5f;
 
             tblAccount.columnDefaults(0).padRight(5);
             tblAccount.row().padBottom(5);
             tblAccount.add(btnUser)
                     .size(contentSize * .4f)
                     .padRight(lblLotteryCoins.getMinHeight() / 2);
-            tblAccount.add(tblInfo).fill().row();
-            tblAccount.add(hgLevel).padBottom(5).left().row();
+            tblAccount.add(tblInfo).grow().row();
+            tblAccount.add(hgLevel).padBottom(5).left();
+            tblAccount.add(lblTotalXP).padBottom(5).left().row();
 //            tblAccount.add(hgExp).padBottom(5).right().row();
             tblAccount.add(pbAccountExp).growX().colspan(tblAccount.getColumns()).padRight(0);
-
 
             Container<Table> wrapper = new Container<>(tblAccount);
             wrapper.maxWidth(contentSize);
@@ -484,6 +493,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             lblExp.setText(String.valueOf(user.getXPProgress()));
             lblLevel.setText(String.valueOf(user.getLevel()));
             lblExpForLevel.setText(String.valueOf(user.getExpForNextLevel()));
+            lblTotalXP.setText("XP: " + UIUtils.formatNumber(user.getTotalProgress(), '.'));
             pbAccountExp.setRange(0, user.getExpForNextLevel());
             pbAccountExp.setValue(user.getXPProgress());
         }
@@ -650,6 +660,56 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         void reset() {
             type = null;
             count = -1;
+        }
+    }
+
+    private static class HowToPlayDialog extends Dialog {
+        private Label lblMessage;
+        private Label lblTitle;
+        private ScrollPane scrollPane;
+
+        HowToPlayDialog(Skin skin) {
+            super("", skin, "PopupMessage");
+
+            float width = WorldSettings.getDefaultDialogSize() - getPadLeft() - getPadRight();
+
+            lblMessage = new Label(FileUtils.fileToString(Gdx.files.internal("docs/how_to_play").reader(512)), skin, "h5");
+            lblTitle = new Label("How to play?", skin, "h2");
+            lblMessage.setWrap(true);
+            scrollPane = new ScrollPane(lblMessage);
+            scrollPane.setScrollingDisabled(true, false);
+            scrollPane.setOverscroll(false, false);
+
+            getContentTable().defaults().space(0);
+            getContentTable().add(lblTitle).row();//.padTop(-lblTitle.getPrefHeight() * .1f).row();
+            getContentTable().add(scrollPane).padLeft(width * .025f).padRight(width * .025f).grow();
+            getCell(getContentTable()).width(width).padBottom(width * .025f);
+            getCell(getButtonTable()).width(width);
+            setModal(true);
+            setMovable(false);
+
+            ImageButton btn = UIFactory.createImageButton(skin, "ButtonGotIt");
+            btn.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    hide(null);
+                }
+            });
+
+            float buttonSize = width * .12f;
+            getButtonTable().add(btn).height(buttonSize).width(UIUtils.getWidthFor(btn.getImage().getDrawable(), buttonSize));
+        }
+
+        @Override
+        public Dialog show(Stage stage) {
+            return show(stage, null);
+        }
+
+        public Dialog show(Stage stage, Action action) {
+            getCell(getContentTable()).maxHeight(stage.getHeight() * .7f);
+            super.show(stage, action);
+            setPosition(stage.getWidth() / 2f, stage.getHeight() / 2f, Align.center);
+            return this;
         }
     }
 }

@@ -43,7 +43,7 @@ class TilemapPathfinder {
 
             for (Side side : Side.values()) {
                 TilemapTile neighbour = tile.getNeighbour(side);
-                if (neighbour != null && !altered.contains(neighbour) && (neighbour.getTile() instanceof Breakable)) {
+                if (neighbour != null && !altered.contains(neighbour)) {
                     altered.add(neighbour);
                 }
             }

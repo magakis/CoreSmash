@@ -1,7 +1,7 @@
 package com.archapp.coresmash;
 
-import com.archapp.coresmash.managers.StatsManager;
+import com.archapp.coresmash.managers.RoundManager;
 
 public interface RoundEndListener {
-    void onRoundEnded(StatsManager.GameStats gameStats);
+    void onRoundEnded(RoundManager.GameStats gameStats);
 }

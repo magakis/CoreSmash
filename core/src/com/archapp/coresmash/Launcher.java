@@ -2,7 +2,7 @@ package com.archapp.coresmash;
 
 import com.archapp.coresmash.managers.MovingBallManager;
 import com.archapp.coresmash.managers.RenderManager;
-import com.archapp.coresmash.managers.StatsManager;
+import com.archapp.coresmash.managers.RoundManager;
 import com.archapp.coresmash.tilemap.TilemapManager;
 import com.archapp.coresmash.tiles.Launchable;
 import com.archapp.coresmash.tiles.MovingBall;
@@ -99,10 +99,10 @@ public class Launcher extends Observable {
         return chanceColorPicker.get();
     }
 
-    public void fillLauncher(TilemapManager tilemapManager, StatsManager statsManager) {
+    public void fillLauncher(TilemapManager tilemapManager, RoundManager roundManager) {
         int maxSize;
-        if (statsManager.isMovesEnabled())
-            maxSize = launcherSize <= statsManager.getMoves() ? launcherSize : statsManager.getMoves();
+        if (roundManager.isMovesEnabled())
+            maxSize = launcherSize <= roundManager.getMoves() ? launcherSize : roundManager.getMoves();
         else
             maxSize = launcherSize;
 

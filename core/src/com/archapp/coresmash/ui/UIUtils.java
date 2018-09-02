@@ -26,21 +26,15 @@ public class UIUtils {
         }
     };
 
-    private static ChangeListener buttonSoundListener;
+    private static ChangeListener buttonSoundListener = new ChangeListener() {
+        @Override
+        public void changed(ChangeEvent event, Actor actor) {
+            SoundManager.get().play(SoundManager.SoundTrack.BUTTON_CLICK);
+        }
+    };
 
     // Disable constructor
     private UIUtils() {
-    }
-
-    public static void initialize() {
-        buttonSoundListener = new ChangeListener() {
-            private SoundManager.SoundEffect btnSound = SoundManager.get().getSoundAsset("buttonClick");
-
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                btnSound.play();
-            }
-        };
     }
 
     public static void setUnitActor(BitmapFont smallestFont) {
@@ -83,5 +77,18 @@ public class UIUtils {
 
     public static TextField.TextFieldFilter getNumbersOnlyFilter() {
         return numbersOnly;
+    }
+
+    public static String formatNumber(int value, char delimeter) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(value);
+        int dots = (builder.length() - 1) / 3;
+
+        for (int index = 3; dots > 0; index += 4) {
+            builder.insert(builder.length() - index, delimeter);
+            --dots;
+        }
+
+        return builder.toString();
     }
 }

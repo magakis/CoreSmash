@@ -8,7 +8,7 @@ import com.archapp.coresmash.levelbuilder.ParsedLevel;
 import com.archapp.coresmash.levelbuilder.ParsedTile;
 import com.archapp.coresmash.managers.CollisionDetector;
 import com.archapp.coresmash.managers.MovingBallManager;
-import com.archapp.coresmash.managers.StatsManager;
+import com.archapp.coresmash.managers.RoundManager;
 import com.archapp.coresmash.tilemap.TilemapBuilder;
 import com.archapp.coresmash.tilemap.TilemapManager;
 import com.archapp.coresmash.tilemap.TilemapTile;
@@ -31,18 +31,18 @@ public class GameController {
     private TilemapManager tilemapManager;
     private MovingBallManager movingBallManager;
     private CollisionDetector collisionDetector;
-    private StatsManager statsManager;
+    private RoundManager roundManager;
     private BehaviourPack behaviourPowerPack;
     private Launcher launcher;
 
 
-    public GameController(TilemapManager tilemapManager, MovingBallManager movingBallManager, StatsManager statsManager, Launcher launcher) {
+    public GameController(TilemapManager tilemapManager, MovingBallManager movingBallManager, RoundManager roundManager, Launcher launcher) {
         collisionDetector = new CollisionDetector();
         this.movingBallManager = movingBallManager;
         this.tilemapManager = tilemapManager;
-        this.statsManager = statsManager;
+        this.roundManager = roundManager;
         this.launcher = launcher;
-        behaviourPowerPack = new BehaviourPack(tilemapManager, movingBallManager, collisionDetector, statsManager);
+        behaviourPowerPack = new BehaviourPack(tilemapManager, movingBallManager, collisionDetector, roundManager);
     }
 
     // XXX(18/6/2018): Take a look at this method
@@ -78,9 +78,9 @@ public class GameController {
         ParsedLevel parsedLevel = LevelParser.loadFrom(fileName, source);
 
         LevelSettings levelSettings = Objects.requireNonNull(parsedLevel).getLevelSettings();
-        statsManager.setLives(levelSettings.lives);
-        statsManager.setMoves(levelSettings.moves);
-        statsManager.setTime(levelSettings.time);
+        roundManager.setLives(levelSettings.lives);
+        roundManager.setMoves(levelSettings.moves);
+        roundManager.setTime(levelSettings.time);
 
         launcher.setLauncherSize(levelSettings.launcherSize);
         launcher.setLauncherCooldown(levelSettings.launcherCooldown);
@@ -110,13 +110,13 @@ public class GameController {
         public final TilemapManager tilemapManager;
         public final MovingBallManager movingBallManager;
         public final CollisionDetector collisionDetector;
-        public final StatsManager statsManager;
+        public final RoundManager roundManager;
 
-        private BehaviourPack(TilemapManager manager, MovingBallManager ballManager, CollisionDetector detector, StatsManager statsManager) {
+        private BehaviourPack(TilemapManager manager, MovingBallManager ballManager, CollisionDetector detector, RoundManager roundManager) {
             tilemapManager = manager;
             movingBallManager = ballManager;
             collisionDetector = detector;
-            this.statsManager = statsManager;
+            this.roundManager = roundManager;
         }
     }
 }

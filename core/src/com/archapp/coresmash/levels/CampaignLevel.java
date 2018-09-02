@@ -2,7 +2,7 @@ package com.archapp.coresmash.levels;
 
 import com.archapp.coresmash.RoundEndListener;
 import com.archapp.coresmash.UserAccount;
-import com.archapp.coresmash.managers.StatsManager.GameStats;
+import com.archapp.coresmash.managers.RoundManager.GameStats;
 
 public abstract class CampaignLevel extends Level {
     private RoundEndListener roundEndListener;

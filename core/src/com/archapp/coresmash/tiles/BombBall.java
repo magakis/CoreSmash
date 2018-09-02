@@ -7,7 +7,6 @@ import com.archapp.coresmash.tilemap.TilemapTile;
 import com.archapp.coresmash.tilemap.effect.DestroyRadiusEffect;
 
 public class BombBall extends Tile implements Breakable, CollisionInitiator {
-    private static SoundManager.SoundEffect explosion = SoundManager.get().getSoundAsset("explosion1");
 
     public BombBall() {
         super(TileType.BOMB_BALL);
@@ -17,7 +16,7 @@ public class BombBall extends Tile implements Breakable, CollisionInitiator {
     public void onDestroy(TilemapTile self, TilemapManager tmm) {
         DestroyRadiusEffect.newInstance(2, self.getLayerID(), self.getX(), self.getY())
                 .apply(tmm);
-        explosion.play();
+        SoundManager.get().play(SoundManager.SoundTrack.FIREBALL_EXPLOSION);
     }
 
     @Override

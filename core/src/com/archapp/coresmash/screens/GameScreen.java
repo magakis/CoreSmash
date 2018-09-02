@@ -12,7 +12,7 @@ import com.archapp.coresmash.WorldSettings;
 import com.archapp.coresmash.levels.Level;
 import com.archapp.coresmash.managers.MovingBallManager;
 import com.archapp.coresmash.managers.RenderManager;
-import com.archapp.coresmash.managers.StatsManager;
+import com.archapp.coresmash.managers.RoundManager;
 import com.archapp.coresmash.sound.SoundManager;
 import com.archapp.coresmash.tilemap.TilemapManager;
 import com.archapp.coresmash.tiles.Launchable;
@@ -66,7 +66,7 @@ public class GameScreen extends ScreenBase implements Observer {
     private GameController gameController;
     private TilemapManager tilemapManager;
     private MovingBallManager movingBallManager;
-    private StatsManager statsManager;
+    private RoundManager roundManager;
     private Launcher launcher;
 
     private StreakUI streakUI;
@@ -75,7 +75,6 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private Level activeLevel;
 
-    private SoundManager.MusicAsset backgroundMusic;
     //===========
     private DebugUI debugUI;
     private GameUI gameUI;
@@ -86,10 +85,6 @@ public class GameScreen extends ScreenBase implements Observer {
 
     public GameScreen(CoreSmash game) {
         super(game);
-        backgroundMusic = SoundManager.get().getMusicAsset("gamescreenMusic");
-        backgroundMusic.setLooping(true);
-        backgroundMusic.setVolume(.5f);
-
         viewport = new ExtendViewport(WorldSettings.getWorldWidth(), WorldSettings.getWorldHeight());
         camera = (OrthographicCamera) viewport.getCamera();
         camera.setToOrtho(false, viewport.getMinWorldWidth(), viewport.getMinWorldHeight());
@@ -98,12 +93,12 @@ public class GameScreen extends ScreenBase implements Observer {
         movingBallManager = new MovingBallManager();
         launcher = new Launcher(movingBallManager);
         tilemapManager = new TilemapManager();
-        statsManager = new StatsManager();
-        gameController = new GameController(tilemapManager, movingBallManager, statsManager, launcher);
+        roundManager = new RoundManager();
+        gameController = new GameController(tilemapManager, movingBallManager, roundManager, launcher);
 
-        launcher.addObserver(statsManager);
-        tilemapManager.addObserver(statsManager);
-        movingBallManager.addObserver(statsManager);
+        launcher.addObserver(roundManager);
+        tilemapManager.addObserver(roundManager);
+        movingBallManager.addObserver(roundManager);
 
         stage = new Stage(game.getUIViewport());
         skin = gameInstance.getSkin();
@@ -115,15 +110,15 @@ public class GameScreen extends ScreenBase implements Observer {
         secondLifeDialog = new SecondLifeDialog(skin, gameInstance.getAdManager()) {
             @Override
             protected void result(Object object) {
-                statsManager.resumeGame();
-                if (statsManager.checkEndingConditions(movingBallManager))
+                roundManager.resumeGame();
+                if (roundManager.checkEndingConditions(movingBallManager))
                     endGame();
             }
         };
 
-        statsManager.addObserver(this);
-        statsManager.addObserver(streakUI);
-        statsManager.addObserver(gameUI);
+        roundManager.addObserver(this);
+        roundManager.addObserver(streakUI);
+        roundManager.addObserver(gameUI);
 
         rootUIStack = new Stack();
         rootUIStack.setFillParent(true);
@@ -137,27 +132,23 @@ public class GameScreen extends ScreenBase implements Observer {
     @Override
     public void show() {
         super.show();
-        backgroundMusic.play();
-        SoundManager.get().getMusicAsset("backgroundMusic").stop();
+        SoundManager.get().playGameMusic();
     }
 
     @Override
     public void pause() {
         super.pause();
-        backgroundMusic.pause();
     }
 
     @Override
     public void resume() {
         super.resume();
-        backgroundMusic.play();
     }
 
     @Override
     public void hide() {
         super.hide();
-        backgroundMusic.stop();
-        SoundManager.get().getMusicAsset("backgroundMusic").play();
+        SoundManager.get().playMenuMusic();
     }
 
     @Override
@@ -185,20 +176,22 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     private void update(float delta) {
-        if (!statsManager.isGamePaused()) {
+        if (!roundManager.isGamePaused()) {
             activeLevel.update(delta, tilemapManager);
             launcher.update(delta);
             tilemapManager.update(delta);
             movingBallManager.update(delta);
             gameController.update(delta);
 
-            statsManager.update(delta);
+            roundManager.update(delta);
             updateStage();
 
-            if (statsManager.checkEndingConditions(movingBallManager)) {
-                if (!statsManager.isRoundWon()) {
-                    if (!statsManager.getGameStats().getReasonOfLoss().equals(StatsManager.ReasonOfLoss.ASTRONAUTS_LEFT)) {
-                        if (statsManager.getGameStats().getExtraLivesUsed() < 3)
+            if (roundManager.checkEndingConditions(movingBallManager)) {
+                roundManager.pauseGame();
+                if (!roundManager.isRoundWon()) {
+                    /* If the center tile is gone, we can't offer an extra life */
+                    if (!roundManager.getGameStats().getReasonOfLoss().equals(RoundManager.ReasonOfLoss.ASTRONAUTS_LEFT)) {
+                        if (roundManager.getGameStats().getExtraLivesUsed() < 3)
                             secondLifeDialog.show(stage);
                         else
                             endGame();
@@ -215,27 +208,25 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     private void updateStage() {
-        if (statsManager.isTimeEnabled()) {
-            float time = statsManager.getTime();
+        if (roundManager.isTimeEnabled()) {
+            float time = roundManager.getTime();
             gameUI.lblTime.setText(String.format(Locale.ENGLISH, "%d:%02d", (int) time / 60, (int) time % 60));
         }
         debugUI.dblb2.setText("FPS: " + Gdx.graphics.getFramesPerSecond());
     }
 
     private void endGame() {
-        activeLevel.end(statsManager.getGameStats());
-
+        roundManager.stopGame();
+        activeLevel.end(roundManager.getGameStats());
         resultDialog.update();
         resultDialog.show(stage, null);
-
-        backgroundMusic.stop();
     }
 
     private void reset() {
         tilemapManager.reset();
         movingBallManager.reset();
         launcher.reset();
-        statsManager.reset();
+        roundManager.reset();
         streakUI.reset();
 
         activeLevel = null;
@@ -248,12 +239,12 @@ public class GameScreen extends ScreenBase implements Observer {
         level.initialize(gameController);
 
         if (tilemapManager.getTilemapTile(0, 0, 0) == null) {
-            statsManager.stopGame();
+            roundManager.stopGame();
             endGame();
             gameInstance.setScreen(this);
             return;
         }
-        launcher.fillLauncher(tilemapManager, statsManager);
+        launcher.fillLauncher(tilemapManager, roundManager);
 
         gameUI.setup();
 
@@ -262,15 +253,15 @@ public class GameScreen extends ScreenBase implements Observer {
         rootUIStack.addActor(debugUI.getRoot());
 
         gameInstance.setScreen(this);
-        statsManager.start();
+        roundManager.start();
     }
 
     @Override
     public void onNotify(NotificationType type, Object ob) {
         switch (type) {
             case BALL_LAUNCHED:
-                if (statsManager.isMovesEnabled()) {
-                    int moves = statsManager.getMoves();
+                if (roundManager.isMovesEnabled()) {
+                    int moves = roundManager.getMoves();
                     if (moves > launcher.getLauncherSize()) {
                         launcher.loadLauncher(tilemapManager);
                     } else if (moves == launcher.getLauncherSize()) {
@@ -285,7 +276,7 @@ public class GameScreen extends ScreenBase implements Observer {
                 break;
 
             case REWARDED_MOVES:
-                launcher.fillLauncher(tilemapManager, statsManager);
+                launcher.fillLauncher(tilemapManager, roundManager);
                 break;
         }
     }
@@ -502,11 +493,11 @@ public class GameScreen extends ScreenBase implements Observer {
                 btn.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        if (statsManager.consumePowerup(btn.type, launcher)) {
-                            if (!statsManager.isDebugEnabled()) {
+                        if (roundManager.consumePowerup(btn.type, launcher)) {
+                            if (!roundManager.isDebugEnabled()) {
                                 gameInstance.getUserAccount().consumePowerup(btn.type);
                             }
-                            int usagesLeft = statsManager.getPowerupUsages(btn.type);
+                            int usagesLeft = roundManager.getPowerupUsages(btn.type);
                             if (usagesLeft == 0) {
                                 btn.setDisabled(true);
                                 btn.image.setDrawable(skin.newDrawable(btn.type.name(), Color.DARK_GRAY));
@@ -549,37 +540,37 @@ public class GameScreen extends ScreenBase implements Observer {
 
         public void setup() {
             lblScore.setText(String.valueOf(0));
-            lblTargetScore.setText(String.valueOf(statsManager.getTargetScore()));
-            lblLives.setText(String.valueOf(statsManager.getLives()));
-            lblMoves.setText(String.valueOf(statsManager.getMoves()));
+            lblTargetScore.setText(String.valueOf(roundManager.getTargetScore()));
+            lblLives.setText(String.valueOf(roundManager.getLives()));
+            lblMoves.setText(String.valueOf(roundManager.getMoves()));
 
             tblCenter.clear();
 
-            if (statsManager.isMovesEnabled() && statsManager.isLivesEnabled()) {
+            if (roundManager.isMovesEnabled() && roundManager.isLivesEnabled()) {
                 tblCenter.add(imgMovesIcon).size(lblLives.getPrefHeight());
                 tblCenter.add(lblMoves).left();
                 tblCenter.row().padTop(Value.percentHeight(.2f, lblLives));
                 tblCenter.add(imgLivesIcon).size(lblLives.getPrefHeight());
                 tblCenter.add(lblLives).left();
             } else {
-                if (statsManager.isLivesEnabled()) {
+                if (roundManager.isLivesEnabled()) {
                     tblCenter.add(imgLivesIcon).size(lblLives.getPrefHeight());
                     tblCenter.add(lblLives).left();
                 }
-                if (statsManager.isMovesEnabled()) {
+                if (roundManager.isMovesEnabled()) {
                     tblCenter.add(imgMovesIcon).size(lblMoves.getPrefHeight());
                     tblCenter.add(lblMoves).left();
                 }
             }
 
-            imgMovesIcon.setVisible(statsManager.isMovesEnabled());
-            lblMoves.setVisible(statsManager.isMovesEnabled());
+            imgMovesIcon.setVisible(roundManager.isMovesEnabled());
+            lblMoves.setVisible(roundManager.isMovesEnabled());
 
-            imgLivesIcon.setVisible(statsManager.isLivesEnabled());
-            lblLives.setVisible(statsManager.isLivesEnabled());
+            imgLivesIcon.setVisible(roundManager.isLivesEnabled());
+            lblLives.setVisible(roundManager.isLivesEnabled());
 
-            tblTime.setVisible(statsManager.isTimeEnabled());
-            float time = statsManager.getTime();
+            tblTime.setVisible(roundManager.isTimeEnabled());
+            float time = roundManager.getTime();
             lblTime.setText(String.format(Locale.ENGLISH, "%d:%02d", (int) time / 60, (int) time % 60));
 
             setupPowerups();
@@ -596,19 +587,19 @@ public class GameScreen extends ScreenBase implements Observer {
         public void onNotify(NotificationType type, Object ob) {
             switch (type) {
                 case NOTIFICATION_TYPE_SCORE_INCREMENTED:
-                    lblScore.setText(String.valueOf(statsManager.getScore()));
+                    lblScore.setText(String.valueOf(roundManager.getScore()));
                     break;
                 case LIVES_AMOUNT_CHANGED:
-                    lblLives.setText(String.valueOf(statsManager.getLives()));
+                    lblLives.setText(String.valueOf(roundManager.getLives()));
                     break;
                 case MOVES_AMOUNT_CHANGED:
-                    lblMoves.setText(String.valueOf(statsManager.getMoves()));
+                    lblMoves.setText(String.valueOf(roundManager.getMoves()));
                     break;
             }
         }
 
         private void setupPowerups() {
-            int enabledCount = statsManager.getEnabledPowerupsCount();
+            int enabledCount = roundManager.getEnabledPowerupsCount();
             if (enabledCount == 0) {
                 tblPowerUps.setVisible(false);
                 return;
@@ -616,9 +607,9 @@ public class GameScreen extends ScreenBase implements Observer {
 
             tblPowerUps.clearChildren();
 
-            PowerupType[] enabledPowerups = statsManager.getEnabledPowerups();
+            PowerupType[] enabledPowerups = roundManager.getEnabledPowerups();
             for (int i = 0; i < enabledCount; ++i) {
-                powerupButtons[i].setPower(enabledPowerups[i], statsManager.getPowerupUsages(enabledPowerups[i]));
+                powerupButtons[i].setPower(enabledPowerups[i], roundManager.getPowerupUsages(enabledPowerups[i]));
                 tblPowerUps.add(powerupButtons[i]).row();
                 powerupButtons[i].setDisabled(false);
             }
@@ -722,8 +713,8 @@ public class GameScreen extends ScreenBase implements Observer {
         }
 
         public void update() {
-            String resultText = statsManager.isRoundWon() ? "Congratulations!" : "You Failed!";
-            switch (statsManager.getGameStats().getReasonOfLoss()) {
+            String resultText = roundManager.isRoundWon() ? "Congratulations!" : "You Failed!";
+            switch (roundManager.getGameStats().getReasonOfLoss()) {
                 case NONE:
                     lblMessage.setText("");
                     break;
@@ -741,7 +732,7 @@ public class GameScreen extends ScreenBase implements Observer {
                     break;
             }
             lblResult.setText(resultText);
-            lblScore.setText(String.valueOf(statsManager.getScore()));
+            lblScore.setText(String.valueOf(roundManager.getScore()));
         }
     }
 
@@ -795,7 +786,7 @@ public class GameScreen extends ScreenBase implements Observer {
             btnPlayOnFree.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    statsManager.giveExtraLife(5, 1, 30);
+                    roundManager.giveExtraLife(5, 1, 30);
                     hide(null);
                     result(null);
                 }
@@ -806,7 +797,7 @@ public class GameScreen extends ScreenBase implements Observer {
                 AdManager.AdRewardListener listener = new AdManager.AdRewardListener() {
                     @Override
                     public void reward(String type, int amount) {
-                        statsManager.giveExtraLife(5, 1, 30);
+                        roundManager.giveExtraLife(5, 1, 30);
                         hide(null);
                         result(null);
                     }
@@ -846,9 +837,9 @@ public class GameScreen extends ScreenBase implements Observer {
             getButtonTable().clearChildren();
 
             Cell firstButton;
-            if (statsManager.isSecondLifeAvailable()) {
+            if (roundManager.isSecondLifeAvailable()) {
                 firstButton = addButton(btnPlayOnFree);
-                statsManager.consumeSecondLife();
+                roundManager.consumeSecondLife();
             } else {
                 firstButton = addButton(btnPlayOnAd);
             }

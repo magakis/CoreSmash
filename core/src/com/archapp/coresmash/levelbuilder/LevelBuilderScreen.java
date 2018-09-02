@@ -6,7 +6,7 @@ import com.archapp.coresmash.GameController;
 import com.archapp.coresmash.PersistentString;
 import com.archapp.coresmash.levels.Level;
 import com.archapp.coresmash.managers.RenderManager;
-import com.archapp.coresmash.managers.StatsManager;
+import com.archapp.coresmash.managers.RoundManager;
 import com.archapp.coresmash.screens.GameScreen;
 import com.archapp.coresmash.screens.ScreenBase;
 import com.archapp.coresmash.tilemap.TilemapManager;
@@ -362,7 +362,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 @Override
                 public void initialize(GameController gameScreenController) {
                     gameScreenController.loadLevelMap("_editor_", LevelListParser.Source.EXTERNAL);
-                    StatsManager stats = gameScreenController.getBehaviourPack().statsManager;
+                    RoundManager stats = gameScreenController.getBehaviourPack().roundManager;
                     stats.debug();
                     for (TileType.PowerupType type : TileType.PowerupType.values()) {
                         stats.enablePowerup(type, 10);
@@ -374,7 +374,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
 
                 @Override
-                public void end(StatsManager.GameStats stats) {
+                public void end(RoundManager.GameStats stats) {
                 }
 
                 @Override
@@ -1029,9 +1029,9 @@ public class LevelBuilderScreen extends ScreenBase {
             Container<Table> root;
             StageInputCapture moveInputCapture;
             UILayer uiLayer;
-            TextField tfOriginX, tfOriginY, tfOffsetX, tfOffsetY;
-            Slider sldrMinRot, sldrMaxRot, sldrColorCount, sldrOriginMinRot, sldrOriginMaxRot;
-            Label lblMinRot, lblMaxRot, lblColorCount, lblOriginMinRot, lblOriginMaxRot;
+            TextField tfCircleX, tfCircleY, tfCrossX, tfCrossY;
+            Slider sldrCrossMinRot, sldrCrossMaxRot, sldrColorCount, sldrCircleMinRot, sldrCircleMaxRot;
+            Label lblCrossMinRot, lblCrossMaxRot, lblColorCount, lblCircleMinRot, lblCircleMaxRot;
             CheckBox cbRotateCCW, cbIsChained;
             int activeLayer;
 
@@ -1052,69 +1052,69 @@ public class LevelBuilderScreen extends ScreenBase {
                 };
 
                 activeLayer = levelBuilder.getLayer();
-                sldrMinRot = new Slider(0, 150, 1, false, skin);
-                lblMinRot = new Label(String.format(Locale.ROOT, "Min:%3d", (int) sldrMinRot.getValue()), skin, "h5");
-                sldrMinRot.addListener(new ChangeListener() {
+                sldrCrossMinRot = new Slider(0, 150, 1, false, skin);
+                lblCrossMinRot = new Label(String.format(Locale.ROOT, "Min:%3d", (int) sldrCrossMinRot.getValue()), skin, "h5");
+                sldrCrossMinRot.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        int min = (int) sldrMinRot.getValue();
-                        int max = (int) sldrMaxRot.getValue();
+                        int min = (int) sldrCrossMinRot.getValue();
+                        int max = (int) sldrCrossMaxRot.getValue();
                         if (Integer.compare(min, max) == 1) {
-                            sldrMaxRot.setValue(min);
+                            sldrCrossMaxRot.setValue(min);
                         }
-                        lblMinRot.setText(String.format(Locale.ROOT, "Min:%3d", min));
+                        lblCrossMinRot.setText(String.format(Locale.ROOT, "Min:%3d", min));
                         levelBuilder.setMinSpeed(min);
                     }
                 });
-                sldrMinRot.addListener(stopTouchDown);
+                sldrCrossMinRot.addListener(stopTouchDown);
 
-                sldrMaxRot = new Slider(0, 150, 1, false, skin);
-                lblMaxRot = new Label(String.format(Locale.ROOT, "Max:%3d", (int) sldrMaxRot.getValue()), skin, "h5");
-                sldrMaxRot.addListener(new ChangeListener() {
+                sldrCrossMaxRot = new Slider(0, 150, 1, false, skin);
+                lblCrossMaxRot = new Label(String.format(Locale.ROOT, "Max:%3d", (int) sldrCrossMaxRot.getValue()), skin, "h5");
+                sldrCrossMaxRot.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        int min = (int) sldrMinRot.getValue();
-                        int max = (int) sldrMaxRot.getValue();
+                        int min = (int) sldrCrossMinRot.getValue();
+                        int max = (int) sldrCrossMaxRot.getValue();
                         if (Integer.compare(min, max) == 1) {
-                            sldrMinRot.setValue(max);
+                            sldrCrossMinRot.setValue(max);
                         }
-                        lblMaxRot.setText(String.format(Locale.ROOT, "Max:%3d", max));
+                        lblCrossMaxRot.setText(String.format(Locale.ROOT, "Max:%3d", max));
                         levelBuilder.setMaxSpeed(max);
                     }
                 });
-                sldrMaxRot.addListener(stopTouchDown);
+                sldrCrossMaxRot.addListener(stopTouchDown);
 
-                sldrOriginMinRot = new Slider(0, 150, 1, false, skin);
-                lblOriginMinRot = new Label(String.format(Locale.ROOT, "Min:%3d", (int) sldrOriginMinRot.getValue()), skin, "h5");
-                sldrOriginMinRot.addListener(new ChangeListener() {
+                sldrCircleMinRot = new Slider(0, 150, 1, false, skin);
+                lblCircleMinRot = new Label(String.format(Locale.ROOT, "Min:%3d", (int) sldrCircleMinRot.getValue()), skin, "h5");
+                sldrCircleMinRot.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        int min = (int) sldrOriginMinRot.getValue();
-                        int max = (int) sldrOriginMaxRot.getValue();
+                        int min = (int) sldrCircleMinRot.getValue();
+                        int max = (int) sldrCircleMaxRot.getValue();
                         if (Integer.compare(min, max) == 1) {
-                            sldrOriginMaxRot.setValue(min);
+                            sldrCircleMaxRot.setValue(min);
                         }
-                        lblOriginMinRot.setText(String.format(Locale.ROOT, "Min:%3d", min));
+                        lblCircleMinRot.setText(String.format(Locale.ROOT, "Min:%3d", min));
                         levelBuilder.setOriginMinSpeed(min);
                     }
                 });
-                sldrOriginMinRot.addListener(stopTouchDown);
+                sldrCircleMinRot.addListener(stopTouchDown);
 
-                sldrOriginMaxRot = new Slider(0, 150, 1, false, skin);
-                lblOriginMaxRot = new Label(String.format(Locale.ROOT, "Max:%3d", (int) sldrOriginMaxRot.getValue()), skin, "h5");
-                sldrOriginMaxRot.addListener(new ChangeListener() {
+                sldrCircleMaxRot = new Slider(0, 150, 1, false, skin);
+                lblCircleMaxRot = new Label(String.format(Locale.ROOT, "Max:%3d", (int) sldrCircleMaxRot.getValue()), skin, "h5");
+                sldrCircleMaxRot.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        int min = (int) sldrOriginMinRot.getValue();
-                        int max = (int) sldrOriginMaxRot.getValue();
+                        int min = (int) sldrCircleMinRot.getValue();
+                        int max = (int) sldrCircleMaxRot.getValue();
                         if (Integer.compare(min, max) == 1) {
-                            sldrOriginMinRot.setValue(max);
+                            sldrCircleMinRot.setValue(max);
                         }
-                        lblOriginMaxRot.setText(String.format(Locale.ROOT, "Max:%3d", max));
+                        lblCircleMaxRot.setText(String.format(Locale.ROOT, "Max:%3d", max));
                         levelBuilder.setOriginMaxSpeed(max);
                     }
                 });
-                sldrOriginMaxRot.addListener(stopTouchDown);
+                sldrCircleMaxRot.addListener(stopTouchDown);
 
                 sldrColorCount = new Slider(1, 8, 1, false, skin);
                 lblColorCount = new Label(String.format(Locale.ROOT, "Colors:%2d", (int) sldrColorCount.getValue()), skin, "h5");
@@ -1159,28 +1159,28 @@ public class LevelBuilderScreen extends ScreenBase {
                 float labelPercent = .15f;
 
                 Table rotLabels = new Table();
-                rotLabels.defaults().expandX().padBottom(Value.percentHeight(.5f, sldrMinRot));
-                rotLabels.columnDefaults(0).padRight(Value.percentHeight(.5f, sldrMinRot));
-                rotLabels.add(new Label(":Position:", skin, "h5")).colspan(2).padRight(0).padBottom(Value.percentHeight(.5f, sldrMinRot)).row();
-                rotLabels.add(positionSettings).colspan(2).padBottom(Value.percentHeight(.5f, sldrMinRot)).padRight(0).row();
-                rotLabels.add(new Label(":Rotation:", skin, "h5")).colspan(2).padRight(0).padBottom(0).row();
-                rotLabels.row().padBottom(Value.percentHeight(labelPercent, sldrMinRot));
-                rotLabels.add(lblMinRot);
-                rotLabels.add(lblMaxRot).row();
-                rotLabels.add(sldrMinRot).fill();
-                rotLabels.add(sldrMaxRot).fill().row();
+                rotLabels.defaults().expandX().padBottom(Value.percentHeight(.5f, sldrCrossMinRot));
+                rotLabels.columnDefaults(0).padRight(Value.percentHeight(.5f, sldrCrossMinRot));
+                rotLabels.add(new Label(":Position:", skin, "h5")).colspan(2).padRight(0).padBottom(Value.percentHeight(.5f, sldrCrossMinRot)).row();
+                rotLabels.add(positionSettings).colspan(2).padBottom(Value.percentHeight(.5f, sldrCrossMinRot)).padRight(0).row();
+                rotLabels.add(new Label(":Cross Rotation:", skin, "h5")).colspan(2).padRight(0).padBottom(0).row();
+                rotLabels.row().padBottom(Value.percentHeight(labelPercent, sldrCrossMinRot));
+                rotLabels.add(lblCrossMinRot);
+                rotLabels.add(lblCrossMaxRot).row();
+                rotLabels.add(sldrCrossMinRot).fill();
+                rotLabels.add(sldrCrossMaxRot).fill().row();
 
-                rotLabels.add(new Label(":Origin Rotation:", skin, "h5")).colspan(2).padRight(0).padBottom(0).row();
-                rotLabels.row().padBottom(Value.percentHeight(labelPercent, sldrOriginMinRot));
-                rotLabels.add(lblOriginMinRot);
-                rotLabels.add(lblOriginMaxRot).row();
-                rotLabels.add(sldrOriginMinRot).fill();
-                rotLabels.add(sldrOriginMaxRot).fill().row();
+                rotLabels.add(new Label(":Circle Rotation:", skin, "h5")).colspan(2).padRight(0).padBottom(0).row();
+                rotLabels.row().padBottom(Value.percentHeight(labelPercent, sldrCircleMinRot));
+                rotLabels.add(lblCircleMinRot);
+                rotLabels.add(lblCircleMaxRot).row();
+                rotLabels.add(sldrCircleMinRot).fill();
+                rotLabels.add(sldrCircleMaxRot).fill().row();
 
                 rotLabels.add(cbRotateCCW).left().padBottom(0);
                 rotLabels.add(cbIsChained).right().padRight(0).padBottom(0).row();
 
-                rotLabels.add(lblColorCount).colspan(2).padRight(0).padBottom(Value.percentHeight(labelPercent, sldrMinRot)).row();
+                rotLabels.add(lblColorCount).colspan(2).padRight(0).padBottom(Value.percentHeight(labelPercent, sldrCrossMinRot)).row();
                 rotLabels.add(sldrColorCount).colspan(2).padRight(0).fill().row();
 
                 VerticalGroup vgroup = new VerticalGroup();
@@ -1197,8 +1197,8 @@ public class LevelBuilderScreen extends ScreenBase {
                 main.add(uiLayer.root);
                 main.add(scrollPane).grow()
                         .maxHeight(Value.percentHeight(.35f, UIUtils.getScreenActor(scrollPane)))
-                        .padLeft(Value.percentHeight(.5f, lblMinRot))
-                        .padRight(Value.percentHeight(.5f, lblMinRot));
+                        .padLeft(Value.percentHeight(.5f, lblCrossMinRot))
+                        .padRight(Value.percentHeight(.5f, lblCrossMinRot));
 
                 root = new Container<>(main);
                 root.fill();
@@ -1207,80 +1207,80 @@ public class LevelBuilderScreen extends ScreenBase {
             private void updateValues(int layer) {
                 activeLayer = layer;
                 uiLayer.updateLayer();
-                sldrMaxRot.setValue(levelBuilder.getMaxSpeed());
-                sldrMinRot.setValue(levelBuilder.getMinSpeed());
-                sldrOriginMaxRot.setValue(levelBuilder.getOriginMaxSpeed());
-                sldrOriginMinRot.setValue(levelBuilder.getOriginMinSpeed());
+                sldrCrossMaxRot.setValue(levelBuilder.getMaxSpeed());
+                sldrCrossMinRot.setValue(levelBuilder.getMinSpeed());
+                sldrCircleMaxRot.setValue(levelBuilder.getOriginMaxSpeed());
+                sldrCircleMinRot.setValue(levelBuilder.getOriginMinSpeed());
                 sldrColorCount.setValue(levelBuilder.getColorCount());
                 cbRotateCCW.setChecked(levelBuilder.isCCWRotationEnabled());
                 cbIsChained.setChecked(levelBuilder.isChained());
-                tfOffsetX.setText(String.valueOf((int) levelBuilder.getOffsetX()));
-                tfOffsetY.setText(String.valueOf((int) levelBuilder.getOffsetY()));
-                tfOriginX.setText(String.valueOf((int) levelBuilder.getOriginX()));
-                tfOriginY.setText(String.valueOf((int) levelBuilder.getOriginY()));
-                uiInfo.lbl[1].setText(String.format(Locale.ROOT, "Origin<->Offset Dist: %.3f", Math.hypot(levelBuilder.getOffsetX(), levelBuilder.getOffsetY())));
+                tfCrossX.setText(String.valueOf((int) levelBuilder.getOffsetX()));
+                tfCrossY.setText(String.valueOf((int) levelBuilder.getOffsetY()));
+                tfCircleX.setText(String.valueOf((int) levelBuilder.getOriginX()));
+                tfCircleY.setText(String.valueOf((int) levelBuilder.getOriginY()));
+                uiInfo.lbl[1].setText(String.format(Locale.ROOT, "Origin-Offset Dist: %.3f", Math.hypot(levelBuilder.getOffsetX(), levelBuilder.getOffsetY())));
             }
 
             private void updatePositionValues() {
-                tfOffsetX.setText(String.valueOf((int) levelBuilder.getOffsetX()));
-                tfOffsetY.setText(String.valueOf((int) levelBuilder.getOffsetY()));
-                tfOriginX.setText(String.valueOf((int) levelBuilder.getOriginX()));
-                tfOriginY.setText(String.valueOf((int) levelBuilder.getOriginY()));
-                uiInfo.lbl[1].setText(String.format(Locale.ROOT, "Origin<->Offset Dist: %.3f", Math.hypot(levelBuilder.getOffsetX(), levelBuilder.getOffsetY())));
+                tfCrossX.setText(String.valueOf((int) levelBuilder.getOffsetX()));
+                tfCrossY.setText(String.valueOf((int) levelBuilder.getOffsetY()));
+                tfCircleX.setText(String.valueOf((int) levelBuilder.getOriginX()));
+                tfCircleY.setText(String.valueOf((int) levelBuilder.getOriginY()));
+                uiInfo.lbl[1].setText(String.format(Locale.ROOT, "Origin-Offset Dist: %.3f", Math.hypot(levelBuilder.getOffsetX(), levelBuilder.getOffsetY())));
             }
 
             private Table createPositionGroup() {
-                tfOriginX = new TextField("0", skin);
-                tfOriginX.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
-                tfOriginX.setAlignment(Align.center);
-                tfOriginX.setMaxLength(5);
-                tfOriginX.addListener(new InputListener() {
+                tfCircleX = new TextField("0", skin);
+                tfCircleX.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
+                tfCircleX.setAlignment(Align.center);
+                tfCircleX.setMaxLength(5);
+                tfCircleX.addListener(new InputListener() {
                     @Override
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                         textfieldInputCapture.capture(stage);
-                        tfOriginX.setCursorPosition(tfOriginX.getText().length());
+                        tfCircleX.setCursorPosition(tfCircleX.getText().length());
                         event.stop();
                         return true;
                     }
                 });
 
-                tfOriginY = new TextField("0", skin);
-                tfOriginY.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
-                tfOriginY.setAlignment(Align.center);
-                tfOriginY.setMaxLength(5);
-                tfOriginY.addListener(new InputListener() {
+                tfCircleY = new TextField("0", skin);
+                tfCircleY.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
+                tfCircleY.setAlignment(Align.center);
+                tfCircleY.setMaxLength(5);
+                tfCircleY.addListener(new InputListener() {
                     @Override
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                         textfieldInputCapture.capture(stage);
-                        tfOriginY.setCursorPosition(tfOriginY.getText().length());
+                        tfCircleY.setCursorPosition(tfCircleY.getText().length());
                         event.stop();
                         return true;
                     }
                 });
 
-                tfOffsetX = new TextField("0", skin);
-                tfOffsetX.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
-                tfOffsetX.setAlignment(Align.center);
-                tfOffsetX.setMaxLength(5);
-                tfOffsetX.addListener(new InputListener() {
+                tfCrossX = new TextField("0", skin);
+                tfCrossX.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
+                tfCrossX.setAlignment(Align.center);
+                tfCrossX.setMaxLength(5);
+                tfCrossX.addListener(new InputListener() {
                     @Override
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                         textfieldInputCapture.capture(stage);
-                        tfOffsetX.setCursorPosition(tfOffsetX.getText().length());
+                        tfCrossX.setCursorPosition(tfCrossX.getText().length());
                         event.stop();
                         return true;
                     }
                 });
 
-                tfOffsetY = new TextField("0", skin);
-                tfOffsetY.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
-                tfOffsetY.setAlignment(Align.center);
-                tfOffsetY.setMaxLength(5);
-                tfOffsetY.addListener(new InputListener() {
+                tfCrossY = new TextField("0", skin);
+                tfCrossY.setTextFieldFilter(UIUtils.getNumbersOnlyFilter());
+                tfCrossY.setAlignment(Align.center);
+                tfCrossY.setMaxLength(5);
+                tfCrossY.addListener(new InputListener() {
                     @Override
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                         textfieldInputCapture.capture(stage);
-                        tfOffsetY.setCursorPosition(tfOffsetY.getText().length());
+                        tfCrossY.setCursorPosition(tfCrossY.getText().length());
                         event.stop();
                         return true;
                     }
@@ -1295,12 +1295,12 @@ public class LevelBuilderScreen extends ScreenBase {
                             textfieldInputCapture.stop();
                         } else {
                             try {
-                                String txt = tfOffsetX.getText();
+                                String txt = tfCrossX.getText();
                                 int x = txt.equals("") ? 0 : Integer.valueOf(txt);
-                                txt = tfOffsetY.getText();
+                                txt = tfCrossY.getText();
                                 int y = txt.equals("") ? 0 : Integer.valueOf(txt);
                                 levelBuilder.setOffset(x, y);
-                                uiInfo.lbl[1].setText(String.format(Locale.ROOT, "Origin<->Offset Dist: %.3f", Math.hypot(x, y)));
+                                uiInfo.lbl[1].setText(String.format(Locale.ROOT, "Origin-Offset Dist: %.3f", Math.hypot(x, y)));
                             } catch (NumberFormatException ignore) {
                                 Components.showToast("[Error] " + ignore.getLocalizedMessage(), stage);
                             }
@@ -1317,9 +1317,9 @@ public class LevelBuilderScreen extends ScreenBase {
                             textfieldInputCapture.stop();
                         } else {
                             try {
-                                String txt = tfOriginX.getText();
+                                String txt = tfCircleX.getText();
                                 int x = txt.equals("") ? 0 : Integer.valueOf(txt);
-                                txt = tfOriginY.getText();
+                                txt = tfCircleY.getText();
                                 int y = txt.equals("") ? 0 : Integer.valueOf(txt);
                                 levelBuilder.setOrigin(x, y);
                             } catch (NumberFormatException ignore) {
@@ -1376,10 +1376,10 @@ public class LevelBuilderScreen extends ScreenBase {
                 moveInputCapture.setKeyboardCapture(true);
 
 
-                tfOriginX.setTextFieldListener(originListener);
-                tfOriginY.setTextFieldListener(originListener);
-                tfOffsetX.setTextFieldListener(offsetListener);
-                tfOffsetY.setTextFieldListener(offsetListener);
+                tfCircleX.setTextFieldListener(originListener);
+                tfCircleY.setTextFieldListener(originListener);
+                tfCrossX.setTextFieldListener(offsetListener);
+                tfCrossY.setTextFieldListener(offsetListener);
 
                 GlyphLayout glayout = new GlyphLayout(skin.getFont("h4"), " 6666 ");
 
@@ -1387,20 +1387,20 @@ public class LevelBuilderScreen extends ScreenBase {
                 positionSettings.defaults().padRight(3 * Gdx.graphics.getDensity());
                 positionSettings.columnDefaults(1).width(glayout.width).padRight(10 * Gdx.graphics.getDensity());
                 positionSettings.columnDefaults(3).width(glayout.width);
-                positionSettings.row().padBottom(Value.percentHeight(.5f, tfOriginX));
+                positionSettings.row().padBottom(Value.percentHeight(.5f, tfCircleX));
 
-                positionSettings.add("Origin:X", "h5");
-                positionSettings.add(tfOriginX);
-
-                positionSettings.add("Y", "h5");
-                positionSettings.add(tfOriginY).row();
-
-                positionSettings.add("Offset:X", "h5");
-                positionSettings.add(tfOffsetX);
+                positionSettings.add("Circle: X", "h5");
+                positionSettings.add(tfCircleX);
 
                 positionSettings.add("Y", "h5");
-                positionSettings.add(tfOffsetY).padRight(10 * Gdx.graphics.getDensity());
-                positionSettings.add(freeMove).height(Value.percentHeight(1f, tfOffsetX));
+                positionSettings.add(tfCircleY).row();
+
+                positionSettings.add("Cross: X", "h5");
+                positionSettings.add(tfCrossX);
+
+                positionSettings.add("Y", "h5");
+                positionSettings.add(tfCrossY).padRight(10 * Gdx.graphics.getDensity());
+                positionSettings.add(freeMove).height(Value.percentHeight(1f, tfCrossX));
 
                 return positionSettings;
             }

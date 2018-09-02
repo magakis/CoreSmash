@@ -6,12 +6,9 @@ import com.archapp.coresmash.tilemap.TilemapTile;
 
 public class AstronautBall extends Tile implements Matchable {
     private final int matchID;
-    private SoundManager.SoundEffect onRelase;
 
     public AstronautBall(TileType type) {
         super(type);
-
-        onRelase = SoundManager.get().getSoundAsset("releaseAstronaut");
 
         switch (getTileType()) {
             case ASTRONAUT_BALL1:
@@ -54,6 +51,6 @@ public class AstronautBall extends Tile implements Matchable {
 
     @Override
     public void onDestroy(TilemapTile self, TilemapManager tilemapManager) {
-        onRelase.play();
+        SoundManager.get().play(SoundManager.SoundTrack.ASTRONAUT_RELEASE);
     }
 }

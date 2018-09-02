@@ -21,7 +21,7 @@ import java.util.Locale;
 import java.util.Stack;
 
 public class CoreSmash extends Game {
-    public static String APP_VERSION = "0.1.2.0";
+    public static String APP_VERSION = "0.1.2.1";
     public static boolean LOG_CRASHES = true;
     public static boolean DEBUG_TABLET = false;
 
@@ -61,7 +61,6 @@ public class CoreSmash extends Game {
 
     public CoreSmash(AdManager adManager) {
         this.adManager = adManager;
-        soundManager = SoundManager.get();
     }
 
     @Override
@@ -87,6 +86,7 @@ public class CoreSmash extends Game {
 
         Gdx.input.setCatchBackKey(true);
 
+        soundManager = SoundManager.get();
         assetManager = new AssetManager();
         renderManager = new RenderManager(assetManager);
 
@@ -136,6 +136,12 @@ public class CoreSmash extends Game {
 
     public AssetManager getAssetManager() {
         return assetManager;
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        assetManager.dispose();
     }
 
     @Override
