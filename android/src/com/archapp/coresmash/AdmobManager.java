@@ -47,7 +47,7 @@ public final class AdmobManager implements AdManager {
     private RewardedVideoAd rewardedVideoAd;
     private Handler handler;
 
-    public AdmobManager(String id) {
+    public AdmobManager() {
         handler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -64,7 +64,7 @@ public final class AdmobManager implements AdManager {
     }
 
     public void init(final AndroidApplication context, final RelativeLayout layout) {
-        MobileAds.initialize(context, "ca-app-pub-3940256099942544~3347511713");
+        MobileAds.initialize(context, "ca-app-pub-9627776817799661~8252497910");
         rewardedVideoAd = MobileAds.getRewardedVideoAdInstance(context);
 
         dialog = new ProgressDialog(context);
@@ -125,7 +125,7 @@ public final class AdmobManager implements AdManager {
     }
 
     @Override
-    public void showAdForReward(final AdRewardListener listener) {
+    public void showAdForReward(final AdRewardListener listener, final VideoAdRewardType type) {
         handler.postAtFrontOfQueue(new Runnable() {
             @Override
             public void run() {
@@ -133,7 +133,22 @@ public final class AdmobManager implements AdManager {
                     rewardedVideoAd.show();
                 } else {
                     dialog.show();
-                    rewardedVideoAd.loadAd("ca-app-pub-3940256099942544/5224354917", new AdRequest.Builder().addTestDevice("EA655C74DEA919ECE1BFC5F57C5C8708").build());
+                    String adID;
+                    switch (type) {
+                        case LOTTERY_COIN:
+                            adID = "ca-app-pub-9627776817799661/8324650107";
+                            break;
+                        case EXTRA_LIFE:
+                            adID = "ca-app-pub-9627776817799661/6318755052";
+                            break;
+                        case HEART:
+                            adID = "ca-app-pub-9627776817799661/8314363009";
+                            break;
+                        default:
+                            throw new RuntimeException("Not known ad type");
+                    }
+
+                    rewardedVideoAd.loadAd(adID, new AdRequest.Builder().build());
                     rewardedVideoAd.setRewardedVideoAdListener(new RewardedVideoAdListener() {
                         @Override
                         public void onRewardedVideoAdLoaded() {

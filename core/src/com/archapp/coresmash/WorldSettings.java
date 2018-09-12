@@ -40,7 +40,7 @@ public final class WorldSettings {
 
     public static class DefaultRatio {
         private static float dialogToScreen = .8f;
-        private static float dialogButtonHeightToContent = .14f;
+        private static float dialogButtonHeightToContent = .13f;
 
         private DefaultRatio() {
         }

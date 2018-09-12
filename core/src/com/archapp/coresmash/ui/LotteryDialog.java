@@ -105,7 +105,7 @@ public class LotteryDialog extends Dialog {
 
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                adManager.showAdForReward(listener);
+                adManager.showAdForReward(listener, AdManager.VideoAdRewardType.LOTTERY_COIN);
             }
         });
 

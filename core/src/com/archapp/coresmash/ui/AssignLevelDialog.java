@@ -109,7 +109,7 @@ public class AssignLevelDialog extends Dialog {
             public void changed(ChangeEvent event, Actor actor) {
                 RegisteredLevel selected = levelList.getSelected();
                 if (selected != null) {
-                    Gdx.input.getTextInput(swapLevelTextInput, "Swap '" + selected.name + "' with:", String.valueOf(selected.num), "Digits (0-9)");
+                    Gdx.input.getTextInput(swapLevelTextInput, "Swap '" + selected.name + "' with:", String.valueOf(selected.num), "");
                 }
             }
         });

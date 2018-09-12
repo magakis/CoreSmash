@@ -128,6 +128,8 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("FrameWooden.png");
         loadTexture("UserAccountFrame.png");
         loadTexture("LotteryCoin.png");
+        loadTexture("UserLevelBackground.png");
+        loadTexture("NotificationIndicator.png");
 
         loadTexture("GrayStar.png");
         loadTexture("Star.png");
@@ -156,6 +158,8 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("ButtonGotIt.png");
         loadTexture("ButtonReturn.png");
         loadTexture("ButtonHowToPlay.png");
+        loadTexture("ButtonFeedback.png");
+        loadTexture("ButtonFreeHeart.png");
 
         loadTexture("MenuBackground.png");
         loadTexture("CampaignBackground.png");
@@ -329,6 +333,8 @@ public class LoadingScreen extends ScreenBase {
         skin.add("ButtonPowerup", am.get("ButtonPowerup.png"));
         skin.add("ButtonCancel", am.get("ButtonCancel.png"));
         skin.add("ButtonMenuPlay", am.get("ButtonMenuPlay.png"));
+        skin.add("UserLevelBackground", am.get("UserLevelBackground.png"));
+        skin.add("NotificationIndicator", am.get("NotificationIndicator.png"));
         skin.add("DefaultTexture", am.get("default.png"));
 
         skin.add("ButtonPlay", am.get("ButtonPlay.png"));
@@ -347,6 +353,8 @@ public class LoadingScreen extends ScreenBase {
         skin.add("ButtonIUnderstand", am.get("ButtonIUnderstand.png"));
         skin.add("ButtonReturn", am.get("ButtonReturn.png"));
         skin.add("ButtonHowToPlay", am.get("ButtonHowToPlay.png"));
+        skin.add("ButtonFeedback", am.get("ButtonFeedback.png"));
+        skin.add("ButtonFreeHeart", am.get("ButtonFreeHeart.png"));
 
         skin.add("MenuBackground", am.get("MenuBackground.png"));
         skin.add("CampaignBackground", am.get("CampaignBackground.png"));
@@ -515,10 +523,22 @@ public class LoadingScreen extends ScreenBase {
         skin.add("ButtonFreePick", imgbs);
 
         imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.imageUp = skin.getDrawable("ButtonFeedback");
+        imgbs.imageDown = skin.newDrawable("ButtonFeedback", SlightGray);
+        imgbs.imageDisabled = skin.newDrawable("ButtonFeedback", Color.DARK_GRAY);
+        skin.add("ButtonFeedback", imgbs);
+
+        imgbs = new ImageButton.ImageButtonStyle();
         imgbs.imageUp = skin.getDrawable("ButtonGiveUp");
         imgbs.imageDown = skin.newDrawable("ButtonGiveUp", SlightGray);
         imgbs.imageDisabled = skin.newDrawable("ButtonGiveUp", Color.DARK_GRAY);
         skin.add("ButtonGiveUp", imgbs);
+
+        imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.imageUp = skin.getDrawable("ButtonFreeHeart");
+        imgbs.imageDown = skin.newDrawable("ButtonFreeHeart", SlightGray);
+        imgbs.imageDisabled = skin.newDrawable("ButtonFreeHeart", Color.DARK_GRAY);
+        skin.add("ButtonFreeHeart", imgbs);
 
         imgbs = new ImageButton.ImageButtonStyle();
         imgbs.imageUp = skin.getDrawable("ButtonMenu");

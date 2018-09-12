@@ -17,7 +17,7 @@ public class SoundManager {
     private ObjectMap<MusicTrack, MusicAsset> musicList;
     private List<SoundEffect> playlist;
 
-    private static final float BACKGROUND_MUSIC_VOLUME = 0.5f;
+    private static final float BACKGROUND_MUSIC_VOLUME = 0.7f;
 
     private boolean inGame;
     private MusicAsset menuMusic, gameMusic;

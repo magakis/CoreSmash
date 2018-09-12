@@ -249,7 +249,7 @@ public class UserAccount {
     }
 
     public static class HeartManager {
-        private static int NEW_HEART_INTERVAL = 8 * 60 * 1000; // Millis
+        private static int NEW_HEART_INTERVAL = 12 * 60 * 1000; // Millis
         private static int MAX_HEARTS = 5;
 
         private PersistentInt hearts;
@@ -294,6 +294,10 @@ public class UserAccount {
 
         public int getHearts() {
             return hearts.getValue();
+        }
+
+        public boolean isHeartAvailable() {
+            return hearts.getValue() > 0;
         }
 
         public void consumeHeart() {

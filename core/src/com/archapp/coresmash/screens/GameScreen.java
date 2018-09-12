@@ -212,7 +212,8 @@ public class GameScreen extends ScreenBase implements Observer {
             float time = roundManager.getTime();
             gameUI.lblTime.setText(String.format(Locale.ENGLISH, "%d:%02d", (int) time / 60, (int) time % 60));
         }
-        debugUI.dblb2.setText("FPS: " + Gdx.graphics.getFramesPerSecond());
+        if (CoreSmash.DEV_MODE)
+            debugUI.dblb2.setText("FPS: " + Gdx.graphics.getFramesPerSecond());
     }
 
     private void endGame() {
@@ -805,7 +806,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    adManager.showAdForReward(listener);
+                    adManager.showAdForReward(listener, AdManager.VideoAdRewardType.EXTRA_LIFE);
                 }
             });
 

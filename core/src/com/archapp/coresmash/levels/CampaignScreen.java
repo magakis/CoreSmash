@@ -3,6 +3,7 @@ package com.archapp.coresmash.levels;
 import com.archapp.coresmash.AdManager;
 import com.archapp.coresmash.CoreSmash;
 import com.archapp.coresmash.CurrencyType;
+import com.archapp.coresmash.FeedbackMailHandler;
 import com.archapp.coresmash.GameController;
 import com.archapp.coresmash.PropertyChangeListener;
 import com.archapp.coresmash.RoundEndListener;
@@ -19,6 +20,7 @@ import com.archapp.coresmash.sound.SoundManager;
 import com.archapp.coresmash.tilemap.TilemapManager;
 import com.archapp.coresmash.tiles.TileType.PowerupType;
 import com.archapp.coresmash.ui.Components;
+import com.archapp.coresmash.ui.HeartReplenishDialog;
 import com.archapp.coresmash.ui.LotteryDialog;
 import com.archapp.coresmash.ui.UIComponent;
 import com.archapp.coresmash.ui.UIFactory;
@@ -67,6 +69,7 @@ import static com.archapp.coresmash.CurrencyType.LOTTERY_COIN;
 public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private GameScreen gameScreen;
     private PickPowerUpsDialog powerupPickDialog;
+    private HeartReplenishDialog heartReplenishDialog;
     private UserAccount.HeartManager heartManager;
     private UIRightBar uiRightBar;
     private UIUserPanel uiUserPanel;
@@ -92,6 +95,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         levels = new Array<>();
 
         powerupPickDialog = new PickPowerUpsDialog(skin, gameInstance.getUserAccount().getSpecialBallsAvailable());
+        heartReplenishDialog = new HeartReplenishDialog(skin, heartManager, gameInstance.getAdManager());
 
         searchRegisteredLevel = new RegisteredLevel(0, "");
 
@@ -118,7 +122,10 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         Area1 area1 = new Area1(skin, new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                powerupPickDialog.show(stage, Integer.valueOf(actor.getName()));
+                if (heartManager.isHeartAvailable())
+                    powerupPickDialog.show(stage, Integer.valueOf(actor.getName()));
+                else
+                    heartReplenishDialog.show(stage);
             }
         });
 
@@ -141,7 +148,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         uiUserPanel = new UIUserPanel();
         rootStack.addActor(uiUserPanel.root);
 
-        uiRightBar = new UIRightBar(stage, skin, gameInstance.getUserAccount(), gameInstance.getAdManager());
+        uiRightBar = new UIRightBar(stage, skin, gameInstance.getUserAccount(), gameInstance.getAdManager(), gameInstance.getFeedbackMailHandler());
         rootStack.addActor(uiRightBar.root);
 
         levelButtons = area1.getLevels();
@@ -163,11 +170,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     }
 
     private void startCampaignLevel(int lvl, final List<Powerup> powerups) {
-        if (heartManager.getHearts() == 0) {
-            Components.showToast("You have no Hearts left. Either wait for a heart to replenish or try watching a video", stage, 3);
-            return;
-        }
-
         searchRegisteredLevel.num = lvl;
         int index = Arrays.binarySearch(levels.toArray(), searchRegisteredLevel, LevelListParser.compLevel);
         if (index < 0) return;
@@ -235,7 +237,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         private final HowToPlayDialog howToPlayDialog;
         private final HeartButton heartButton;
 
-        UIRightBar(final Stage stage, final Skin skin, final UserAccount user, final AdManager adManager) {
+        UIRightBar(final Stage stage, final Skin skin, final UserAccount user, final AdManager adManager, final FeedbackMailHandler feedbackMailHandler) {
             BUTTON_SIZE = skin.getFont("h4").getLineHeight() * 3;
 
             lotteryButton = new LotteryButton(stage, skin, user, adManager);
@@ -250,12 +252,32 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 }
             });
 
+            ImageButton feedbackButton = UIFactory.createImageButton(skin, "ButtonFeedback");
+            feedbackButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    feedbackMailHandler.createFeedbackMail();
+                }
+            });
+
             Table barGroup = new Table();
             barGroup.defaults().space(BUTTON_SIZE * .4f);
-            barGroup.add(helpButton).expandY().top().size(BUTTON_SIZE * .8f).padTop(BUTTON_SIZE * .4f).row();
-            barGroup.add(heartButton.root).row();
-            barGroup.add(lotteryButton.root).expandY().top();
-
+            barGroup.add(helpButton)
+                    .expandY()
+                    .top()
+                    .size(BUTTON_SIZE * .5f)
+                    .padTop(BUTTON_SIZE * .4f)
+                    .row();
+            barGroup.add(heartButton.root)
+                    .row();
+            barGroup.add(lotteryButton.root)
+                    .top()
+                    .row();
+            barGroup.add(feedbackButton)
+                    .size(BUTTON_SIZE * .8f)
+                    .padBottom(BUTTON_SIZE * .4f)
+                    .expandY()
+                    .bottom();
 
             root = new Container<>(barGroup);
             root.center().right().padRight(3 * Gdx.graphics.getDensity()).fillY();
@@ -267,7 +289,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         }
 
         private class LotteryButton {
-            Container<ImageButton> root;
+            Container<Stack> root;
+            Container<Image> indicator;
+            Container<ImageButton> button;
             LotteryDialog lotteryDialog;
 
             public LotteryButton(final Stage stage, Skin skin, final UserAccount user, AdManager adManager) {
@@ -290,8 +314,37 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                     }
                 });
 
-                root = new Container<>(btnSlotMachine);
+
+                button = new Container<>(btnSlotMachine);
+                button.size(BUTTON_SIZE, UIUtils.getHeightFor(btnSlotMachine.getImage().getDrawable(), BUTTON_SIZE));
+
+                Image img = new Image(skin, "NotificationIndicator");
+                indicator = new Container<>(img);
+                indicator.top().right().size(BUTTON_SIZE * .3f);
+
+                Stack rootstack = new Stack();
+                rootstack.addActor(button);
+                rootstack.addActor(indicator);
+
+                root = new Container<>(rootstack);
                 root.size(BUTTON_SIZE, UIUtils.getHeightFor(btnSlotMachine.getImage().getDrawable(), BUTTON_SIZE));
+
+                indicator.setTransform(true);
+                indicator.setOrigin(root.getPrefWidth() - (BUTTON_SIZE * .25f) / 2, root.getPrefHeight() - (BUTTON_SIZE * .25f) / 2f);
+                indicator.addAction(Actions.forever(Actions.sequence(
+                        Actions.scaleBy(-.15f, -.15f, .4f),
+                        Actions.scaleBy(.15f, .15f, .4f)
+                )));
+                indicator.setVisible(user.getCurrencyManager().isCurrencyAvailable(CurrencyType.LOTTERY_COIN));
+
+                user.setPropertyChangeListener(new PropertyChangeListener() {
+                    @Override
+                    public void onChange(String name, Object newValue) {
+                        if (name.equals(CurrencyType.LOTTERY_COIN.name())) {
+                            indicator.setVisible((int) newValue > 0);
+                        }
+                    }
+                });
             }
         }
 
@@ -355,7 +408,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                     public void clicked(InputEvent event, float x, float y) {
                         if (!heartManager.isFull()) {
                             SoundManager.get().play(SoundManager.SoundTrack.BUTTON_CLICK);
-                            adManager.showAdForReward(listener);
+                            adManager.showAdForReward(listener, AdManager.VideoAdRewardType.HEART);
                         }
                     }
                 });
@@ -410,7 +463,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
         private Container<Container<Table>> root;
         private ProgressBar pbAccountExp;
-        private Label lblLevel, lblExp, lblExpForLevel, lblTotalXP, lblLotteryCoins;
+        private Label lblLevel, lblExp, lblExpForLevel, lblTotalXP;
 
         public UIUserPanel() {
             ImageButton.ImageButtonStyle userButtonStyle = new ImageButton.ImageButtonStyle();
@@ -429,10 +482,10 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             pbAccountExp = new ProgressBar(0, 1, 1, false, pbStyle);
 
-            lblLevel = new Label("", skin, "h5");
+            lblLevel = new Label("", skin, "h4", new Color(0x793642ff));
             lblExp = new Label("", skin, "h6");
             lblExpForLevel = new Label("", skin, "h6", Color.GRAY);
-            lblTotalXP = new Label("XP:", skin, "h6");
+            lblTotalXP = new Label("XP:", skin, "h5");
 
             HorizontalGroup hgExp = new HorizontalGroup();
             hgExp.wrap(false);
@@ -440,33 +493,28 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             hgExp.addActor(new Label("/", skin, "h6", Color.GRAY));
             hgExp.addActor(lblExpForLevel);
 
-            HorizontalGroup hgLevel = new HorizontalGroup();
-            hgLevel.wrap(false);
-            hgLevel.addActor(new Label("Level: ", skin, "h5"));
-            hgLevel.addActor(lblLevel);
+//            Table tblInfo = new Table();
+//            tblInfo.top().left().defaults().left().padBottom(lblLotteryCoins.getMinHeight() / 4);
 
-            Image imgLotteryCoin = new Image(skin.getDrawable("LotteryCoin"));
-            lblLotteryCoins = new Label(String.valueOf(gameInstance.getUserAccount().getCurrencyManager().getAmountOf(LOTTERY_COIN)), skin, "h5");
+            Container<Label> userLevel = new Container<>(lblLevel);
+            userLevel.setBackground(skin.getDrawable("UserLevelBackground"));
+            Container<Container<Label>> userLevelWrapper = new Container<>(userLevel);
+            userLevelWrapper.size(lblLevel.getPrefHeight() * 1.4f);
+            userLevelWrapper.padLeft(lblLevel.getPrefHeight() * -.3f);
+            userLevelWrapper.padBottom(lblLevel.getPrefHeight() * -.3f);
+            userLevelWrapper.bottom().left();
 
-            Table tblInfo = new Table();
-            tblInfo.top().left().defaults().left().padBottom(lblLotteryCoins.getMinHeight() / 4);
-            tblInfo.add(imgLotteryCoin).height(lblLotteryCoins.getMinHeight() * 1.1f).width(UIUtils.getWidthFor(imgLotteryCoin.getDrawable(), lblLotteryCoins.getMinHeight() * 1.1f)).padRight(Value.percentHeight(.2f, lblLotteryCoins));
-            tblInfo.add(lblLotteryCoins).row();
-
-            Table tblAccount = new Table();
-            tblAccount.background(skin.getDrawable("UserAccountFrame"));
+            Stack userIconGroup = new Stack();
+            userIconGroup.addActor(btnUser);
+            userIconGroup.addActor(userLevelWrapper);
 
             contentSize = WorldSettings.getSmallestScreenDimension() * .5f;
-
-            tblAccount.columnDefaults(0).padRight(5);
-            tblAccount.row().padBottom(5);
-            tblAccount.add(btnUser)
-                    .size(contentSize * .4f)
-                    .padRight(lblLotteryCoins.getMinHeight() / 2);
-            tblAccount.add(tblInfo).grow().row();
-            tblAccount.add(hgLevel).padBottom(5).left();
+            Table tblAccount = new Table();
+            tblAccount.background(skin.getDrawable("UserAccountFrame"));
+            tblAccount.row().padBottom(lblLevel.getPrefHeight() / 3);
+            tblAccount.add(userIconGroup)
+                    .size(contentSize * .4f).grow().row();
             tblAccount.add(lblTotalXP).padBottom(5).left().row();
-//            tblAccount.add(hgExp).padBottom(5).right().row();
             tblAccount.add(pbAccountExp).growX().colspan(tblAccount.getColumns()).padRight(0);
 
             Container<Table> wrapper = new Container<>(tblAccount);
@@ -475,15 +523,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             root = new Container<>(wrapper);
             root.top().left();
-
-            gameInstance.getUserAccount().setPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void onChange(String name, Object newValue) {
-                    if (name.equals(CurrencyType.LOTTERY_COIN.name())) {
-                        lblLotteryCoins.setText(String.valueOf(newValue));
-                    }
-                }
-            });
 
             updateValues();
         }

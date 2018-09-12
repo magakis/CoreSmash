@@ -3,7 +3,7 @@ package com.archapp.coresmash;
 public interface AdManager {
     void show();
 
-    void showAdForReward(AdRewardListener listener);
+    void showAdForReward(AdRewardListener listener, VideoAdRewardType type);
 
     void hide();
 
@@ -11,5 +11,11 @@ public interface AdManager {
 
     interface AdRewardListener {
         void reward(String type, int amount);
+    }
+
+    enum VideoAdRewardType {
+        LOTTERY_COIN,
+        EXTRA_LIFE,
+        HEART
     }
 }

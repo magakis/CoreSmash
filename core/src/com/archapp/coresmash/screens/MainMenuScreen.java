@@ -66,7 +66,8 @@ public class MainMenuScreen extends ScreenBase {
             @Override
             public boolean keyDown(int keycode) {
                 if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
-                    levelBuilderScreen.saveProgress();
+                    if (CoreSmash.DEV_MODE)
+                        levelBuilderScreen.saveProgress();
                     Gdx.app.exit();
                     return true;
                 }
@@ -75,14 +76,13 @@ public class MainMenuScreen extends ScreenBase {
         });
 
         campaignScreen = new CampaignScreen(gameInstance);
-        levelBuilderScreen = new LevelBuilderScreen(gameInstance);
+
+        if (CoreSmash.DEV_MODE)
+            levelBuilderScreen = new LevelBuilderScreen(gameInstance);
+
         SoundManager.get().playMenuMusic();
 
-
-//                readAllBytes(Paths.get(Gdx.files.internal("docs/alpha_message.txt").path()));
-
         welcomeMessage = new ScreenMessageDialog(skin);
-
         welcomeMessage.setTitle("Core Smash")
                 .setSubTitle("PRE-ALPHA TEST")
                 .setMessage(FileUtils.fileToString(Gdx.files.internal("docs/alpha_message").reader(512))).show(stage);
@@ -239,12 +239,16 @@ public class MainMenuScreen extends ScreenBase {
 
             root = new Table();
             root.bottom().left();
-            root.add(imgbMap)
-                    .size(Value.percentWidth(1 / 7f, rootStack))
-                    .maxSize(Value.percentHeight(1/8f, rootStack))
-                    .padBottom(Value.percentHeight(1 / 16f, rootStack))
-                    .padLeft(-10)
-                    .left().expandX();
+            if (CoreSmash.DEV_MODE)
+                root.add(imgbMap)
+                        .size(Value.percentWidth(1 / 7f, rootStack))
+                        .maxSize(Value.percentHeight(1 / 8f, rootStack))
+                        .padBottom(Value.percentHeight(1 / 16f, rootStack))
+                        .padLeft(-10)
+                        .left().expandX();
+            else
+                root.add();
+
             root.add(imbSettings)
                     .size(Value.percentWidth(1 / 10f, rootStack))
                     .maxSize(Value.percentHeight(1 / 8f, rootStack))

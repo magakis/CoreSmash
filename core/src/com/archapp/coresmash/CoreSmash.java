@@ -21,7 +21,8 @@ import java.util.Locale;
 import java.util.Stack;
 
 public class CoreSmash extends Game {
-    public static String APP_VERSION = "0.1.2.1";
+    public static String APP_VERSION = "0.1.2.2";
+    public static boolean DEV_MODE = false;
     public static boolean LOG_CRASHES = true;
     public static boolean DEBUG_TABLET = false;
 
@@ -32,35 +33,17 @@ public class CoreSmash extends Game {
     private UserAccount userAccount;
     private Skin skin;
     private AdManager adManager;
+    private FeedbackMailHandler feedbackMailHandler;
 
     private Stack<Screen> screenStack;
 
     public CoreSmash() {
-        this(new AdManager() {
-            @Override
-            public void show() {
-
-            }
-
-            @Override
-            public void showAdForReward(AdRewardListener listener) {
-
-            }
-
-            @Override
-            public void hide() {
-
-            }
-
-            @Override
-            public void toggle() {
-
-            }
-        });
+        this(new PlatformSpecificManager());
     }
 
-    public CoreSmash(AdManager adManager) {
-        this.adManager = adManager;
+    public CoreSmash(PlatformSpecificManager platformSpecificManager) {
+        this.adManager = platformSpecificManager.adManager;
+        this.feedbackMailHandler = platformSpecificManager.feedbackMailHandler;
     }
 
     @Override
@@ -102,6 +85,10 @@ public class CoreSmash extends Game {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         super.render();
         soundManager.update(Gdx.graphics.getDeltaTime());
+    }
+
+    public FeedbackMailHandler getFeedbackMailHandler() {
+        return feedbackMailHandler;
     }
 
     public AdManager getAdManager() {

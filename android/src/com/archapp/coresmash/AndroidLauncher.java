@@ -2,6 +2,8 @@ package com.archapp.coresmash;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -10,6 +12,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
@@ -20,14 +23,36 @@ public class AndroidLauncher extends AndroidApplication {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ensurePermissionsGranted();
+        if (CoreSmash.DEV_MODE)
+            ensurePermissionsGranted();
 
         AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
         config.useWakelock = true;
-        RelativeLayout layout = new RelativeLayout(this);
+        final RelativeLayout layout = new RelativeLayout(this);
 
-        AdmobManager adManager = new AdmobManager("ca-app-pub-3940256099942544/6300978111");
-        View gameView = initializeForView(new CoreSmash(adManager), config);
+        AdmobManager adManager = new AdmobManager();
+
+        final Context context = this;
+
+        PlatformSpecificManager platformSpecificManager = new PlatformSpecificManager();
+        platformSpecificManager.adManager = adManager;
+        platformSpecificManager.feedbackMailHandler = new FeedbackMailHandler() {
+            @Override
+            public void createFeedbackMail() {
+                Intent i = new Intent(Intent.ACTION_SEND);
+                i.setType("message/rfc822");
+                i.putExtra(Intent.EXTRA_EMAIL, new String[]{"archapp.contact@gmail.com"});
+                i.putExtra(Intent.EXTRA_SUBJECT, "Feedback");
+                i.putExtra(Intent.EXTRA_TEXT, "Hey what's up?\n\nI played your game and I have to say the following:\n\n");
+                try {
+                    startActivity(Intent.createChooser(i, "Send Feedback with..."));
+                } catch (android.content.ActivityNotFoundException ex) {
+                    Toast.makeText(context, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
+
+        View gameView = initializeForView(new CoreSmash(platformSpecificManager), config);
         layout.addView(gameView);
         adManager.init(this, layout);
         setContentView(layout);

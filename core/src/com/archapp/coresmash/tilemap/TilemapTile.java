@@ -134,7 +134,6 @@ public class TilemapTile extends TileContainer implements Comparable<TilemapTile
     }
 
     void clear() {
-//        coords.set(999, 999);
         detachNeighbours();
     }
 
