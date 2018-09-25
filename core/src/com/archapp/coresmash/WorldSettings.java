@@ -18,6 +18,10 @@ public final class WorldSettings {
         return smallestScreenDimension * DefaultRatio.dialogToScreen;
     }
 
+    public static float getDefaultButtonHeight() {
+        return getDefaultDialogSize() * DefaultRatio.dialogButtonHeightToContent;
+    }
+
     public static int getScreenWidth() {
         return screenWidth;
     }

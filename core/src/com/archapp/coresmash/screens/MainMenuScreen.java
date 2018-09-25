@@ -154,16 +154,8 @@ public class MainMenuScreen extends ScreenBase {
 
             Container<ImageButton> imgPlay = newMenuButton();
 
-//            root.defaults()
-//                    .width(Value.percentWidth(3 / 5f, rootStack))
-//                    .height(Value.percentHeight(2 / 14f, rootStack));
-
             Label versInfo = new Label(CoreSmash.APP_VERSION + " | Michail Angelos Gakis", skin, "h6", Color.DARK_GRAY);
             versInfo.setAlignment(Align.bottom);
-
-//            root.bottom();
-//            root.add(imgPlay).padBottom(stage.getHeight()/14).row();
-//            root.add(versInfo).align(Align.center).height(versInfo.getPrefHeight());
 
             root.addActor(imgPlay);
             root.addActor(versInfo);
@@ -229,7 +221,7 @@ public class MainMenuScreen extends ScreenBase {
                 }
             });
 
-            ImageButton imbSettings = new ImageButton(skin, "ButtonSettings");
+            ImageButton imbSettings = UIFactory.createImageButton(skin, "ButtonSettings");
             imbSettings.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -351,7 +343,7 @@ public class MainMenuScreen extends ScreenBase {
                 }
             });
 
-            float buttonSize = width * .12f;
+            float buttonSize = WorldSettings.getDefaultButtonHeight();
             getButtonTable().add(btnIUnderstand).height(buttonSize).width(UIUtils.getWidthFor(btnIUnderstand.getImage().getDrawable(), buttonSize));
         }
 

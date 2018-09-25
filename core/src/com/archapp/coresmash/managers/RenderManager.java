@@ -103,6 +103,10 @@ public class RenderManager {
         }
     }
 
+    public SpriteBatch getBatch() {
+        return batch;
+    }
+
     public TextureRegion getTextureFor(int id) {
         return new TextureRegion(theme.getTexture(id));
     }

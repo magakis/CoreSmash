@@ -333,7 +333,6 @@ public class LevelBuilderScreen extends ScreenBase {
 
                     if (levelBuilder.load(filenameCache.getValue())) {
                         freeMode.activate();
-//                        freeMode.optionsMenu.updateValues(levelBuilder.getLayer());
                         Components.showToast("File '" + filenameCache.getValue() + "' loaded", stage);
                     } else {
                         Components.showToast("Error: Couldn't load '" + filenameCache.getValue() + "'", stage);
@@ -480,6 +479,7 @@ public class LevelBuilderScreen extends ScreenBase {
 
         UIInfo() {
             root = new Table();
+            root.setTouchable(Touchable.disabled);
             lbl = new Label[8];
 
             for (int i = 0; i < lbl.length; ++i) {
@@ -717,7 +717,6 @@ public class LevelBuilderScreen extends ScreenBase {
         private OptionsMenu optionsMenu;
         private float currentZoom = 1;
         private boolean isMovingOffset;
-        private float deviceDensity = Gdx.graphics.getDensity();
         private StageInputCapture textfieldInputCapture;
 
         FreeMode() {
@@ -737,11 +736,12 @@ public class LevelBuilderScreen extends ScreenBase {
 
         @Override
         public boolean pan(float x, float y, float deltaX, float deltaY) {
+            float multiplier = currentZoom;
             if (isMovingOffset) {
-                levelBuilder.moveOffsetBy(deltaX * currentZoom / deviceDensity, -deltaY * currentZoom / deviceDensity);
+                levelBuilder.moveOffsetBy(deltaX * multiplier, -deltaY * multiplier);
                 optionsMenu.mapSettings.updatePositionValues();
             } else {
-                camera.position.add(-deltaX * currentZoom / deviceDensity, deltaY * currentZoom / deviceDensity, 0);
+                camera.position.add(-deltaX * multiplier, deltaY * multiplier, 0);
                 updateCamInfo();
                 camera.update();
             }
@@ -1034,6 +1034,7 @@ public class LevelBuilderScreen extends ScreenBase {
             Label lblCrossMinRot, lblCrossMaxRot, lblColorCount, lblCircleMinRot, lblCircleMaxRot;
             CheckBox cbRotateCCW, cbIsChained;
             int activeLayer;
+            boolean settingInitialValuesFlag;
 
             UIMapSettings() {
                 uiLayer = new UILayer() {
@@ -1059,11 +1060,13 @@ public class LevelBuilderScreen extends ScreenBase {
                     public void changed(ChangeEvent event, Actor actor) {
                         int min = (int) sldrCrossMinRot.getValue();
                         int max = (int) sldrCrossMaxRot.getValue();
-                        if (Integer.compare(min, max) == 1) {
-                            sldrCrossMaxRot.setValue(min);
+                        if (!settingInitialValuesFlag) {
+                            if (Integer.compare(min, max) > 0) {
+                                sldrCrossMaxRot.setValue(min);
+                            }
+                            levelBuilder.setCrossMinSpeed(min);
                         }
-                        lblCrossMinRot.setText(String.format(Locale.ROOT, "Min:%3d", min));
-                        levelBuilder.setMinSpeed(min);
+                        lblCrossMinRot.setText(String.format(Locale.ROOT, "Min:%3d", (int) sldrCrossMinRot.getValue()));
                     }
                 });
                 sldrCrossMinRot.addListener(stopTouchDown);
@@ -1075,11 +1078,13 @@ public class LevelBuilderScreen extends ScreenBase {
                     public void changed(ChangeEvent event, Actor actor) {
                         int min = (int) sldrCrossMinRot.getValue();
                         int max = (int) sldrCrossMaxRot.getValue();
-                        if (Integer.compare(min, max) == 1) {
-                            sldrCrossMinRot.setValue(max);
+                        if (!settingInitialValuesFlag) {
+                            if (Integer.compare(min, max) > 0) {
+                                sldrCrossMinRot.setValue(max);
+                            }
+                            levelBuilder.setCrossMaxSpeed(max);
                         }
-                        lblCrossMaxRot.setText(String.format(Locale.ROOT, "Max:%3d", max));
-                        levelBuilder.setMaxSpeed(max);
+                        lblCrossMaxRot.setText(String.format(Locale.ROOT, "Max:%3d", (int) sldrCrossMaxRot.getValue()));
                     }
                 });
                 sldrCrossMaxRot.addListener(stopTouchDown);
@@ -1091,11 +1096,13 @@ public class LevelBuilderScreen extends ScreenBase {
                     public void changed(ChangeEvent event, Actor actor) {
                         int min = (int) sldrCircleMinRot.getValue();
                         int max = (int) sldrCircleMaxRot.getValue();
-                        if (Integer.compare(min, max) == 1) {
-                            sldrCircleMaxRot.setValue(min);
+                        if (!settingInitialValuesFlag) {
+                            if (Integer.compare(min, max) == 1) {
+                                sldrCircleMaxRot.setValue(min);
+                            }
+                            levelBuilder.setOriginMinSpeed(min);
                         }
-                        lblCircleMinRot.setText(String.format(Locale.ROOT, "Min:%3d", min));
-                        levelBuilder.setOriginMinSpeed(min);
+                        lblCircleMinRot.setText(String.format(Locale.ROOT, "Min:%3d", (int) sldrCircleMinRot.getValue()));
                     }
                 });
                 sldrCircleMinRot.addListener(stopTouchDown);
@@ -1107,11 +1114,13 @@ public class LevelBuilderScreen extends ScreenBase {
                     public void changed(ChangeEvent event, Actor actor) {
                         int min = (int) sldrCircleMinRot.getValue();
                         int max = (int) sldrCircleMaxRot.getValue();
-                        if (Integer.compare(min, max) == 1) {
-                            sldrCircleMinRot.setValue(max);
+                        if (!settingInitialValuesFlag) {
+                            if (Integer.compare(min, max) == 1) {
+                                sldrCircleMinRot.setValue(max);
+                            }
+                            levelBuilder.setOriginMaxSpeed(max);
                         }
-                        lblCircleMaxRot.setText(String.format(Locale.ROOT, "Max:%3d", max));
-                        levelBuilder.setOriginMaxSpeed(max);
+                        lblCircleMaxRot.setText(String.format(Locale.ROOT, "Max:%3d", (int) sldrCircleMaxRot.getValue()));
                     }
                 });
                 sldrCircleMaxRot.addListener(stopTouchDown);
@@ -1141,16 +1150,6 @@ public class LevelBuilderScreen extends ScreenBase {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
                         levelBuilder.setChained(cbIsChained.isChecked());
-                    }
-                });
-                Button btnUp = new Button(skin.get("default", TextButton.TextButtonStyle.class));
-                btnUp.addListener(new ChangeListener() {
-                    @Override
-                    public void changed(ChangeEvent event, Actor actor) {
-                        int newLayer = levelBuilder.upLayer();
-                        if (Integer.compare(newLayer, activeLayer) != 0) {
-                            updateValues(newLayer);
-                        }
                     }
                 });
 
@@ -1205,6 +1204,7 @@ public class LevelBuilderScreen extends ScreenBase {
             }
 
             private void updateValues(int layer) {
+                settingInitialValuesFlag = true;
                 activeLayer = layer;
                 uiLayer.updateLayer();
                 sldrCrossMaxRot.setValue(levelBuilder.getMaxSpeed());
@@ -1219,6 +1219,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 tfCircleX.setText(String.valueOf((int) levelBuilder.getOriginX()));
                 tfCircleY.setText(String.valueOf((int) levelBuilder.getOriginY()));
                 uiInfo.lbl[1].setText(String.format(Locale.ROOT, "Origin-Offset Dist: %.3f", Math.hypot(levelBuilder.getOffsetX(), levelBuilder.getOffsetY())));
+                settingInitialValuesFlag = false;
             }
 
             private void updatePositionValues() {

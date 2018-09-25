@@ -3,21 +3,37 @@ package com.archapp.coresmash.tilemap;
 import com.archapp.coresmash.Coords2D;
 import com.archapp.coresmash.tiles.Tile;
 import com.archapp.coresmash.tiles.TileContainer;
+import com.badlogic.gdx.utils.Pool;
 
 import java.util.List;
 
-public class TilemapTile extends TileContainer implements Comparable<TilemapTile> {
+public class TilemapTile extends TileContainer implements Comparable<TilemapTile>, Pool.Poolable {
     final private Coords2D coords;
     final private NeighbourTiles neighbourTiles;
     private int distanceFromCenter;
     private int layerID;
+    float rotation;
+    boolean dispose;
 
     // PUBLIC
 
-    public TilemapTile(Tile tile) {
-        setTile(tile);
+    public TilemapTile() {
         coords = new Coords2D();
         neighbourTiles = new NeighbourTiles();
+    }
+
+    public TilemapTile(Tile tile) {
+        this();
+        setTile(tile);
+    }
+
+    public void reset() {
+        super.reset();
+        coords.set(0, 0);
+        distanceFromCenter = 0;
+        layerID = 0;
+        rotation = 0;
+        dispose = false;
     }
 
     public int getX() {
@@ -43,6 +59,14 @@ public class TilemapTile extends TileContainer implements Comparable<TilemapTile
                 list.add(t);
             }
         }
+    }
+
+    public float getRotation() {
+        return rotation;
+    }
+
+    public void dispose() {
+        dispose = true;
     }
 
     public TilemapTile getNeighbour(TileContainer.Side side) {
@@ -98,8 +122,8 @@ public class TilemapTile extends TileContainer implements Comparable<TilemapTile
         TilemapTile neighbour = getNeighbour(side);
         if (neighbour != null) {
             neighbour.setNeighbour(getOppositeSide(side), null);
+            setNeighbour(side, null);
         }
-        setNeighbour(side, null);
     }
 
     // PROTECTED

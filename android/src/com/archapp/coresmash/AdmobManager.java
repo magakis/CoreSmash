@@ -148,7 +148,11 @@ public final class AdmobManager implements AdManager {
                             throw new RuntimeException("Not known ad type");
                     }
 
-                    rewardedVideoAd.loadAd(adID, new AdRequest.Builder().build());
+                    if (CoreSmash.DEV_MODE)
+                        rewardedVideoAd.loadAd("ca-app-pub-3940256099942544/5224354917", new AdRequest.Builder().addTestDevice("6E51061518C2EC71A871160C702767EB").build());
+                    else
+                        rewardedVideoAd.loadAd(adID, new AdRequest.Builder().build());
+
                     rewardedVideoAd.setRewardedVideoAdListener(new RewardedVideoAdListener() {
                         @Override
                         public void onRewardedVideoAdLoaded() {

@@ -30,6 +30,11 @@ public abstract class TileContainer {
         return result;
     }
 
+    public void reset() {
+        positionInWorld.setZero();
+        tile = null;
+    }
+
     public Vector2 getPositionInWorld() {
         return positionInWorld;
     }
@@ -49,7 +54,8 @@ public abstract class TileContainer {
     public boolean hasTile() {return tile != null;}
 
     public int getTileID() {
-        if (tile == null) throw new NullPointerException();
+        if (tile == null)
+            throw new NullPointerException();
         return tile.getID();
     }
 

@@ -73,8 +73,8 @@ public class SettingsDialog extends Dialog {
         content.add(title).padTop(title.getPrefHeight() * -.2f).row();
         content.add(checkboxes).row();
 
-        float buttonSize = contentWidth * WorldSettings.DefaultRatio.dialogButtonToContent() * .8f;
-        content.add(btnReturn).height(buttonSize).width(UIUtils.getWidthFor(btnReturn.getImage().getDrawable(), buttonSize));
+        float buttonSize = WorldSettings.getDefaultButtonHeight();
+        getButtonTable().add(btnReturn).height(buttonSize).width(UIUtils.getWidthFor(btnReturn.getImage().getDrawable(), buttonSize));
 
         setMovable(false);
         setResizable(false);

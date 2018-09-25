@@ -54,7 +54,6 @@ public class LotteryDialog extends Dialog {
         btnClaim.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                result(reward);
                 hide();
             }
         });

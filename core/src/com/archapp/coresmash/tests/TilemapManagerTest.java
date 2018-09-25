@@ -22,7 +22,6 @@ public class TilemapManagerTest extends ProjectTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        tilemapManager = new TilemapManager();
     }
 
     @Test

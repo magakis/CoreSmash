@@ -9,6 +9,7 @@ import com.archapp.coresmash.tiles.TileContainer.Side;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Pool;
 
 import org.xmlpull.v1.XmlSerializer;
 
@@ -25,9 +26,17 @@ import static com.archapp.coresmash.tiles.TileContainer.getOppositeSide;
  */
 
 public class Tilemap extends Observable implements Comparable<Tilemap> {
+    private static final Pool<TilemapTile> tilemapTilePool = new Pool<TilemapTile>() {
+        @Override
+        protected TilemapTile newObject() {
+            return new TilemapTile();
+        }
+    };
+
     private int groupID;
     private int maxDistanceFromCenter;
     private List<TilemapTile> tilemapTiles;
+    private List<TilemapTile> destroyedTiles;
     private Coords2D defPosition;
     private Vector2 worldPosition;
     private Vector2 offset;
@@ -59,6 +68,7 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         cos = 1;
         dummyTile = new TilemapTile(null);
         tilemapTiles = new ArrayList<>();
+        destroyedTiles = new ArrayList<>();
         worldPosition = new Vector2();
         origin = new Vector2();
         offset = new Vector2();
@@ -126,9 +136,10 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
 
     public TilemapTile putTilemapTile(int x, int y, Tile tile) {
         TilemapTile slot = getTilemapTile(x, y);
-
         if (slot == null) {
-            TilemapTile newTile = new TilemapTile(tile);
+            assert tile != null;
+            TilemapTile newTile = tilemapTilePool.obtain();
+            newTile.setTile(tile);
             newTile.setPositionInTilemap(groupID, x, y);
             updateTilemapTile(newTile); // update tile to set it's world position (Used in levelBuilder)
             attachNeighbours(newTile);
@@ -169,21 +180,24 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
     }
 
     public void destroyTilemapTile(List<TilemapTile> forDesrtuction) {
-        for (TilemapTile tile : forDesrtuction) {
-            notifyObservers(NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED, tile); // put before others!
-            tile.clear();
-            tilemapTiles.remove(tile);
+        for (TilemapTile tmTile : forDesrtuction) {
+            executeDestroyProcedure(tmTile);
         }
         Collections.sort(tilemapTiles);
+    }
+
+    private void executeDestroyProcedure(TilemapTile tmTile) {
+        notifyObservers(NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED, tmTile); // put before others!
+        tmTile.clear();
+        tilemapTiles.remove(tmTile);
+        destroyedTiles.add(tmTile);
     }
 
     public TilemapTile destroyTilemapTile(int x, int y) {
         TilemapTile tmTile = getTilemapTile(x, y);
         if (tmTile == null) return null;
 
-        notifyObservers(NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED, tmTile);
-        tmTile.clear();
-        tilemapTiles.remove(tmTile);
+        executeDestroyProcedure(tmTile);
 
         Collections.sort(tilemapTiles);
         return tmTile;
@@ -222,7 +236,19 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
     public void update(float delta) {
         rotateOrigin(MathUtils.clamp(maxMapRotationSpeed - speedDiff * ((float) tilemapTiles.size() / initTileCount), minMapRotationSpeed, maxMapRotationSpeed) * delta);
         rotate(MathUtils.clamp(maxRotationSpeed - speedDiff * ((float) tilemapTiles.size() / initTileCount), minRotationSpeed, maxRotationSpeed) * delta);
+        disposeDisposableTiles();
         updateTilePositions();
+    }
+
+    private void disposeDisposableTiles() {
+        Iterator<TilemapTile> iter = destroyedTiles.iterator();
+        while (iter.hasNext()) {
+            TilemapTile tmTile = iter.next();
+            if (tmTile.dispose) {
+                tilemapTilePool.free(tmTile);
+                iter.remove();
+            }
+        }
     }
 
     private void rotateOrigin(float deg) {
@@ -249,6 +275,9 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         for (TilemapTile tmTile : tilemapTiles) {
             updateTilemapTile(tmTile);
         }
+        for (TilemapTile tmTile : destroyedTiles) {
+            updateTilemapTile(tmTile);
+        }
     }
 
     void reset() {
@@ -256,7 +285,15 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
         while (iter.hasNext()) {
             TilemapTile t = iter.next();
             if (t == null) continue;
-            t.clear();
+            tilemapTilePool.free(t);
+            iter.remove();
+        }
+
+        iter = destroyedTiles.iterator();
+        while (iter.hasNext()) {
+            TilemapTile t = iter.next();
+            if (t == null) continue;
+            tilemapTilePool.free(t);
             iter.remove();
         }
 
@@ -379,6 +416,7 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
                 (y * tileYDistance) * cos;
 
         tmTile.setPositionInWorld(X_world, Y_world);
+        tmTile.rotation = rotation + originRotation;
     }
 
 }

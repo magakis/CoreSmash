@@ -6,6 +6,7 @@ import com.archapp.coresmash.NotificationType;
 import com.archapp.coresmash.Observable;
 import com.archapp.coresmash.Observer;
 import com.archapp.coresmash.WorldSettings;
+import com.archapp.coresmash.animation.AnimationManager;
 import com.archapp.coresmash.managers.RenderManager;
 import com.archapp.coresmash.tiles.AstronautBall;
 import com.archapp.coresmash.tiles.Destroyable;
@@ -41,9 +42,11 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
     private TilemapPathfinder pathfinder = new TilemapPathfinder();
     private TilemapBuilder tilemapBuilder = new TilemapBuilder();
     private Match3 match3 = new Match3();
+    private AnimationManager animationManager;
     private int[] colorsAvailable = new int[8]; // XXX(22/4/2018): MagicValue 7 (Should ask TileIndex)
 
-    public TilemapManager() {
+    public TilemapManager(AnimationManager animationManager) {
+        this.animationManager = animationManager;
         defTilemapPosition = new Coords2D(WorldSettings.getWorldWidth() / 2, WorldSettings.getWorldHeight() - WorldSettings.getWorldHeight() / 4);
         worldMap = new Map(this);
         tileList = new ArrayList<>();
@@ -126,6 +129,8 @@ public class TilemapManager extends Observable implements TilemapCollection, Obs
         if (tile.getLayerID() == 0 && tile.getX() == 0 && tile.getY() == 0) {
             notifyObservers(NotificationType.NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED, null);
         }
+
+        animationManager.put(tile);
     }
 
     public int getCenterTileID() {

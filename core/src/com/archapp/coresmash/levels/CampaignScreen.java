@@ -219,7 +219,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             if (stats.isLevelUnlocked()) {
                 int nextLevel = stats.getUnlockedLevel() + 1;
                 rewardsManager.giveRewardForLevel(nextLevel, gameInstance.getUserAccount(), stage);
-                levelButtons.get(nextLevel - 1).setDisabled(false);
+                if ((nextLevel - 1) < levelButtons.size())
+                    levelButtons.get(nextLevel - 1).setDisabled(false);
             }
         }
     }
@@ -720,7 +721,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             scrollPane.setOverscroll(false, false);
 
             getContentTable().defaults().space(0);
-            getContentTable().add(lblTitle).row();//.padTop(-lblTitle.getPrefHeight() * .1f).row();
+            getContentTable().add(lblTitle).row();
             getContentTable().add(scrollPane).padLeft(width * .025f).padRight(width * .025f).grow();
             getCell(getContentTable()).width(width).padBottom(width * .025f);
             getCell(getButtonTable()).width(width);
@@ -735,7 +736,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 }
             });
 
-            float buttonSize = width * .12f;
+            float buttonSize = WorldSettings.getDefaultButtonHeight();
             getButtonTable().add(btn).height(buttonSize).width(UIUtils.getWidthFor(btn.getImage().getDrawable(), buttonSize));
         }
 

@@ -160,6 +160,7 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("ButtonHowToPlay.png");
         loadTexture("ButtonFeedback.png");
         loadTexture("ButtonFreeHeart.png");
+        loadTexture("ButtonSpeedUp.png");
 
         loadTexture("MenuBackground.png");
         loadTexture("CampaignBackground.png");
@@ -207,6 +208,14 @@ public class LoadingScreen extends ScreenBase {
         fontParams.fontParameters.borderWidth = 1 * PPI;
         fontParams.fontParameters.size = (int) (18 * PPI);
         am.load("h4o.ttf", BitmapFont.class, fontParams);
+
+        fontParams = new FreetypeFontLoader.FreeTypeFontLoaderParameter();
+        fontParams.fontFileName = "BubblegumSans.otf";
+        fontParams.fontParameters.size = (int) (24 * PPI);
+        fontParams.fontParameters.shadowColor = Color.BLACK;
+        fontParams.fontParameters.shadowOffsetX = (int) (1 * PPI);
+        fontParams.fontParameters.shadowOffsetY = (int) (1 * PPI);
+        am.load("h3s.ttf", BitmapFont.class, fontParams);
     }
 
     private void setupSounds() {
@@ -302,7 +311,6 @@ public class LoadingScreen extends ScreenBase {
         ninePatch.scale(defScale, defScale);
         skin.add("simpleFrameTrans", ninePatch);
 
-
         // Textures
         pix = new Pixmap(41, 41, Pixmap.Format.RGBA8888);
         pix.setColor(Color.alpha(0));
@@ -355,6 +363,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("ButtonHowToPlay", am.get("ButtonHowToPlay.png"));
         skin.add("ButtonFeedback", am.get("ButtonFeedback.png"));
         skin.add("ButtonFreeHeart", am.get("ButtonFreeHeart.png"));
+        skin.add("ButtonSpeedUp", am.get("ButtonSpeedUp.png"));
 
         skin.add("MenuBackground", am.get("MenuBackground.png"));
         skin.add("CampaignBackground", am.get("CampaignBackground.png"));
@@ -387,6 +396,10 @@ public class LoadingScreen extends ScreenBase {
         registerFont(skin, "h2o", "h2o.ttf");
         registerFont(skin, "h3o", "h3o.ttf");
         registerFont(skin, "h4o", "h4o.ttf");
+
+        //Drop-Shadow fonts
+        registerFont(skin, "h3s", "h3s.ttf");
+
 
         // 96   84  72  60  48  36
 
@@ -581,6 +594,12 @@ public class LoadingScreen extends ScreenBase {
         imgbs.imageDown = skin.newDrawable("ButtonHowToPlay", SlightGray);
         imgbs.imageDisabled = skin.newDrawable("ButtonHowToPlay", Color.DARK_GRAY);
         skin.add("ButtonHowToPlay", imgbs);
+
+        imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.imageUp = skin.newDrawable("ButtonSpeedUp", 1, 1, 1, .35f);
+        imgbs.imageDown = skin.getDrawable("ButtonSpeedUp");
+        imgbs.imageDisabled = skin.newDrawable("ButtonSpeedUp", Color.DARK_GRAY);
+        skin.add("ButtonSpeedUp", imgbs);
 
         imgbs = new ImageButton.ImageButtonStyle();
         imgbs.imageUp = skin.getDrawable("DefaultTexture");

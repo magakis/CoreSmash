@@ -6,8 +6,10 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {
+//		int height = 1024;
+//		int width = 768;
 		int height = 1024;
-		int width = 768;
+        int width = 576;
 
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
         config.resizable = false;

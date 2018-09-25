@@ -9,6 +9,7 @@ import com.archapp.coresmash.NotificationType;
 import com.archapp.coresmash.Observer;
 import com.archapp.coresmash.StreakUI;
 import com.archapp.coresmash.WorldSettings;
+import com.archapp.coresmash.animation.AnimationManager;
 import com.archapp.coresmash.levels.Level;
 import com.archapp.coresmash.managers.MovingBallManager;
 import com.archapp.coresmash.managers.RenderManager;
@@ -33,12 +34,15 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -48,7 +52,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 
 import java.util.Locale;
@@ -67,6 +70,7 @@ public class GameScreen extends ScreenBase implements Observer {
     private TilemapManager tilemapManager;
     private MovingBallManager movingBallManager;
     private RoundManager roundManager;
+    private AnimationManager animationManager;
     private Launcher launcher;
 
     private StreakUI streakUI;
@@ -74,6 +78,7 @@ public class GameScreen extends ScreenBase implements Observer {
     private ResultDialog resultDialog;
 
     private Level activeLevel;
+    private boolean speedUp;
 
     //===========
     private DebugUI debugUI;
@@ -89,10 +94,11 @@ public class GameScreen extends ScreenBase implements Observer {
         camera = (OrthographicCamera) viewport.getCamera();
         camera.setToOrtho(false, viewport.getMinWorldWidth(), viewport.getMinWorldHeight());
 
+        animationManager = new AnimationManager();
         renderManager = gameInstance.getRenderManager();
         movingBallManager = new MovingBallManager();
         launcher = new Launcher(movingBallManager);
-        tilemapManager = new TilemapManager();
+        tilemapManager = new TilemapManager(animationManager);
         roundManager = new RoundManager();
         gameController = new GameController(tilemapManager, movingBallManager, roundManager, launcher);
 
@@ -159,16 +165,17 @@ public class GameScreen extends ScreenBase implements Observer {
     @Override
     public void render(float delta) {
         update(delta);
-        draw(delta);
+        draw();
     }
 
-    private void draw(float delta) {
+    private void draw() {
         renderManager.spriteBatchBegin(camera.combined);
 
         launcher.draw(renderManager);
         tilemapManager.draw(renderManager);
         movingBallManager.draw(renderManager);
         renderManager.drawCenterTileIndicator(tilemapManager);
+        animationManager.draw(renderManager);
 
         renderManager.spriteBatchEnd();
 
@@ -176,6 +183,9 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     private void update(float delta) {
+        if (speedUp)
+            delta *= 2f;
+
         if (!roundManager.isGamePaused()) {
             activeLevel.update(delta, tilemapManager);
             launcher.update(delta);
@@ -203,7 +213,7 @@ public class GameScreen extends ScreenBase implements Observer {
                 }
             }
         }
-
+        animationManager.update(delta);
         stage.act(); // Moved out of updateStage() cause it always has to get called
     }
 
@@ -229,6 +239,7 @@ public class GameScreen extends ScreenBase implements Observer {
         launcher.reset();
         roundManager.reset();
         streakUI.reset();
+        animationManager.reset();
 
         activeLevel = null;
         rootUIStack.clear();
@@ -395,99 +406,58 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private class GameUI implements UIComponent, Observer {
         Stack root;
-
+        HorizontalGroup movesGroup, livesGroup;
         Table tblPowerUps, board;
-        Table tblTime, tblScore;
-        Container<Table> boardRoot, centerTable;
-        Table tblCenter;
         Label lblTime, lblScore, lblLives, lblMoves, lblTargetScore;
         PowerupButton[] powerupButtons;
-        Label lblStaticLives;
-        Image imgHourGlass, imgMovesIcon, imgLivesIcon;
+        Image imgMovesIcon, imgLivesIcon;
 
         public GameUI() {
-            lblTime = new Label("0", skin, "h4");
+            lblTime = new Label("0", skin, "h3s");
             lblTime.setAlignment(Align.left);
 
-            lblScore = new Label("0", skin, "h4");
+            lblScore = new Label("0", skin, "h3s");
             lblScore.setAlignment(Align.center);
 
-            lblLives = new Label("null", skin, "h4");
+            lblLives = new Label("null", skin, "h3s");
             lblLives.setAlignment(Align.center);
 
-            lblMoves = new Label("null", skin, "h4");
+            lblMoves = new Label("null", skin, "h3s");
             lblMoves.setAlignment(Align.center);
 
             lblTargetScore = new Label("", skin, "h5", new Color(61 / 255f, 61 / 255f, 92 / 255f, 1));
             lblTargetScore.setAlignment(Align.center);
 
-            lblStaticLives = new Label("Lives: ", skin, "h4");
-
-            imgHourGlass = new Image(skin.getDrawable("timeIcon"));
-            imgHourGlass.setScaling(Scaling.fit);
-
             imgMovesIcon = new Image(skin.getDrawable("movesIcon"));
-            imgMovesIcon.setScaling(Scaling.fit);
-
             imgLivesIcon = new Image(skin.getDrawable("heartIcon"));
-            imgLivesIcon.setScaling(Scaling.fit);
 
-            tblScore = new Table(skin);
-            tblScore.background("BoardScore");
-            tblScore.row().padTop(Value.percentHeight(.4f, lblScore)).right();
-            tblScore.add(lblScore);
-            tblScore.add("/", "h4");
-            tblScore.add(lblTargetScore);
-
-
-            tblTime = new Table(skin);
-            tblTime.setBackground("BoardTime");
-            tblTime.row().padTop(Value.percentHeight(.4f, lblTime)).right();
-            tblTime.add(imgHourGlass)
-                    .size(Value.percentHeight(.9f, lblTime))
-                    .padRight(Value.percentHeight(0.2f, lblTime));
-            tblTime.add(lblTime);
-
-            tblCenter = new Table();
-            tblCenter.padTop(Value.percentHeight(.5f, lblScore))
-                    .columnDefaults(1).width(lblLives.getPrefHeight() * 1.4f).right();
-
-            centerTable = new Container<>(tblCenter);
-            centerTable.setBackground(skin.getDrawable("BoardCenter"));
-
+            float sidePadding = 10 * Gdx.graphics.getDensity();
             board = new Table(skin);
-            board.defaults().space(0);
-            board.columnDefaults(0).expandX().padBottom(lblTime.getPrefHeight() / 6);
-            board.columnDefaults(1);
-            board.columnDefaults(2).expandX().padBottom(lblScore.getPrefHeight() / 6);
+            board.defaults().expandX().uniformX();
+            board.columnDefaults(0).left().padLeft(sidePadding);
+            board.columnDefaults(2).right().padRight(sidePadding);
 
-            Container<Table> timeWrapper = new Container<>(tblTime);
-            timeWrapper.height(Value.percentHeight(2, lblTime)).width(new Value() {
-                @Override
-                public float get(Actor context) {
-                    return UIUtils.getWidthFor(tblTime.getBackground(), lblTime.getPrefHeight() * 2f);
-                }
-            });
-            board.add(timeWrapper).right();
+            Container<Image> imgMovesWrapper = new Container<>(imgMovesIcon);
+            imgMovesWrapper.size(lblMoves.getPrefHeight() * .6f);
 
-            board.add(centerTable).height(Value.percentHeight(1.6f, board)).width(new Value() {
-                @Override
-                public float get(Actor context) {
-                    return UIUtils.getWidthFor(centerTable.getBackground(), board.getHeight() * 1.6f);
-                }
-            }).padTop(Value.percentHeight(-.5f, lblScore));
+            movesGroup = new HorizontalGroup();
+            movesGroup.addActor(imgMovesWrapper);
+            movesGroup.addActor(lblMoves);
 
-            Container<Table> scoreWrapper = new Container<>(tblScore);
-            scoreWrapper.height(Value.percentHeight(2, lblScore)).width(new Value() {
-                @Override
-                public float get(Actor context) {
-                    return UIUtils.getWidthFor(tblScore.getBackground(), lblScore.getPrefHeight() * 2);
-                }
-            });
-            board.add(scoreWrapper).left();
+            Container<Image> imgLivesWrapper = new Container<>(imgLivesIcon);
+            imgLivesWrapper.size(UIUtils.getWidthFor(imgLivesIcon.getDrawable(), lblLives.getPrefHeight() * .6f), lblLives.getPrefHeight() * .6f);
 
-            board.validate(); // Important call! Required for tblScore to have correct values on size
+            livesGroup = new HorizontalGroup();
+            livesGroup.addActor(imgLivesWrapper);
+            livesGroup.addActor(lblLives);
 
+            board.add(movesGroup);
+            board.add(lblTime);
+            board.add(lblScore);
+            board.row();
+            board.add(livesGroup);
+
+            // POWERUP TABLE
             powerupButtons = new PowerupButton[3];
             for (int i = 0; i < powerupButtons.length; ++i) {
                 final PowerupButton btn = new PowerupButton();
@@ -513,7 +483,7 @@ public class GameScreen extends ScreenBase implements Observer {
             }
 
             tblPowerUps = new Table();
-            tblPowerUps.defaults().size(60 * Gdx.graphics.getDensity(), 60 * Gdx.graphics.getDensity()).pad(3 * Gdx.graphics.getDensity());
+            tblPowerUps.defaults().size(40 * Gdx.graphics.getDensity(), 40 * Gdx.graphics.getDensity()).pad(5 * Gdx.graphics.getDensity());
             tblPowerUps.center();
             tblPowerUps.setTouchable(Touchable.enabled);
             tblPowerUps.addCaptureListener(new EventListener() {
@@ -524,19 +494,40 @@ public class GameScreen extends ScreenBase implements Observer {
                 }
             });
 
-            float boardHeight = tblScore.getHeight() * 1.28f; // Prior call to board.validate() is required!
-            boardRoot = new Container<>(board);
-            boardRoot.fill().height(boardHeight);
-
-            Container<Container> boardWrapper = new Container<Container>(boardRoot);
-            boardWrapper.top();
+            Container<Table> boardWrapper = new Container<>(board);
+            boardWrapper.fillX().top();
 
             Container<Table> powerupsWrapper = new Container<>(tblPowerUps);
-            powerupsWrapper.center().right();
+            powerupsWrapper.bottom().right().padBottom(gameInstance.getUIViewport().getScreenHeight() / 4);
 
+            // SPEED-UP BUTTON
+            ImageButton btnSpeedUp = new ImageButton(skin, "ButtonSpeedUp");
+            btnSpeedUp.getImageCell().size(75 * Gdx.graphics.getDensity());
+            btnSpeedUp.addListener(new InputListener() {
+                @Override
+                public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                    speedUp = !speedUp;
+                    return true;
+                }
+
+                @Override
+                public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                    speedUp = !speedUp;
+                }
+            });
+            Container<ImageButton> speedupWrapper = new Container<>(btnSpeedUp);
+            speedupWrapper
+                    .bottom()
+                    .right()
+                    .padBottom(gameInstance.getUIViewport().getScreenHeight() * .08f)
+                    .padRight(10 * Gdx.graphics.getDensity());
+
+
+            // ASSEMBLE ROOT
             root = new Stack();
             root.addActor(boardWrapper);
             root.addActor(powerupsWrapper);
+            root.addActor(speedupWrapper);
         }
 
         public void setup() {
@@ -545,38 +536,16 @@ public class GameScreen extends ScreenBase implements Observer {
             lblLives.setText(String.valueOf(roundManager.getLives()));
             lblMoves.setText(String.valueOf(roundManager.getMoves()));
 
-            tblCenter.clear();
+            movesGroup.setVisible(roundManager.isMovesEnabled());
+            livesGroup.setVisible(roundManager.isLivesEnabled());
+            lblTime.setVisible(roundManager.isTimeEnabled());
 
-            if (roundManager.isMovesEnabled() && roundManager.isLivesEnabled()) {
-                tblCenter.add(imgMovesIcon).size(lblLives.getPrefHeight());
-                tblCenter.add(lblMoves).left();
-                tblCenter.row().padTop(Value.percentHeight(.2f, lblLives));
-                tblCenter.add(imgLivesIcon).size(lblLives.getPrefHeight());
-                tblCenter.add(lblLives).left();
-            } else {
-                if (roundManager.isLivesEnabled()) {
-                    tblCenter.add(imgLivesIcon).size(lblLives.getPrefHeight());
-                    tblCenter.add(lblLives).left();
-                }
-                if (roundManager.isMovesEnabled()) {
-                    tblCenter.add(imgMovesIcon).size(lblMoves.getPrefHeight());
-                    tblCenter.add(lblMoves).left();
-                }
+            if (roundManager.isTimeEnabled()) {
+                float time = roundManager.getTime();
+                lblTime.setText(String.format(Locale.ENGLISH, "%d:%02d", (int) time / 60, (int) time % 60));
             }
 
-            imgMovesIcon.setVisible(roundManager.isMovesEnabled());
-            lblMoves.setVisible(roundManager.isMovesEnabled());
-
-            imgLivesIcon.setVisible(roundManager.isLivesEnabled());
-            lblLives.setVisible(roundManager.isLivesEnabled());
-
-            tblTime.setVisible(roundManager.isTimeEnabled());
-            float time = roundManager.getTime();
-            lblTime.setText(String.format(Locale.ENGLISH, "%d:%02d", (int) time / 60, (int) time % 60));
-
             setupPowerups();
-
-            lblMoves.invalidateHierarchy();
         }
 
         @Override

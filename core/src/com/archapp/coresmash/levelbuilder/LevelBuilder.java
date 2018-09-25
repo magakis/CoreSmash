@@ -105,11 +105,19 @@ final public class LevelBuilder {
         return mapSettings.get(layer).maxMapSpeed;
     }
 
-    public void setMinSpeed(int min) {
+    public int getMinSpeed() {
+        return mapSettings.get(layer).minSpeed;
+    }
+
+    public int getMaxSpeed() {
+        return mapSettings.get(layer).maxSpeed;
+    }
+
+    public void setCrossMinSpeed(int min) {
         mapSettings.get(layer).minSpeed = min;
     }
 
-    public void setMaxSpeed(int max) {
+    public void setCrossMaxSpeed(int max) {
         mapSettings.get(layer).maxSpeed = max;
     }
 
@@ -191,14 +199,6 @@ final public class LevelBuilder {
 
     public float getLauncherCooldown() {
         return levelSettings.launcherCooldown;
-    }
-
-    public int getMinSpeed() {
-        return mapSettings.get(layer).minSpeed;
-    }
-
-    public int getMaxSpeed() {
-        return mapSettings.get(layer).maxSpeed;
     }
 
     public int getColorCount() {
