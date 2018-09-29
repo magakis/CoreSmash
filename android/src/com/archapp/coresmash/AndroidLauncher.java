@@ -2,6 +2,7 @@ package com.archapp.coresmash;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -14,17 +15,24 @@ import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.archapp.coresmash.platform.FeedbackMailHandler;
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 
 public class AndroidLauncher extends AndroidApplication {
+    GoogleGamesAndroid googleGamesAndroid;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        final Context context = this;
 
-        if (CoreSmash.DEV_MODE)
+        if (CoreSmash.DEV_MODE) {
             ensurePermissionsGranted();
+        }
+
+        googleGamesAndroid = new GoogleGamesAndroid(this);
 
         AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
         config.useWakelock = true;
@@ -32,9 +40,8 @@ public class AndroidLauncher extends AndroidApplication {
 
         AdmobManager adManager = new AdmobManager();
 
-        final Context context = this;
-
         PlatformSpecificManager platformSpecificManager = new PlatformSpecificManager();
+        platformSpecificManager.googleGames = googleGamesAndroid;
         platformSpecificManager.adManager = adManager;
         platformSpecificManager.feedbackMailHandler = new FeedbackMailHandler() {
             @Override
@@ -46,7 +53,7 @@ public class AndroidLauncher extends AndroidApplication {
                 i.putExtra(Intent.EXTRA_TEXT, "Hey what's up?\n\nI played your game and I have to say the following:\n\n");
                 try {
                     startActivity(Intent.createChooser(i, "Send Feedback with..."));
-                } catch (android.content.ActivityNotFoundException ex) {
+                } catch (ActivityNotFoundException ex) {
                     Toast.makeText(context, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -56,6 +63,15 @@ public class AndroidLauncher extends AndroidApplication {
         layout.addView(gameView);
         adManager.init(this, layout);
         setContentView(layout);
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RequestCode.GOOGLE_SIGN_IN.ordinal()) {
+            googleGamesAndroid.onActivityResult(data);
+        }
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -80,5 +96,9 @@ public class AndroidLauncher extends AndroidApplication {
         } else {
             exit();
         }
+    }
+
+    public enum RequestCode {
+        GOOGLE_SIGN_IN
     }
 }

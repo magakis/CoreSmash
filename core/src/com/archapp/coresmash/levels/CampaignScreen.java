@@ -1,9 +1,7 @@
 package com.archapp.coresmash.levels;
 
-import com.archapp.coresmash.AdManager;
 import com.archapp.coresmash.CoreSmash;
 import com.archapp.coresmash.CurrencyType;
-import com.archapp.coresmash.FeedbackMailHandler;
 import com.archapp.coresmash.GameController;
 import com.archapp.coresmash.PropertyChangeListener;
 import com.archapp.coresmash.RoundEndListener;
@@ -14,6 +12,10 @@ import com.archapp.coresmash.levelbuilder.LevelListParser.RegisteredLevel;
 import com.archapp.coresmash.levels.CampaignArea.LevelButton;
 import com.archapp.coresmash.managers.RoundManager;
 import com.archapp.coresmash.managers.RoundManager.GameStats;
+import com.archapp.coresmash.platform.AdManager;
+import com.archapp.coresmash.platform.FeedbackMailHandler;
+import com.archapp.coresmash.platform.GoogleGames;
+import com.archapp.coresmash.platform.PlayerInfo;
 import com.archapp.coresmash.screens.GameScreen;
 import com.archapp.coresmash.screens.ScreenBase;
 import com.archapp.coresmash.sound.SoundManager;
@@ -55,6 +57,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 
@@ -464,13 +467,18 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
         private Container<Container<Table>> root;
         private ProgressBar pbAccountExp;
-        private Label lblLevel, lblExp, lblExpForLevel, lblTotalXP;
+        private ImageButton btnUser;
+        private Label lblUserName,
+                lblLevel, lblExp, lblExpForLevel, lblTotalXP;
 
         public UIUserPanel() {
             ImageButton.ImageButtonStyle userButtonStyle = new ImageButton.ImageButtonStyle();
             userButtonStyle.up = skin.getDrawable("invisible");
-            userButtonStyle.imageUp = skin.getDrawable("DefaultUserIcon");
-            ImageButton btnUser = new ImageButton(userButtonStyle);
+
+            lblUserName = UIFactory.createLabel("", skin, "h5", Align.center);
+            btnUser = new ImageButton(userButtonStyle);
+
+            updateUserInfo();
 
             ProgressBar.ProgressBarStyle pbStyle = new ProgressBar.ProgressBarStyle();
             pbStyle.background = skin.newDrawable("progressbar_inner", Color.DARK_GRAY);
@@ -512,6 +520,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             contentSize = WorldSettings.getSmallestScreenDimension() * .5f;
             Table tblAccount = new Table();
             tblAccount.background(skin.getDrawable("UserAccountFrame"));
+            tblAccount.add(lblUserName).center()
+                    .padTop(-7 * Gdx.graphics.getDensity())
+                    .padBottom(lblLevel.getPrefHeight() * .1f).row();
             tblAccount.row().padBottom(lblLevel.getPrefHeight() / 3);
             tblAccount.add(userIconGroup)
                     .size(contentSize * .4f).grow().row();
@@ -520,12 +531,33 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             Container<Table> wrapper = new Container<>(tblAccount);
             wrapper.maxWidth(contentSize);
-            wrapper.pad(lblLevel.getPrefHeight() / 2);
+            wrapper.pad(lblLevel.getPrefHeight() * .3f);
 
             root = new Container<>(wrapper);
             root.top().left();
 
+            gameInstance.getPlatformSpecificManager().googleGames.addListener(
+                    new PropertyChangeListener() {
+                        @Override
+                        public void onChange(String name, Object newValue) {
+                            updateUserInfo();
+                        }
+                    });
+
             updateValues();
+        }
+
+        private void updateUserInfo() {
+            GoogleGames service = gameInstance.getPlatformSpecificManager().googleGames;
+            if (service.isSignedIn()) {
+                PlayerInfo playerInfo = service.getAccountInfo();
+                if (playerInfo.avatar != null)
+                    btnUser.getStyle().imageUp = new TextureRegionDrawable(playerInfo.avatar);
+                lblUserName.setText(playerInfo.displayName);
+            } else {
+                lblUserName.setText("Singed Out");
+                btnUser.getStyle().imageUp = skin.getDrawable("DefaultUserIcon");
+            }
         }
 
         public void updateValues() {

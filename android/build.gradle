@@ -1,5 +1,13 @@
 android {
-    buildToolsVersion '27.0.3'
+    signingConfigs {
+        debug {
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+            storeFile file('C:/Users/micha/.android/debug.keystore')
+            storePassword 'android'
+        }
+    }
+    buildToolsVersion '28.0.2'
     compileSdkVersion 27
     sourceSets {
         main {
@@ -30,6 +38,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
+            signingConfig signingConfigs.debug
         }
     }
     productFlavors {

@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.archapp.coresmash.platform.AdManager;
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;

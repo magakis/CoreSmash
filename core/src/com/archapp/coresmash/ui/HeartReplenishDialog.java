@@ -1,8 +1,8 @@
 package com.archapp.coresmash.ui;
 
-import com.archapp.coresmash.AdManager;
 import com.archapp.coresmash.UserAccount.HeartManager;
 import com.archapp.coresmash.WorldSettings;
+import com.archapp.coresmash.platform.AdManager;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;

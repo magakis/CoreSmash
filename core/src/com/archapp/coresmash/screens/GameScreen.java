@@ -1,6 +1,5 @@
 package com.archapp.coresmash.screens;
 
-import com.archapp.coresmash.AdManager;
 import com.archapp.coresmash.Coords2D;
 import com.archapp.coresmash.CoreSmash;
 import com.archapp.coresmash.GameController;
@@ -14,6 +13,7 @@ import com.archapp.coresmash.levels.Level;
 import com.archapp.coresmash.managers.MovingBallManager;
 import com.archapp.coresmash.managers.RenderManager;
 import com.archapp.coresmash.managers.RoundManager;
+import com.archapp.coresmash.platform.AdManager;
 import com.archapp.coresmash.sound.SoundManager;
 import com.archapp.coresmash.tilemap.TilemapManager;
 import com.archapp.coresmash.tiles.Launchable;

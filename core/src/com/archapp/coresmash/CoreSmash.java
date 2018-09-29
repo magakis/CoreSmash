@@ -1,6 +1,8 @@
 package com.archapp.coresmash;
 
 import com.archapp.coresmash.managers.RenderManager;
+import com.archapp.coresmash.platform.AdManager;
+import com.archapp.coresmash.platform.FeedbackMailHandler;
 import com.archapp.coresmash.screens.LoadingScreen;
 import com.archapp.coresmash.sound.SoundManager;
 import com.archapp.coresmash.ui.UIUtils;
@@ -32,6 +34,7 @@ public class CoreSmash extends Game {
     private AssetManager assetManager;
     private UserAccount userAccount;
     private Skin skin;
+    private PlatformSpecificManager platformSpecificManager;
     private AdManager adManager;
     private FeedbackMailHandler feedbackMailHandler;
 
@@ -42,6 +45,7 @@ public class CoreSmash extends Game {
     }
 
     public CoreSmash(PlatformSpecificManager platformSpecificManager) {
+        this.platformSpecificManager = platformSpecificManager;
         this.adManager = platformSpecificManager.adManager;
         this.feedbackMailHandler = platformSpecificManager.feedbackMailHandler;
     }
@@ -123,6 +127,10 @@ public class CoreSmash extends Game {
 
     public AssetManager getAssetManager() {
         return assetManager;
+    }
+
+    public PlatformSpecificManager getPlatformSpecificManager() {
+        return platformSpecificManager;
     }
 
     @Override

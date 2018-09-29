@@ -13,7 +13,7 @@ buildscript {
 
     dependencies {
         classpath 'de.richsource.gradle.plugins:gwt-gradle-plugin:0.6'
-        classpath 'com.android.tools.build:gradle:3.3.0-alpha06'
+        classpath 'com.android.tools.build:gradle:3.3.0-alpha12'
     }
 
 }
@@ -27,7 +27,8 @@ allprojects {
         appName = "coresmash"
 
         gdxVersion = '1.9.9-SNAPSHOT'
-        admobVersion = '15.0.1'
+        gmsAdsVersion = '15.0.1'
+        gmsAuthVersion = '16.0.0'
     }
 
     repositories {
@@ -75,7 +76,11 @@ project(":android") {
         natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-arm64-v8a"
         natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86"
         natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86_64"
-        implementation "com.google.android.gms:play-services-ads:$admobVersion"
+        implementation "com.google.android.gms:play-services-ads:$gmsAdsVersion"
+        implementation "com.google.android.gms:play-services-auth:$gmsAuthVersion"
+        implementation "com.google.android.gms:play-services-identity:$gmsAdsVersion"
+        implementation "com.google.android.gms:play-services-drive:$gmsAdsVersion"
+        implementation "com.google.android.gms:play-services-games:$gmsAdsVersion"
     }
 }
 

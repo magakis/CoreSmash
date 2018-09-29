@@ -161,6 +161,7 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("ButtonFeedback.png");
         loadTexture("ButtonFreeHeart.png");
         loadTexture("ButtonSpeedUp.png");
+        loadTexture("ButtonGoogleGamesSignIn.png");
 
         loadTexture("MenuBackground.png");
         loadTexture("CampaignBackground.png");
@@ -364,6 +365,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("ButtonFeedback", am.get("ButtonFeedback.png"));
         skin.add("ButtonFreeHeart", am.get("ButtonFreeHeart.png"));
         skin.add("ButtonSpeedUp", am.get("ButtonSpeedUp.png"));
+        skin.add("ButtonGoogleGamesSignIn", am.get("ButtonGoogleGamesSignIn.png"));
 
         skin.add("MenuBackground", am.get("MenuBackground.png"));
         skin.add("CampaignBackground", am.get("CampaignBackground.png"));
@@ -594,6 +596,12 @@ public class LoadingScreen extends ScreenBase {
         imgbs.imageDown = skin.newDrawable("ButtonHowToPlay", SlightGray);
         imgbs.imageDisabled = skin.newDrawable("ButtonHowToPlay", Color.DARK_GRAY);
         skin.add("ButtonHowToPlay", imgbs);
+
+        imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.imageUp = skin.getDrawable("ButtonGoogleGamesSignIn");
+        imgbs.imageDown = skin.newDrawable("ButtonGoogleGamesSignIn", SlightGray);
+        imgbs.imageDisabled = skin.newDrawable("ButtonGoogleGamesSignIn", Color.DARK_GRAY);
+        skin.add("ButtonGoogleGamesSignIn", imgbs);
 
         imgbs = new ImageButton.ImageButtonStyle();
         imgbs.imageUp = skin.newDrawable("ButtonSpeedUp", 1, 1, 1, .35f);

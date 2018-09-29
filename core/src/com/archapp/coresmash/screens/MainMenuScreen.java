@@ -1,6 +1,7 @@
 package com.archapp.coresmash.screens;
 
 import com.archapp.coresmash.CoreSmash;
+import com.archapp.coresmash.PropertyChangeListener;
 import com.archapp.coresmash.WorldSettings;
 import com.archapp.coresmash.levelbuilder.LevelBuilderScreen;
 import com.archapp.coresmash.levels.CampaignScreen;
@@ -18,7 +19,9 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
@@ -30,8 +33,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
+import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -148,20 +153,75 @@ public class MainMenuScreen extends ScreenBase {
 
     private class UIMainMenu implements UIComponent {
         WidgetGroup root;
+        PropertyChangeListener userAccountListener;
+        Label userName, signedIn;
+        final Container<ImageButton> imgSignIn;
 
         public UIMainMenu() {
             root = new WidgetGroup();
+            root.setLayoutEnabled(true);
 
-            Container<ImageButton> imgPlay = newMenuButton();
+            signedIn = UIFactory.createLabel("Signed as:", skin, "h6", Align.topRight);
+
+            userName = UIFactory.createLabel("", skin, "h5", Align.topRight);
+            userName.setTouchable(Touchable.enabled);
+            userName.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    super.clicked(event, x, y);
+                    gameInstance.getPlatformSpecificManager().googleGames.signOut();
+                    uiMainMenu.imgSignIn.setVisible(true);
+                }
+            });
+
+            ImageButton btnSignIn = UIFactory.createImageButton(skin, "ButtonGoogleGamesSignIn");
+            float btnSignInHeight = WorldSettings.getDefaultButtonHeight() * .8f;
+            btnSignIn.getImageCell().size(UIUtils.getWidthFor(btnSignIn.getImage().getDrawable(), btnSignInHeight), btnSignInHeight);
+            btnSignIn.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    gameInstance.getPlatformSpecificManager().googleGames.signIn();
+                }
+            });
 
             Label versInfo = new Label(CoreSmash.APP_VERSION + " | Michail Angelos Gakis", skin, "h6", Color.DARK_GRAY);
             versInfo.setAlignment(Align.bottom);
 
+            Container<ImageButton> imgPlay = newMenuButton();
+
+            VerticalGroup group = new VerticalGroup();
+            group.columnAlign(Align.right);
+            group.align(Align.right);
+            group.addActor(signedIn);
+            group.addActor(userName);
+
+            Container<VerticalGroup> userNameWrapper = new Container<>(group);
+            userNameWrapper.setFillParent(true);
+            userNameWrapper.top().right().pad(5 * Gdx.graphics.getDensity());
+
+            imgSignIn = makeButtonBubbly(btnSignIn);
+            imgSignIn.setVisible(!gameInstance.getPlatformSpecificManager().googleGames.isSignedIn());
+
             root.addActor(imgPlay);
+            root.addActor(imgSignIn);
+            root.addActor(userNameWrapper);
             root.addActor(versInfo);
 
+            updateUserName();
+
+            userAccountListener = new PropertyChangeListener() {
+                @Override
+                public void onChange(String name, Object newValue) {
+                    updateUserName();
+                    imgSignIn.setVisible(!gameInstance.getPlatformSpecificManager().googleGames.isSignedIn());
+                }
+            };
+
+            gameInstance.getPlatformSpecificManager().googleGames.addListener(userAccountListener);
+
+            imgPlay.setPosition(stage.getWidth() / 2, stage.getHeight() * .22f);
+            imgSignIn.setPosition(stage.getWidth() / 2, stage.getHeight() * .08f);
             versInfo.setPosition(stage.getWidth() / 2, 10 * Gdx.graphics.getDensity(), Align.center);
-            imgPlay.setPosition(stage.getWidth() / 2, stage.getHeight() / 6, Align.bottom);
         }
 
         private Container<ImageButton> newMenuButton() {
@@ -174,12 +234,25 @@ public class MainMenuScreen extends ScreenBase {
                     gameInstance.setScreen(campaignScreen);
                 }
             });
+            bt.getImageCell().size(stage.getHeight() / 6);
 
+            return makeButtonBubbly(bt);
+        }
+
+        private void updateUserName() {
+            if (gameInstance.getPlatformSpecificManager().googleGames.isSignedIn()) {
+                userName.setText(gameInstance.getPlatformSpecificManager().googleGames.getAccountInfo().displayName);
+                signedIn.setVisible(true);
+            } else {
+                userName.setText("Signed Out");
+                signedIn.setVisible(false);
+            }
+        }
+
+        private Container<ImageButton> makeButtonBubbly(ImageButton bt) {
             Container<ImageButton> result = new Container<>(bt);
             result.setTransform(true);
-            result.fill();
             result.setRotation(-.25f);
-            result.size(stage.getHeight() / 6);
             result.setOrigin(Align.center);
             result.addAction(Actions.forever(
                     Actions.sequence(
