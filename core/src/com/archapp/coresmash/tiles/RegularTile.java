@@ -1,6 +1,7 @@
 package com.archapp.coresmash.tiles;
 
 import com.archapp.coresmash.GameController;
+import com.archapp.coresmash.NotificationType;
 import com.archapp.coresmash.sound.SoundManager;
 import com.archapp.coresmash.tilemap.TilemapManager;
 import com.archapp.coresmash.tilemap.TilemapTile;
@@ -27,7 +28,10 @@ public class RegularTile extends Tile implements Launchable, Matchable, Breakabl
         TilemapTile newTile = tmm.attachBall(ball.extractTile(), tileHit, sides);
         if (newTile != null) {
             List<TilemapTile> matched = tmm.getColorMatches(newTile);
-            tmm.destroyTiles(matched);
+            if (matched.size() >= 3) {
+                tmm.notifyObservers(NotificationType.SAME_COLOR_MATCH, matched.size());
+                tmm.destroyTiles(matched);
+            }
         }
     }
 

@@ -69,7 +69,7 @@ public class AndroidLauncher extends AndroidApplication {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RequestCode.GOOGLE_SIGN_IN.ordinal()) {
+        if (requestCode == RequestCode.GOOGLE_SIGN_IN) {
             googleGamesAndroid.onActivityResult(data);
         }
     }
@@ -98,7 +98,8 @@ public class AndroidLauncher extends AndroidApplication {
         }
     }
 
-    public enum RequestCode {
-        GOOGLE_SIGN_IN
+    public static class RequestCode {
+        public static final int NULL = 0x0;
+        public static final int GOOGLE_SIGN_IN = 0x1;
     }
 }

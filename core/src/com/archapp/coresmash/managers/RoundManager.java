@@ -19,6 +19,7 @@ public class RoundManager extends Observable implements Observer {
     private boolean gamePaused;
     private boolean gameTerminated;
     private boolean debugEnabled;
+    private int match3Size;
     private int ballsDestroyedThisFrame;
     private int scoreThisFrame;
 
@@ -42,6 +43,10 @@ public class RoundManager extends Observable implements Observer {
         if ((gameStats.activeLevel == -1 || gameStats.unlockedLevel == -1) && !debugEnabled)
             throw new RuntimeException("Game not initialized properly (Level:" + gameStats.activeLevel + ", Unlocked:" + gameStats.unlockedLevel + ")");
 
+        gameStats.movesEnabled = gameStats.movesLeft > 0;
+        gameStats.livesEnabled = gameStats.livesLeft > 0;
+        gameStats.timeEnabled = gameStats.timeLeft > 0;
+
         gamePaused = false;
     }
 
@@ -51,24 +56,29 @@ public class RoundManager extends Observable implements Observer {
         }
 
         if (ballsDestroyedThisFrame != 0) {
-            int scoreGained;
-            int multiplier = 5;
+            int multiplier = 10;
 
-            switch (ballsDestroyedThisFrame) {
-                case 1:
+            switch (match3Size) {
+                case 0:
+                case 1: // 1 and 2 should never appear
                 case 2:
-                    break;
                 case 3:
-                    multiplier = 10;
                     break;
                 case 4:
-                    multiplier = 12;
-                    break;
-                default:
                     multiplier = 15;
                     break;
+                case 5:
+                    multiplier = 30;
+                    break;
+                default:
+                    multiplier = 40;
+                    break;
             }
-            scoreGained = (ballsDestroyedThisFrame * multiplier) + scoreThisFrame;
+
+            multiplier += ballsDestroyedThisFrame - match3Size;
+
+
+            int scoreGained = (ballsDestroyedThisFrame * multiplier) + scoreThisFrame;
             gameStats.totalScore += scoreGained;
             notifyObservers(NotificationType.NOTIFICATION_TYPE_SCORE_INCREMENTED, scoreGained);
 
@@ -90,6 +100,7 @@ public class RoundManager extends Observable implements Observer {
         gameStats.reset();
 
         ballsDestroyedThisFrame = 0;
+        match3Size = 0;
         scoreThisFrame = 0;
         debugEnabled = false;
         gameTerminated = false;
@@ -146,7 +157,7 @@ public class RoundManager extends Observable implements Observer {
         return gameTerminated;
     }
 
-    public void stopGame() {
+    public void endGame() {
         gameTerminated = true;
         gamePaused = true;
     }
@@ -208,17 +219,14 @@ public class RoundManager extends Observable implements Observer {
 
     public void setLives(int lives) {
         gameStats.livesLeft = lives < 0 ? 0 : lives;
-        gameStats.livesEnabled = lives != 0;
     }
 
     public void setTime(int time) {
         gameStats.timeLeft = time < 0 ? 0 : time;
-        gameStats.timeEnabled = time != 0;
     }
 
     public void setMoves(int moves) {
         gameStats.movesLeft = moves < 0 ? 0 : moves;
-        gameStats.movesEnabled = moves != 0;
     }
 
     public void giveExtraLife(int moves, int lives, int time) {
@@ -290,6 +298,10 @@ public class RoundManager extends Observable implements Observer {
         switch (type) {
             case ASTRONAUTS_FOUND:
                 gameStats.astronautsLeft += (short) ob;
+                break;
+
+            case SAME_COLOR_MATCH:
+                match3Size = (int) ob;
                 break;
 
             case NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED:

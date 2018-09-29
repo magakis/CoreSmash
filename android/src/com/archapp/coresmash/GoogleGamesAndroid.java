@@ -61,7 +61,6 @@ public class GoogleGamesAndroid implements GoogleGames {
             ensureAllScopesAreGranted();
             updateAccountInfo();
         }
-
     }
 
     @Override
@@ -174,7 +173,7 @@ public class GoogleGamesAndroid implements GoogleGames {
 
     private void googleStartSignInIntent() {
         activity.startActivityForResult(signInClient.getSignInIntent(),
-                AndroidLauncher.RequestCode.GOOGLE_SIGN_IN.ordinal());
+                AndroidLauncher.RequestCode.GOOGLE_SIGN_IN);
     }
 
     private void googleSignInSilently() {

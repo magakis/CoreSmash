@@ -397,7 +397,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 redCross.setOrigin(Align.center);
 
                 float buttonSize = BUTTON_SIZE * .8f;
-                Container<Stack> livesLeftWrapper = new Container<>(heartStack);
+                final Container<Stack> livesLeftWrapper = new Container<>(heartStack);
                 livesLeftWrapper.size(buttonSize, UIUtils.getHeightFor(backgroundImage.getDrawable(), buttonSize));
 
                 Container<Label> timeForLife = new Container<>(lblTimeForLife);
@@ -412,7 +412,10 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                     public void clicked(InputEvent event, float x, float y) {
                         if (!heartManager.isFull()) {
                             SoundManager.get().play(SoundManager.SoundTrack.BUTTON_CLICK);
-                            adManager.showAdForReward(listener, AdManager.VideoAdRewardType.HEART);
+                            if (CoreSmash.DEV_MODE)
+                                listener.reward("Not used parameters", 99999);
+                            else
+                                adManager.showAdForReward(listener, AdManager.VideoAdRewardType.HEART);
                         }
                     }
                 });
@@ -517,16 +520,19 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             userIconGroup.addActor(btnUser);
             userIconGroup.addActor(userLevelWrapper);
 
-            contentSize = WorldSettings.getSmallestScreenDimension() * .5f;
+            contentSize = WorldSettings.getSmallestScreenDimension() / 3;
+
             Table tblAccount = new Table();
             tblAccount.background(skin.getDrawable("UserAccountFrame"));
             tblAccount.add(lblUserName).center()
                     .padTop(-7 * Gdx.graphics.getDensity())
-                    .padBottom(lblLevel.getPrefHeight() * .1f).row();
+                    .padBottom(1 * Gdx.graphics.getDensity()).row();
             tblAccount.row().padBottom(lblLevel.getPrefHeight() / 3);
             tblAccount.add(userIconGroup)
-                    .size(contentSize * .4f).grow().row();
-            tblAccount.add(lblTotalXP).padBottom(5).left().row();
+                    .size(contentSize * .65f)
+                    .padBottom(2 * Gdx.graphics.getDensity())
+                    .grow().row();
+            tblAccount.add(lblTotalXP).padBottom(0).left().row();
             tblAccount.add(pbAccountExp).growX().colspan(tblAccount.getColumns()).padRight(0);
 
             Container<Table> wrapper = new Container<>(tblAccount);

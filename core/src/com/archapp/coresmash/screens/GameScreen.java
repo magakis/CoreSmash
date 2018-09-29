@@ -227,7 +227,7 @@ public class GameScreen extends ScreenBase implements Observer {
     }
 
     private void endGame() {
-        roundManager.stopGame();
+        roundManager.endGame();
         activeLevel.end(roundManager.getGameStats());
         resultDialog.update();
         resultDialog.show(stage, null);
@@ -251,21 +251,21 @@ public class GameScreen extends ScreenBase implements Observer {
         level.initialize(gameController);
 
         if (tilemapManager.getTilemapTile(0, 0, 0) == null) {
-            roundManager.stopGame();
+            roundManager.endGame();
             endGame();
             gameInstance.setScreen(this);
             return;
         }
         launcher.fillLauncher(tilemapManager, roundManager);
 
-        gameUI.setup();
 
         rootUIStack.addActor(gameUI.getRoot());
         rootUIStack.addActor(streakUI.getRoot());
         rootUIStack.addActor(debugUI.getRoot());
 
-        gameInstance.setScreen(this);
         roundManager.start();
+        gameUI.setup();
+        gameInstance.setScreen(this);
     }
 
     @Override
@@ -417,16 +417,11 @@ public class GameScreen extends ScreenBase implements Observer {
             lblTime.setAlignment(Align.left);
 
             lblScore = new Label("0", skin, "h3s");
-            lblScore.setAlignment(Align.center);
-
             lblLives = new Label("null", skin, "h3s");
-            lblLives.setAlignment(Align.center);
-
             lblMoves = new Label("null", skin, "h3s");
-            lblMoves.setAlignment(Align.center);
 
-            lblTargetScore = new Label("", skin, "h5", new Color(61 / 255f, 61 / 255f, 92 / 255f, 1));
-            lblTargetScore.setAlignment(Align.center);
+            lblTargetScore = new Label("", skin, "h5", new Color(70 / 255f, 70 / 255f, 100 / 255f, 1));
+            lblTargetScore.setAlignment(Align.right);
 
             imgMovesIcon = new Image(skin.getDrawable("movesIcon"));
             imgLivesIcon = new Image(skin.getDrawable("heartIcon"));
@@ -456,6 +451,9 @@ public class GameScreen extends ScreenBase implements Observer {
             board.add(lblScore);
             board.row();
             board.add(livesGroup);
+            board.add();
+            board.add(lblTargetScore).top().right()
+                    .padTop(-lblTargetScore.getPrefHeight() * .2f);
 
             // POWERUP TABLE
             powerupButtons = new PowerupButton[3];
