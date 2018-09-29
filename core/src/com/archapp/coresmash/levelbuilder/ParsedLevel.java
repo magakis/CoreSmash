@@ -32,11 +32,7 @@ public class ParsedLevel {
     }
 
     void reset() {
-        levelSettings.ballSpeed = 0;
-        levelSettings.launcherCooldown = 0;
-        levelSettings.ballSpeed = 5;
-        levelSettings.launcherSize = 1;
-        levelSettings.launcherCooldown = 0f;
+        levelSettings.reset();
 
         for (MapSettings map : mapSettings) {
             map.reset();

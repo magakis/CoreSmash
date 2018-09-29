@@ -99,7 +99,7 @@ public class UserAccount {
                 unlockedLevels.addAmount(1);
             }
 
-            if (score > stats.getTargetScore()) {
+            if (score > stats.getUserHighScore()) {
                 Gdx.app.getPreferences(PREFS_NAME).putInteger("level" + stats.getActiveLevel(), score).flush();
                 if (stats.isLevelUnlocked()) {
                     saveScore(score);
@@ -317,8 +317,8 @@ public class UserAccount {
             if (isFull()) return;
 
             long currentTime = System.currentTimeMillis();
-            // If dif < 0 : It's the time left for life
-            // if dif > 0 : It's the extra time
+            // If dif < 0 : It's the timeLimit left for life
+            // if dif > 0 : It's the extra timeLimit
             long dif = currentTime - timeForNextHeart.getValue();
 
             if (dif >= 0) {

@@ -57,6 +57,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.FocusListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
@@ -258,6 +259,17 @@ public class LevelBuilderScreen extends ScreenBase {
             tbSave.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
+                    int one = levelBuilder.getTargetScoreOne();
+                    int two = levelBuilder.getTargetScoreTwo();
+                    int three = levelBuilder.getTargetScoreThree();
+                    if (three <= two) {
+                        Components.showToast("ERROR: TargetScoreThree isn't greater than TargetScoreTwo!", stage, 3);
+                        return;
+                    } else if (two <= one) {
+                        Components.showToast("ERROR: TargetScoreTwo isn't greater than TargetScoreOne!", stage, 3);
+                        return;
+                    }
+
                     saveFileDialog.show(stage, filenameCache.getValue());
                 }
             });
@@ -831,11 +843,12 @@ public class LevelBuilderScreen extends ScreenBase {
             Table root;
             Slider sldrBallSpeed, sldrLauncherCooldown, sldrLauncherSize;
             Label lblBallSpeed, lblLauncherCooldown, lblLauncherSize;
-            TextField tfMoves, tfLives, tfTime;
+            StringBuilder stringBuilder;
+            TextField tfMoves, tfLives, tfTime,
+                    tfTargetScoreOne, tfTargetScoreTwo, tfTargetScoreThree;
 
             // XXX(14/4/2018): *TOO* many magic values
             private UILevelSettings() {
-
                 InputListener stopTouchDown = new InputListener() {
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                         event.stop();
@@ -846,72 +859,73 @@ public class LevelBuilderScreen extends ScreenBase {
                 final TextField.TextFieldListener returnOnNewLineListener = new TextField.TextFieldListener() {
                     public void keyTyped(TextField textField, char key) {
                         if (key == '\n' || key == '\r') {
+                            if (textField.getText().length() == 0) {
+                                textField.setText("0");
+                            }
                             textField.getOnscreenKeyboard().show(false);
                             stage.unfocusAll();
+                            textfieldInputCapture.stop();
                         }
                     }
                 };
 
+                stringBuilder = new StringBuilder();
+
                 tfLives = createTextField(returnOnNewLineListener);
-                tfLives.addListener(new InputListener() {
-                    @Override
-                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                        tfLives.setCursorPosition(tfLives.getText().length());
-                        textfieldInputCapture.capture(stage);
-                        event.stop();
-                        return true;
-                    }
-                });
                 tfLives.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        String txtAmount = tfLives.getText();
-                        // check to avoid parsing empty string
-                        int amount = txtAmount.length() > 0 ? Integer.parseInt(txtAmount) : 0;
-                        levelBuilder.setLives(amount);
+                        levelBuilder.setLives(tfLives.getText().isEmpty() ?
+                                0 : Integer.parseInt(tfLives.getText()));
                     }
                 });
 
 
                 tfMoves = createTextField(returnOnNewLineListener);
-                tfMoves.addListener(new InputListener() {
-                    @Override
-                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                        tfMoves.setCursorPosition(tfMoves.getText().length());
-                        textfieldInputCapture.capture(stage);
-                        event.stop();
-                        return true;
-                    }
-                });
                 tfMoves.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        String txtAmount = tfMoves.getText();
-                        // check to avoid parsing empty string
-                        int amount = txtAmount.length() > 0 ? Integer.parseInt(txtAmount) : 0;
+                        int amount = tfMoves.getText().isEmpty() ?
+                                0 : Integer.parseInt(tfMoves.getText());
                         levelBuilder.setMoves(amount);
-                        updateMovesPercent(amount);
+                        updateUIInfo();
                     }
                 });
 
 
                 tfTime = createTextField(returnOnNewLineListener);
-                tfTime.addListener(new InputListener() {
-                    @Override
-                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                        tfTime.setCursorPosition(tfTime.getText().length());
-                        textfieldInputCapture.capture(stage);
-                        event.stop();
-                        return true;
-                    }
-                });
                 tfTime.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
-                        String txtAmount = tfTime.getText();
-                        // check to avoid parsing empty string
-                        int amount = txtAmount.length() > 0 ? Integer.parseInt(txtAmount) : 0;
-                        levelBuilder.setTime(amount);
+                        levelBuilder.setTime(tfTime.getText().isEmpty() ?
+                                0 : Integer.parseInt(tfTime.getText()));
+                    }
+                });
+
+                tfTargetScoreOne = createTextField(returnOnNewLineListener);
+                tfTargetScoreOne.addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
+                        levelBuilder.setTargetScoreOne(tfTargetScoreOne.getText().isEmpty() ?
+                                0 : Integer.parseInt(tfTargetScoreOne.getText()));
+                    }
+                });
+
+                tfTargetScoreTwo = createTextField(returnOnNewLineListener);
+                tfTargetScoreTwo.addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
+                        levelBuilder.setTargetScoreTwo(tfTargetScoreTwo.getText().isEmpty() ?
+                                0 : Integer.parseInt(tfTargetScoreTwo.getText()));
+                    }
+                });
+
+                tfTargetScoreThree = createTextField(returnOnNewLineListener);
+                tfTargetScoreThree.addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
+                        levelBuilder.setTargetScoreThree(tfTargetScoreThree.getText().isEmpty() ?
+                                0 : Integer.parseInt(tfTargetScoreThree.getText()));
                     }
                 });
 
@@ -961,6 +975,15 @@ public class LevelBuilderScreen extends ScreenBase {
                 grpTextFields.add(new Label("Time:", skin, "h5")).padRight(Value.percentHeight(.25f, tfMoves)).right();
                 grpTextFields.add(tfTime).width(gLayout.width).row();
 
+                Table grpTargetScoreFields = new Table(skin);
+                grpTargetScoreFields.defaults().padBottom(tfTargetScoreOne.getPrefHeight() * .1f);
+                grpTargetScoreFields.add("Target Score One:", "h5").padRight(Value.percentHeight(.25f, tfMoves)).right();
+                grpTargetScoreFields.add(tfTargetScoreOne).growX().row();
+                grpTargetScoreFields.add("Target Score Two:", "h5").padRight(Value.percentHeight(.25f, tfMoves)).right();
+                grpTargetScoreFields.add(tfTargetScoreTwo).growX().row();
+                grpTargetScoreFields.add("Target Score Three:", "h5").padRight(Value.percentHeight(.25f, tfMoves)).right();
+                grpTargetScoreFields.add(tfTargetScoreThree).growX().row();
+
                 root = new Table();
 
                 root.pad(0).top();
@@ -975,7 +998,8 @@ public class LevelBuilderScreen extends ScreenBase {
                 root.add(grpTextFields).colspan(2).row();
                 root.add(grpLauncherSize).growX();
                 root.add(grpLauncherCD).growX().row();
-                root.add(grpBallSpeed).growX();
+                root.add(grpBallSpeed).growX().row();
+                root.add(grpTargetScoreFields).colspan(2).growX();
 
                 updateValues();
             }
@@ -988,13 +1012,78 @@ public class LevelBuilderScreen extends ScreenBase {
                 tfLives.setText(String.valueOf(levelBuilder.getLives()));
                 tfMoves.setText(String.valueOf(levelBuilder.getMoves()));
                 tfTime.setText(String.valueOf(levelBuilder.getTime()));
-                updateMovesPercent(levelBuilder.getMoves());
+
+                tfTargetScoreOne.setText(String.valueOf(levelBuilder.getTargetScoreOne()));
+                tfTargetScoreTwo.setText(String.valueOf(levelBuilder.getTargetScoreTwo()));
+                tfTargetScoreThree.setText(String.valueOf(levelBuilder.getTargetScoreThree()));
+
+                updateUIInfo();
             }
 
-            private void updateMovesPercent(int amount) {
-                float totalTiles = levelBuilder.getTotalTileCount();
-                int percent = (int) ((amount / (totalTiles == 0 ? 1 : totalTiles)) * 100f);
-                uiInfo.lbl[0].setText("Moves/Balls: " + percent + "%");
+            private void updateUIInfo() {
+                int totalBalls = levelBuilder.getTotalTileCount();
+                int moves = levelBuilder.getMoves();
+
+                int percent = (int) ((moves / (totalBalls == 0 ? 1f : (float) totalBalls)) * 100f);
+
+                int totalBallsTimesTen = totalBalls * 10;
+                int movesTimesTen = moves * 10;
+                int totalBallsAndMovesTimesTen = totalBallsTimesTen + movesTimesTen;
+                int totalBallsAndMovesAverage = (totalBallsTimesTen + movesTimesTen) / 2;
+                int halfBallsAndMovesAverage = totalBallsAndMovesAverage / 2;
+
+                float multiplier = 1.22f;
+
+                int min = (int) (totalBallsAndMovesAverage * multiplier);
+                int lower = (int) (min * multiplier);
+                int mid = (int) (lower * multiplier);
+                int high = (int) (mid * multiplier);
+                int higher = (int) (high * multiplier);
+                int max = (int) (higher * multiplier);
+
+                float sub1 = .75f, sub2 = .5f;
+
+                stringBuilder.setLength(0);
+                uiInfo.lbl[1].setText(String.format(Locale.getDefault(),
+                        stringBuilder
+                                .append("TB: ").append(totalBalls).append("\n")
+                                .append("M/TB: ").append(percent).append("%%\n")
+                                .append("(A)TBx10: ").append(totalBallsTimesTen).append("\n")
+                                .append("(B)Mx10: ").append(movesTimesTen).append("\n")
+                                .append("(T)A+B: ").append(totalBallsAndMovesTimesTen).append("\n")
+                                .append("(C)(A+B)/2: ").append(totalBallsAndMovesAverage).append("\n")
+                                .append("(D) C/2: ").append(halfBallsAndMovesAverage).append("\n")
+                                .append("Min:   %4d")
+                                .append(" *.75f: %4d")
+                                .append(" *.5f: %4d")
+                                .append("\n")
+                                .append("Lower: %4d")
+                                .append(" *.75f: %4d")
+                                .append(" *.5f: %4d")
+                                .append("\n")
+                                .append("Mid:   %4d")
+                                .append(" *.75f: %4d")
+                                .append(" *.5f: %4d")
+                                .append("\n")
+                                .append("High:   %4d")
+                                .append(" *.75f: %4d")
+                                .append(" *.5f: %4d")
+                                .append("\n")
+                                .append("Higher:  %4d")
+                                .append(" *.75f: %4d")
+                                .append(" *.5f: %4d")
+                                .append("\n")
+                                .append("Max:   %4d")
+                                .append(" *.75f: %4d")
+                                .append(" *.5f: %4d")
+                                .append("\n")
+                                .toString(),
+                        min, (int) (min * sub1), (int) (min * sub2),
+                        lower, (int) (lower * sub1), (int) (lower * sub2),
+                        mid, (int) (mid * sub1), (int) (mid * sub2),
+                        high, (int) (high * sub1), (int) (high * sub2),
+                        higher, (int) (higher * sub1), (int) (higher * sub2),
+                        max, (int) (max * sub1), (int) (max * sub2)));
             }
 
             private Table createSliderGroup(Label label, Slider slider) {
@@ -1006,21 +1095,39 @@ public class LevelBuilderScreen extends ScreenBase {
             }
 
             private TextField createTextField(TextField.TextFieldListener backOnNewLineListener) {
-                TextField tf = new TextField("", skin);
+                final TextField tf = new TextField("", skin);
                 tf.setAlignment(Align.center);
-                tf.setMaxLength(3);
+                tf.setMaxLength(7);
                 tf.setTextFieldFilter(new TextField.TextFieldFilter.DigitsOnlyFilter());
                 tf.setTextFieldListener(backOnNewLineListener);
+                tf.addListener(new InputListener() {
+                    @Override
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                        tf.setCursorPosition(tf.getText().length());
+                        textfieldInputCapture.capture(stage);
+                        if (tf.getText().equals("0"))
+                            tf.setText("");
+
+                        event.stop();
+                        return true;
+                    }
+                });
+                tf.addListener(new FocusListener() {
+                    @Override
+                    public void keyboardFocusChanged(FocusEvent event, Actor actor, boolean focused) {
+                        if (!focused) {
+                            if (tf.getText().length() == 0)
+                                tf.setText("0");
+                        }
+                    }
+                });
                 return tf;
             }
 
+
             @Override
             public Group getRoot() {
-                uiInfo.reset();
-                String txtAmount = tfMoves.getText();
-                // check to avoid parsing empty string
-                int amount = txtAmount.length() > 0 ? Integer.parseInt(txtAmount) : 0;
-                updateMovesPercent(amount);
+                updateUIInfo();
                 return root;
             }
         }

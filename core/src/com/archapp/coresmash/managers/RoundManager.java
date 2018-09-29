@@ -32,9 +32,9 @@ public class RoundManager extends Observable implements Observer {
     public void setLevel(int level, int unlockedLevel) {
         gameStats.activeLevel = level;
         gameStats.unlockedLevel = unlockedLevel;
-        gameStats.targetScore = Gdx.app.getPreferences("account").getInteger("level" + level);
+        gameStats.userHighScore = Gdx.app.getPreferences("account").getInteger("level" + level);
 
-        // Allow only paid lives after level 10
+        // Allow only paid livesLimit after level 10
         if (level < 11)
             gameStats.freeSecondLife = true;
     }
@@ -112,6 +112,15 @@ public class RoundManager extends Observable implements Observer {
      */
     public boolean checkEndingConditions(MovingBallManager ballManager) {
         if (gameTerminated || gameStats.isRoundWon) {
+            if (!gameStats.isRoundWon) {
+                if (gameStats.astronautsLeft != 0) {
+                    gameStats.reasonOfLoss = ReasonOfLoss.ASTRONAUTS_LEFT;
+                } else if (gameStats.totalScore < gameStats.targetScoreOne) {
+                    gameStats.reasonOfLoss = ReasonOfLoss.MISSED_TARGET_SCORE;
+                } else {
+                    gameStats.isRoundWon = true;
+                }
+            }
             return true;
         }
 
@@ -160,10 +169,6 @@ public class RoundManager extends Observable implements Observer {
     public void endGame() {
         gameTerminated = true;
         gamePaused = true;
-    }
-
-    public int getTargetScore() {
-        return gameStats.targetScore;
     }
 
     public int getScore() {
@@ -215,6 +220,18 @@ public class RoundManager extends Observable implements Observer {
             --gameStats.livesLeft;
             notifyObservers(NotificationType.LIVES_AMOUNT_CHANGED, null);
         }
+    }
+
+    public void setTargetScoreOne(int scoreOne) {
+        gameStats.targetScoreOne = scoreOne;
+    }
+
+    public void setTargetScoreTwo(int scoreTwo) {
+        gameStats.targetScoreTwo = scoreTwo;
+    }
+
+    public void setTargetScoreThree(int scoreThree) {
+        gameStats.targetScoreThree = scoreThree;
     }
 
     public void setLives(int lives) {
@@ -305,11 +322,6 @@ public class RoundManager extends Observable implements Observer {
                 break;
 
             case NOTIFICATION_TYPE_CENTER_TILE_DESRTOYED:
-                if (gameStats.astronautsLeft == 0)
-                    gameStats.isRoundWon = true;
-                else
-                    gameStats.reasonOfLoss = ReasonOfLoss.ASTRONAUTS_LEFT;
-
                 gameTerminated = true;
                 break;
 
@@ -425,9 +437,11 @@ public class RoundManager extends Observable implements Observer {
         private int unlockedLevel;
         private boolean isRoundWon;
 
-        private int minScore;
         private int totalScore;
-        private int targetScore;
+        private int userHighScore;
+        private int targetScoreOne;
+        private int targetScoreTwo;
+        private int targetScoreThree;
 
         private boolean movesEnabled;
         private boolean livesEnabled;
@@ -446,9 +460,11 @@ public class RoundManager extends Observable implements Observer {
             unlockedLevel = -1;
             isRoundWon = false;
 
-            minScore = 0;
             totalScore = 0;
-            targetScore = 0;
+            userHighScore = 0;
+            targetScoreOne = 0;
+            targetScoreTwo = 0;
+            targetScoreThree = 0;
 
             extraLivesUsed = 0;
 
@@ -492,8 +508,20 @@ public class RoundManager extends Observable implements Observer {
             return isRoundWon && activeLevel == unlockedLevel;
         }
 
-        public int getTargetScore() {
-            return targetScore;
+        public int getUserHighScore() {
+            return userHighScore;
+        }
+
+        public int getTargetScoreOne() {
+            return targetScoreOne;
+        }
+
+        public int getTargetScoreTwo() {
+            return targetScoreTwo;
+        }
+
+        public int getTargetScoreThree() {
+            return targetScoreThree;
         }
 
         public int getTotalScore() {
@@ -503,6 +531,7 @@ public class RoundManager extends Observable implements Observer {
 
     public enum ReasonOfLoss {
         NONE,
+        MISSED_TARGET_SCORE,
         ASTRONAUTS_LEFT,
         OUT_OF_MOVES,
         OUT_OF_LIVES,

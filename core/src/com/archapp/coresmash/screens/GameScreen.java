@@ -265,6 +265,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
         roundManager.start();
         gameUI.setup();
+
         gameInstance.setScreen(this);
     }
 
@@ -529,8 +530,12 @@ public class GameScreen extends ScreenBase implements Observer {
         }
 
         public void setup() {
+            RoundManager.GameStats stats = roundManager.getGameStats();
+            int highScore = stats.getUserHighScore();
+
             lblScore.setText(String.valueOf(0));
-            lblTargetScore.setText(String.valueOf(roundManager.getTargetScore()));
+            lblTargetScore.setText(highScore == 0 ?
+                    String.valueOf(roundManager.getGameStats().getTargetScoreOne()) : String.valueOf(highScore));
             lblLives.setText(String.valueOf(roundManager.getLives()));
             lblMoves.setText(String.valueOf(roundManager.getMoves()));
 
@@ -635,6 +640,7 @@ public class GameScreen extends ScreenBase implements Observer {
                 outOfMoves = "Out of Moves",
                 outOfLives = "Out of Lives",
                 outOfTime = "Out of Time",
+                missedTargetScore = "Missed target Score",
                 astronautsLeft = "Astronauts left Unsaved";
         private Label lblResult, lblScore, lblMessage;
         private float contentWidth;
@@ -688,6 +694,9 @@ public class GameScreen extends ScreenBase implements Observer {
                     break;
                 case ASTRONAUTS_LEFT:
                     lblMessage.setText(astronautsLeft);
+                    break;
+                case MISSED_TARGET_SCORE:
+                    lblMessage.setText(missedTargetScore);
                     break;
                 case OUT_OF_MOVES:
                     lblMessage.setText(outOfMoves);

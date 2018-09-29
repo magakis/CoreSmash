@@ -126,15 +126,42 @@ final public class LevelBuilder {
     }
 
     public void setLives(int lives) {
-        levelSettings.lives = lives;
+        levelSettings.livesLimit = lives;
     }
 
     public void setMoves(int moves) {
-        levelSettings.moves = moves;
+        levelSettings.movesLimit = moves;
     }
 
     public void setTime(int time) {
-        levelSettings.time = time;
+        levelSettings.timeLimit = time;
+    }
+
+    public void setTargetScoreOne(int score) {
+        if (score > 0)
+            levelSettings.targetScoreOne = score;
+    }
+
+    public void setTargetScoreTwo(int score) {
+        if (score > 0)
+            levelSettings.targetScoreTwo = score;
+    }
+
+    public void setTargetScoreThree(int score) {
+        if (score > 0)
+            levelSettings.targetScoreThree = score;
+    }
+
+    int getTargetScoreOne() {
+        return levelSettings.targetScoreOne;
+    }
+
+    int getTargetScoreTwo() {
+        return levelSettings.targetScoreTwo;
+    }
+
+    int getTargetScoreThree() {
+        return levelSettings.targetScoreThree;
     }
 
     public void setLauncherSize(int size) {
@@ -182,15 +209,15 @@ final public class LevelBuilder {
     }
 
     public int getLives() {
-        return levelSettings.lives;
+        return levelSettings.livesLimit;
     }
 
     public int getMoves() {
-        return levelSettings.moves;
+        return levelSettings.movesLimit;
     }
 
     public int getTime() {
-        return levelSettings.time;
+        return levelSettings.timeLimit;
     }
 
     public int getLauncherSize() {

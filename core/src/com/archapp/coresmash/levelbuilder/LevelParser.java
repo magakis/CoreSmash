@@ -24,6 +24,9 @@ public final class LevelParser {
     static final String TAG_MAP_SETTINGS = "mapSettings";
     static final String TAG_LIVES = "lives";
     static final String TAG_MOVES = "moves";
+    static final String TAG_TARGETSCORE_ONE = "targetScoreOne";
+    static final String TAG_TARGETSCORE_TWO = "targetScoreTwo";
+    static final String TAG_TARGETSCORE_THREE = "targetScoreThree";
     static final String TAG_TIME = "time";
     static final String TAG_MAP = "map";
     static final String TAG_MAP_OFFSET = "offset";
@@ -70,9 +73,12 @@ public final class LevelParser {
 
             serializer.startTag(NO_NAMESPACE, TAG_LEVEL);
             serializer.startTag(NO_NAMESPACE, TAG_LEVEL_SETTINGS);
-            XmlManager.createElement(TAG_LIVES, levelSettings.lives);
-            XmlManager.createElement(TAG_MOVES, levelSettings.moves);
-            XmlManager.createElement(TAG_TIME, levelSettings.time);
+            XmlManager.createElement(TAG_LIVES, levelSettings.livesLimit);
+            XmlManager.createElement(TAG_MOVES, levelSettings.movesLimit);
+            XmlManager.createElement(TAG_TIME, levelSettings.timeLimit);
+            XmlManager.createElement(TAG_TARGETSCORE_ONE, levelSettings.targetScoreOne);
+            XmlManager.createElement(TAG_TARGETSCORE_TWO, levelSettings.targetScoreTwo);
+            XmlManager.createElement(TAG_TARGETSCORE_THREE, levelSettings.targetScoreThree);
             XmlManager.createElement(TAG_BALLSPEED, levelSettings.ballSpeed);
             XmlManager.createElement(TAG_LAUNCHERSIZE, levelSettings.launcherSize);
             XmlManager.createElement(TAG_LAUNCHERCD, levelSettings.launcherCooldown);
@@ -177,15 +183,15 @@ public final class LevelParser {
                 switch (name) {
                     case TAG_LIVES:
                         text = parser.nextText();
-                        parsedLevel.levelSettings.lives = text.isEmpty() ? 0 : Integer.parseInt(text);
+                        parsedLevel.levelSettings.livesLimit = text.isEmpty() ? 0 : Integer.parseInt(text);
                         break;
                     case TAG_MOVES:
                         text = parser.nextText();
-                        parsedLevel.levelSettings.moves = text.isEmpty() ? 0 : Integer.parseInt(text);
+                        parsedLevel.levelSettings.movesLimit = text.isEmpty() ? 0 : Integer.parseInt(text);
                         break;
                     case TAG_TIME:
                         text = parser.nextText();
-                        parsedLevel.levelSettings.time = text.isEmpty() ? 0 : Integer.parseInt(text);
+                        parsedLevel.levelSettings.timeLimit = text.isEmpty() ? 0 : Integer.parseInt(text);
                         break;
                     case TAG_LAUNCHERSIZE:
                         text = parser.nextText();
@@ -194,6 +200,18 @@ public final class LevelParser {
                     case TAG_LAUNCHERCD:
                         text = parser.nextText();
                         parsedLevel.levelSettings.launcherCooldown = text.isEmpty() ? 0 : Float.parseFloat(text);
+                        break;
+                    case TAG_TARGETSCORE_ONE:
+                        text = parser.nextText();
+                        parsedLevel.levelSettings.targetScoreOne = text.isEmpty() ? 0 : Integer.parseInt(text);
+                        break;
+                    case TAG_TARGETSCORE_TWO:
+                        text = parser.nextText();
+                        parsedLevel.levelSettings.targetScoreTwo = text.isEmpty() ? 0 : Integer.parseInt(text);
+                        break;
+                    case TAG_TARGETSCORE_THREE:
+                        text = parser.nextText();
+                        parsedLevel.levelSettings.targetScoreThree = text.isEmpty() ? 0 : Integer.parseInt(text);
                         break;
                     case TAG_BALLSPEED:
                         text = parser.nextText();

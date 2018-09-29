@@ -78,9 +78,13 @@ public class GameController {
         ParsedLevel parsedLevel = LevelParser.loadFrom(fileName, source);
 
         LevelSettings levelSettings = Objects.requireNonNull(parsedLevel).getLevelSettings();
-        roundManager.setLives(levelSettings.lives);
-        roundManager.setMoves(levelSettings.moves);
-        roundManager.setTime(levelSettings.time);
+        roundManager.setLives(levelSettings.livesLimit);
+        roundManager.setMoves(levelSettings.movesLimit);
+        roundManager.setTime(levelSettings.timeLimit);
+
+        roundManager.setTargetScoreOne(levelSettings.targetScoreOne);
+        roundManager.setTargetScoreTwo(levelSettings.targetScoreTwo);
+        roundManager.setTargetScoreThree(levelSettings.targetScoreThree);
 
         launcher.setLauncherSize(levelSettings.launcherSize);
         launcher.setLauncherCooldown(levelSettings.launcherCooldown);

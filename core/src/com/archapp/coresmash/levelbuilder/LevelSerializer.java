@@ -54,8 +54,8 @@ final class LevelSerializer {
 //        private int colorCount;
 //
 //
-//        public LevelSettingsBuilder setLives(int lives) {
-//            livesAmount = lives;
+//        public LevelSettingsBuilder setLives(int livesLimit) {
+//            livesAmount = livesLimit;
 //            return this;
 //        }
 //
