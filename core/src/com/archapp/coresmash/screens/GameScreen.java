@@ -223,7 +223,7 @@ public class GameScreen extends ScreenBase implements Observer {
             gameUI.lblTime.setText(String.format(Locale.ENGLISH, "%d:%02d", (int) time / 60, (int) time % 60));
         }
         if (CoreSmash.DEV_MODE)
-            debugUI.dblb2.setText("FPS: " + Gdx.graphics.getFramesPerSecond());
+            debugUI.dblb5.setText("FPS: " + Gdx.graphics.getFramesPerSecond());
     }
 
     private void endGame() {
@@ -407,9 +407,9 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private class GameUI implements UIComponent, Observer {
         Stack root;
-        HorizontalGroup movesGroup, livesGroup;
+        HorizontalGroup movesGroup, livesGroup, highscoreGroup;
         Table tblPowerUps, board;
-        Label lblTime, lblScore, lblLives, lblMoves, lblTargetScore;
+        Label lblTime, lblScore, lblLives, lblMoves, lblTargetScore, lblLevel, lblHighscore;
         PowerupButton[] powerupButtons;
         Image imgMovesIcon, imgLivesIcon;
 
@@ -421,8 +421,11 @@ public class GameScreen extends ScreenBase implements Observer {
             lblLives = new Label("null", skin, "h3s");
             lblMoves = new Label("null", skin, "h3s");
 
-            lblTargetScore = new Label("", skin, "h5", new Color(70 / 255f, 70 / 255f, 100 / 255f, 1));
+            lblTargetScore = new Label("", skin, "h5", new Color(100 / 255f, 100 / 255f, 130 / 255f, 1));
             lblTargetScore.setAlignment(Align.right);
+
+            lblLevel = new Label("", skin, "h2");
+            lblHighscore = new Label("", skin, "h5", new Color(150 / 255f, 150 / 255f, 90 / 255f, 1));
 
             imgMovesIcon = new Image(skin.getDrawable("movesIcon"));
             imgLivesIcon = new Image(skin.getDrawable("heartIcon"));
@@ -522,11 +525,31 @@ public class GameScreen extends ScreenBase implements Observer {
                     .padRight(10 * Gdx.graphics.getDensity());
 
 
+            Container<Image> imgTrophyWrapper = new Container<>(new Image(skin.getDrawable("Trophy")));
+            imgTrophyWrapper.size(lblHighscore.getPrefHeight() * .8f);
+            highscoreGroup = new HorizontalGroup();
+            highscoreGroup.addActor(imgTrophyWrapper);
+            highscoreGroup.addActor(lblHighscore);
+
+            Table levelInfo = new Table(skin);
+            levelInfo.bottom().left()
+                    .padLeft(10 * Gdx.graphics.getDensity())
+                    .padBottom(gameInstance.getUIViewport().getScreenHeight() * .1f);
+            levelInfo.add("Level", "h4")
+                    .padBottom(lblLevel.getPrefHeight() * -.2f)
+                    .row();
+            levelInfo.add(lblLevel)
+                    .padBottom(lblLevel.getPrefHeight() * -.1f)
+                    .row();
+            levelInfo.add(highscoreGroup);
+
+
             // ASSEMBLE ROOT
             root = new Stack();
             root.addActor(boardWrapper);
             root.addActor(powerupsWrapper);
             root.addActor(speedupWrapper);
+            root.addActor(levelInfo);
         }
 
         public void setup() {
@@ -534,15 +557,20 @@ public class GameScreen extends ScreenBase implements Observer {
             int highScore = stats.getUserHighScore();
 
             lblScore.setText(String.valueOf(0));
-            lblTargetScore.setText(highScore == 0 ?
-                    String.valueOf(roundManager.getGameStats().getTargetScoreOne()) : String.valueOf(highScore));
-            lblLives.setText(String.valueOf(roundManager.getLives()));
-            lblMoves.setText(String.valueOf(roundManager.getMoves()));
-
+            lblTargetScore.setText(String.valueOf(roundManager.getGameStats().getTargetScoreOne()));
+            lblLevel.setText(roundManager.getLevel());
+            if (highScore != 0) {
+                lblHighscore.setText(String.valueOf(highScore));
+                highscoreGroup.setVisible(true);
+            } else {
+                highscoreGroup.setVisible(false);
+            }
             movesGroup.setVisible(roundManager.isMovesEnabled());
             livesGroup.setVisible(roundManager.isLivesEnabled());
             lblTime.setVisible(roundManager.isTimeEnabled());
 
+            lblMoves.setText(String.valueOf(roundManager.getMoves()));
+            lblLives.setText(String.valueOf(roundManager.getLives()));
             if (roundManager.isTimeEnabled()) {
                 float time = roundManager.getTime();
                 lblTime.setText(String.format(Locale.ENGLISH, "%d:%02d", (int) time / 60, (int) time % 60));

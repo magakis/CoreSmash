@@ -133,6 +133,7 @@ public class LoadingScreen extends ScreenBase {
 
         loadTexture("GrayStar.png");
         loadTexture("Star.png");
+        loadTexture("Trophy.png");
 
         loadTexture("ButtonPowerup.png");
         loadTexture("ButtonLottery.png");
@@ -345,6 +346,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("UserLevelBackground", am.get("UserLevelBackground.png"));
         skin.add("NotificationIndicator", am.get("NotificationIndicator.png"));
         skin.add("DefaultTexture", am.get("default.png"));
+        skin.add("Trophy", am.get("Trophy.png"));
 
         skin.add("ButtonPlay", am.get("ButtonPlay.png"));
         skin.add("ButtonGiveUp", am.get("ButtonGiveUp.png"));
