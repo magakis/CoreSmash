@@ -2,8 +2,9 @@ package com.archapp.coresmash;
 
 public enum NotificationType {
     NULL,
-    NOTIFICATION_TYPE_TILE_DESTROYED,
+    TILE_DESTROYED,
     BALL_LAUNCHED,
+    TARGET_SCORE_REACHED,
     NOTIFICATION_TYPE_MOVINGTILE_COLLIDED,
     NO_COLOR_MATCH,
     SAME_COLOR_MATCH,

@@ -27,6 +27,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.input.GestureDetector;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Action;
@@ -38,6 +39,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
@@ -50,7 +52,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.Value;
+import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Layout;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 
@@ -410,8 +414,12 @@ public class GameScreen extends ScreenBase implements Observer {
         HorizontalGroup movesGroup, livesGroup, highscoreGroup;
         Table tblPowerUps, board;
         Label lblTime, lblScore, lblLives, lblMoves, lblTargetScore, lblLevel, lblHighscore;
+        Container<Label> targetScoreWrapper;
         PowerupButton[] powerupButtons;
         Image imgMovesIcon, imgLivesIcon;
+        Container<Image> star1, star2, star3;
+        HorizontalGroup starsGroup;
+        Color colorTargetScore;
 
         public GameUI() {
             lblTime = new Label("0", skin, "h3s");
@@ -421,8 +429,18 @@ public class GameScreen extends ScreenBase implements Observer {
             lblLives = new Label("null", skin, "h3s");
             lblMoves = new Label("null", skin, "h3s");
 
-            lblTargetScore = new Label("", skin, "h5", new Color(100 / 255f, 100 / 255f, 130 / 255f, 1));
-            lblTargetScore.setAlignment(Align.right);
+            colorTargetScore = new Color(100 / 255f, 100 / 255f, 130 / 255f, 1);
+            lblTargetScore = new Label("", skin, "h5");
+
+            star1 = new Container<>(new Image(skin, "GrayStar"));
+            star2 = new Container<>(new Image(skin, "GrayStar"));
+            star3 = new Container<>(new Image(skin, "GrayStar"));
+            star1.prefSize(lblTargetScore.getPrefHeight());
+            star2.prefSize(lblTargetScore.getPrefHeight());
+            star3.prefSize(lblTargetScore.getPrefHeight());
+            star1.setTransform(true);
+            star2.setTransform(true);
+            star3.setTransform(true);
 
             lblLevel = new Label("", skin, "h2");
             lblHighscore = new Label("", skin, "h5", new Color(150 / 255f, 150 / 255f, 90 / 255f, 1));
@@ -446,9 +464,22 @@ public class GameScreen extends ScreenBase implements Observer {
             Container<Image> imgLivesWrapper = new Container<>(imgLivesIcon);
             imgLivesWrapper.size(UIUtils.getWidthFor(imgLivesIcon.getDrawable(), lblLives.getPrefHeight() * .6f), lblLives.getPrefHeight() * .6f);
 
+            targetScoreWrapper = new Container<>(lblTargetScore);
+            targetScoreWrapper.setTransform(true);
+
+            starsGroup = new HorizontalGroup();
+            starsGroup.addActor(star3);
+            starsGroup.addActor(star2);
+            starsGroup.addActor(star1);
+
             livesGroup = new HorizontalGroup();
             livesGroup.addActor(imgLivesWrapper);
             livesGroup.addActor(lblLives);
+
+            VerticalGroup targetScoreAndStarsGroup = new VerticalGroup();
+            targetScoreAndStarsGroup.columnAlign(Align.topRight);
+            targetScoreAndStarsGroup.addActor(targetScoreWrapper);
+            targetScoreAndStarsGroup.addActor(starsGroup);
 
             board.add(movesGroup);
             board.add(lblTime);
@@ -456,8 +487,9 @@ public class GameScreen extends ScreenBase implements Observer {
             board.row();
             board.add(livesGroup);
             board.add();
-            board.add(lblTargetScore).top().right()
-                    .padTop(-lblTargetScore.getPrefHeight() * .2f);
+            board.add(targetScoreAndStarsGroup).top().right()
+                    .padTop(-lblTargetScore.getPrefHeight() * .2f)
+                    .row();
 
             // POWERUP TABLE
             powerupButtons = new PowerupButton[3];
@@ -543,7 +575,6 @@ public class GameScreen extends ScreenBase implements Observer {
                     .row();
             levelInfo.add(highscoreGroup);
 
-
             // ASSEMBLE ROOT
             root = new Stack();
             root.addActor(boardWrapper);
@@ -554,9 +585,20 @@ public class GameScreen extends ScreenBase implements Observer {
 
         public void setup() {
             RoundManager.GameStats stats = roundManager.getGameStats();
-            int highScore = stats.getUserHighScore();
 
+//            star1.setVisible(false);
+//            star2.setVisible(false);
+//            star3.setVisible(false);
+
+            resetStar(star1);
+            resetStar(star2);
+            resetStar(star3);
+            resetActor(targetScoreWrapper);
+            resetActor(lblTargetScore);
+
+            int highScore = stats.getUserHighScore();
             lblScore.setText(String.valueOf(0));
+            lblTargetScore.setColor(colorTargetScore);
             lblTargetScore.setText(String.valueOf(roundManager.getGameStats().getTargetScoreOne()));
             lblLevel.setText(roundManager.getLevel());
             if (highScore != 0) {
@@ -579,6 +621,32 @@ public class GameScreen extends ScreenBase implements Observer {
             setupPowerups();
         }
 
+        private <T extends Actor & Layout> void resetActor(T actor) {
+            actor.clearActions();
+            actor.setScale(1);
+            actor.invalidateHierarchy();
+        }
+
+        private void resetStar(Container<Image> star) {
+            star.getActor().setDrawable(skin, "GrayStar");
+            resetActor(star);
+        }
+
+        private void showStar(Container<Image> star) {
+            star.setOrigin(Align.center);
+            star.setScale(0);
+            star.getActor().setDrawable(skin, "Star");
+
+            float moveAmount = 10 * Gdx.graphics.getDensity();
+            star.addAction(Actions.parallel(
+                    Actions.scaleTo(1, 1, .4f),
+                    Actions.sequence(
+                            Actions.moveBy(0, -moveAmount, .2f),
+                            Actions.moveBy(0, moveAmount, .2f)
+                    )
+            ));
+        }
+
         @Override
         public Group getRoot() {
             return root;
@@ -596,6 +664,82 @@ public class GameScreen extends ScreenBase implements Observer {
                 case MOVES_AMOUNT_CHANGED:
                     lblMoves.setText(String.valueOf(roundManager.getMoves()));
                     break;
+                case TARGET_SCORE_REACHED:
+                    updateStarsUnlocked((int) ob);
+                    break;
+            }
+        }
+
+        private void updateStarsUnlocked(final int starsUnlocked) {
+            targetScoreWrapper.setOrigin(Align.center);
+
+            if (starsUnlocked != 3) {
+                targetScoreWrapper.addAction(Actions.after(Actions.sequence(
+                        Actions.parallel(
+                                Actions.scaleBy(.7f, .7f, .3f),
+                                Actions.run(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        lblTargetScore.setColor(Color.YELLOW);
+                                    }
+                                })
+
+                        ),
+                        Actions.scaleTo(0, 0, .2f),
+                        Actions.run(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (starsUnlocked == 1) {
+                                    lblTargetScore.setText(String.valueOf(roundManager.getGameStats().getTargetScoreTwo()));
+                                    showStar(star1);
+                                } else {
+                                    lblTargetScore.setText(String.valueOf(roundManager.getGameStats().getTargetScoreThree()));
+                                    showStar(star2);
+                                }
+                            }
+                        }),
+                        Actions.parallel(
+                                Actions.scaleTo(1, 1, .3f),
+                                Actions.sequence(
+                                        Actions.moveBy(0, -10 * Gdx.graphics.getDensity(), .15f),
+                                        Actions.moveBy(0, 10 * Gdx.graphics.getDensity(), .15f)
+                                )
+                        ),
+                        Actions.run(new Runnable() {
+                            @Override
+                            public void run() {
+                                lblTargetScore.addAction(
+                                        Actions.color(colorTargetScore, .5f));
+                            }
+                        })
+                )));
+            } else {
+                targetScoreWrapper.addAction(Actions.after(
+                        Actions.sequence(
+                                Actions.parallel(
+                                        Actions.scaleBy(.7f, .7f, .3f),
+                                        Actions.run(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                showStar(star3);
+                                                lblTargetScore.setColor(Color.YELLOW);
+                                            }
+                                        })
+
+                                ),
+                                Actions.scaleTo(0, 0, .2f),
+                                Actions.run(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        lblTargetScore.setText("");
+                                        float height = lblTargetScore.getPrefHeight();
+                                        starsGroup.addAction(Actions.moveBy(
+                                                0, height, .5f, Interpolation.circleOut
+                                        ));
+                                    }
+                                })
+                        )
+                ));
             }
         }
 

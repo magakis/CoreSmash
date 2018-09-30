@@ -5,7 +5,7 @@ import com.archapp.coresmash.PropertyChangeListener;
 public interface GoogleGames {
     boolean isSignedIn();
 
-    void signIn();
+    void signIn(OnRequestComplete callback);
 
     PlayerInfo getAccountInfo();
 
@@ -14,4 +14,8 @@ public interface GoogleGames {
     void removeListener(PropertyChangeListener listener);
 
     void signOut();
+
+    interface OnRequestComplete {
+        void onComplete(boolean result);
+    }
 }

@@ -187,7 +187,7 @@ public class Tilemap extends Observable implements Comparable<Tilemap> {
     }
 
     private void executeDestroyProcedure(TilemapTile tmTile) {
-        notifyObservers(NotificationType.NOTIFICATION_TYPE_TILE_DESTROYED, tmTile); // put before others!
+        notifyObservers(NotificationType.TILE_DESTROYED, tmTile); // put before others!
         tmTile.clear();
         tilemapTiles.remove(tmTile);
         destroyedTiles.add(tmTile);

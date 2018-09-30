@@ -347,6 +347,8 @@ public class LoadingScreen extends ScreenBase {
         skin.add("NotificationIndicator", am.get("NotificationIndicator.png"));
         skin.add("DefaultTexture", am.get("default.png"));
         skin.add("Trophy", am.get("Trophy.png"));
+        skin.add("Star", am.get("Star.png"));
+        skin.add("GrayStar", am.get("GrayStar.png"));
 
         skin.add("ButtonPlay", am.get("ButtonPlay.png"));
         skin.add("ButtonGiveUp", am.get("ButtonGiveUp.png"));

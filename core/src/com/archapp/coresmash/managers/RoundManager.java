@@ -82,6 +82,8 @@ public class RoundManager extends Observable implements Observer {
             gameStats.totalScore += scoreGained;
             notifyObservers(NotificationType.NOTIFICATION_TYPE_SCORE_INCREMENTED, scoreGained);
 
+            checkIfTargetScoreReached();
+
             if (gameStats.livesEnabled) {
                 float chanceToGainLife = ((ballsDestroyedThisFrame * ballsDestroyedThisFrame) / 9.f) / 100.f; // random algorithm I came up with
                 if (rand.nextFloat() < chanceToGainLife) {
@@ -273,6 +275,31 @@ public class RoundManager extends Observable implements Observer {
         scoreThisFrame += amount;
     }
 
+    public void checkIfTargetScoreReached() {
+        int starsUnlocked = gameStats.starsUnlocked;
+        if (starsUnlocked == 3) return;
+
+        while (true) {
+            switch (gameStats.starsUnlocked) {
+                case 0:
+                    if (gameStats.totalScore < gameStats.targetScoreOne) return;
+                    notifyObservers(NotificationType.TARGET_SCORE_REACHED, 1);
+                    break;
+                case 1:
+                    if (gameStats.totalScore < gameStats.targetScoreTwo) return;
+                    notifyObservers(NotificationType.TARGET_SCORE_REACHED, 2);
+                    break;
+                case 2:
+                    if (gameStats.totalScore < gameStats.targetScoreThree) return;
+                    notifyObservers(NotificationType.TARGET_SCORE_REACHED, 3);
+                    break;
+                default:
+                    return;
+            }
+            ++gameStats.starsUnlocked;
+        }
+    }
+
     // Time constantly changes so a notification is not required
     public void rewardTime(int amount) {
         if (gameStats.timeEnabled) {
@@ -325,7 +352,7 @@ public class RoundManager extends Observable implements Observer {
                 gameTerminated = true;
                 break;
 
-            case NOTIFICATION_TYPE_TILE_DESTROYED:
+            case TILE_DESTROYED:
                 if (((TilemapTile) ob).getTile().getTileType().getMajorType() == TileType.MajorType.ASTRONAUT)
                     --gameStats.astronautsLeft;
 
@@ -437,6 +464,7 @@ public class RoundManager extends Observable implements Observer {
         private int unlockedLevel;
         private boolean isRoundWon;
 
+        private int starsUnlocked;
         private int totalScore;
         private int userHighScore;
         private int targetScoreOne;
@@ -460,6 +488,7 @@ public class RoundManager extends Observable implements Observer {
             unlockedLevel = -1;
             isRoundWon = false;
 
+            starsUnlocked = 0;
             totalScore = 0;
             userHighScore = 0;
             targetScoreOne = 0;
@@ -486,6 +515,10 @@ public class RoundManager extends Observable implements Observer {
 
         public ReasonOfLoss getReasonOfLoss() {
             return reasonOfLoss;
+        }
+
+        public int getStarsUnlocked() {
+            return starsUnlocked;
         }
 
         public int getExtraLivesUsed() {

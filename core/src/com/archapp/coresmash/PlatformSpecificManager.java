@@ -49,8 +49,8 @@ public class PlatformSpecificManager {
             }
 
             @Override
-            public void signIn() {
-
+            public void signIn(OnRequestComplete callback) {
+                callback.onComplete(false);
             }
 
             @Override

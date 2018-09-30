@@ -11,7 +11,6 @@ import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.archapp.coresmash.platform.GoogleGames;
 import com.archapp.coresmash.platform.PlayerInfo;
@@ -42,6 +41,8 @@ public class GoogleGamesAndroid implements GoogleGames {
     private GoogleSignInClient signInClient;
     private Activity activity;
 
+    private OnRequestComplete signInCallback;
+
     public GoogleGamesAndroid(final Activity activity) {
         this.activity = activity;
         changeListeners = new ArrayList<>();
@@ -69,11 +70,19 @@ public class GoogleGamesAndroid implements GoogleGames {
     }
 
     @Override
-    public void signIn() {
+    public void signIn(OnRequestComplete callback) {
+        if (signInCallback != null)
+            throw new RuntimeException("A second SingIn request came while previous didn't finish");
+
+        signInCallback = callback;
         if (!isSignedIn()) {
             googleSignInSilently();
-            if (!isSignedIn())
+            if (!isSignedIn()) {
                 googleStartSignInIntent();
+            } else {
+                callback.onComplete(true);
+                signInCallback = null;
+            }
         }
     }
 
@@ -118,16 +127,19 @@ public class GoogleGamesAndroid implements GoogleGames {
 
     public void onActivityResult(Intent data) {
         Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-
         try {
             googleSignInAccount = task.getResult(ApiException.class);
             updateAccountInfo();
+            signInCallback.onComplete(true);
+            signInCallback = null;
         } catch (ApiException apiException) {
             String message = apiException.getMessage();
             if (message == null || message.isEmpty()) {
                 message = "Failed Google Play login";
             }
-            Toast.makeText(activity, message, Toast.LENGTH_LONG).show();
+            Log.e("CORESMASH", "GoogleSignIn failed :" + message);
+            signInCallback.onComplete(false);
+            signInCallback = null;
         }
     }
 

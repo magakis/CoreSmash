@@ -5,6 +5,7 @@ import com.archapp.coresmash.PropertyChangeListener;
 import com.archapp.coresmash.WorldSettings;
 import com.archapp.coresmash.levelbuilder.LevelBuilderScreen;
 import com.archapp.coresmash.levels.CampaignScreen;
+import com.archapp.coresmash.platform.GoogleGames;
 import com.archapp.coresmash.sound.SoundManager;
 import com.archapp.coresmash.ui.SettingsDialog;
 import com.archapp.coresmash.ui.UIComponent;
@@ -174,13 +175,21 @@ public class MainMenuScreen extends ScreenBase {
                 }
             });
 
-            ImageButton btnSignIn = UIFactory.createImageButton(skin, "ButtonGoogleGamesSignIn");
+            final ImageButton btnSignIn = UIFactory.createImageButton(skin, "ButtonGoogleGamesSignIn");
             float btnSignInHeight = WorldSettings.getDefaultButtonHeight() * .8f;
             btnSignIn.getImageCell().size(UIUtils.getWidthFor(btnSignIn.getImage().getDrawable(), btnSignInHeight), btnSignInHeight);
             btnSignIn.addListener(new ChangeListener() {
+                GoogleGames.OnRequestComplete callback = new GoogleGames.OnRequestComplete() {
+                    @Override
+                    public void onComplete(boolean result) {
+                        btnSignIn.setDisabled(false);
+                        btnSignIn.setVisible(!result);
+                    }
+                };
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    gameInstance.getPlatformSpecificManager().googleGames.signIn();
+                    btnSignIn.setDisabled(true);
+                    gameInstance.getPlatformSpecificManager().googleGames.signIn(callback);
                 }
             });
 
