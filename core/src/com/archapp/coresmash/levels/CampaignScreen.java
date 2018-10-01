@@ -154,11 +154,14 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         uiRightBar = new UIRightBar(stage, skin, gameInstance.getUserAccount(), gameInstance.getAdManager(), gameInstance.getFeedbackMailHandler());
         rootStack.addActor(uiRightBar.root);
 
-        levelButtons = area1.getLevels();
+        levelButtons = area1.getLevelButtonList();
         int levelsUnlocked = gameInstance.getUserAccount().getUnlockedLevels();
         for (int i = levelsUnlocked; i < levelButtons.size(); ++i) {
             levelButtons.get(i).setDisabled(true);
         }
+        levelListParser.parseAssignedLevels(levels, LevelListParser.Source.INTERNAL);
+        levels.sort(LevelListParser.compLevel);
+        area1.updateLevelStars(levels, gameInstance.getUserAccount());
     }
 
     @Override
@@ -219,6 +222,10 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         gameInstance.getUserAccount().saveStats(stats);
         uiUserPanel.updateValues();
         if (stats.isRoundWon()) {
+            LevelButton button = levelButtons.get(stats.getActiveLevel() - 1);
+            if (button.getStarsUnlocked() < stats.getStarsUnlocked())
+                button.setStars(stats.getStarsUnlocked());
+
             if (stats.isLevelUnlocked()) {
                 int nextLevel = stats.getUnlockedLevel() + 1;
                 rewardsManager.giveRewardForLevel(nextLevel, gameInstance.getUserAccount(), stage);

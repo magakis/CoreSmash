@@ -814,13 +814,16 @@ public class GameScreen extends ScreenBase implements Observer {
                 outOfTime = "Out of Time",
                 missedTargetScore = "Missed target Score",
                 astronautsLeft = "Astronauts left Unsaved";
-        private Label lblResult, lblScore, lblMessage;
+        private Label lblResult, lblScore, lblMessage, staticScore;
         private float contentWidth;
+        private Container<Image> star1, star2, star3;
+        private Stack starGroup;
 
         ResultDialog(Skin skin) {
             super("", skin, "PickPowerUpDialog");
+            contentWidth = WorldSettings.getDefaultDialogSize() - getPadLeft() - getPadRight();
 
-            Label staticScore = new Label("Score:", skin, "h3");
+            staticScore = new Label("Score:", skin, "h3");
             lblResult = new Label("null", skin, "h2");
             lblScore = new Label("null", skin, "h5");
             lblMessage = UIFactory.createLabel("", skin, "h4", Align.center);
@@ -834,21 +837,30 @@ public class GameScreen extends ScreenBase implements Observer {
                 }
             });
 
+            star1 = new Container<>(new Image(skin, "GrayStar"));
+            star2 = new Container<>(new Image(skin, "GrayStar"));
+            star3 = new Container<>(new Image(skin, "GrayStar"));
 
-            contentWidth = WorldSettings.getDefaultDialogSize() - getPadLeft() - getPadRight();
+            star1.prefSize(contentWidth / 5).bottom();
+            star2.prefSize(contentWidth / 5).bottom();
+            star3.prefSize(contentWidth / 3).bottom();
+
+            star1.padRight(star3.getPrefWidth() * 1.4f);
+            star2.padLeft(star3.getPrefWidth() * 1.4f);
+
+            starGroup = new Stack();
+            starGroup.addActor(star1);
+            starGroup.addActor(star2);
+            starGroup.addActor(star3);
 
             Table content = getContentTable();
             getCell(content).width(contentWidth);
-            content.add(lblResult).row();
-            content.add(lblMessage).padBottom(40).row();
-            content.add(staticScore).row();
-            content.add(lblScore).row();
+            content.defaults().space(0);
 
             float buttonSize = contentWidth * (WorldSettings.DefaultRatio.dialogButtonToContent() * 1.2f);
             Table buttons = getButtonTable();
             getCell(buttons).width(contentWidth);
             buttons.add(btnMenu).height(buttonSize).padTop(40);
-
         }
 
         @Override
@@ -882,6 +894,41 @@ public class GameScreen extends ScreenBase implements Observer {
             }
             lblResult.setText(resultText);
             lblScore.setText(String.valueOf(roundManager.getScore()));
+
+            if (roundManager.isRoundWon()) {
+                Table content = getContentTable();
+                content.clear();
+                content.add(lblResult).row();
+                content.add(starGroup).growX().row();
+                content.add(staticScore).row();
+                content.add(lblScore).row();
+
+                int starsGained = roundManager.getGameStats().getStarsUnlocked();
+                switch (starsGained) {
+                    case 1:
+                        star1.getActor().setDrawable(skin, "Star");
+                        star2.getActor().setDrawable(skin, "GrayStar");
+                        star3.getActor().setDrawable(skin, "GrayStar");
+                        break;
+                    case 2:
+                        star1.getActor().setDrawable(skin, "Star");
+                        star2.getActor().setDrawable(skin, "Star");
+                        star3.getActor().setDrawable(skin, "GrayStar");
+                        break;
+                    case 3:
+                        star1.getActor().setDrawable(skin, "Star");
+                        star2.getActor().setDrawable(skin, "Star");
+                        star3.getActor().setDrawable(skin, "Star");
+                        break;
+                }
+            } else {
+                Table content = getContentTable();
+                content.clear();
+                content.add(lblResult).row();
+                content.add(lblMessage).padBottom(lblMessage.getPrefHeight()).row();
+                content.add(staticScore).row();
+                content.add(lblScore).row();
+            }
         }
     }
 

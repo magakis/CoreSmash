@@ -123,6 +123,10 @@ public class UserAccount {
         return progressForLevel;
     }
 
+    public int getHighscoreForLevel(int level) {
+        return Gdx.app.getPreferences(PREFS_NAME).getInteger("level" + level);
+    }
+
     public int getExpForNextLevel() {
         return expTable[userLevel - 1];
     }

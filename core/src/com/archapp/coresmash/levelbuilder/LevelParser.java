@@ -125,12 +125,7 @@ public final class LevelParser {
     public static ParsedLevel loadFrom(String filename, LevelListParser.Source source) {
         if (source == null) throw new RuntimeException("Source is required!");
 
-        FileHandle file;
-        if (source.equals(LevelListParser.Source.EXTERNAL)) {
-            file = Gdx.files.external("/CoreSmash/levels/" + filename + ".xml");
-        } else {
-            file = Gdx.files.internal("levels/" + filename + ".xml");
-        }
+        FileHandle file = getLevelFileHandle(filename, source);
         if (!file.exists()) return null;
 
         parsedLevel.reset();
@@ -166,6 +161,67 @@ public final class LevelParser {
         }
 
         return parsedLevel;
+    }
+
+    public static TargetScore getTargetScore(String filename, LevelListParser.Source source) {
+        FileHandle file = getLevelFileHandle(filename, source);
+        if (!file.exists()) return null;
+
+        TargetScore targetScore = new TargetScore();
+
+        try (Reader reader = file.reader()) {
+            XmlPullParser parser = XmlManager.getParser();
+            parser.setInput(reader);
+
+            int type = parser.getEventType();
+            do {
+                String name = parser.getName();
+                if (type == XmlPullParser.START_TAG) {
+                    String text;
+                    switch (name) {
+                        case TAG_TARGETSCORE_ONE:
+                            text = parser.nextText();
+                            targetScore.one = text.isEmpty() ? 0 : Integer.parseInt(text);
+                            if (targetScore.one != 0 && targetScore.two != 0 && targetScore.three != 0)
+                                return targetScore;
+                            break;
+                        case TAG_TARGETSCORE_TWO:
+                            text = parser.nextText();
+                            targetScore.two = text.isEmpty() ? 0 : Integer.parseInt(text);
+                            if (targetScore.one != 0 && targetScore.two != 0 && targetScore.three != 0)
+                                return targetScore;
+                            break;
+                        case TAG_TARGETSCORE_THREE:
+                            text = parser.nextText();
+                            targetScore.three = text.isEmpty() ? 0 : Integer.parseInt(text);
+                            if (targetScore.one != 0 && targetScore.two != 0 && targetScore.three != 0)
+                                return targetScore;
+                            break;
+                    }
+                }
+                type = parser.next();
+            } while (type != XmlPullParser.END_DOCUMENT);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        }
+
+        return targetScore;
+    }
+
+
+    private static FileHandle getLevelFileHandle(String filename, LevelListParser.Source source) {
+        if (source == null) throw new RuntimeException("Source is required!");
+
+        FileHandle file;
+        if (source.equals(LevelListParser.Source.EXTERNAL)) {
+            file = Gdx.files.external("/CoreSmash/levels/" + filename + ".xml");
+        } else {
+            file = Gdx.files.internal("levels/" + filename + ".xml");
+        }
+        return file;
     }
 
     private static void parseLevelSettings(XmlPullParser parser) throws IOException, XmlPullParserException {
@@ -327,4 +383,9 @@ public final class LevelParser {
         } while (!name.equals(TAG_MAP));
     }
 
+    public static class TargetScore {
+        public int one;
+        public int two;
+        public int three;
+    }
 }

@@ -347,6 +347,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("NotificationIndicator", am.get("NotificationIndicator.png"));
         skin.add("DefaultTexture", am.get("default.png"));
         skin.add("Trophy", am.get("Trophy.png"));
+
         skin.add("Star", am.get("Star.png"));
         skin.add("GrayStar", am.get("GrayStar.png"));
 
@@ -454,7 +455,7 @@ public class LoadingScreen extends ScreenBase {
         stb.font = skin.getFont("h4o");
         stb.fontColor = Color.WHITE;
         stb.disabledFontColor = IntenseGray;
-        skin.add("levelButton", stb);
+        skin.add("ButtonLevel", stb);
 
         stb = new TextButton.TextButtonStyle();
         stb.up = skin.newDrawable("boxSmall");
