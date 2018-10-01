@@ -106,8 +106,7 @@ abstract class CampaignArea {
     }
 
     static class LevelButton extends Container<Table> {
-        private static Drawable starDisabled, starGray, star;
-        private static boolean classInitialized;
+        private static Skin skin;
 
         private int originalX;
         private int originalY;
@@ -119,23 +118,17 @@ abstract class CampaignArea {
         private Container<Image> star1, star2, star3;
 
         LevelButton(int level, int x, int y, Skin skin, ChangeListener listener) {
-            if (!classInitialized) {
-                starGray = skin.getDrawable("GrayStar");
-                star = skin.getDrawable("Star");
-                classInitialized = true;
-            }
-
             addListener(listener);
             addListener(UIUtils.getButtonSoundListener());
-            levelLabel = new TextButton("", skin, "ButtonLevel");
 
+            this.skin = skin;
+            levelLabel = new TextButton("", skin, "ButtonLevel");
 
             originalX = x;
             originalY = y;
             setLevel(level);
 
-
-            float buttonSize = levelLabel.getLabel().getPrefHeight() * 2f;
+            float buttonSize = levelLabel.getLabel().getPrefHeight() * 1.5f;
             levelLabel.getLabelCell().prefSize(buttonSize);
             setSize(buttonSize, buttonSize);
             levelLabel.setName(String.valueOf(level));
@@ -176,24 +169,24 @@ abstract class CampaignArea {
         public void setStars(int starsAmount) {
             switch (starsAmount) {
                 case 0:
-                    star1.getActor().setDrawable(starGray);
-                    star2.getActor().setDrawable(starGray);
-                    star3.getActor().setDrawable(starGray);
+                    star1.getActor().setDrawable(skin.getDrawable("GrayStar"));
+                    star2.getActor().setDrawable(skin.getDrawable("GrayStar"));
+                    star3.getActor().setDrawable(skin.getDrawable("GrayStar"));
                     break;
                 case 1:
-                    star1.getActor().setDrawable(star);
-                    star2.getActor().setDrawable(starGray);
-                    star3.getActor().setDrawable(starGray);
+                    star1.getActor().setDrawable(skin.getDrawable("Star"));
+                    star2.getActor().setDrawable(skin.getDrawable("GrayStar"));
+                    star3.getActor().setDrawable(skin.getDrawable("GrayStar"));
                     break;
                 case 2:
-                    star1.getActor().setDrawable(star);
-                    star2.getActor().setDrawable(star);
-                    star3.getActor().setDrawable(starGray);
+                    star1.getActor().setDrawable(skin.getDrawable("Star"));
+                    star2.getActor().setDrawable(skin.getDrawable("Star"));
+                    star3.getActor().setDrawable(skin.getDrawable("GrayStar"));
                     break;
                 case 3:
-                    star1.getActor().setDrawable(star);
-                    star2.getActor().setDrawable(star);
-                    star3.getActor().setDrawable(star);
+                    star1.getActor().setDrawable(skin.getDrawable("Star"));
+                    star2.getActor().setDrawable(skin.getDrawable("Star"));
+                    star3.getActor().setDrawable(skin.getDrawable("Star"));
                     break;
                 default:
                     throw new RuntimeException("Tried to put " + starsAmount + " stars in Level");

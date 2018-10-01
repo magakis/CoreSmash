@@ -131,6 +131,10 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("UserLevelBackground.png");
         loadTexture("NotificationIndicator.png");
 
+        loadTexture("GoldBar.png");
+        loadTexture("GoldBarTextWrapper.png");
+        loadTexture("GoldBarWrapper.png");
+
         loadTexture("GrayStar.png");
         loadTexture("Star.png");
         loadTexture("Trophy.png");
@@ -202,12 +206,14 @@ public class LoadingScreen extends ScreenBase {
         fontParams = new FreetypeFontLoader.FreeTypeFontLoaderParameter();
         fontParams.fontFileName = "BubblegumSans.otf";
         fontParams.fontParameters.borderWidth = 1 * PPI;
+        fontParams.fontParameters.borderColor = new Color(0, 0, 0, .5f);
         fontParams.fontParameters.size = (int) (24 * PPI);
         am.load("h3o.ttf", BitmapFont.class, fontParams);
 
         fontParams = new FreetypeFontLoader.FreeTypeFontLoaderParameter();
         fontParams.fontFileName = "BubblegumSans.otf";
         fontParams.fontParameters.borderWidth = 1 * PPI;
+        fontParams.fontParameters.borderColor = new Color(0, 0, 0, .5f);
         fontParams.fontParameters.size = (int) (18 * PPI);
         am.load("h4o.ttf", BitmapFont.class, fontParams);
 
@@ -218,6 +224,14 @@ public class LoadingScreen extends ScreenBase {
         fontParams.fontParameters.shadowOffsetX = (int) (1 * PPI);
         fontParams.fontParameters.shadowOffsetY = (int) (1 * PPI);
         am.load("h3s.ttf", BitmapFont.class, fontParams);
+
+        fontParams = new FreetypeFontLoader.FreeTypeFontLoaderParameter();
+        fontParams.fontFileName = "BubblegumSans.otf";
+        fontParams.fontParameters.size = (int) (18 * PPI);
+        fontParams.fontParameters.shadowColor = new Color(0, 0, 0, .3f);
+        fontParams.fontParameters.shadowOffsetX = (int) (1 * PPI);
+        fontParams.fontParameters.shadowOffsetY = (int) (1 * PPI);
+        am.load("h4s.ttf", BitmapFont.class, fontParams);
     }
 
     private void setupSounds() {
@@ -351,6 +365,9 @@ public class LoadingScreen extends ScreenBase {
         skin.add("Star", am.get("Star.png"));
         skin.add("GrayStar", am.get("GrayStar.png"));
 
+        skin.add("GoldBarTextWrapper", am.get("GoldBarTextWrapper.png"));
+        skin.add("GoldBarWrapper", am.get("GoldBarWrapper.png"));
+
         skin.add("ButtonPlay", am.get("ButtonPlay.png"));
         skin.add("ButtonGiveUp", am.get("ButtonGiveUp.png"));
         skin.add("ButtonPlayOnFree", am.get("ButtonPlayOnFree.png"));
@@ -406,6 +423,7 @@ public class LoadingScreen extends ScreenBase {
 
         //Drop-Shadow fonts
         registerFont(skin, "h3s", "h3s.ttf");
+        registerFont(skin, "h4s", "h4s.ttf");
 
 
         // 96   84  72  60  48  36

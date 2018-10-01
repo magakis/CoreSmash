@@ -25,7 +25,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 
-import static com.archapp.coresmash.CurrencyType.LOTTERY_COIN;
+import static com.archapp.coresmash.CurrencyType.LOTTERY_TICKET;
 
 public class LotteryDialog extends Dialog {
     private float contentWidth;
@@ -62,11 +62,11 @@ public class LotteryDialog extends Dialog {
         btnOpen.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if (currencies.isCurrencyAvailable(LOTTERY_COIN)) {
-                    currencies.consumeCurrency(LOTTERY_COIN);
+                if (currencies.isCurrencyAvailable(LOTTERY_TICKET)) {
+                    currencies.consumeCurrency(LOTTERY_TICKET);
                     pickACard();
                 } else {
-                    throw new RuntimeException("Coins:" + currencies.getAmountOf(LOTTERY_COIN));
+                    throw new RuntimeException("Coins:" + currencies.getAmountOf(LOTTERY_TICKET));
                 }
             }
         });
@@ -84,11 +84,11 @@ public class LotteryDialog extends Dialog {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 result(reward);
-                if (currencies.isCurrencyAvailable(LOTTERY_COIN)) {
-                    currencies.consumeCurrency(LOTTERY_COIN);
+                if (currencies.isCurrencyAvailable(LOTTERY_TICKET)) {
+                    currencies.consumeCurrency(LOTTERY_TICKET);
                     pickACard();
                 } else {
-                    throw new RuntimeException("Coins:" + currencies.getAmountOf(LOTTERY_COIN));
+                    throw new RuntimeException("Coins:" + currencies.getAmountOf(LOTTERY_TICKET));
                 }
             }
         });
@@ -141,7 +141,7 @@ public class LotteryDialog extends Dialog {
                             , Actions.run(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if (currencies.isCurrencyAvailable(LOTTERY_COIN))
+                                    if (currencies.isCurrencyAvailable(LOTTERY_TICKET))
                                         showImageButton(btnRetry);
                                     else
                                         showImageButton(btnFreePick);
@@ -212,7 +212,7 @@ public class LotteryDialog extends Dialog {
     private void restart() {
         resetCards();
         getButtonTable().clearChildren();
-        if (currencies.isCurrencyAvailable(LOTTERY_COIN))
+        if (currencies.isCurrencyAvailable(LOTTERY_TICKET))
             showImageButton(btnOpen);
         else
             showImageButton(btnFreePick);

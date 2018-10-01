@@ -1,5 +1,7 @@
 package com.archapp.coresmash;
 
 public enum CurrencyType {
-    LOTTERY_COIN
+    LOTTERY_TICKET,
+    GOLD_BAR,
+    SPACE_COINS
 }

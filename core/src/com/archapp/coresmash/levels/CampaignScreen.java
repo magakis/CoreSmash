@@ -25,6 +25,7 @@ import com.archapp.coresmash.ui.Components;
 import com.archapp.coresmash.ui.HeartReplenishDialog;
 import com.archapp.coresmash.ui.LotteryDialog;
 import com.archapp.coresmash.ui.UIComponent;
+import com.archapp.coresmash.ui.UIEffects;
 import com.archapp.coresmash.ui.UIFactory;
 import com.archapp.coresmash.ui.UIUtils;
 import com.archapp.coresmash.utlis.FileUtils;
@@ -67,7 +68,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
-import static com.archapp.coresmash.CurrencyType.LOTTERY_COIN;
+import static com.archapp.coresmash.CurrencyType.LOTTERY_TICKET;
 
 public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private GameScreen gameScreen;
@@ -247,13 +248,15 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         private final LotteryButton lotteryButton;
         private final HowToPlayDialog howToPlayDialog;
         private final HeartButton heartButton;
+        private final GoldBarButton goldBarButton;
 
         UIRightBar(final Stage stage, final Skin skin, final UserAccount user, final AdManager adManager, final FeedbackMailHandler feedbackMailHandler) {
-            BUTTON_SIZE = skin.getFont("h4").getLineHeight() * 3;
+            BUTTON_SIZE = skin.getFont("h4").getLineHeight() * 2.5f;
 
             lotteryButton = new LotteryButton(stage, skin, user, adManager);
             heartButton = new HeartButton(skin, user, adManager);
             howToPlayDialog = new HowToPlayDialog(skin);
+            goldBarButton = new GoldBarButton(skin, user);
 
             ImageButton helpButton = UIFactory.createImageButton(skin, "ButtonHowToPlay");
             helpButton.addListener(new ChangeListener() {
@@ -274,10 +277,12 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             Table barGroup = new Table();
             barGroup.defaults().space(BUTTON_SIZE * .4f);
             barGroup.add(helpButton)
-                    .expandY()
-                    .top()
                     .size(BUTTON_SIZE * .5f)
                     .padTop(BUTTON_SIZE * .4f)
+                    .row();
+            barGroup.add(goldBarButton.root)
+                    .center()
+                    .expandY()
                     .row();
             barGroup.add(heartButton.root)
                     .row();
@@ -311,7 +316,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                     protected void result(Object object) {
                         Reward reward = ((Reward) object);
                         if (reward.getAmount() > 0) {
-                            user.addPowerup(reward.getType(), reward.getAmount());
+                            user.givePowerup(reward.getType(), reward.getAmount());
                         }
                     }
                 };
@@ -346,12 +351,12 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                         Actions.scaleBy(-.15f, -.15f, .4f),
                         Actions.scaleBy(.15f, .15f, .4f)
                 )));
-                indicator.setVisible(user.getCurrencyManager().isCurrencyAvailable(CurrencyType.LOTTERY_COIN));
+                indicator.setVisible(user.getCurrencyManager().isCurrencyAvailable(CurrencyType.LOTTERY_TICKET));
 
-                user.setPropertyChangeListener(new PropertyChangeListener() {
+                user.addPropertyChangeListener(new PropertyChangeListener() {
                     @Override
                     public void onChange(String name, Object newValue) {
-                        if (name.equals(CurrencyType.LOTTERY_COIN.name())) {
+                        if (name.equals(CurrencyType.LOTTERY_TICKET.name())) {
                             indicator.setVisible((int) newValue > 0);
                         }
                     }
@@ -361,6 +366,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
         private class HeartButton {
             private VerticalGroup root;
+            private Stack heartStack;
             private UserAccount.HeartManager heartManager;
             private AdManager.AdRewardListener listener;
             private Label lblLivesLeft;
@@ -382,28 +388,31 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 lblTimeForLife = new Label("null", skin, "h5");
                 lblTimeForLife.setAlignment(Align.center);
 
+                float buttonSize = BUTTON_SIZE * .8f;
+
                 Image imgRedCross = new Image(skin, "RedCross");
                 redCross = new Container<>(imgRedCross);
-                redCross.size(BUTTON_SIZE * .3f, UIUtils.getHeightFor(imgRedCross.getDrawable(), BUTTON_SIZE * .3f));
-                redCross.setTransform(true);
-                redCross.addAction(Actions.forever(Actions.forever(Actions.sequence(
-                        Actions.scaleBy(.15f, .15f, .5f),
-                        Actions.scaleBy(-.15f, -.15f, .5f)
-                ))));
+                redCross.size(buttonSize * .35f, UIUtils.getHeightFor(imgRedCross.getDrawable(), buttonSize * .35f));
+//                redCross.setTransform(true);
+//                redCross.addAction(Actions.forever(Actions.forever(Actions.sequence(
+//                        Actions.scaleBy(.05f, .05f, .35f, Interpolation.smooth),
+//                        Actions.scaleBy(-.05f, -.05f, .4f, Interpolation.smooth)
+//                ))));
 
                 Container<Container<Image>> redCrossWrapper = new Container<>(redCross);
                 redCrossWrapper.top().right();
 
                 Image backgroundImage = new Image(skin, "Heart");
 
-                Stack heartStack = new Stack();
+                heartStack = new Stack();
+                heartStack.setTransform(true);
                 heartStack.add(backgroundImage);
                 heartStack.add(lblLivesLeft);
                 heartStack.add(redCrossWrapper);
 
-                redCross.setOrigin(Align.center);
+//                redCross.setOrigin(Align.center);
 
-                float buttonSize = BUTTON_SIZE * .8f;
+
                 final Container<Stack> livesLeftWrapper = new Container<>(heartStack);
                 livesLeftWrapper.size(buttonSize, UIUtils.getHeightFor(backgroundImage.getDrawable(), buttonSize));
 
@@ -435,6 +444,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                     }
                 });
 
+                heartStack.setTransform(true);
+                heartStack.setOrigin(buttonSize / 2, buttonSize / 2);
+
                 updateHearts();
                 updateTimeTillNextHeart();
             }
@@ -449,11 +461,56 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             public void updateHearts() {
                 lblLivesLeft.setText(String.valueOf(heartManager.getHearts()));
-                if (heartManager.isFull())
+                if (heartManager.isFull()) {
                     redCross.setVisible(false);
-                else
+                    heartStack.clearActions();
+                    heartStack.setScale(1);
+                } else {
                     redCross.setVisible(true);
+                    if (!heartStack.hasActions())
+                        heartStack.addAction(Actions.forever(UIEffects.getEffect(UIEffects.Effect.BUBBLY)));
+                }
             }
+        }
+
+        private class GoldBarButton {
+            private Table root;
+            private Label goldBarLabel;
+
+            GoldBarButton(Skin skin, UserAccount userAccount) {
+
+                root = new Table();
+                Container<Image> goldBarWrapper = new Container<>(new Image(skin, "GoldBarWrapper"));
+                goldBarWrapper.addAction(Actions.forever(UIEffects.getEffect(UIEffects.Effect.BUBBLY)));
+                goldBarWrapper.setTransform(true);
+
+                goldBarLabel = new Label(String.valueOf(userAccount.getCurrencyManager().getAmountOf(CurrencyType.GOLD_BAR)), skin, "h4s");
+                userAccount.addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override
+                    public void onChange(String name, Object newValue) {
+                        if (name.equals(CurrencyType.GOLD_BAR.name()))
+                            goldBarLabel.setText(String.valueOf(newValue));
+                    }
+                });
+                Container<Label> goldBarTextWrapper = new Container<>(goldBarLabel);
+                goldBarTextWrapper.setBackground(skin.getDrawable("GoldBarTextWrapper"));
+
+                float labelWrapperHeight = goldBarLabel.getPrefHeight() * .9f;
+                float goldBarWrapperHeight = BUTTON_SIZE * .9f;
+
+                root.add(goldBarWrapper)
+                        .size(goldBarWrapperHeight)
+                        .padBottom(-labelWrapperHeight * .4f)
+                        .row();
+                root.add(goldBarTextWrapper)
+                        .prefWidth(UIUtils.getWidthFor(goldBarTextWrapper.getBackground(), labelWrapperHeight))
+                        .maxWidth(BUTTON_SIZE)
+                        .height(labelWrapperHeight)
+                        .row();
+
+                goldBarWrapper.setOrigin(goldBarWrapperHeight / 2, goldBarWrapperHeight / 2);
+            }
+
         }
     }
 
@@ -466,7 +523,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
         public void giveRewardForLevel(int level, UserAccount account, Stage stage) {
             if (rand.nextBoolean()) {
-                account.getCurrencyManager().giveCurrency(LOTTERY_COIN);
+                account.getCurrencyManager().giveCurrency(LOTTERY_TICKET);
                 Components.showToast("You were rewarded 1x Lottery Key!", stage);
             }
         }

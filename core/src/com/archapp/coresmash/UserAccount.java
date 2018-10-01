@@ -10,7 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.archapp.coresmash.CurrencyType.LOTTERY_COIN;
+import static com.archapp.coresmash.CurrencyType.GOLD_BAR;
+import static com.archapp.coresmash.CurrencyType.LOTTERY_TICKET;
+import static com.archapp.coresmash.CurrencyType.SPACE_COINS;
 
 public class UserAccount {
     private static final String PREFS_NAME = "account";
@@ -131,7 +133,7 @@ public class UserAccount {
         return expTable[userLevel - 1];
     }
 
-    public void addPowerup(TileType.PowerupType type, int amount) {
+    public void givePowerup(TileType.PowerupType type, int amount) {
         if (amount < 0) throw new IllegalArgumentException("Illegal amount: " + amount);
 
         powerups.addPowerup(type, amount);
@@ -141,7 +143,7 @@ public class UserAccount {
         powerups.consumePowerup(type);
     }
 
-    public void setPropertyChangeListener(PropertyChangeListener listener) {
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
         if (!propertyChangeListeners.contains(listener))
             propertyChangeListeners.add(listener);
     }
@@ -166,7 +168,9 @@ public class UserAccount {
 
         private CurrencyManager(String prefsName) {
             currencies = new EnumMap<>(CurrencyType.class);
-            currencies.put(LOTTERY_COIN, new Currency("currency_lottery_coins", prefsName, 999_999));
+            currencies.put(LOTTERY_TICKET, new Currency("currency_lottery_coins", prefsName, 999_999));
+            currencies.put(GOLD_BAR, new Currency("currency_space_gems", prefsName, 999_999));
+            currencies.put(SPACE_COINS, new Currency("currency_space_coins", prefsName, 999_999));
         }
 
         public int getAmountOf(CurrencyType type) {
