@@ -367,6 +367,7 @@ public class LoadingScreen extends ScreenBase {
 
         skin.add("GoldBarTextWrapper", am.get("GoldBarTextWrapper.png"));
         skin.add("GoldBarWrapper", am.get("GoldBarWrapper.png"));
+        skin.add("GoldBar", am.get("GoldBar.png"));
 
         skin.add("ButtonPlay", am.get("ButtonPlay.png"));
         skin.add("ButtonGiveUp", am.get("ButtonGiveUp.png"));

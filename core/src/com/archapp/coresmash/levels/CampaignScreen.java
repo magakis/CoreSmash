@@ -3,6 +3,7 @@ package com.archapp.coresmash.levels;
 import com.archapp.coresmash.CoreSmash;
 import com.archapp.coresmash.CurrencyType;
 import com.archapp.coresmash.GameController;
+import com.archapp.coresmash.Lottery;
 import com.archapp.coresmash.PropertyChangeListener;
 import com.archapp.coresmash.RoundEndListener;
 import com.archapp.coresmash.UserAccount;
@@ -68,6 +69,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
+import static com.archapp.coresmash.CurrencyType.GOLD_BAR;
 import static com.archapp.coresmash.CurrencyType.LOTTERY_TICKET;
 
 public class CampaignScreen extends ScreenBase implements RoundEndListener {
@@ -314,9 +316,17 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 lotteryDialog = new LotteryDialog(skin, user.getCurrencyManager(), adManager) {
                     @Override
                     protected void result(Object object) {
-                        Reward reward = ((Reward) object);
-                        if (reward.getAmount() > 0) {
-                            user.givePowerup(reward.getType(), reward.getAmount());
+                        Lottery.Item<LotteryRewardSimple> reward = ((Lottery.Item<LotteryRewardSimple>) object);
+                        switch (reward.getType()) {
+                            case FIREBALL:
+                                user.givePowerup(PowerupType.FIREBALL, reward.getAmount());
+                                break;
+                            case COLORBOMB:
+                                user.givePowerup(PowerupType.COLORBOMB, reward.getAmount());
+                                break;
+                            case GOLD_BAR:
+                                user.getCurrencyManager().giveCurrency(GOLD_BAR, reward.getAmount());
+                                break;
                         }
                     }
                 };
@@ -468,7 +478,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 } else {
                     redCross.setVisible(true);
                     if (!heartStack.hasActions())
-                        heartStack.addAction(Actions.forever(UIEffects.getEffect(UIEffects.Effect.BUBBLY)));
+                        heartStack.addAction(Actions.forever(UIEffects.getEffect(UIEffects.Effect.bubbly_x, .4f)));
                 }
             }
         }
@@ -481,8 +491,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
                 root = new Table();
                 Container<Image> goldBarWrapper = new Container<>(new Image(skin, "GoldBarWrapper"));
-                goldBarWrapper.addAction(Actions.forever(UIEffects.getEffect(UIEffects.Effect.BUBBLY)));
-                goldBarWrapper.setTransform(true);
+//                goldBarWrapper.addAction(Actions.forever(UIEffects.getEffect(UIEffects.Effect.bubbly_x)));
+//                goldBarWrapper.setTransform(true);
 
                 goldBarLabel = new Label(String.valueOf(userAccount.getCurrencyManager().getAmountOf(CurrencyType.GOLD_BAR)), skin, "h4s");
                 userAccount.addPropertyChangeListener(new PropertyChangeListener() {

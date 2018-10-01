@@ -8,7 +8,17 @@ public final class UIEffects {
     }
 
     public static Action getEffect(Effect effect) {
-        return getBubblyEffectSmooth();
+        return getEffect(effect, 1);
+    }
+
+    public static Action getEffect(Effect effect, float intensity) {
+        switch (effect) {
+            case bubbly_x:
+                return getBubblyEffectSmoothX(intensity);
+            case bubbly_y:
+                return getBubblyEffectSmoothY(intensity);
+        }
+        throw new RuntimeException("Unimplemented Action");
     }
 
     private static Action getBubblyEffect() {
@@ -19,15 +29,24 @@ public final class UIEffects {
         );
     }
 
-    private static Action getBubblyEffectSmooth() {
+    private static Action getBubblyEffectSmoothY(float intensity) {
         return Actions.sequence(
-                Actions.scaleBy(.025f, -.05f, .25f),
-                Actions.scaleBy(-.05f, .075f, .35f),
-                Actions.scaleBy(.025f, -.025f, .25f)
+                Actions.scaleBy(.025f * intensity, -.05f * intensity, .25f),
+                Actions.scaleBy(-.05f * intensity, .075f * intensity, .35f),
+                Actions.scaleBy(.025f * intensity, -.025f * intensity, .25f)
+        );
+    }
+
+    private static Action getBubblyEffectSmoothX(float intensity) {
+        return Actions.sequence(
+                Actions.scaleBy(-.05f * intensity, .025f * intensity, .25f),
+                Actions.scaleBy(.075f * intensity, -.05f * intensity, .35f),
+                Actions.scaleBy(-.025f * intensity, .025f * intensity, .25f)
         );
     }
 
     public enum Effect {
-        BUBBLY
+        bubbly_x,
+        bubbly_y
     }
 }

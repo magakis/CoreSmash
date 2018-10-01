@@ -1,10 +1,11 @@
 package com.archapp.coresmash.ui;
 
+import com.archapp.coresmash.CoreSmash;
 import com.archapp.coresmash.Lottery;
+import com.archapp.coresmash.Lottery.Item;
 import com.archapp.coresmash.UserAccount;
 import com.archapp.coresmash.WorldSettings;
 import com.archapp.coresmash.platform.AdManager;
-import com.archapp.coresmash.tiles.TileType;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -13,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
@@ -20,6 +22,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Align;
@@ -36,16 +39,14 @@ public class LotteryDialog extends Dialog {
 
     private CardButton[] cardButtons;
     private ImageButton btnClose, btnOpen, btnClaim, btnRetry, btnFreePick;
-    private Lottery lottery;
-    private Reward reward;
+    private Lottery<LotteryRewardSimple> lottery;
 
 
     public LotteryDialog(Skin sk, UserAccount.CurrencyManager currencyManager, final AdManager adManager) {
         super("", sk, "PickPowerUpDialog");
         currencies = currencyManager;
         skin = sk;
-        lottery = new Lottery();
-        reward = new Reward();
+        lottery = createLottery();
 
         contentWidth = WorldSettings.getDefaultDialogSize() - getPadLeft() - getPadRight();
         buttonRatio = WorldSettings.DefaultRatio.dialogButtonToContent();
@@ -83,7 +84,6 @@ public class LotteryDialog extends Dialog {
         btnRetry.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                result(reward);
                 if (currencies.isCurrencyAvailable(LOTTERY_TICKET)) {
                     currencies.consumeCurrency(LOTTERY_TICKET);
                     pickACard();
@@ -104,7 +104,10 @@ public class LotteryDialog extends Dialog {
 
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                adManager.showAdForReward(listener, AdManager.VideoAdRewardType.LOTTERY_COIN);
+                if (CoreSmash.DEV_MODE)
+                    pickACard();
+                else
+                    adManager.showAdForReward(listener, AdManager.VideoAdRewardType.LOTTERY_COIN);
             }
         });
 
@@ -114,6 +117,8 @@ public class LotteryDialog extends Dialog {
             cardButtons[i] = button;
             button.setTransform(true);
             button.addListener(new ChangeListener() {
+                Item<LotteryRewardSimple> reward;
+
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     actor.addAction(Actions.sequence(
@@ -130,9 +135,10 @@ public class LotteryDialog extends Dialog {
                             , Actions.run(new Runnable() {
                                               @Override
                                               public void run() {
-                                                  Lottery.Item item = lottery.draw();
-                                                  reward.set(item.getType(), item.getAmount());
-                                                  button.setReward(item.getType(), item.getAmount());
+                                                  reward = lottery.draw();
+                                                  button.setReward(
+                                                          skin.getDrawable(reward.getType().drawableName),
+                                                          reward.getAmount());
                                                   button.showReward();
                                               }
                                           }
@@ -157,15 +163,18 @@ public class LotteryDialog extends Dialog {
         }
 
         final Table contents = getContentTable();
+        getCell(contents).width(contentWidth);
+
         contents.columnDefaults(0).padRight(contentWidth * .025f);
         contents.columnDefaults(1).padRight(contentWidth * .025f);
         contents.padBottom(contentWidth * .025f);
-        getCell(contents).width(contentWidth);
+
         float cardSize = contentWidth * .3f;
-        for (final CardButton ib : cardButtons) {
+        for (CardButton ib : cardButtons) {
             contents.add(ib).width(cardSize).height(UIUtils.getHeightFor(ib.cardBack, cardSize));
         }
 
+        getButtonTable().defaults().expandX();
         setMovable(false);
         setResizable(false);
         addListener(new InputListener() {
@@ -179,7 +188,6 @@ public class LotteryDialog extends Dialog {
             }
         });
 
-        getButtonTable().defaults().expandX();//space((contentWidth - 2 * (contentWidth * buttonRatio)) / 4);
     }
 
 
@@ -218,7 +226,6 @@ public class LotteryDialog extends Dialog {
             showImageButton(btnFreePick);
 
         showImageButton(btnClose);
-        reward.reset();
     }
 
     private void showImageButton(ImageButton button) {
@@ -227,35 +234,20 @@ public class LotteryDialog extends Dialog {
         table.add(button).height(buttonSize).width(UIUtils.getWidthFor(button.getImage().getDrawable(), buttonSize));
     }
 
-    public static class Reward {
-        TileType.PowerupType type;
-        int amount;
+    private Lottery<LotteryRewardSimple> createLottery() {
+        Lottery<LotteryRewardSimple> lottery = new Lottery<>();
 
-        private Reward() {
-        }
+        lottery.addPossibleItem(LotteryRewardSimple.GOLD_BAR, 1, 15);
+        lottery.addPossibleItem(LotteryRewardSimple.GOLD_BAR, 2, 5);
+        lottery.addPossibleItem(LotteryRewardSimple.GOLD_BAR, 3, 1);
+        lottery.addPossibleItem(LotteryRewardSimple.COLORBOMB, 1, 15);
+        lottery.addPossibleItem(LotteryRewardSimple.COLORBOMB, 2, 5);
+        lottery.addPossibleItem(LotteryRewardSimple.COLORBOMB, 3, 1);
+        lottery.addPossibleItem(LotteryRewardSimple.FIREBALL, 1, 15);
+        lottery.addPossibleItem(LotteryRewardSimple.FIREBALL, 2, 5);
+        lottery.addPossibleItem(LotteryRewardSimple.FIREBALL, 3, 1);
 
-        private Reward(TileType.PowerupType type, int amount) {
-            this.type = type;
-            this.amount = amount;
-        }
-
-        public void set(TileType.PowerupType type, int amount) {
-            this.type = type;
-            this.amount = amount;
-        }
-
-        public TileType.PowerupType getType() {
-            return type;
-        }
-
-        public int getAmount() {
-            return amount;
-        }
-
-        private void reset() {
-            type = null;
-            amount = 0;
-        }
+        return lottery;
     }
 
     private static class CardButton extends Button {
@@ -266,7 +258,6 @@ public class LotteryDialog extends Dialog {
         private Image imgReward;
         private Image shade;
         private Label lblReward;
-        private float heightToWidthRatio;
 
         CardButton(Skin skin) {
             super(skin, "TransWithHighlight");
@@ -276,16 +267,15 @@ public class LotteryDialog extends Dialog {
             disabledCardback = skin.newDrawable("cardBack", Color.DARK_GRAY);
 
             imgBackground = new Image(cardBack);
-            imgReward = new Image();
-            imgReward.setScaling(Scaling.fit);
-            lblReward = new Label("null", skin, "h3");
-            lblReward.setAlignment(Align.bottom);
-
+            imgReward = new Image(null, Scaling.fit);
+            lblReward = UIFactory.createLabel("null", skin, "h3", Align.bottom);
             shade = new Image(skin.getDrawable("cardShade"));
 
-            heightToWidthRatio = imgBackground.getDrawable().getMinHeight() / imgBackground.getDrawable().getMinWidth();
 
-            Stack stack = new Stack(imgBackground, shade, imgReward, lblReward);
+            Container<Image> rewardWrapper = new Container<>(imgReward);
+            rewardWrapper.pad(Value.percentWidth(.15f, this));
+
+            Stack stack = new Stack(imgBackground, shade, rewardWrapper, lblReward);
             add(stack).grow();
         }
 
@@ -295,12 +285,9 @@ public class LotteryDialog extends Dialog {
             super.setDisabled(isDisabled);
         }
 
-        void setReward(TileType.PowerupType type, int amount) {
-            if (type == null) {
-                imgReward.setDrawable(null);
-            } else {
-                imgReward.setDrawable(getSkin().getDrawable(type.name()));
-            }
+        void setReward(Drawable drawable, int amount) {
+            imgReward.setDrawable(drawable);
+            imgReward.invalidateHierarchy();
             lblReward.setText(amount + "x");
         }
 
@@ -315,6 +302,21 @@ public class LotteryDialog extends Dialog {
             imgReward.setVisible(false);
             lblReward.setVisible(false);
         }
+    }
 
+    public enum LotteryRewardSimple {
+        FIREBALL("FIREBALL"),
+        COLORBOMB("COLORBOMB"),
+        GOLD_BAR("GoldBar");
+
+        LotteryRewardSimple(String drawableName) {
+            this.drawableName = drawableName;
+        }
+
+        private String drawableName;
+
+        public String getDrawableName() {
+            return drawableName;
+        }
     }
 }
