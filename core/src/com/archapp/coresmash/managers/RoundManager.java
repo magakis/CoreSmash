@@ -533,8 +533,8 @@ public class RoundManager extends Observable implements Observer {
             return activeLevel;
         }
 
-        public int getUnlockedLevel() {
-            return unlockedLevel;
+        public int getNextLevel() {
+            return activeLevel + 1;
         }
 
         public boolean isLevelUnlocked() {

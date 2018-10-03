@@ -62,9 +62,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntMap;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -81,13 +81,11 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private UIUserPanel uiUserPanel;
     private Skin skin;
     private Stage stage;
-    private List<LevelButton> levelButtons;
+    private IntMap<LevelButton> levelButtons;
     private LevelListParser levelListParser;
-    private Array<RegisteredLevel> levels;
+    private IntMap<String> levels;
     private RewardsPerLevelManager rewardsManager;
     private Stack rootStack;
-
-    private RegisteredLevel searchRegisteredLevel;
 
     public CampaignScreen(CoreSmash game) {
         super(game);
@@ -98,12 +96,10 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         stage = new Stage(game.getUIViewport());
 
         levelListParser = new LevelListParser();
-        levels = Array.of(RegisteredLevel.class);
+        levels = new IntMap<>();
 
         powerupPickDialog = new PickPowerUpsDialog(skin, gameInstance.getUserAccount().getSpecialBallsAvailable());
         heartReplenishDialog = new HeartReplenishDialog(skin, heartManager, gameInstance.getAdManager());
-
-        searchRegisteredLevel = new RegisteredLevel(0, "");
 
         screenInputMultiplexer.addProcessor(stage);
         screenInputMultiplexer.addProcessor(new InputAdapter() {
@@ -154,16 +150,27 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         uiUserPanel = new UIUserPanel();
         rootStack.addActor(uiUserPanel.root);
 
-        uiRightBar = new UIRightBar(stage, skin, gameInstance.getUserAccount(), gameInstance.getAdManager(), gameInstance.getFeedbackMailHandler());
+        uiRightBar = new UIRightBar(stage, skin,
+                gameInstance.getUserAccount(),
+                gameInstance.getAdManager(),
+                gameInstance.getFeedbackMailHandler());
+
         rootStack.addActor(uiRightBar.root);
 
         levelButtons = area1.getLevelButtonList();
-        int levelsUnlocked = gameInstance.getUserAccount().getUnlockedLevels();
-        for (int i = levelsUnlocked; i < levelButtons.size(); ++i) {
+        for (int i = gameInstance.getUserAccount().getUnlockedLevels() + 1;
+             i < levelButtons.size;
+             ++i) {
             levelButtons.get(i).setDisabled(true);
         }
-        levelListParser.parseAssignedLevels(levels, LevelListParser.Source.INTERNAL);
-        levels.sort(LevelListParser.compLevel);
+
+        Array<RegisteredLevel> foundLevels = Array.of(RegisteredLevel.class);
+        levelListParser.parseAssignedLevels(foundLevels, LevelListParser.Source.INTERNAL);
+
+        for (RegisteredLevel lvl : foundLevels) {
+            levels.put(lvl.num, lvl.name);
+        }
+
         area1.updateLevelStars(levels, gameInstance.getUserAccount());
     }
 
@@ -178,18 +185,16 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         stage.draw();
     }
 
-    private void startCampaignLevel(int lvl, final List<Powerup> powerups) {
-        searchRegisteredLevel.num = lvl;
-        int index = Arrays.binarySearch(levels.toArray(), searchRegisteredLevel, LevelListParser.compLevel);
-        if (index < 0) return;
+    private void startCampaignLevel(final int lvl, final List<Powerup> powerups) {
+        final String fileName = levels.get(lvl);
+        if (fileName == null || fileName.isEmpty()) return;
 
-        final RegisteredLevel level = levels.get(index);
         gameScreen.deployLevel(new CampaignLevel(lvl, gameInstance.getUserAccount(), this) {
             @Override
             public void initialize(GameController controller) {
-                controller.loadLevelMap(level.name, LevelListParser.Source.INTERNAL);
+                controller.loadLevelMap(fileName, LevelListParser.Source.INTERNAL);
                 RoundManager roundManager = controller.getBehaviourPack().roundManager;
-                roundManager.setLevel(level.num, gameInstance.getUserAccount().getUnlockedLevels());
+                roundManager.setLevel(lvl, gameInstance.getUserAccount().getUnlockedLevels());
                 for (Powerup powerup : powerups) {
                     roundManager.enablePowerup(powerup.type, powerup.count);
                 }
@@ -209,9 +214,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
     @Override
     public void show() {
-        levels.clear();
-        levelListParser.parseAssignedLevels(levels, LevelListParser.Source.INTERNAL);
-        levels.sort(LevelListParser.compLevel);
         super.show();
     }
 
@@ -225,15 +227,13 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         gameInstance.getUserAccount().saveStats(stats);
         uiUserPanel.updateValues();
         if (stats.isRoundWon()) {
-            LevelButton button = levelButtons.get(stats.getActiveLevel() - 1);
+            LevelButton button = levelButtons.get(stats.getActiveLevel());
             if (button.getStarsUnlocked() < stats.getStarsUnlocked())
                 button.setStars(stats.getStarsUnlocked());
 
             if (stats.isLevelUnlocked()) {
-                int nextLevel = stats.getUnlockedLevel() + 1;
-                rewardsManager.giveRewardForLevel(nextLevel, gameInstance.getUserAccount(), stage);
-                if ((nextLevel - 1) < levelButtons.size())
-                    levelButtons.get(nextLevel - 1).setDisabled(false);
+                rewardsManager.giveRewardForLevel(stats.getActiveLevel(), gameInstance.getUserAccount(), stage);
+                levelButtons.get(stats.getNextLevel()).setDisabled(false);
             }
         }
     }

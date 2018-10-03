@@ -15,22 +15,18 @@ import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.Scaling;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 
 abstract class CampaignArea {
-    private List<LevelButton> levelButtonList;
+    private IntMap<LevelButton> levelButtonList;
     private WidgetGroup levelGroup;
     private Image background;
     private float refWidth;
 
     public CampaignArea(Drawable drawable) {
-        levelButtonList = new ArrayList<>();
+        levelButtonList = new IntMap<>();
 
         levelGroup = new WidgetGroup();
         refWidth = drawable.getMinWidth();
@@ -49,7 +45,7 @@ abstract class CampaignArea {
 
             void recalcLevelButtonPos() {
                 float scale = getWidth() / refWidth;
-                for (LevelButton btn : levelButtonList) {
+                for (LevelButton btn : levelButtonList.values()) {
                     btn.setPosition(btn.originalX * scale + getX(), btn.originalY * scale + getY(), Align.center);
                 }
             }
@@ -58,21 +54,18 @@ abstract class CampaignArea {
     }
 
     /* levelButtonList MUST be sorted! */
-    public void updateLevelStars(Array<RegisteredLevel> levels, UserAccount userAccount) {
+    public void updateLevelStars(IntMap<String> levels, UserAccount userAccount) {
         RegisteredLevel searchDummy = new RegisteredLevel(0, "");
-        int unlockedLevels = userAccount.getUnlockedLevels();
 
-        RegisteredLevel[] levels1 = levels.toArray(RegisteredLevel.class);
-
-        for (int i = 0; i < unlockedLevels; ++i) {
+        for (int i = 1, n = userAccount.getUnlockedLevels(); i <= n; ++i) {
             LevelButton levelButton = levelButtonList.get(i);
             searchDummy.num = levelButton.level;
 
-            int index = Arrays.binarySearch(levels1, searchDummy, LevelListParser.compLevel);
-            if (index < 0) continue;
+            String fileName = levels.get(i);
+            if (fileName == null || fileName.isEmpty()) continue;
 
             int highscore = userAccount.getHighscoreForLevel(levelButton.level);
-            LevelParser.TargetScore targetScore = LevelParser.getTargetScore(levels.get(index).name, LevelListParser.Source.INTERNAL);
+            LevelParser.TargetScore targetScore = LevelParser.getTargetScore(fileName, LevelListParser.Source.INTERNAL);
 
             if (highscore < targetScore.three) {
                 if (highscore < targetScore.two) {
@@ -98,12 +91,12 @@ abstract class CampaignArea {
         return levelGroup;
     }
 
-    public List<LevelButton> getLevelButtonList() {
+    public IntMap<LevelButton> getLevelButtonList() {
         return levelButtonList;
     }
 
     void addLevel(LevelButton level) {
-        levelButtonList.add(level);
+        levelButtonList.put(level.level, level);
         levelGroup.addActor(level);
     }
 
