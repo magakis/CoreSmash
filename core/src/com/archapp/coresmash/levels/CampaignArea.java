@@ -62,11 +62,13 @@ abstract class CampaignArea {
         RegisteredLevel searchDummy = new RegisteredLevel(0, "");
         int unlockedLevels = userAccount.getUnlockedLevels();
 
+        RegisteredLevel[] levels1 = levels.toArray(RegisteredLevel.class);
+
         for (int i = 0; i < unlockedLevels; ++i) {
             LevelButton levelButton = levelButtonList.get(i);
             searchDummy.num = levelButton.level;
 
-            int index = Arrays.binarySearch(levels.toArray(), searchDummy, LevelListParser.compLevel);
+            int index = Arrays.binarySearch(levels1, searchDummy, LevelListParser.compLevel);
             if (index < 0) continue;
 
             int highscore = userAccount.getHighscoreForLevel(levelButton.level);

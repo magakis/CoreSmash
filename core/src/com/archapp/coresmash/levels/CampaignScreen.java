@@ -98,7 +98,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         stage = new Stage(game.getUIViewport());
 
         levelListParser = new LevelListParser();
-        levels = new Array<>();
+        levels = Array.of(RegisteredLevel.class);
 
         powerupPickDialog = new PickPowerUpsDialog(skin, gameInstance.getUserAccount().getSpecialBallsAvailable());
         heartReplenishDialog = new HeartReplenishDialog(skin, heartManager, gameInstance.getAdManager());
