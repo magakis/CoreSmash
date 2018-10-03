@@ -28,6 +28,9 @@
 -dontwarn com.badlogic.gdx.jnigen.BuildTarget*
 -dontwarn com.badlogic.gdx.graphics.g2d.freetype.FreetypeBuild
 
+-renamesourcefileattribute SourceFile
+-keepattributes SourceFile,LineNumberTable
+
 -keep class com.badlogic.gdx.controllers.android.AndroidControllers
  -keep class com.badlogic.gdx.scenes.scene2d.ui.**{
     **[] $VALUES;
