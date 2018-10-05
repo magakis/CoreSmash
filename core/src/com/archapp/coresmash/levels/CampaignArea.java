@@ -2,7 +2,6 @@ package com.archapp.coresmash.levels;
 
 import com.archapp.coresmash.UserAccount;
 import com.archapp.coresmash.levelbuilder.LevelListParser;
-import com.archapp.coresmash.levelbuilder.LevelListParser.RegisteredLevel;
 import com.archapp.coresmash.levelbuilder.LevelParser;
 import com.archapp.coresmash.ui.UIUtils;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
@@ -55,11 +54,10 @@ abstract class CampaignArea {
 
     /* levelButtonList MUST be sorted! */
     public void updateLevelStars(IntMap<String> levels, UserAccount userAccount) {
-        RegisteredLevel searchDummy = new RegisteredLevel(0, "");
 
         for (int i = 1, n = userAccount.getUnlockedLevels(); i <= n; ++i) {
             LevelButton levelButton = levelButtonList.get(i);
-            searchDummy.num = levelButton.level;
+            if (levelButton == null) continue;
 
             String fileName = levels.get(i);
             if (fileName == null || fileName.isEmpty()) continue;

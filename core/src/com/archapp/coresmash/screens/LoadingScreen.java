@@ -130,6 +130,8 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("LotteryCoin.png");
         loadTexture("UserLevelBackground.png");
         loadTexture("NotificationIndicator.png");
+        loadTexture("PowerPickupLevelBackground.png");
+        loadTexture("DialogSelectPowerups.png");
 
         loadTexture("GoldBar.png");
         loadTexture("GoldBarTextWrapper.png");
@@ -146,6 +148,7 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("MessageFrame.png");
 
         loadTexture("ButtonCancel.png");
+        loadTexture("ButtonStart.png");
         loadTexture("ButtonPlay.png");
         loadTexture("ButtonGiveUp.png");
         loadTexture("ButtonPlayOnFree.png");
@@ -359,6 +362,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("ButtonMenuPlay", am.get("ButtonMenuPlay.png"));
         skin.add("UserLevelBackground", am.get("UserLevelBackground.png"));
         skin.add("NotificationIndicator", am.get("NotificationIndicator.png"));
+        skin.add("PowerPickupLevelBackground", am.get("PowerPickupLevelBackground.png"));
         skin.add("DefaultTexture", am.get("default.png"));
         skin.add("Trophy", am.get("Trophy.png"));
 
@@ -369,7 +373,10 @@ public class LoadingScreen extends ScreenBase {
         skin.add("GoldBarWrapper", am.get("GoldBarWrapper.png"));
         skin.add("GoldBar", am.get("GoldBar.png"));
 
+        skin.add("DialogSelectPowerups", am.get("DialogSelectPowerups.png"));
+
         skin.add("ButtonPlay", am.get("ButtonPlay.png"));
+        skin.add("ButtonStart", am.get("ButtonStart.png"));
         skin.add("ButtonGiveUp", am.get("ButtonGiveUp.png"));
         skin.add("ButtonPlayOnFree", am.get("ButtonPlayOnFree.png"));
         skin.add("ButtonPlayOnAd", am.get("ButtonPlayOnAd.png"));
@@ -586,6 +593,12 @@ public class LoadingScreen extends ScreenBase {
         skin.add("ButtonMenu", imgbs);
 
         imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.imageUp = skin.getDrawable("ButtonStart");
+        imgbs.imageDown = skin.newDrawable("ButtonStart", SlightGray);
+        imgbs.imageDisabled = skin.newDrawable("ButtonStart", Color.DARK_GRAY);
+        skin.add("ButtonStart", imgbs);
+
+        imgbs = new ImageButton.ImageButtonStyle();
         imgbs.imageUp = skin.getDrawable("ButtonMenu");
         imgbs.imageDown = skin.newDrawable("ButtonMenu", SlightGray);
         imgbs.imageDisabled = skin.newDrawable("ButtonMenu", Color.DARK_GRAY);
@@ -696,6 +709,11 @@ public class LoadingScreen extends ScreenBase {
         ws.background = skin.getDrawable("simpleFrameTrans");
         ws.titleFont = skin.getFont("h6");
         skin.add("PickPowerUpDialog", ws);
+
+        ws = new Window.WindowStyle();
+        ws.background = skin.getDrawable("invisible");
+        ws.titleFont = skin.getFont("h6");
+        skin.add("empty", ws);
 
         ws = new Window.WindowStyle();
         ws.background = skin.getDrawable("PopupMessageFrame");

@@ -28,6 +28,8 @@
 -dontwarn com.badlogic.gdx.jnigen.BuildTarget*
 -dontwarn com.badlogic.gdx.graphics.g2d.freetype.FreetypeBuild
 
+-printmapping out.map
+
 -renamesourcefileattribute SourceFile
 -keepattributes SourceFile,LineNumberTable
 

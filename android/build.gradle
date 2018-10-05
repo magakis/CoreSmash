@@ -29,7 +29,7 @@ android {
         applicationId 'com.archapp.coresmash'
         minSdkVersion 15
         targetSdkVersion 27
-        versionCode 13
+        versionCode 14
         versionName "0.1.3.0-dev"
     }
     buildTypes {
@@ -40,6 +40,16 @@ android {
         debug {
             signingConfig signingConfigs.debug
             minifyEnabled false
+        }
+        pre_release {
+            debuggable true
+            jniDebuggable false
+            signingConfig signingConfigs.debug
+            renderscriptDebuggable false
+            renderscriptOptimLevel 3
+            minifyEnabled true
+            proguardFile 'D:/Coding/Java/core-smash/android/proguard-rules.pro'
+            zipAlignEnabled true
         }
     }
     productFlavors {

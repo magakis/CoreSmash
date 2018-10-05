@@ -10,6 +10,7 @@ import com.archapp.coresmash.UserAccount;
 import com.archapp.coresmash.WorldSettings;
 import com.archapp.coresmash.levelbuilder.LevelListParser;
 import com.archapp.coresmash.levelbuilder.LevelListParser.RegisteredLevel;
+import com.archapp.coresmash.levelbuilder.LevelParser;
 import com.archapp.coresmash.levels.CampaignArea.LevelButton;
 import com.archapp.coresmash.managers.RoundManager;
 import com.archapp.coresmash.managers.RoundManager.GameStats;
@@ -233,7 +234,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             if (stats.isLevelUnlocked()) {
                 rewardsManager.giveRewardForLevel(stats.getActiveLevel(), gameInstance.getUserAccount(), stage);
-                levelButtons.get(stats.getNextLevel()).setDisabled(false);
+                LevelButton levelButton = levelButtons.get(stats.getNextLevel());
+                if (levelButton != null)
+                    levelButton.setDisabled(false);
             }
         }
     }
@@ -664,9 +667,11 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         private int levelToLaunch = -1;
         private ButtonGroup<Button> buttonGroup;
         private Button[] powerupButtons;
+        private Label levelLabel, targetLabel;
 
         PickPowerUpsDialog(Skin skin, final UserAccount.PowerupManager powerUps) {
-            super("", skin, "PickPowerUpDialog");
+            super("", skin, "empty");
+
             powerUpsAvailable = powerUps;
             choosenPowerups = new ArrayList<>(3);
 
@@ -691,13 +696,43 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 ++counter;
             }
 
+            levelLabel = UIFactory.createLabel("", skin, "h3", Align.center);
+            levelLabel.setColor(new Color(153f / 255f, 46f / 255f, 103f / 255f, 1));
+            targetLabel = new Label("", skin, "h4", Color.DARK_GRAY);
 
-            Table content = getContentTable();
-            getCell(content).width(contentSize);
-            content.padBottom(contentSize * .025f);
-            content.add(new Label("Choose your POWERUPS!", skin, "h4")).row();
-            content.add(powerupsGroup)
-                    .width(contentSize);
+//            Image levelBackground = new Image(skin, null);
+//            Container<Image> levelBackgroundContainer = new Container<>(levelBackground);
+//            float levelBackgroundHeight = levelLabel.getPrefHeight() * .8f;
+//            levelBackgroundContainer
+//                    .height(levelBackgroundHeight)
+//                    .width(UIUtils.getWidthFor(levelBackground.getDrawable(), levelBackgroundHeight));
+//            Stack levelGroup = new Stack(levelBackgroundContainer, levelLabel);
+
+            Image background = new Image(skin, "DialogSelectPowerups");
+
+            Table main = new Table(skin);
+            main.padBottom(contentSize * .025f);
+            main.add(levelLabel)
+                    .expandX()
+                    .center()
+                    .padTop(levelLabel.getPrefHeight() * .35f)
+                    .top()
+                    .row();
+            main.add(targetLabel)
+                    .padTop(Value.percentHeight(.18f, this))
+                    .center()
+//                    .padBottom(levelLabel.getPrefHeight())
+                    .row();
+            main.add(new Label("Select powerups:", skin, "h4"))
+                    .expand()
+                    .bottom()
+                    .row();
+            main.add(powerupsGroup)
+                    .width(contentSize)
+                    .padBottom(Value.percentHeight(.15f, this))
+                    .row();
+
+            Stack contentStack = new Stack(background, main);
 
 
             ImageButton btnClose = UIFactory.createImageButton(skin, "ButtonCancel");
@@ -709,7 +744,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 }
             });
 
-            ImageButton btnStart = UIFactory.createImageButton(skin, "ButtonPlay");
+            ImageButton btnStart = UIFactory.createImageButton(skin, "ButtonStart");
             btnStart.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -734,11 +769,11 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 }
             });
 
-            float buttonSize = contentSize * WorldSettings.DefaultRatio.dialogButtonToContent();
+            float buttonHeight = WorldSettings.getDefaultButtonHeight() * 1.4f;
             Table buttons = getButtonTable();
             buttons.row().expandX();
-            buttons.add(btnStart).height(buttonSize).width(UIUtils.getWidthFor(btnStart.getImage().getDrawable(), buttonSize));
-            buttons.add(btnClose).height(buttonSize).width(UIUtils.getWidthFor(btnClose.getImage().getDrawable(), buttonSize));
+            buttons.add(btnStart).height(buttonHeight).width(UIUtils.getWidthFor(btnStart.getImage().getDrawable(), buttonHeight));
+//            buttons.add(btnClose).height(buttonHeight).width(UIUtils.getWidthFor(btnClose.getImage().getDrawable(), buttonHeight));
 
             addListener(new InputListener() {
                 @Override
@@ -751,6 +786,18 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 }
             });
 
+            getContentTable()
+                    .add(contentStack)
+                    .width(contentSize)
+                    .height(UIUtils.getHeightFor(background.getDrawable(), contentSize));
+//            getCell(getContentTable())
+//                    .height(UIUtils.getHeightFor(getBackground(), contentSize) - buttons.getPrefHeight())
+//                    .width(contentSize);
+            getCell(buttons)
+                    .padTop(Value.percentHeight(-.85f))
+                    .maxWidth(contentSize);
+
+            setClip(false);
             setMovable(false);
             setResizable(false);
             setKeepWithinStage(true);
@@ -771,6 +818,8 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             buttonGroup.uncheckAll();
             levelToLaunch = lvl;
+            levelLabel.setText("Level " + lvl);
+            targetLabel.setText("Reach " + LevelParser.getTargetScore(levels.get(lvl), LevelListParser.Source.INTERNAL).one + " points");
             super.show(stage, null);
             setPosition(Math.round((stage.getWidth() - getWidth()) / 2), Math.round((stage.getHeight() - getHeight()) / 2));
         }

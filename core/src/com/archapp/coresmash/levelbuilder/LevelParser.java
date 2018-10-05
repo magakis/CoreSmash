@@ -51,6 +51,7 @@ public final class LevelParser {
         }
     };
     private static ParsedLevel parsedLevel = new ParsedLevel();
+    private static LevelInfo levelInfo = new LevelInfo();
 
     public static boolean saveAs(String name, Map map, LevelSettings levelSettings, MapSettings[] mapSettings) {
         int maxTilemaps = map.layerCount();
@@ -162,55 +163,6 @@ public final class LevelParser {
 
         return parsedLevel;
     }
-
-    public static TargetScore getTargetScore(String filename, LevelListParser.Source source) {
-        FileHandle file = getLevelFileHandle(filename, source);
-        if (!file.exists()) return null;
-
-        TargetScore targetScore = new TargetScore();
-
-        try (Reader reader = file.reader()) {
-            XmlPullParser parser = XmlManager.getParser();
-            parser.setInput(reader);
-
-            int type = parser.getEventType();
-            do {
-                String name = parser.getName();
-                if (type == XmlPullParser.START_TAG) {
-                    String text;
-                    switch (name) {
-                        case TAG_TARGETSCORE_ONE:
-                            text = parser.nextText();
-                            targetScore.one = text.isEmpty() ? 0 : Integer.parseInt(text);
-                            if (targetScore.one != 0 && targetScore.two != 0 && targetScore.three != 0)
-                                return targetScore;
-                            break;
-                        case TAG_TARGETSCORE_TWO:
-                            text = parser.nextText();
-                            targetScore.two = text.isEmpty() ? 0 : Integer.parseInt(text);
-                            if (targetScore.one != 0 && targetScore.two != 0 && targetScore.three != 0)
-                                return targetScore;
-                            break;
-                        case TAG_TARGETSCORE_THREE:
-                            text = parser.nextText();
-                            targetScore.three = text.isEmpty() ? 0 : Integer.parseInt(text);
-                            if (targetScore.one != 0 && targetScore.two != 0 && targetScore.three != 0)
-                                return targetScore;
-                            break;
-                    }
-                }
-                type = parser.next();
-            } while (type != XmlPullParser.END_DOCUMENT);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (XmlPullParserException e) {
-            e.printStackTrace();
-        }
-
-        return targetScore;
-    }
-
 
     private static FileHandle getLevelFileHandle(String filename, LevelListParser.Source source) {
         if (source == null) throw new RuntimeException("Source is required!");
@@ -383,9 +335,127 @@ public final class LevelParser {
         } while (!name.equals(TAG_MAP));
     }
 
+    //------------
+
+    public static LevelInfo getLevelInfo(String filename, LevelListParser.Source source) {
+        levelInfo.reset();
+
+        FileHandle file = getLevelFileHandle(filename, source);
+        if (!file.exists()) return null;
+
+        try (Reader reader = file.reader()) {
+            XmlPullParser parser = XmlManager.getParser();
+            parser.setInput(reader);
+
+            int type = parser.getEventType();
+            do {
+                String name = parser.getName();
+                if (type == XmlPullParser.START_TAG) {
+                    String text;
+                    switch (name) {
+                        case TAG_TARGETSCORE_ONE:
+                            text = parser.nextText();
+                            levelInfo.targetScores.one = text.isEmpty() ? 0 : Integer.parseInt(text);
+                            break;
+                        case TAG_TARGETSCORE_TWO:
+                            text = parser.nextText();
+                            levelInfo.targetScores.two = text.isEmpty() ? 0 : Integer.parseInt(text);
+                            break;
+                        case TAG_TARGETSCORE_THREE:
+                            text = parser.nextText();
+                            levelInfo.targetScores.three = text.isEmpty() ? 0 : Integer.parseInt(text);
+                            break;
+                    }
+                } else if (type == XmlPullParser.END_TAG) {
+                    if (parser.getName().equals(TAG_LEVEL_SETTINGS))
+                        return levelInfo;
+                }
+                type = parser.next();
+            } while (type != XmlPullParser.END_DOCUMENT);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        }
+
+        /* It shouldn't reach this point*/
+        return levelInfo;
+    }
+
+    public static TargetScore getTargetScore(String filename, LevelListParser.Source source) {
+        FileHandle file = getLevelFileHandle(filename, source);
+        if (!file.exists()) return null;
+
+        TargetScore targetScore = new TargetScore();
+
+        try (Reader reader = file.reader()) {
+            XmlPullParser parser = XmlManager.getParser();
+            parser.setInput(reader);
+
+            int type = parser.getEventType();
+            do {
+                String name = parser.getName();
+                if (type == XmlPullParser.START_TAG) {
+                    String text;
+                    switch (name) {
+                        case TAG_TARGETSCORE_ONE:
+                            text = parser.nextText();
+                            targetScore.one = text.isEmpty() ? 0 : Integer.parseInt(text);
+                            if (targetScore.one != 0 && targetScore.two != 0 && targetScore.three != 0)
+                                return targetScore;
+                            break;
+                        case TAG_TARGETSCORE_TWO:
+                            text = parser.nextText();
+                            targetScore.two = text.isEmpty() ? 0 : Integer.parseInt(text);
+                            if (targetScore.one != 0 && targetScore.two != 0 && targetScore.three != 0)
+                                return targetScore;
+                            break;
+                        case TAG_TARGETSCORE_THREE:
+                            text = parser.nextText();
+                            targetScore.three = text.isEmpty() ? 0 : Integer.parseInt(text);
+                            if (targetScore.one != 0 && targetScore.two != 0 && targetScore.three != 0)
+                                return targetScore;
+                            break;
+                    }
+                }
+                type = parser.next();
+            } while (type != XmlPullParser.END_DOCUMENT);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        }
+
+        return targetScore;
+    }
+
+    public static class LevelInfo {
+        private TargetScore targetScores;
+
+        private LevelInfo() {
+            targetScores = new TargetScore();
+        }
+
+        public TargetScore getTargetScore() {
+            return targetScores;
+        }
+
+        void reset() {
+            targetScores.reset();
+        }
+    }
+
     public static class TargetScore {
         public int one;
         public int two;
         public int three;
+
+        void reset() {
+            one = 0;
+            two = 0;
+            three = 0;
+        }
     }
 }
