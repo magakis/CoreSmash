@@ -5,7 +5,6 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 public final class Components {
-    private static boolean isInitialized;
     private static Toast toast;
 
     // Disable constructor
@@ -13,14 +12,11 @@ public final class Components {
     }
 
     public static void initialize(Skin skin) {
-        if (!isInitialized) {
             Toast.ToastStyle ws = new Toast.ToastStyle();
             ws.background = skin.getDrawable("toast1");
             ws.font = skin.getFont("h5");
 
             toast = new Toast(ws);
-            isInitialized = true;
-        }
     }
 
     public static void clearToasts() {
