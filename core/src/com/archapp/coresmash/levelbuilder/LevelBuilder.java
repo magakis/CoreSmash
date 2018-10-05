@@ -1,7 +1,9 @@
 package com.archapp.coresmash.levelbuilder;
 
+import com.archapp.coresmash.GameTarget;
 import com.archapp.coresmash.managers.RenderManager;
 import com.archapp.coresmash.tilemap.Map;
+import com.archapp.coresmash.tilemap.TilemapTile;
 import com.archapp.coresmash.tiles.TileFactory;
 import com.archapp.coresmash.tiles.TileType;
 import com.badlogic.gdx.graphics.Color;
@@ -19,6 +21,7 @@ final public class LevelBuilder {
 
     private LevelSettings levelSettings;
     private List<MapSettings> mapSettings;
+    private int astronautCount;
 
     private int layer;
     private TileType tileType;
@@ -57,6 +60,8 @@ final public class LevelBuilder {
 
         if (map.isTileEmpty(layer, (int) relative.x, (int) relative.y)) {
             map.placeTile(layer, (int) relative.x, (int) relative.y, TileFactory.createTile(tileType));
+            if (tileType.getMajorType().equals(TileType.MajorType.ASTRONAUT))
+                ++astronautCount;
         }
     }
 
@@ -74,6 +79,9 @@ final public class LevelBuilder {
 
     public void eraseAt(float x, float y) {
         Vector3 relative = map.getWorldToLayerCoords(layer, screenToWorld.convert(x, y));
+        TilemapTile tile = map.getTilemapTile(layer, (int) relative.x, (int) relative.y);
+        if (tile != null && tile.getTile().getTileType().getMajorType().equals(TileType.MajorType.ASTRONAUT))
+            --astronautCount;
         map.removeTile(layer, (int) relative.x, (int) relative.y);
     }
 
@@ -139,29 +147,29 @@ final public class LevelBuilder {
 
     public void setTargetScoreOne(int score) {
         if (score > 0)
-            levelSettings.targetScoreOne = score;
+            levelSettings.targetScores.one = score;
     }
 
     public void setTargetScoreTwo(int score) {
         if (score > 0)
-            levelSettings.targetScoreTwo = score;
+            levelSettings.targetScores.two = score;
     }
 
     public void setTargetScoreThree(int score) {
         if (score > 0)
-            levelSettings.targetScoreThree = score;
+            levelSettings.targetScores.three = score;
     }
 
     int getTargetScoreOne() {
-        return levelSettings.targetScoreOne;
+        return levelSettings.targetScores.one;
     }
 
     int getTargetScoreTwo() {
-        return levelSettings.targetScoreTwo;
+        return levelSettings.targetScores.two;
     }
 
     int getTargetScoreThree() {
-        return levelSettings.targetScoreThree;
+        return levelSettings.targetScores.three;
     }
 
     public void setLauncherSize(int size) {
@@ -279,6 +287,15 @@ final public class LevelBuilder {
     }
 
     public boolean saveAs(String name) {
+        levelSettings.targets.clear();
+        if (levelSettings.targetScores.one != 0 ||
+                levelSettings.targetScores.two != 0 ||
+                levelSettings.targetScores.three != 0) {
+            levelSettings.targets.add(GameTarget.SCORE);
+        }
+
+        if (astronautCount > 0)
+            levelSettings.targets.add(GameTarget.ASTRONAUTS);
         // XXX(16/6/2018): Fix this array shit
         return LevelParser.saveAs(name, map, levelSettings, mapSettings.toArray(new MapSettings[mapSettings.size()]));
     }
@@ -288,6 +305,7 @@ final public class LevelBuilder {
         if (parsedLevel == null) return false;
 
         map.reset();
+        astronautCount = 0;
 
         levelSettings.copy(parsedLevel.levelSettings);
 
@@ -308,6 +326,8 @@ final public class LevelBuilder {
 
             for (ParsedTile tile : parsedLevel.mapTiles.get(parsedLayer)) {
                 map.placeTile(parsedLayer, tile.x, tile.y, TileFactory.getTileFromID(tile.tileID));
+                if (TileType.getTileTypeFromID(tile.tileID).getMajorType().equals(TileType.MajorType.ASTRONAUT))
+                    ++astronautCount;
             }
         }
 

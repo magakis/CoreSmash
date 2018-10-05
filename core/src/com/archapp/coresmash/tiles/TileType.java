@@ -15,8 +15,8 @@ public enum TileType {
     REGULAR_BALL8(7, true, MajorType.REGULAR),
 
 
-    RANDOM_ASTRONAUT(16, true, MajorType.EDITOR_ONLY),
-    RANDOM_REGULAR(17, true, MajorType.EDITOR_ONLY),
+    RANDOM_ASTRONAUT(16, true, MajorType.ASTRONAUT),
+    RANDOM_REGULAR(17, true, MajorType.REGULAR),
 
     WALL_BALL(18, true, MajorType.SPECIAL),
     BOMB_BALL(19, true, MajorType.SPECIAL),
@@ -83,7 +83,6 @@ public enum TileType {
 
     public enum MajorType {
         REGULAR,
-        EDITOR_ONLY,
         POWERUP,
         ASTRONAUT,
         SPECIAL,

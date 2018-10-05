@@ -1,5 +1,6 @@
 package com.archapp.coresmash.managers;
 
+import com.archapp.coresmash.GameTarget;
 import com.archapp.coresmash.Launcher;
 import com.archapp.coresmash.NotificationType;
 import com.archapp.coresmash.Observable;
@@ -9,7 +10,9 @@ import com.archapp.coresmash.tiles.TileType;
 import com.archapp.coresmash.tiles.TileType.PowerupType;
 import com.badlogic.gdx.Gdx;
 
+import java.util.EnumSet;
 import java.util.Random;
+import java.util.Set;
 
 public class RoundManager extends Observable implements Observer {
     private Random rand = new Random();
@@ -467,6 +470,7 @@ public class RoundManager extends Observable implements Observer {
         private int starsUnlocked;
         private int totalScore;
         private int userHighScore;
+        private Set<GameTarget> targets;
         private int targetScoreOne;
         private int targetScoreTwo;
         private int targetScoreThree;
@@ -483,6 +487,10 @@ public class RoundManager extends Observable implements Observer {
         private boolean freeSecondLife;
         private int extraLivesUsed;
 
+        GameStats() {
+            targets = EnumSet.noneOf(GameTarget.class);
+        }
+
         private void reset() {
             activeLevel = -1;
             unlockedLevel = -1;
@@ -491,6 +499,7 @@ public class RoundManager extends Observable implements Observer {
             starsUnlocked = 0;
             totalScore = 0;
             userHighScore = 0;
+            targets.clear();
             targetScoreOne = 0;
             targetScoreTwo = 0;
             targetScoreThree = 0;

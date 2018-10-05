@@ -1,5 +1,6 @@
 package com.archapp.coresmash.levelbuilder;
 
+import com.archapp.coresmash.GameTarget;
 import com.archapp.coresmash.tilemap.Map;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -24,6 +25,10 @@ public final class LevelParser {
     static final String TAG_MAP_SETTINGS = "mapSettings";
     static final String TAG_LIVES = "lives";
     static final String TAG_MOVES = "moves";
+    static final String TAG_GAMETARGET = "gameTarget";
+    static final String TAG_GAMETARGET_ASTRONAUTS = "saveTheAstronauts";
+    static final String TAG_GAMETARGET_SCORE = "reachScore";
+    static final String TAG_TARGETSCORE = "targetScore";
     static final String TAG_TARGETSCORE_ONE = "targetScoreOne";
     static final String TAG_TARGETSCORE_TWO = "targetScoreTwo";
     static final String TAG_TARGETSCORE_THREE = "targetScoreThree";
@@ -77,9 +82,23 @@ public final class LevelParser {
             XmlManager.createElement(TAG_LIVES, levelSettings.livesLimit);
             XmlManager.createElement(TAG_MOVES, levelSettings.movesLimit);
             XmlManager.createElement(TAG_TIME, levelSettings.timeLimit);
-            XmlManager.createElement(TAG_TARGETSCORE_ONE, levelSettings.targetScoreOne);
-            XmlManager.createElement(TAG_TARGETSCORE_TWO, levelSettings.targetScoreTwo);
-            XmlManager.createElement(TAG_TARGETSCORE_THREE, levelSettings.targetScoreThree);
+            for (GameTarget target : levelSettings.targets) {
+                String tag = null;
+                switch (target) {
+                    case SCORE:
+                        tag = TAG_GAMETARGET_SCORE;
+                        break;
+                    case ASTRONAUTS:
+                        tag = TAG_GAMETARGET_ASTRONAUTS;
+                        break;
+                }
+                XmlManager.createElement(TAG_GAMETARGET, tag);
+            }
+            serializer.startTag(NO_NAMESPACE, TAG_TARGETSCORE);
+            serializer.attribute(NO_NAMESPACE, TAG_TARGETSCORE_ONE, String.valueOf(levelSettings.targetScores.one));
+            serializer.attribute(NO_NAMESPACE, TAG_TARGETSCORE_TWO, String.valueOf(levelSettings.targetScores.two));
+            serializer.attribute(NO_NAMESPACE, TAG_TARGETSCORE_THREE, String.valueOf(levelSettings.targetScores.three));
+            serializer.endTag(NO_NAMESPACE, TAG_TARGETSCORE);
             XmlManager.createElement(TAG_BALLSPEED, levelSettings.ballSpeed);
             XmlManager.createElement(TAG_LAUNCHERSIZE, levelSettings.launcherSize);
             XmlManager.createElement(TAG_LAUNCHERCD, levelSettings.launcherCooldown);
@@ -164,18 +183,6 @@ public final class LevelParser {
         return parsedLevel;
     }
 
-    private static FileHandle getLevelFileHandle(String filename, LevelListParser.Source source) {
-        if (source == null) throw new RuntimeException("Source is required!");
-
-        FileHandle file;
-        if (source.equals(LevelListParser.Source.EXTERNAL)) {
-            file = Gdx.files.external("/CoreSmash/levels/" + filename + ".xml");
-        } else {
-            file = Gdx.files.internal("levels/" + filename + ".xml");
-        }
-        return file;
-    }
-
     private static void parseLevelSettings(XmlPullParser parser) throws IOException, XmlPullParserException {
         int type;
         String name;
@@ -209,18 +216,39 @@ public final class LevelParser {
                         text = parser.nextText();
                         parsedLevel.levelSettings.launcherCooldown = text.isEmpty() ? 0 : Float.parseFloat(text);
                         break;
+                    case TAG_GAMETARGET:
+                        text = parser.nextText();
+                        switch (text) {
+                            case TAG_GAMETARGET_SCORE:
+                                parsedLevel.levelSettings.targets.add(GameTarget.SCORE);
+                                break;
+                            case TAG_GAMETARGET_ASTRONAUTS:
+                                parsedLevel.levelSettings.targets.add(GameTarget.ASTRONAUTS);
+                                break;
+                        }
+                        break;
+                    case TAG_TARGETSCORE:
+                        text = parser.getAttributeValue(NO_NAMESPACE, TAG_TARGETSCORE_ONE);
+                        parsedLevel.levelSettings.targetScores.one = text.isEmpty() ? 0 : Integer.parseInt(text);
+                        text = parser.getAttributeValue(NO_NAMESPACE, TAG_TARGETSCORE_TWO);
+                        parsedLevel.levelSettings.targetScores.two = text.isEmpty() ? 0 : Integer.parseInt(text);
+                        text = parser.getAttributeValue(NO_NAMESPACE, TAG_TARGETSCORE_THREE);
+                        parsedLevel.levelSettings.targetScores.three = text.isEmpty() ? 0 : Integer.parseInt(text);
+                        break;
+                    ///// LEGACY (DELETE WHEN LEVELS GETS PATCHED) /////
                     case TAG_TARGETSCORE_ONE:
                         text = parser.nextText();
-                        parsedLevel.levelSettings.targetScoreOne = text.isEmpty() ? 0 : Integer.parseInt(text);
+                        parsedLevel.levelSettings.targetScores.one = text.isEmpty() ? 0 : Integer.parseInt(text);
                         break;
                     case TAG_TARGETSCORE_TWO:
                         text = parser.nextText();
-                        parsedLevel.levelSettings.targetScoreTwo = text.isEmpty() ? 0 : Integer.parseInt(text);
+                        parsedLevel.levelSettings.targetScores.two = text.isEmpty() ? 0 : Integer.parseInt(text);
                         break;
                     case TAG_TARGETSCORE_THREE:
                         text = parser.nextText();
-                        parsedLevel.levelSettings.targetScoreThree = text.isEmpty() ? 0 : Integer.parseInt(text);
+                        parsedLevel.levelSettings.targetScores.three = text.isEmpty() ? 0 : Integer.parseInt(text);
                         break;
+                    ///// -END OF LEGACY- /////
                     case TAG_BALLSPEED:
                         text = parser.nextText();
                         parsedLevel.levelSettings.ballSpeed = text.isEmpty() ? 0 : Integer.parseInt(text);
@@ -333,6 +361,18 @@ public final class LevelParser {
                 }
             }
         } while (!name.equals(TAG_MAP));
+    }
+
+    private static FileHandle getLevelFileHandle(String filename, LevelListParser.Source source) {
+        if (source == null) throw new RuntimeException("Source is required!");
+
+        FileHandle file;
+        if (source.equals(LevelListParser.Source.EXTERNAL)) {
+            file = Gdx.files.external("/CoreSmash/levels/" + filename + ".xml");
+        } else {
+            file = Gdx.files.internal("levels/" + filename + ".xml");
+        }
+        return file;
     }
 
     //------------
@@ -456,6 +496,12 @@ public final class LevelParser {
             one = 0;
             two = 0;
             three = 0;
+        }
+
+        void set(TargetScore copy) {
+            one = copy.one;
+            two = copy.two;
+            three = copy.three;
         }
     }
 }

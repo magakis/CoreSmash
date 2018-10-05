@@ -1,5 +1,10 @@
 package com.archapp.coresmash.levelbuilder;
 
+import com.archapp.coresmash.GameTarget;
+
+import java.util.EnumSet;
+import java.util.Set;
+
 public class LevelSettings {
     public static final int DEFAULT_BALLSPEED = 15;
     public static final int DEFAULT_LAUNCHER_SIZE = 3;
@@ -10,11 +15,15 @@ public class LevelSettings {
             movesLimit,
             timeLimit,
             ballSpeed = DEFAULT_BALLSPEED,
-            launcherSize = DEFAULT_LAUNCHER_SIZE,
-            targetScoreOne,
-            targetScoreTwo,
-            targetScoreThree;
+            launcherSize = DEFAULT_LAUNCHER_SIZE;
     public float launcherCooldown = DEFAULT_LAUNCHER_CD;
+    public LevelParser.TargetScore targetScores;
+    public Set<GameTarget> targets;
+
+    public LevelSettings() {
+        targetScores = new LevelParser.TargetScore();
+        targets = EnumSet.noneOf(GameTarget.class);
+    }
 
     void copy(LevelSettings from) {
         livesLimit = from.livesLimit;
@@ -23,9 +32,7 @@ public class LevelSettings {
         ballSpeed = from.ballSpeed;
         launcherSize = from.launcherSize;
         launcherCooldown = from.launcherCooldown;
-        targetScoreOne = from.targetScoreOne;
-        targetScoreTwo = from.targetScoreTwo;
-        targetScoreThree = from.targetScoreThree;
+        targetScores.set(from.targetScores);
     }
 
     void reset() {
@@ -35,8 +42,6 @@ public class LevelSettings {
         ballSpeed = DEFAULT_BALLSPEED;
         launcherSize = DEFAULT_LAUNCHER_SIZE;
         launcherCooldown = DEFAULT_LAUNCHER_CD;
-        targetScoreOne = 0;
-        targetScoreTwo = 0;
-        targetScoreThree = 0;
+        targetScores.reset();
     }
 }

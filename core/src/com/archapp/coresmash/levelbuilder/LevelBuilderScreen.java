@@ -259,17 +259,6 @@ public class LevelBuilderScreen extends ScreenBase {
             tbSave.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    int one = levelBuilder.getTargetScoreOne();
-                    int two = levelBuilder.getTargetScoreTwo();
-                    int three = levelBuilder.getTargetScoreThree();
-                    if (three <= two) {
-                        Components.showToast("ERROR: TargetScoreThree isn't greater than TargetScoreTwo!", stage, 3);
-                        return;
-                    } else if (two <= one) {
-                        Components.showToast("ERROR: TargetScoreTwo isn't greater than TargetScoreOne!", stage, 3);
-                        return;
-                    }
-
                     saveFileDialog.show(stage, filenameCache.getValue());
                 }
             });

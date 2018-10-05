@@ -82,9 +82,9 @@ public class GameController {
         roundManager.setMoves(levelSettings.movesLimit);
         roundManager.setTime(levelSettings.timeLimit);
 
-        roundManager.setTargetScoreOne(levelSettings.targetScoreOne);
-        roundManager.setTargetScoreTwo(levelSettings.targetScoreTwo);
-        roundManager.setTargetScoreThree(levelSettings.targetScoreThree);
+        roundManager.setTargetScoreOne(levelSettings.targetScores.one);
+        roundManager.setTargetScoreTwo(levelSettings.targetScores.two);
+        roundManager.setTargetScoreThree(levelSettings.targetScores.three);
 
         launcher.setLauncherSize(levelSettings.launcherSize);
         launcher.setLauncherCooldown(levelSettings.launcherCooldown);
