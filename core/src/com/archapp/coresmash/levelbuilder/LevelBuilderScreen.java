@@ -9,7 +9,6 @@ import com.archapp.coresmash.managers.RenderManager;
 import com.archapp.coresmash.managers.RoundManager;
 import com.archapp.coresmash.screens.GameScreen;
 import com.archapp.coresmash.screens.ScreenBase;
-import com.archapp.coresmash.tilemap.TilemapManager;
 import com.archapp.coresmash.tiles.TileType;
 import com.archapp.coresmash.ui.AssignLevelDialog;
 import com.archapp.coresmash.ui.Components;
@@ -370,7 +369,7 @@ public class LevelBuilderScreen extends ScreenBase {
                 }
 
                 @Override
-                public void update(float delta, TilemapManager tilemapManager) {
+                public void update(float delta, GameController.BehaviourPack behaviourPack, GameScreen.GameUI gameUI) {
                 }
 
                 @Override

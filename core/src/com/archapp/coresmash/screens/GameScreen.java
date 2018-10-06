@@ -191,7 +191,7 @@ public class GameScreen extends ScreenBase implements Observer {
             delta *= 2f;
 
         if (!roundManager.isGamePaused()) {
-            activeLevel.update(delta, tilemapManager);
+            activeLevel.update(delta, gameController.getBehaviourPack(), gameUI);
             launcher.update(delta);
             tilemapManager.update(delta);
             movingBallManager.update(delta);
@@ -409,13 +409,14 @@ public class GameScreen extends ScreenBase implements Observer {
 
     }
 
-    private class GameUI implements UIComponent, Observer {
+    public class GameUI implements UIComponent, Observer {
         Stack root;
         HorizontalGroup movesGroup, livesGroup, highscoreGroup;
         Table tblPowerUps, board;
-        Label lblTime, lblScore, lblLives, lblMoves, lblTargetScore, lblLevel, lblHighscore;
+        public Label lblTime, lblScore, lblLives, lblMoves, lblTargetScore, lblLevel, lblHighscore;
         Container<Label> targetScoreWrapper;
         PowerupButton[] powerupButtons;
+        public ImageButton btnSpeedUp;
         Image imgMovesIcon, imgLivesIcon;
         Container<Image> star1, star2, star3;
         HorizontalGroup starsGroup;
@@ -535,7 +536,7 @@ public class GameScreen extends ScreenBase implements Observer {
             powerupsWrapper.bottom().right().padBottom(gameInstance.getUIViewport().getScreenHeight() / 4);
 
             // SPEED-UP BUTTON
-            ImageButton btnSpeedUp = new ImageButton(skin, "ButtonSpeedUp");
+            btnSpeedUp = new ImageButton(skin, "ButtonSpeedUp");
             btnSpeedUp.getImageCell().size(75 * Gdx.graphics.getDensity());
             btnSpeedUp.addListener(new InputListener() {
                 @Override

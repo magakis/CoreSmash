@@ -21,6 +21,8 @@ public class Launcher extends Observable {
     private ChanceColorPicker chanceColorPicker;
     private MovingBallManager movingBallManager;
 
+    private boolean disabled;
+
     private int ballSize;
     private Vector2 launcherPos;
     private int launcherSize;
@@ -42,7 +44,7 @@ public class Launcher extends Observable {
     }
 
     public void eject() {
-        if (launcherCooldownTimer == 0) {
+        if (!disabled && launcherCooldownTimer == 0) {
             if (launcher.size > 0) {
                 MovingBall ball = launcher.removeFirst();
                 movingBallManager.activate(ball);
@@ -66,6 +68,10 @@ public class Launcher extends Observable {
 
     public void draw(RenderManager renderManager) {
         renderManager.drawLauncher(launcher, launcherPos);
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
     }
 
     public void update(float delta) {
@@ -130,6 +136,7 @@ public class Launcher extends Observable {
             iter.remove();
         }
 
+        disabled = false;
         isLoadedWithSpecial = false;
         launcherCooldownTimer = 0;
         launcherCooldown = 0;

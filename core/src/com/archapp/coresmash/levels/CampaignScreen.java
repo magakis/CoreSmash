@@ -12,7 +12,6 @@ import com.archapp.coresmash.levelbuilder.LevelListParser;
 import com.archapp.coresmash.levelbuilder.LevelListParser.RegisteredLevel;
 import com.archapp.coresmash.levelbuilder.LevelParser;
 import com.archapp.coresmash.levels.CampaignArea.LevelButton;
-import com.archapp.coresmash.managers.RoundManager;
 import com.archapp.coresmash.managers.RoundManager.GameStats;
 import com.archapp.coresmash.platform.AdManager;
 import com.archapp.coresmash.platform.FeedbackMailHandler;
@@ -21,8 +20,8 @@ import com.archapp.coresmash.platform.PlayerInfo;
 import com.archapp.coresmash.screens.GameScreen;
 import com.archapp.coresmash.screens.ScreenBase;
 import com.archapp.coresmash.sound.SoundManager;
-import com.archapp.coresmash.tilemap.TilemapManager;
 import com.archapp.coresmash.tiles.TileType.PowerupType;
+import com.archapp.coresmash.ui.Annotator;
 import com.archapp.coresmash.ui.Components;
 import com.archapp.coresmash.ui.HeartReplenishDialog;
 import com.archapp.coresmash.ui.LotteryDialog;
@@ -86,6 +85,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
     private LevelListParser levelListParser;
     private IntMap<String> levels;
     private RewardsPerLevelManager rewardsManager;
+    private Annotator annotator;
     private Stack rootStack;
 
     public CampaignScreen(CoreSmash game) {
@@ -95,6 +95,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
         rewardsManager = new RewardsPerLevelManager();
         stage = new Stage(game.getUIViewport());
+        annotator = new Annotator(skin);
 
         levelListParser = new LevelListParser();
         levels = new IntMap<>();
@@ -190,22 +191,27 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         final String fileName = levels.get(lvl);
         if (fileName == null || fileName.isEmpty()) return;
 
-        gameScreen.deployLevel(new CampaignLevel(lvl, gameInstance.getUserAccount(), this) {
-            @Override
-            public void initialize(GameController controller) {
-                controller.loadLevelMap(fileName, LevelListParser.Source.INTERNAL);
-                RoundManager roundManager = controller.getBehaviourPack().roundManager;
-                roundManager.setLevel(lvl, gameInstance.getUserAccount().getUnlockedLevels());
-                for (Powerup powerup : powerups) {
-                    roundManager.enablePowerup(powerup.type, powerup.count);
-                }
-            }
+        switch (lvl) {
+            case 1:
+                gameScreen.deployLevel(new TutorialLevel(lvl, gameInstance.getUserAccount(), this, annotator));
+                break;
+            default:
+                gameScreen.deployLevel(new CampaignLevel(lvl, gameInstance.getUserAccount(), this) {
+                    @Override
+                    public void initialize(GameController controller) {
+                        super.initialize(controller);
+                        controller.loadLevelMap(fileName, LevelListParser.Source.INTERNAL);
+                        for (Powerup powerup : powerups) {
+                            controller.getBehaviourPack().roundManager.enablePowerup(powerup.type, powerup.count);
+                        }
+                    }
 
-            @Override
-            public void update(float delta, TilemapManager tilemapManager) {
+                    @Override
+                    public void update(float delta, GameController.BehaviourPack behaviourPack, GameScreen.GameUI gameUI) {
 
-            }
-        });
+                    }
+                });
+        }
         heartManager.consumeHeart();
     }
 
@@ -251,7 +257,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         private final float BUTTON_SIZE;
         private Container<Table> root;
         private final LotteryButton lotteryButton;
-        private final HowToPlayDialog howToPlayDialog;
         private final HeartButton heartButton;
         private final GoldBarButton goldBarButton;
 
@@ -260,16 +265,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             lotteryButton = new LotteryButton(stage, skin, user, adManager);
             heartButton = new HeartButton(skin, user, adManager);
-            howToPlayDialog = new HowToPlayDialog(skin);
             goldBarButton = new GoldBarButton(skin, user);
-
-            ImageButton helpButton = UIFactory.createImageButton(skin, "ButtonHowToPlay");
-            helpButton.addListener(new ChangeListener() {
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-                    howToPlayDialog.show(stage);
-                }
-            });
 
             ImageButton feedbackButton = UIFactory.createImageButton(skin, "ButtonFeedback");
             feedbackButton.addListener(new ChangeListener() {
@@ -281,10 +277,6 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             Table barGroup = new Table();
             barGroup.defaults().space(BUTTON_SIZE * .4f);
-            barGroup.add(helpButton)
-                    .size(BUTTON_SIZE * .5f)
-                    .padTop(BUTTON_SIZE * .4f)
-                    .row();
             barGroup.add(goldBarButton.root)
                     .center()
                     .expandY()
@@ -819,7 +811,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             buttonGroup.uncheckAll();
             levelToLaunch = lvl;
             levelLabel.setText("Level " + lvl);
-            targetLabel.setText("Reach " + LevelParser.getTargetScore(levels.get(lvl), LevelListParser.Source.INTERNAL).one + " points");
+            targetLabel.setText("Collect " + LevelParser.getTargetScore(levels.get(lvl), LevelListParser.Source.INTERNAL).one + " points");
             super.show(stage, null);
             setPosition(Math.round((stage.getWidth() - getWidth()) / 2), Math.round((stage.getHeight() - getHeight()) / 2));
         }

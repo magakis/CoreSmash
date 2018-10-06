@@ -42,7 +42,7 @@ public class GameController {
         this.tilemapManager = tilemapManager;
         this.roundManager = roundManager;
         this.launcher = launcher;
-        behaviourPowerPack = new BehaviourPack(tilemapManager, movingBallManager, collisionDetector, roundManager);
+        behaviourPowerPack = new BehaviourPack(tilemapManager, movingBallManager, collisionDetector, roundManager, launcher);
     }
 
     // XXX(18/6/2018): Take a look at this method
@@ -115,12 +115,18 @@ public class GameController {
         public final MovingBallManager movingBallManager;
         public final CollisionDetector collisionDetector;
         public final RoundManager roundManager;
+        public final Launcher launcher;
 
-        private BehaviourPack(TilemapManager manager, MovingBallManager ballManager, CollisionDetector detector, RoundManager roundManager) {
+        private BehaviourPack(TilemapManager manager,
+                              MovingBallManager ballManager,
+                              CollisionDetector detector,
+                              RoundManager roundManager,
+                              Launcher launcher) {
             tilemapManager = manager;
             movingBallManager = ballManager;
             collisionDetector = detector;
             this.roundManager = roundManager;
+            this.launcher = launcher;
         }
     }
 }

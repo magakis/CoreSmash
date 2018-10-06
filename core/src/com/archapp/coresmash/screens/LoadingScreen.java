@@ -132,6 +132,8 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("NotificationIndicator.png");
         loadTexture("PowerPickupLevelBackground.png");
         loadTexture("DialogSelectPowerups.png");
+        loadTexture("TipFrame.png");
+        loadTexture("TipPointer.png");
 
         loadTexture("GoldBar.png");
         loadTexture("GoldBarTextWrapper.png");
@@ -282,7 +284,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("boxBig", ninePatch);
 
         pix = new Pixmap(3, 3, Pixmap.Format.RGBA4444);
-        pix.setColor(0, 0, 0, .65f);
+        pix.setColor(0, 0, 0, 1f);
         pix.fill();
         tex = new Texture(pix);
         ninePatch = new NinePatch(tex, 1, 1, 1, 1);
@@ -316,10 +318,16 @@ public class LoadingScreen extends ScreenBase {
         ninePatch.scale(defScale * PPI, defScale * PPI);
         skin.add("PopupMessageFrame", ninePatch);
 
+        ninePatch = new NinePatch(am.get("TipFrame.png", Texture.class), 42, 42, 42, 42);
+        defScale = .25f * PPI;
+        ninePatch.scale(defScale, defScale);
+        ninePatch.setPadding(ninePatch.getPadLeft(), ninePatch.getPadRight(), ninePatch.getPadTop() / 2, ninePatch.getPadBottom() / 2);
+        skin.add("TipFrame", ninePatch);
+
         ninePatch = new NinePatch(am.get("ButtonEditor.png", Texture.class), 31, 31, 31, 31);
         defScale = 0.25f;
         ninePatch.scale(defScale * PPI, defScale * PPI);
-        ninePatch.setPadding(ninePatch.getPadLeft() / 2, ninePatch.getPadRight() / 2, ninePatch.getPadTop() / 2, ninePatch.getPadBottom() / 2);
+//        ninePatch.setPadding(ninePatch.getPadLeft() / 2, ninePatch.getPadRight() / 2, ninePatch.getPadTop() / 2, ninePatch.getPadBottom() / 2);
         skin.add("boxSmall", ninePatch);
 
         ninePatch = new NinePatch(ninePatch);
@@ -365,6 +373,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("PowerPickupLevelBackground", am.get("PowerPickupLevelBackground.png"));
         skin.add("DefaultTexture", am.get("default.png"));
         skin.add("Trophy", am.get("Trophy.png"));
+        skin.add("TipPointer", am.get("TipPointer.png"));
 
         skin.add("Star", am.get("Star.png"));
         skin.add("GrayStar", am.get("GrayStar.png"));
@@ -717,9 +726,15 @@ public class LoadingScreen extends ScreenBase {
 
         ws = new Window.WindowStyle();
         ws.background = skin.getDrawable("PopupMessageFrame");
-        ws.stageBackground = skin.getDrawable("BackgroundBlack");
+        ws.stageBackground = skin.newDrawable("BackgroundBlack", 1, 1, 1, .65f);
         ws.titleFont = skin.getFont("h6");
         skin.add("PopupMessage", ws);
+
+        ws = new Window.WindowStyle();
+        ws.background = skin.getDrawable("TipFrame");
+        ws.stageBackground = skin.newDrawable("BackgroundBlack", 1, 1, 1, 0.4f);
+        ws.titleFont = skin.getFont("h6");
+        skin.add("TipDialog", ws);
 
         ws = new Window.WindowStyle();
         Drawable drawable = skin.newDrawable("EditorBigFrame");
