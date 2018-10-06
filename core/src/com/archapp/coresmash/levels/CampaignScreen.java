@@ -161,7 +161,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
         levelButtons = area1.getLevelButtonList();
         for (int i = gameInstance.getUserAccount().getUnlockedLevels() + 1;
-             i < levelButtons.size;
+             i <= levelButtons.size;
              ++i) {
             levelButtons.get(i).setDisabled(true);
         }

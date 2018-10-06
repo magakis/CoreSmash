@@ -49,7 +49,7 @@ public class TutorialLevel extends CampaignLevel {
                                                     @Override
                                                     public void call() {
                                                         annotator.newAnnotation(gameUI.btnSpeedUp)
-                                                                .setText("Hold to increase game speed")
+                                                                .setText("Game speed boost")
                                                                 .align(Align.bottomRight)
                                                                 .setCallback(new Annotator.Callback() {
                                                                     @Override
