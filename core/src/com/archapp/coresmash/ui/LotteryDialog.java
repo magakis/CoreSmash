@@ -43,7 +43,7 @@ public class LotteryDialog extends Dialog {
 
 
     public LotteryDialog(Skin sk, UserAccount.CurrencyManager currencyManager, final AdManager adManager) {
-        super("", sk, "PickPowerUpDialog");
+        super("", sk, "SimpleDarkPurpleDialog");
         currencies = currencyManager;
         skin = sk;
         lottery = createLottery();
@@ -165,11 +165,12 @@ public class LotteryDialog extends Dialog {
         final Table contents = getContentTable();
         getCell(contents).width(contentWidth);
 
-        contents.columnDefaults(0).padRight(contentWidth * .025f);
-        contents.columnDefaults(1).padRight(contentWidth * .025f);
+        contents.columnDefaults(0).left().expandX();
+        contents.columnDefaults(1).expandX();
+        contents.columnDefaults(2).right().expandX();
         contents.padBottom(contentWidth * .025f);
 
-        float cardSize = contentWidth * .3f;
+        float cardSize = contentWidth / 3.2f;
         for (CardButton ib : cardButtons) {
             contents.add(ib).width(cardSize).height(UIUtils.getHeightFor(ib.cardBack, cardSize));
         }
@@ -251,12 +252,9 @@ public class LotteryDialog extends Dialog {
     }
 
     private static class CardButton extends Button {
-        private Drawable disabledCardback;
-        private Drawable cardBack;
+        private Drawable cardBack, disabledCardback, cardFront;
 
-        private Image imgBackground;
-        private Image imgReward;
-        private Image shade;
+        private Image imgBackground, imgReward;
         private Label lblReward;
 
         CardButton(Skin skin) {
@@ -265,17 +263,17 @@ public class LotteryDialog extends Dialog {
 
             cardBack = skin.getDrawable("cardBack");
             disabledCardback = skin.newDrawable("cardBack", Color.DARK_GRAY);
+            cardFront = skin.getDrawable("LotteryCardFront");
 
             imgBackground = new Image(cardBack);
             imgReward = new Image(null, Scaling.fit);
             lblReward = UIFactory.createLabel("null", skin, "h3", Align.bottom);
-            shade = new Image(skin.getDrawable("cardShade"));
 
 
             Container<Image> rewardWrapper = new Container<>(imgReward);
             rewardWrapper.pad(Value.percentWidth(.15f, this));
 
-            Stack stack = new Stack(imgBackground, shade, rewardWrapper, lblReward);
+            Stack stack = new Stack(imgBackground, rewardWrapper, lblReward);
             add(stack).grow();
         }
 
@@ -292,13 +290,12 @@ public class LotteryDialog extends Dialog {
         }
 
         void showReward() {
-            shade.setVisible(true);
+            imgBackground.setDrawable(cardFront);
             imgReward.setVisible(true);
             lblReward.setVisible(true);
         }
 
         void hideReward() {
-            shade.setVisible(false);
             imgReward.setVisible(false);
             lblReward.setVisible(false);
         }

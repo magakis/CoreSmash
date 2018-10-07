@@ -124,7 +124,7 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("LevelBuilderButton.png");
         loadTexture("UserBoardBackground.png");
         loadTexture("LotteryCard.png");
-        loadTexture("CardRewardShade.png");
+        loadTexture("LotteryCardFront.png");
         loadTexture("FrameWooden.png");
         loadTexture("UserAccountFrame.png");
         loadTexture("LotteryCoin.png");
@@ -135,6 +135,7 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("TipFrame.png");
         loadTexture("TipPointer.png");
         loadTexture("SimpleBlueDialog.png");
+        loadTexture("SimpleDarkPurpleDialog.png");
 
         loadTexture("GoldBar.png");
         loadTexture("GoldBarTextWrapper.png");
@@ -331,8 +332,14 @@ public class LoadingScreen extends ScreenBase {
         ninePatch = new NinePatch(am.get("SimpleBlueDialog.png", Texture.class), 100, 100, 100, 100);
         defScale = .25f * PPI;
         ninePatch.scale(defScale, defScale);
-        ninePatch.setPadding(ninePatch.getPadLeft(), ninePatch.getPadRight(), ninePatch.getPadTop() / 2, ninePatch.getPadBottom() / 2);
+        ninePatch.setPadding(ninePatch.getPadLeft() / 2, ninePatch.getPadRight() / 2, ninePatch.getPadTop() / 2, ninePatch.getPadBottom() / 2);
         skin.add("SimpleBlueDialog", ninePatch);
+
+        ninePatch = new NinePatch(am.get("SimpleDarkPurpleDialog.png", Texture.class), 64, 64, 64, 64);
+        defScale = .25f * PPI;
+        ninePatch.scale(defScale, defScale);
+        ninePatch.setPadding(ninePatch.getPadLeft() / 2, ninePatch.getPadRight() / 2, ninePatch.getPadTop() / 2, ninePatch.getPadBottom() / 2);
+        skin.add("SimpleDarkPurpleDialog", ninePatch);
 
         ninePatch = new NinePatch(am.get("ButtonEditor.png", Texture.class), 31, 31, 31, 31);
         defScale = 0.25f;
@@ -368,7 +375,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("DefaultUserIcon", am.get("DefaultUserIcon.png"));
         skin.add("map", am.get("map.png"));
         skin.add("cardBack", am.get("LotteryCard.png"));
-        skin.add("cardShade", am.get("CardRewardShade.png"));
+        skin.add("LotteryCardFront", am.get("LotteryCardFront.png"));
         skin.add("ButtonMenuPlay", am.get("ButtonMenuPlay.png"));
         skin.add("Heart", am.get("Heart.png"));
         skin.add("RedCross", am.get("RedCross.png"));
@@ -737,6 +744,11 @@ public class LoadingScreen extends ScreenBase {
         ws.background = skin.getDrawable("SimpleBlueDialog");
         ws.titleFont = skin.getFont("h6");
         skin.add("PickPowerUpDialog", ws);
+
+        ws = new Window.WindowStyle();
+        ws.background = skin.getDrawable("SimpleDarkPurpleDialog");
+        ws.titleFont = skin.getFont("h6");
+        skin.add("SimpleDarkPurpleDialog", ws);
 
         ws = new Window.WindowStyle();
         ws.background = skin.getDrawable("invisible");
