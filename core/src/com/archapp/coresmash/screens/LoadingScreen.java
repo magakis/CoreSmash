@@ -134,6 +134,7 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("DialogSelectPowerups.png");
         loadTexture("TipFrame.png");
         loadTexture("TipPointer.png");
+        loadTexture("SimpleBlueDialog.png");
 
         loadTexture("GoldBar.png");
         loadTexture("GoldBarTextWrapper.png");
@@ -142,6 +143,8 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("GrayStar.png");
         loadTexture("Star.png");
         loadTexture("Trophy.png");
+        loadTexture("MissionCompleteSign.png");
+        loadTexture("MissionFailedSign.png");
 
         loadTexture("ButtonPowerup.png");
         loadTexture("ButtonLottery.png");
@@ -172,6 +175,7 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("ButtonFreeHeart.png");
         loadTexture("ButtonSpeedUp.png");
         loadTexture("ButtonGoogleGamesSignIn.png");
+        loadTexture("ButtonHomeEndScreen.png");
 
         loadTexture("MenuBackground.png");
         loadTexture("CampaignBackground.png");
@@ -324,10 +328,16 @@ public class LoadingScreen extends ScreenBase {
         ninePatch.setPadding(ninePatch.getPadLeft(), ninePatch.getPadRight(), ninePatch.getPadTop() / 2, ninePatch.getPadBottom() / 2);
         skin.add("TipFrame", ninePatch);
 
+        ninePatch = new NinePatch(am.get("SimpleBlueDialog.png", Texture.class), 100, 100, 100, 100);
+        defScale = .25f * PPI;
+        ninePatch.scale(defScale, defScale);
+        ninePatch.setPadding(ninePatch.getPadLeft(), ninePatch.getPadRight(), ninePatch.getPadTop() / 2, ninePatch.getPadBottom() / 2);
+        skin.add("SimpleBlueDialog", ninePatch);
+
         ninePatch = new NinePatch(am.get("ButtonEditor.png", Texture.class), 31, 31, 31, 31);
         defScale = 0.25f;
         ninePatch.scale(defScale * PPI, defScale * PPI);
-//        ninePatch.setPadding(ninePatch.getPadLeft() / 2, ninePatch.getPadRight() / 2, ninePatch.getPadTop() / 2, ninePatch.getPadBottom() / 2);
+        ninePatch.setPadding(ninePatch.getPadLeft() / 2, ninePatch.getPadRight() / 2, ninePatch.getPadTop() / 2, ninePatch.getPadBottom() / 2);
         skin.add("boxSmall", ninePatch);
 
         ninePatch = new NinePatch(ninePatch);
@@ -374,6 +384,8 @@ public class LoadingScreen extends ScreenBase {
         skin.add("DefaultTexture", am.get("default.png"));
         skin.add("Trophy", am.get("Trophy.png"));
         skin.add("TipPointer", am.get("TipPointer.png"));
+        skin.add("MissionFailedSign", am.get("MissionFailedSign.png"));
+        skin.add("MissionCompleteSign", am.get("MissionCompleteSign.png"));
 
         skin.add("Star", am.get("Star.png"));
         skin.add("GrayStar", am.get("GrayStar.png"));
@@ -404,6 +416,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("ButtonFeedback", am.get("ButtonFeedback.png"));
         skin.add("ButtonFreeHeart", am.get("ButtonFreeHeart.png"));
         skin.add("ButtonSpeedUp", am.get("ButtonSpeedUp.png"));
+        skin.add("ButtonHomeEndScreen", am.get("ButtonHomeEndScreen.png"));
         skin.add("ButtonGoogleGamesSignIn", am.get("ButtonGoogleGamesSignIn.png"));
 
         skin.add("MenuBackground", am.get("MenuBackground.png"));
@@ -572,6 +585,12 @@ public class LoadingScreen extends ScreenBase {
         skin.add("ButtonPlayOnAd", imgbs);
 
         imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.imageUp = skin.getDrawable("ButtonHomeEndScreen");
+        imgbs.imageDown = skin.newDrawable("ButtonHomeEndScreen", SlightGray);
+        imgbs.imageDisabled = skin.newDrawable("ButtonHomeEndScreen", Color.DARK_GRAY);
+        skin.add("ButtonHomeEndScreen", imgbs);
+
+        imgbs = new ImageButton.ImageButtonStyle();
         imgbs.imageUp = skin.getDrawable("ButtonFreePick");
         imgbs.imageDown = skin.newDrawable("ButtonFreePick", SlightGray);
         imgbs.imageDisabled = skin.newDrawable("ButtonFreePick", Color.DARK_GRAY);
@@ -715,7 +734,7 @@ public class LoadingScreen extends ScreenBase {
 
         // WindowStyles
         Window.WindowStyle ws = new Window.WindowStyle();
-        ws.background = skin.getDrawable("simpleFrameTrans");
+        ws.background = skin.getDrawable("SimpleBlueDialog");
         ws.titleFont = skin.getFont("h6");
         skin.add("PickPowerUpDialog", ws);
 
@@ -723,6 +742,12 @@ public class LoadingScreen extends ScreenBase {
         ws.background = skin.getDrawable("invisible");
         ws.titleFont = skin.getFont("h6");
         skin.add("empty", ws);
+
+        ws = new Window.WindowStyle();
+        ws.background = skin.getDrawable("invisible");
+        ws.stageBackground = skin.newDrawable("BackgroundBlack", 1, 1, 1, .65f);
+        ws.titleFont = skin.getFont("h6");
+        skin.add("BlackBackOnly", ws);
 
         ws = new Window.WindowStyle();
         ws.background = skin.getDrawable("PopupMessageFrame");

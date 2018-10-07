@@ -662,7 +662,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         private Label levelLabel, targetLabel;
 
         PickPowerUpsDialog(Skin skin, final UserAccount.PowerupManager powerUps) {
-            super("", skin, "empty");
+            super("", skin, "BlackBackOnly");
 
             powerUpsAvailable = powerUps;
             choosenPowerups = new ArrayList<>(3);
@@ -692,28 +692,19 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             levelLabel.setColor(new Color(153f / 255f, 46f / 255f, 103f / 255f, 1));
             targetLabel = new Label("", skin, "h4", Color.DARK_GRAY);
 
-//            Image levelBackground = new Image(skin, null);
-//            Container<Image> levelBackgroundContainer = new Container<>(levelBackground);
-//            float levelBackgroundHeight = levelLabel.getPrefHeight() * .8f;
-//            levelBackgroundContainer
-//                    .height(levelBackgroundHeight)
-//                    .width(UIUtils.getWidthFor(levelBackground.getDrawable(), levelBackgroundHeight));
-//            Stack levelGroup = new Stack(levelBackgroundContainer, levelLabel);
-
             Image background = new Image(skin, "DialogSelectPowerups");
 
             Table main = new Table(skin);
-            main.padBottom(contentSize * .025f);
+            main.top()
+                    .padBottom(contentSize * .025f);
             main.add(levelLabel)
                     .expandX()
                     .center()
-                    .padTop(levelLabel.getPrefHeight() * .35f)
-                    .top()
+                    .padTop(contentSize * .04f)
                     .row();
             main.add(targetLabel)
-                    .padTop(Value.percentHeight(.18f, this))
+                    .padTop(contentSize * .25f)
                     .center()
-//                    .padBottom(levelLabel.getPrefHeight())
                     .row();
             main.add(new Label("Select powerups:", skin, "h4"))
                     .expand()

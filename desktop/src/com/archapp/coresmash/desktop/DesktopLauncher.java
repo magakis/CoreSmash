@@ -6,8 +6,8 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {
-//		int height = 1024;
-//		int width = 768;
+//		int height = 1920;
+//		int width = 1080;
 		int height = 1024;
         int width = 576;
 
@@ -20,7 +20,8 @@ public class DesktopLauncher {
 			config.height = height;
 			config.width = width;
 		}
-        config.overrideDensity = 220;
+//        config.overrideDensity = 220;
+        config.overrideDensity = 265;
 		config.foregroundFPS = 60;
 		config.backgroundFPS = 15;
 		config.vSyncEnabled = false;

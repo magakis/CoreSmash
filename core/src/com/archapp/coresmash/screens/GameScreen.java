@@ -810,26 +810,46 @@ public class GameScreen extends ScreenBase implements Observer {
 
     private class ResultDialog extends Dialog {
         private final String
-                outOfMoves = "Out of Moves",
-                outOfLives = "Out of Lives",
-                outOfTime = "Out of Time",
-                missedTargetScore = "Missed target Score",
-                astronautsLeft = "Astronauts left Unsaved";
-        private Label lblResult, lblScore, lblMessage, staticScore;
+                outOfMoves = "No more shots left!",
+                outOfLives = "No more lives left!",
+                outOfTime = "Run out of time!",
+                missedTargetScore = "Missed target Score!",
+                astronautsLeft = "Astronauts left Unsaved!";
+        private Label lblResult, lblScore, lblMessage, staticScore, lblLavel;
         private float contentWidth;
+        private Table main;
         private Container<Image> star1, star2, star3;
+        private Image completeSign, failSign;
+        private Stack signStack;
         private Stack starGroup;
+        private Runnable showSignStack;
 
         ResultDialog(Skin skin) {
-            super("", skin, "PickPowerUpDialog");
+            super("", skin, "BlackBackOnly");
             contentWidth = WorldSettings.getDefaultDialogSize() - getPadLeft() - getPadRight();
 
-            staticScore = new Label("Score:", skin, "h3");
-            lblResult = new Label("null", skin, "h2");
-            lblScore = new Label("null", skin, "h5");
-            lblMessage = UIFactory.createLabel("", skin, "h4", Align.center);
+            showSignStack = new Runnable() {
+                @Override
+                public void run() {
+                    signStack.setOrigin(Align.center);
+                    signStack.setScale(20);
+                    signStack.addAction(Actions.parallel(
+                            Actions.fadeIn(.3f, Interpolation.circle),
+                            Actions.scaleTo(1, 1, .3f, Interpolation.sine)
+                    ));
+                }
+            };
 
-            ImageButton btnMenu = UIFactory.createImageButton(skin, "ButtonMenu");
+            lblLavel = UIFactory.createLabel("", skin, "h3", Align.center);
+            lblLavel.setColor(new Color(153f / 255f, 46f / 255f, 103f / 255f, 1));
+            staticScore = new Label("Score:", skin, "h3");
+            lblResult = new Label("null", skin, "h3");
+            lblResult.setColor(255f / 255f, 100f / 255f, 100f / 255f, 1);
+            lblScore = new Label("null", skin, "h5");
+            lblMessage = new Label("", skin, "h4");
+            lblMessage.setAlignment(Align.center);
+
+            ImageButton btnMenu = UIFactory.createImageButton(skin, "ButtonHomeEndScreen");
             btnMenu.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeListener.ChangeEvent event, Actor actor) {
@@ -838,30 +858,58 @@ public class GameScreen extends ScreenBase implements Observer {
                 }
             });
 
+            completeSign = new Image(skin, "MissionCompleteSign");
+            failSign = new Image(skin, "MissionFailedSign");
+
+            signStack = new Stack(completeSign, failSign);
+            signStack.setTransform(true);
+            Container<Stack> signWrapper = new Container<>(signStack);
+            signWrapper.setTransform(true);
+            signWrapper
+                    .padTop(Value.percentHeight(.18f, this))
+                    .padRight(Value.percentWidth(.14f, this))
+                    .size(contentWidth * .13f);
+
+            Container<Container<Stack>> signStackWrapper = new Container<>(signWrapper);
+            signStackWrapper.top().right();
+
             star1 = new Container<>(new Image(skin, "GrayStar"));
             star2 = new Container<>(new Image(skin, "GrayStar"));
             star3 = new Container<>(new Image(skin, "GrayStar"));
-
-            star1.prefSize(contentWidth / 5).bottom();
-            star2.prefSize(contentWidth / 5).bottom();
-            star3.prefSize(contentWidth / 3).bottom();
-
+            float starScale = contentWidth * .13f;
+            star1.prefSize(1f * starScale).bottom();
+            star2.prefSize(1f * starScale).bottom();
+            star3.prefSize(1.6f * starScale).bottom();
             star1.padRight(star3.getPrefWidth() * 1.4f);
             star2.padLeft(star3.getPrefWidth() * 1.4f);
-
             starGroup = new Stack();
             starGroup.addActor(star1);
             starGroup.addActor(star2);
             starGroup.addActor(star3);
 
-            Table content = getContentTable();
-            getCell(content).width(contentWidth);
-            content.defaults().space(0);
+            Image background = new Image(skin, "DialogSelectPowerups");
+            main = new Table(skin);
+            main.defaults().expandX();
 
-            float buttonSize = contentWidth * (WorldSettings.DefaultRatio.dialogButtonToContent() * 1.2f);
+            Stack rootStack = new Stack(background, main, signStackWrapper);
+
+            getContentTable()
+                    .add(rootStack)
+                    .height(UIUtils.getHeightFor(background.getDrawable(), contentWidth))
+                    .width(contentWidth);
+
+            float buttonSize = WorldSettings.getDefaultButtonHeight() * 1.2f;
             Table buttons = getButtonTable();
-            getCell(buttons).width(contentWidth);
-            buttons.add(btnMenu).height(buttonSize).padTop(40);
+            buttons.add(btnMenu)
+                    .width(UIUtils.getWidthFor(btnMenu.getImage().getDrawable(), buttonSize))
+                    .height(buttonSize);
+            getCell(buttons)
+                    .padTop(-buttonSize)
+                    .maxWidth(contentWidth);
+
+            setResizable(false);
+            setMovable(false);
+            setClip(false);
         }
 
         @Override
@@ -872,7 +920,7 @@ public class GameScreen extends ScreenBase implements Observer {
         }
 
         public void update() {
-            String resultText = roundManager.isRoundWon() ? "Congratulations!" : "You Failed!";
+            String resultText = roundManager.isRoundWon() ? "Complete" : "Failed";
             switch (roundManager.getGameStats().getReasonOfLoss()) {
                 case NONE:
                     lblMessage.setText("");
@@ -895,15 +943,25 @@ public class GameScreen extends ScreenBase implements Observer {
             }
             lblResult.setText(resultText);
             lblScore.setText(String.valueOf(roundManager.getScore()));
+            lblLavel.setText("Level " + roundManager.getLevel());
 
+            Table main = this.main;
+            main.clear();
+            main.top()
+                    .add(lblLavel)
+                    .expandX()
+                    .center()
+                    .padTop(contentWidth * .04f)
+                    .row();
+
+            main.row()
+                    .height(starGroup.getPrefHeight())
+                    .padTop(contentWidth * .22f);
             if (roundManager.isRoundWon()) {
-                Table content = getContentTable();
-                content.clear();
-                content.add(lblResult).row();
-                content.add(starGroup).growX().row();
-                content.add(staticScore).row();
-                content.add(lblScore).row();
-
+                main.add(starGroup)
+                        .padTop(contentWidth * .22f)
+                        .expandX()
+                        .row();
                 int starsGained = roundManager.getGameStats().getStarsUnlocked();
                 switch (starsGained) {
                     case 1:
@@ -922,14 +980,36 @@ public class GameScreen extends ScreenBase implements Observer {
                         star3.getActor().setDrawable(skin, "Star");
                         break;
                 }
+
+                lblResult.setColor(100 / 255f, 255f / 255f, 100f / 255f, 1);
+                showSign(completeSign);
             } else {
-                Table content = getContentTable();
-                content.clear();
-                content.add(lblResult).row();
-                content.add(lblMessage).padBottom(lblMessage.getPrefHeight()).row();
-                content.add(staticScore).row();
-                content.add(lblScore).row();
+                main.add(lblMessage)
+                        .row();
+
+                lblResult.setColor(255f / 255f, 100f / 255f, 100f / 255f, 1);
+                showSign(failSign);
             }
+
+            main.add(lblResult)
+                    .row();
+            main.add(staticScore)
+                    .padTop(Value.percentHeight(-.2f))
+                    .row();
+            main.add(lblScore).row();
+
+            main.invalidateHierarchy();
+        }
+
+
+        private void showSign(final Actor sign) {
+            completeSign.clearActions();
+            failSign.clearActions();
+            completeSign.setVisible(sign == completeSign);
+            failSign.setVisible(sign == failSign);
+
+            signStack.setColor(1, 1, 1, 0);
+            signStack.addAction(Actions.run(showSignStack));
         }
     }
 
@@ -976,7 +1056,7 @@ public class GameScreen extends ScreenBase implements Observer {
 
             Label title, description;
             title = UIFactory.createLabel("Oh no!", skin, "h3", Align.center);
-            description = UIFactory.createLabel("You're so close! You just need to focus more!", skin, "h4", Align.center);
+            description = UIFactory.createLabel("You are about to lose! Here, I will give you a helping hand if you choose so.", skin, "h4", Align.center);
             description.setWrap(true);
 
             btnPlayOnFree = UIFactory.createImageButton(skin, "ButtonPlayOnFree");
@@ -1021,28 +1101,28 @@ public class GameScreen extends ScreenBase implements Observer {
             Table content = getContentTable();
             getCell(content).width(contentSize);
             content.add(title).padBottom(contentSize * .02f).row();
-            content.add(description).width(contentSize * .9f).row();
+            content.add(description).width(contentSize).row();
             content.padBottom(contentSize * .1f);
 
-            buttonSize = contentSize * WorldSettings.DefaultRatio.dialogButtonToContent();
+            buttonSize = WorldSettings.getDefaultButtonHeight();
             Table buttons = getButtonTable();
             getCell(buttons).width(contentSize);
         }
 
         @Override
         public Dialog show(Stage stage, Action action) {
-            getButtonTable().clearChildren();
-
-            Cell firstButton;
+            Table buttons = getButtonTable();
+            buttons.clearChildren();
+            buttons.row()
+                    .padBottom(contentSize * .02f);
             if (roundManager.isSecondLifeAvailable()) {
-                firstButton = addButton(btnPlayOnFree);
+                addButton(btnPlayOnFree, 1.1f);
                 roundManager.consumeSecondLife();
             } else {
-                firstButton = addButton(btnPlayOnAd);
+                addButton(btnPlayOnAd);
             }
-
-            firstButton.padBottom(contentSize * .02f).row();
-            addButton(btnGiveUp, .85f).row();
+            buttons.row();
+            addButton(btnGiveUp, .8f).row();
 
             return super.show(stage, action);
         }

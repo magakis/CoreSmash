@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -33,6 +35,11 @@ public class AndroidLauncher extends AndroidApplication {
         }
 
         googleGamesAndroid = new GoogleGamesAndroid(this);
+
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        Log.i("DPI", String.valueOf(metrics.densityDpi));
+        Log.i("scaledDPI", String.valueOf(metrics.scaledDensity));
+        Log.i("Density", String.valueOf(metrics.density));
 
         AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
         config.useWakelock = true;
