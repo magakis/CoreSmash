@@ -238,9 +238,9 @@ public class LotteryDialog extends Dialog {
     private Lottery<LotteryRewardSimple> createLottery() {
         Lottery<LotteryRewardSimple> lottery = new Lottery<>();
 
-        lottery.addPossibleItem(LotteryRewardSimple.GOLD_BAR, 1, 15);
-        lottery.addPossibleItem(LotteryRewardSimple.GOLD_BAR, 2, 5);
-        lottery.addPossibleItem(LotteryRewardSimple.GOLD_BAR, 3, 1);
+//        lottery.addPossibleItem(LotteryRewardSimple.GOLD_BAR, 1, 15);
+//        lottery.addPossibleItem(LotteryRewardSimple.GOLD_BAR, 2, 5);
+//        lottery.addPossibleItem(LotteryRewardSimple.GOLD_BAR, 3, 1);
         lottery.addPossibleItem(LotteryRewardSimple.COLORBOMB, 1, 15);
         lottery.addPossibleItem(LotteryRewardSimple.COLORBOMB, 2, 5);
         lottery.addPossibleItem(LotteryRewardSimple.COLORBOMB, 3, 1);

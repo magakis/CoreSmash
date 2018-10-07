@@ -258,14 +258,14 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         private Container<Table> root;
         private final LotteryButton lotteryButton;
         private final HeartButton heartButton;
-        private final GoldBarButton goldBarButton;
+//        private final GoldBarButton goldBarButton;
 
         UIRightBar(final Stage stage, final Skin skin, final UserAccount user, final AdManager adManager, final FeedbackMailHandler feedbackMailHandler) {
             BUTTON_SIZE = skin.getFont("h4").getLineHeight() * 2.5f;
 
             lotteryButton = new LotteryButton(stage, skin, user, adManager);
             heartButton = new HeartButton(skin, user, adManager);
-            goldBarButton = new GoldBarButton(skin, user);
+//            goldBarButton = new GoldBarButton(skin, user);
 
             ImageButton feedbackButton = UIFactory.createImageButton(skin, "ButtonFeedback");
             feedbackButton.addListener(new ChangeListener() {
@@ -277,11 +277,13 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             Table barGroup = new Table();
             barGroup.defaults().space(BUTTON_SIZE * .4f);
-            barGroup.add(goldBarButton.root)
-                    .center()
-                    .expandY()
-                    .row();
+//            barGroup.add(goldBarButton.root)
+//                    .center()
+//                    .expandY()
+//                    .row();
             barGroup.add(heartButton.root)
+                    .expandY()
+                    .bottom()
                     .row();
             barGroup.add(lotteryButton.root)
                     .top()

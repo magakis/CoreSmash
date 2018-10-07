@@ -742,11 +742,13 @@ public class LoadingScreen extends ScreenBase {
         // WindowStyles
         Window.WindowStyle ws = new Window.WindowStyle();
         ws.background = skin.getDrawable("SimpleBlueDialog");
+        ws.stageBackground = skin.newDrawable("BackgroundBlack", 1, 1, 1, .65f);
         ws.titleFont = skin.getFont("h6");
         skin.add("PickPowerUpDialog", ws);
 
         ws = new Window.WindowStyle();
         ws.background = skin.getDrawable("SimpleDarkPurpleDialog");
+        ws.stageBackground = skin.newDrawable("BackgroundBlack", 1, 1, 1, .65f);
         ws.titleFont = skin.getFont("h6");
         skin.add("SimpleDarkPurpleDialog", ws);
 

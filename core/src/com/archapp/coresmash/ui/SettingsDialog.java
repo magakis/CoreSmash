@@ -17,7 +17,7 @@ public class SettingsDialog extends Dialog {
     private CheckBox menuMusicEnabled, gameMusicEnabled, soundEffectsEnabled;
 
     public SettingsDialog(Skin skin) {
-        super("", skin, "PickPowerUpDialog");
+        super("", skin, "SimpleDarkPurpleDialog");
 
         contentWidth = WorldSettings.getDefaultDialogSize() - getPadLeft() - getPadRight();
 
