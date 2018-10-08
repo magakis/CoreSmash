@@ -3,6 +3,7 @@ package com.archapp.coresmash.levels;
 import com.archapp.coresmash.CoreSmash;
 import com.archapp.coresmash.CurrencyType;
 import com.archapp.coresmash.GameController;
+import com.archapp.coresmash.GameTarget;
 import com.archapp.coresmash.Lottery;
 import com.archapp.coresmash.PropertyChangeListener;
 import com.archapp.coresmash.RoundEndListener;
@@ -536,9 +537,9 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         }
 
         public void giveRewardForLevel(int level, UserAccount account, Stage stage) {
-            if (rand.nextBoolean()) {
+            if (rand.nextInt(100) < 25) {
                 account.getCurrencyManager().giveCurrency(LOTTERY_TICKET);
-                Components.showToast("You were rewarded 1x Lottery Key!", stage);
+                Components.showToast("You were rewarded 1x Lottery Key!", stage, 3);
             }
         }
     }
@@ -811,7 +812,14 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             buttonGroup.uncheckAll();
             levelToLaunch = lvl;
             levelLabel.setText("Level " + lvl);
-            targetLabel.setText("Collect " + LevelParser.getTargetScore(levels.get(lvl), LevelListParser.Source.INTERNAL).one + " points");
+
+            LevelParser.LevelInfo levelInfo = LevelParser.getLevelInfo(levels.get(lvl), LevelListParser.Source.INTERNAL);
+            targetLabel.setText("");
+            if (levelInfo.gameTargets.contains(GameTarget.SCORE))
+                targetLabel.setText("Collect " + levelInfo.targetScores.one + " points\n");
+            if (levelInfo.gameTargets.contains(GameTarget.ASTRONAUTS))
+                targetLabel.setText(targetLabel.getText() + "Save all Astronauts");
+
             super.show(stage, null);
             setPosition(Math.round((stage.getWidth() - getWidth()) / 2), Math.round((stage.getHeight() - getHeight()) / 2));
         }

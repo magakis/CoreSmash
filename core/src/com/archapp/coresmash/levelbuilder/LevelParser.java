@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -405,10 +406,28 @@ public final class LevelParser {
                             text = parser.nextText();
                             levelInfo.targetScores.three = text.isEmpty() ? 0 : Integer.parseInt(text);
                             break;
+                        case TAG_TARGETSCORE:
+                            levelInfo.targetScores.one = Integer.valueOf(parser.getAttributeValue(NO_NAMESPACE, TAG_TARGETSCORE_ONE));
+                            levelInfo.targetScores.two = Integer.valueOf(parser.getAttributeValue(NO_NAMESPACE, TAG_TARGETSCORE_TWO));
+                            levelInfo.targetScores.three = Integer.valueOf(parser.getAttributeValue(NO_NAMESPACE, TAG_TARGETSCORE_THREE));
+                            break;
+                        case TAG_GAMETARGET:
+                            switch (parser.nextText()) {
+                                case TAG_GAMETARGET_SCORE:
+                                    levelInfo.gameTargets.add(GameTarget.SCORE);
+                                    break;
+                                case TAG_GAMETARGET_ASTRONAUTS:
+                                    levelInfo.gameTargets.add(GameTarget.ASTRONAUTS);
+                                    break;
+                            }
+                            break;
                     }
                 } else if (type == XmlPullParser.END_TAG) {
-                    if (parser.getName().equals(TAG_LEVEL_SETTINGS))
+                    if (parser.getName().equals(TAG_LEVEL_SETTINGS)) {
+                        if (levelInfo.gameTargets.isEmpty())
+                            levelInfo.gameTargets.add(GameTarget.SCORE); // Default to score if none set
                         return levelInfo;
+                    }
                 }
                 type = parser.next();
             } while (type != XmlPullParser.END_DOCUMENT);
@@ -457,6 +476,11 @@ public final class LevelParser {
                             if (targetScore.one != 0 && targetScore.two != 0 && targetScore.three != 0)
                                 return targetScore;
                             break;
+                        case TAG_TARGETSCORE:
+                            targetScore.one = Integer.valueOf(parser.getAttributeValue(NO_NAMESPACE, TAG_TARGETSCORE_ONE));
+                            targetScore.two = Integer.valueOf(parser.getAttributeValue(NO_NAMESPACE, TAG_TARGETSCORE_TWO));
+                            targetScore.three = Integer.valueOf(parser.getAttributeValue(NO_NAMESPACE, TAG_TARGETSCORE_THREE));
+                            return targetScore;
                     }
                 }
                 type = parser.next();
@@ -472,18 +496,17 @@ public final class LevelParser {
     }
 
     public static class LevelInfo {
-        private TargetScore targetScores;
+        public EnumSet<GameTarget> gameTargets;
+        public TargetScore targetScores;
 
         private LevelInfo() {
             targetScores = new TargetScore();
-        }
-
-        public TargetScore getTargetScore() {
-            return targetScores;
+            gameTargets = EnumSet.noneOf(GameTarget.class);
         }
 
         void reset() {
             targetScores.reset();
+            gameTargets.clear();
         }
     }
 
