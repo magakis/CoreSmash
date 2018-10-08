@@ -100,14 +100,21 @@ public class LotteryDialog extends Dialog {
                 public void reward(String type, int amount) {
                     pickACard();
                 }
+
+                @Override
+                public void canceled() {
+                    btnClose.setDisabled(false);
+                }
             };
 
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if (CoreSmash.DEV_MODE)
+                if (CoreSmash.DEV_MODE) {
                     pickACard();
-                else
+                } else {
+                    btnClose.setDisabled(true);
                     adManager.showAdForReward(listener, AdManager.VideoAdRewardType.LOTTERY_COIN);
+                }
             }
         });
 

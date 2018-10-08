@@ -28,6 +28,11 @@ public class HeartReplenishDialog extends Dialog {
                     heartManager.restoreHeart();
                     hide();
                 }
+
+                @Override
+                public void canceled() {
+
+                }
             };
 
             @Override

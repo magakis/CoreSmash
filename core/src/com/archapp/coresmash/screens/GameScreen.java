@@ -1078,6 +1078,11 @@ public class GameScreen extends ScreenBase implements Observer {
                         hide(null);
                         result(null);
                     }
+
+                    @Override
+                    public void canceled() {
+
+                    }
                 };
 
                 @Override

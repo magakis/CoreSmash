@@ -46,6 +46,7 @@ public final class AdmobManager implements AdManager {
     private Runnable dismissDialog;
     private ProgressDialog dialog;
     private RewardedVideoAd rewardedVideoAd;
+    private AdRewardListener rewardListener;
     private Handler handler;
 
     public AdmobManager() {
@@ -76,6 +77,7 @@ public final class AdmobManager implements AdManager {
         dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface anInterface) {
+                rewardListener.canceled();
                 task.cancel(true);
             }
         });
@@ -87,6 +89,7 @@ public final class AdmobManager implements AdManager {
                 @Override
                 public void run() {
                     dialog.dismiss();
+                    rewardListener.canceled();
                     Toast.makeText(context, "Task took too long!\nEnsure you have Internet connection and try again!", Toast.LENGTH_LONG).show();
                 }
             };
@@ -127,6 +130,7 @@ public final class AdmobManager implements AdManager {
 
     @Override
     public void showAdForReward(final AdRewardListener listener, final VideoAdRewardType type) {
+        rewardListener = listener;
         handler.postAtFrontOfQueue(new Runnable() {
             @Override
             public void run() {
@@ -176,7 +180,7 @@ public final class AdmobManager implements AdManager {
 
                         @Override
                         public void onRewardedVideoAdClosed() {
-
+                            listener.canceled();
                         }
 
                         @Override
@@ -186,12 +190,12 @@ public final class AdmobManager implements AdManager {
 
                         @Override
                         public void onRewardedVideoAdLeftApplication() {
-
+                            listener.canceled();
                         }
 
                         @Override
                         public void onRewardedVideoAdFailedToLoad(int i) {
-
+                            listener.canceled();
                         }
 
                         @Override

@@ -396,6 +396,11 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                     public void reward(String type, int amount) {
                         heartManager.restoreHeart();
                     }
+
+                    @Override
+                    public void canceled() {
+
+                    }
                 };
 
                 lblLivesLeft = new Label("null", skin, "h3o");
