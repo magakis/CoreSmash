@@ -335,7 +335,7 @@ public class LoadingScreen extends ScreenBase {
         ninePatch.setPadding(ninePatch.getPadLeft() / 2, ninePatch.getPadRight() / 2, ninePatch.getPadTop() / 2, ninePatch.getPadBottom() / 2);
         skin.add("SimpleBlueDialog", ninePatch);
 
-        ninePatch = new NinePatch(am.get("SimpleDarkPurpleDialog.png", Texture.class), 64, 64, 64, 64);
+        ninePatch = new NinePatch(am.get("SimpleDarkPurpleDialog.png", Texture.class), 60, 60, 60, 60);
         defScale = .25f * PPI;
         ninePatch.scale(defScale, defScale);
         ninePatch.setPadding(ninePatch.getPadLeft() / 2, ninePatch.getPadRight() / 2, ninePatch.getPadTop() / 2, ninePatch.getPadBottom() / 2);
@@ -751,6 +751,12 @@ public class LoadingScreen extends ScreenBase {
         ws.stageBackground = skin.newDrawable("BackgroundBlack", 1, 1, 1, .65f);
         ws.titleFont = skin.getFont("h6");
         skin.add("SimpleDarkPurpleDialog", ws);
+
+        ws = new Window.WindowStyle();
+        ws.background = skin.getDrawable("SimpleDarkPurpleDialog");
+        ws.stageBackground = skin.newDrawable("BackgroundBlack", 1, 1, 1, .65f);
+        ws.titleFont = skin.getFont("h6");
+        skin.add("LotteryDialog", ws);
 
         ws = new Window.WindowStyle();
         ws.background = skin.getDrawable("invisible");

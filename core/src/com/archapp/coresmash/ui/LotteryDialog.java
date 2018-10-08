@@ -43,7 +43,7 @@ public class LotteryDialog extends Dialog {
 
 
     public LotteryDialog(Skin sk, UserAccount.CurrencyManager currencyManager, final AdManager adManager) {
-        super("", sk, "SimpleDarkPurpleDialog");
+        super("", sk, "LotteryDialog");
         currencies = currencyManager;
         skin = sk;
         lottery = createLottery();
@@ -262,7 +262,7 @@ public class LotteryDialog extends Dialog {
             imgReward = new Image();
 
             cardBack = skin.getDrawable("cardBack");
-            disabledCardback = skin.newDrawable("cardBack", Color.DARK_GRAY);
+            disabledCardback = skin.newDrawable("cardBack", Color.GRAY);
             cardFront = skin.getDrawable("LotteryCardFront");
 
             imgBackground = new Image(cardBack);

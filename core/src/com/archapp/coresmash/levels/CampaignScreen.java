@@ -34,6 +34,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -243,6 +244,12 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
                 LevelButton levelButton = levelButtons.get(stats.getNextLevel());
                 if (levelButton != null)
                     levelButton.setDisabled(false);
+                else
+                    new EndGameDialog(skin).show(stage,
+                            Actions.sequence(
+                                    Actions.alpha(0),
+                                    Actions.delay(2f, Actions.fadeIn(.5f, Interpolation.smooth)
+                                    )));
             }
         }
     }
@@ -846,6 +853,54 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
         void reset() {
             type = null;
             count = -1;
+        }
+    }
+
+    private static class EndGameDialog extends Dialog {
+
+        public EndGameDialog(Skin skin) {
+            super("", skin, "PickPowerUpDialog");
+            float width = WorldSettings.getDefaultDialogSize() - getPadLeft() - getPadRight();
+
+            Label lblTitle = new Label("To be continued", skin, "h3");
+            Label lblMessage = new Label(FileUtils.fileToString(Gdx.files.internal("docs/end_message").reader(512)), skin, "h5");
+            lblMessage.setWrap(true);
+            ScrollPane scrollPane = new ScrollPane(lblMessage);
+            scrollPane.setScrollingDisabled(true, false);
+            scrollPane.setOverscroll(false, false);
+
+            getContentTable().defaults().space(0);
+            getContentTable().add(lblTitle)
+                    .padBottom(lblTitle.getPrefHeight() / 2)
+                    .row();
+            getContentTable().add(scrollPane).padLeft(width * .025f).padRight(width * .025f).grow();
+            getCell(getContentTable()).width(width).padBottom(width * .025f);
+            getCell(getButtonTable()).width(width);
+            setModal(true);
+            setMovable(false);
+
+            ImageButton btn = UIFactory.createImageButton(skin, "ButtonGotIt");
+            btn.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    hide(null);
+                }
+            });
+
+            float buttonSize = WorldSettings.getDefaultButtonHeight();
+            getButtonTable().add(btn).height(buttonSize).width(UIUtils.getWidthFor(btn.getImage().getDrawable(), buttonSize));
+        }
+
+        @Override
+        public Dialog show(Stage stage) {
+            return show(stage, null);
+        }
+
+        public Dialog show(Stage stage, Action action) {
+            getCell(getContentTable()).maxHeight(stage.getHeight() * .7f);
+            super.show(stage, action);
+            setPosition(stage.getWidth() / 2f, stage.getHeight() / 2f, Align.center);
+            return this;
         }
     }
 
