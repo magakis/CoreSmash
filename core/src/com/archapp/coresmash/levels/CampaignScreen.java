@@ -607,7 +607,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             contentSize = WorldSettings.getSmallestScreenDimension() / 3;
 
             Table tblAccount = new Table();
-            tblAccount.background(skin.getDrawable("UserAccountFrame"));
+            tblAccount.background(skin.getDrawable("CampaignUserFrame"));
 //            tblAccount.add(lblUserName).center()
 //                    .padTop(-7 * Gdx.graphics.getDensity())
 //                    .padBottom(1 * Gdx.graphics.getDensity()).row();

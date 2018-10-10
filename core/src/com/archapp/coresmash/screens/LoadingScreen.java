@@ -134,6 +134,7 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("DialogSelectPowerups.png");
         loadTexture("TipFrame.png");
         loadTexture("TipPointer.png");
+        loadTexture("CampaignUserFrame.png");
         loadTexture("SimpleBlueDialog.png");
         loadTexture("SimpleDarkPurpleDialog.png");
 
@@ -318,6 +319,11 @@ public class LoadingScreen extends ScreenBase {
         defScale = .25f;
         ninePatch.scale(defScale * PPI, defScale * PPI);
         skin.add("UserAccountFrame", ninePatch);
+
+        ninePatch = new NinePatch(am.get("CampaignUserFrame.png", Texture.class), 20, 20, 20, 20);// 64, 64, 64, 64);
+        defScale = .5f;
+        ninePatch.scale(defScale * PPI, defScale * PPI);
+        skin.add("CampaignUserFrame", ninePatch);
 
         ninePatch = new NinePatch(am.get("MessageFrame.png", Texture.class), 41, 41, 41, 41);
         defScale = .25f;
