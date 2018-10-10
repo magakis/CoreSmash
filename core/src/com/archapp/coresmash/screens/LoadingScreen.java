@@ -163,6 +163,7 @@ public class LoadingScreen extends ScreenBase {
         loadTexture("ButtonFreePick.png");
         loadTexture("ButtonPick.png");
         loadTexture("ButtonClose.png");
+        loadTexture("ButtonCloseGreen.png");
         loadTexture("ButtonClaim.png");
         loadTexture("ButtonPickAgain.png");
         loadTexture("ButtonEditor.png");
@@ -338,7 +339,7 @@ public class LoadingScreen extends ScreenBase {
         ninePatch = new NinePatch(am.get("SimpleDarkPurpleDialog.png", Texture.class), 60, 60, 60, 60);
         defScale = .25f * PPI;
         ninePatch.scale(defScale, defScale);
-        ninePatch.setPadding(ninePatch.getPadLeft() / 2, ninePatch.getPadRight() / 2, ninePatch.getPadTop() / 2, ninePatch.getPadBottom() / 2);
+//        ninePatch.setPadding(ninePatch.getPadLeft() / 2, ninePatch.getPadRight() / 2, ninePatch.getPadTop() / 2, ninePatch.getPadBottom() / 2);
         skin.add("SimpleDarkPurpleDialog", ninePatch);
 
         ninePatch = new NinePatch(am.get("ButtonEditor.png", Texture.class), 31, 31, 31, 31);
@@ -412,6 +413,7 @@ public class LoadingScreen extends ScreenBase {
         skin.add("ButtonFreePick", am.get("ButtonFreePick.png"));
         skin.add("ButtonMenu", am.get("ButtonMenu.png"));
         skin.add("ButtonClose", am.get("ButtonClose.png"));
+        skin.add("ButtonCloseGreen", am.get("ButtonCloseGreen.png"));
         skin.add("ButtonClaim", am.get("ButtonClaim.png"));
         skin.add("ButtonPickAgain", am.get("ButtonPickAgain.png"));
         skin.add("ButtonSettings", am.get("ButtonSettings.png"));
@@ -560,6 +562,12 @@ public class LoadingScreen extends ScreenBase {
         imgbs.imageDown = skin.newDrawable("ButtonClose", SlightGray);
         imgbs.imageDisabled = skin.newDrawable("ButtonClose", Color.DARK_GRAY);
         skin.add("ButtonClose", imgbs);
+
+        imgbs = new ImageButton.ImageButtonStyle();
+        imgbs.imageUp = skin.getDrawable("ButtonCloseGreen");
+        imgbs.imageDown = skin.newDrawable("ButtonCloseGreen", SlightGray);
+        imgbs.imageDisabled = skin.newDrawable("ButtonCloseGreen", Color.DARK_GRAY);
+        skin.add("ButtonCloseGreen", imgbs);
 
         imgbs = new ImageButton.ImageButtonStyle();
         imgbs.imageUp = skin.getDrawable("ButtonPickAgain");

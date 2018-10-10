@@ -19,7 +19,7 @@ public class PlatformSpecificManager {
 
             @Override
             public void showAdForReward(AdRewardListener listener, VideoAdRewardType type) {
-
+                listener.canceled();
             }
 
             @Override

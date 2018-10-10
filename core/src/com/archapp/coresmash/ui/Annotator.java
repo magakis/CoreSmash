@@ -68,7 +68,7 @@ public class Annotator {
             annotationDialog.annotation = this;
             final float h = actor.getHeight(), w = actor.getWidth();
             Vector2 target = actor.localToStageCoordinates(Annotator.this.target.setZero());
-            annotationDialog.show(actor.getStage(), Actions.fadeIn(0.4f, Interpolation.fade));
+            annotationDialog.show(actor.getStage(), Actions.sequence(Actions.alpha(0), Actions.fadeIn(0.5f, Interpolation.fade)));
             if ((align & Align.left) != 0) {
                 if ((align & Align.top) != 0) {
                     annotationDialog.setPosition(target.x + w / 2 - (annotationDialog.getPadLeft() + annotationDialog.pointer.getWidth() / 2), target.y - pad, Align.topLeft);
@@ -92,12 +92,6 @@ public class Annotator {
             }
 
             annotationDialog.pointerWrapper.invalidate();
-
-            Gdx.app.log("CORESMASH", "X: " + target.x);
-            Gdx.app.log("CORESMASH", "Y: " + target.y);
-            Gdx.app.log("CORESMASH", "W: " + w);
-            Gdx.app.log("CORESMASH", "H: " + h);
-            Gdx.app.log("CORESMASH", "PrefH: " + annotationDialog.pointer.getWidth());
         }
 
         private void reset() {
@@ -138,7 +132,6 @@ public class Annotator {
                 @Override
                 public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                     hide();
-                    Gdx.app.log("DEBUG", "UP");
                     return false;
                 }
             });

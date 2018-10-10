@@ -106,14 +106,14 @@ public class UserAccount {
                 if (stats.isLevelUnlocked()) {
                     saveScore(score);
                 } else {
-                    saveScore(score / 3);
+                    saveScore(score / 2);
                 }
             } else {
-                saveScore(stats.getTotalScore() / 5);
+                saveScore(stats.getTotalScore() / 4);
             }
 
         } else { // LOST
-            saveScore(stats.getTotalScore() / 10);
+            saveScore(stats.getTotalScore() / 8);
         }
     }
 

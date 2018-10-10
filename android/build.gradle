@@ -29,8 +29,8 @@ android {
         applicationId 'com.archapp.coresmash'
         minSdkVersion 15
         targetSdkVersion 27
-        versionCode 14
-        versionName "0.1.3.0-dev"
+        versionCode 16
+        versionName "0.1.3.0"
     }
     buildTypes {
         release {

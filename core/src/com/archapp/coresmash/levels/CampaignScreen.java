@@ -608,10 +608,10 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
 
             Table tblAccount = new Table();
             tblAccount.background(skin.getDrawable("UserAccountFrame"));
-            tblAccount.add(lblUserName).center()
-                    .padTop(-7 * Gdx.graphics.getDensity())
-                    .padBottom(1 * Gdx.graphics.getDensity()).row();
-            tblAccount.row().padBottom(lblLevel.getPrefHeight() / 3);
+//            tblAccount.add(lblUserName).center()
+//                    .padTop(-7 * Gdx.graphics.getDensity())
+//                    .padBottom(1 * Gdx.graphics.getDensity()).row();
+//            tblAccount.row().padBottom(lblLevel.getPrefHeight() / 3);
             tblAccount.add(userIconGroup)
                     .size(contentSize * .65f)
                     .padBottom(2 * Gdx.graphics.getDensity())
@@ -641,8 +641,13 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             GoogleGames service = gameInstance.getPlatformSpecificManager().googleGames;
             if (service.isSignedIn()) {
                 PlayerInfo playerInfo = service.getAccountInfo();
-                if (playerInfo.avatar != null)
+                if (playerInfo.avatar != null) {
+                    Gdx.app.log("DB", String.valueOf(playerInfo.avatar.getHeight()));
+                    Gdx.app.log("DB", String.valueOf(playerInfo.avatar.getWidth()));
                     btnUser.getStyle().imageUp = new TextureRegionDrawable(playerInfo.avatar);
+                } else {
+                    btnUser.getStyle().imageUp = skin.getDrawable("DefaultUserIcon");
+                }
                 lblUserName.setText(playerInfo.displayName);
             } else {
                 lblUserName.setText("Singed Out");
@@ -892,57 +897,7 @@ public class CampaignScreen extends ScreenBase implements RoundEndListener {
             setModal(true);
             setMovable(false);
 
-            ImageButton btn = UIFactory.createImageButton(skin, "ButtonGotIt");
-            btn.addListener(new ChangeListener() {
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-                    hide(null);
-                }
-            });
-
-            float buttonSize = WorldSettings.getDefaultButtonHeight();
-            getButtonTable().add(btn).height(buttonSize).width(UIUtils.getWidthFor(btn.getImage().getDrawable(), buttonSize));
-        }
-
-        @Override
-        public Dialog show(Stage stage) {
-            return show(stage, null);
-        }
-
-        public Dialog show(Stage stage, Action action) {
-            getCell(getContentTable()).maxHeight(stage.getHeight() * .7f);
-            super.show(stage, action);
-            setPosition(stage.getWidth() / 2f, stage.getHeight() / 2f, Align.center);
-            return this;
-        }
-    }
-
-    private static class HowToPlayDialog extends Dialog {
-        private Label lblMessage;
-        private Label lblTitle;
-        private ScrollPane scrollPane;
-
-        HowToPlayDialog(Skin skin) {
-            super("", skin, "PopupMessage");
-
-            float width = WorldSettings.getDefaultDialogSize() - getPadLeft() - getPadRight();
-
-            lblMessage = new Label(FileUtils.fileToString(Gdx.files.internal("docs/how_to_play").reader(512)), skin, "h5");
-            lblTitle = new Label("How to play?", skin, "h2");
-            lblMessage.setWrap(true);
-            scrollPane = new ScrollPane(lblMessage);
-            scrollPane.setScrollingDisabled(true, false);
-            scrollPane.setOverscroll(false, false);
-
-            getContentTable().defaults().space(0);
-            getContentTable().add(lblTitle).row();
-            getContentTable().add(scrollPane).padLeft(width * .025f).padRight(width * .025f).grow();
-            getCell(getContentTable()).width(width).padBottom(width * .025f);
-            getCell(getButtonTable()).width(width);
-            setModal(true);
-            setMovable(false);
-
-            ImageButton btn = UIFactory.createImageButton(skin, "ButtonGotIt");
+            ImageButton btn = UIFactory.createImageButton(skin, "ButtonCloseGreen");
             btn.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {

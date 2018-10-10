@@ -37,8 +37,8 @@ public class RoundManager extends Observable implements Observer {
         gameStats.unlockedLevel = unlockedLevel;
         gameStats.userHighScore = Gdx.app.getPreferences("account").getInteger("level" + level);
 
-        // Allow only paid livesLimit after level 10
-        if (level < 11)
+        // Allow only paid livesLimit after level 5
+        if (level < 6)
             gameStats.freeSecondLife = true;
     }
 

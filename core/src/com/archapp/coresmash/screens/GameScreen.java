@@ -204,7 +204,7 @@ public class GameScreen extends ScreenBase implements Observer {
                 roundManager.pauseGame();
                 if (!roundManager.isRoundWon()) {
                     /* If the center tile is gone, we can't offer an extra life */
-                    if (!roundManager.getGameStats().getReasonOfLoss().equals(RoundManager.ReasonOfLoss.ASTRONAUTS_LEFT)) {
+                    if (tilemapManager.getTilemapTile(0, 0, 0) != null) {
                         if (roundManager.getGameStats().getExtraLivesUsed() < 3)
                             secondLifeDialog.show(stage);
                         else

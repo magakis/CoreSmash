@@ -212,8 +212,8 @@ public class MainMenuScreen extends ScreenBase {
             imgSignIn.setVisible(!gameInstance.getPlatformSpecificManager().googleGames.isSignedIn());
 
             root.addActor(imgPlay);
-            root.addActor(imgSignIn);
-            root.addActor(userNameWrapper);
+//            root.addActor(imgSignIn);
+//            root.addActor(userNameWrapper);
             root.addActor(versInfo);
 
             updateUserName();

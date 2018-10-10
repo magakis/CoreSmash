@@ -90,7 +90,7 @@ public final class AdmobManager implements AdManager {
                 public void run() {
                     dialog.dismiss();
                     rewardListener.canceled();
-                    Toast.makeText(context, "Task took too long!\nEnsure you have Internet connection and try again!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, "Failed to load. Check your connection!", Toast.LENGTH_LONG).show();
                 }
             };
 
@@ -195,7 +195,8 @@ public final class AdmobManager implements AdManager {
 
                         @Override
                         public void onRewardedVideoAdFailedToLoad(int i) {
-                            listener.canceled();
+                            task.cancel(true);
+                            dismissDialog.run();
                         }
 
                         @Override
